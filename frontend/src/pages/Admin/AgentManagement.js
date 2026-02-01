@@ -25,6 +25,7 @@ import {
     ChevronRightIcon,
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
+    ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
 const AgentManagement = () => {
@@ -132,7 +133,20 @@ const AgentManagement = () => {
                             <span className="text-primary-700 font-bold">{row.original.name?.[0]?.toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
-                            <div className="font-medium text-gray-900 truncate">{row.original.name}</div>
+                            <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-900 truncate">{row.original.name}</span>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(row.original.id);
+                                        toast.success('Agent ID copied!');
+                                    }}
+                                    className="text-gray-400 hover:text-primary-600 transition-colors"
+                                    title="Copy Agent ID"
+                                >
+                                    <ClipboardDocumentIcon className="w-4 h-4" />
+                                </button>
+                            </div>
                             <div className="text-sm text-gray-500 truncate">{row.original.owner_email}</div>
                         </div>
                     </div>

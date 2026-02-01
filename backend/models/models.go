@@ -152,3 +152,38 @@ type Station struct {
 	Latitude  float64 `gorm:"type:decimal(10,7)" json:"latitude,omitempty"`
 	Longitude float64 `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
 }
+
+// Notification represents a system notification
+type Notification struct {
+	ID            uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Title         string         `gorm:"size:255;not null" json:"title"`
+	Message       string         `gorm:"type:text;not null" json:"message"`
+	SenderID      uuid.UUID      `gorm:"type:uuid;not null" json:"sender_id"`
+	Sender        *User          `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
+	ReceiverID    *uuid.UUID     `gorm:"type:uuid" json:"receiver_id,omitempty"` // Nullable if broadcast
+	Receiver      *User          `gorm:"foreignKey:ReceiverID" json:"receiver,omitempty"`
+	TargetRole    string         `gorm:"size:50" json:"target_role,omitempty"`       // e.g., "agent", "public"
+	TargetAgentID *uuid.UUID     `gorm:"type:uuid" json:"target_agent_id,omitempty"` // For Agent -> User broadcast
+	Type          string         `gorm:"size:20;default:'info'" json:"type"`         // info, warning, system
+	IsRead        bool           `gorm:"default:false" json:"is_read"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+// Banner represents a promotional or informational banner
+type Banner struct {
+	ID         uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Title      string         `gorm:"size:255;not null" json:"title"`
+	ImageURL   string         `gorm:"size:500;not null" json:"image_url"`
+	LinkURL    string         `gorm:"size:500" json:"link_url,omitempty"`
+	OwnerID    uuid.UUID      `gorm:"type:uuid;not null" json:"owner_id"` // Creator
+	TargetRole string         `gorm:"size:50;default:'all'" json:"target_role"`
+	AgentID    *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"` // Null for Platform banners
+	IsActive   bool           `gorm:"default:true" json:"is_active"`
+	StartDate  *time.Time     `json:"start_date,omitempty"`
+	EndDate    *time.Time     `json:"end_date,omitempty"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+}

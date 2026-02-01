@@ -30,6 +30,10 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// Initialize WebSocket Manager
+	wsManager := utils.NewWebSocketManager()
+	go wsManager.Run()
+
 	// Auto migrate models
 	if err := db.AutoMigrate(
 		&models.User{},
@@ -39,6 +43,8 @@ func main() {
 		&models.Listing{},
 		&models.Media{},
 		&models.Station{},
+		&models.Notification{},
+		&models.Banner{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -64,7 +70,8 @@ func main() {
 	router.Use(middleware.RateLimitMiddleware())
 
 	// Setup routes
-	routes.SetupRoutes(router, db, cfg)
+	// Setup routes
+	routes.SetupRoutes(router, db, cfg, wsManager)
 
 	// Start server
 	port := os.Getenv("PORT")

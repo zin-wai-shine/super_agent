@@ -133,3 +133,18 @@ export const uploadApi = {
     },
     deleteMedia: (id) => api.delete(`/upload/${id}`),
 };
+
+// Notification API
+export const notificationApi = {
+    getMyNotifications: () => api.get('/notifications'),
+    getSentNotifications: () => api.get('/notifications/sent'),
+    createNotification: (data) => api.post('/notifications', data),
+    markRead: (id) => api.post(`/notifications/${id}/read`),
+};
+
+// Banner API
+export const bannerApi = {
+    getBanners: (params) => api.get('/banners', { params }), // params can include target_role, agent_id
+    createBanner: (data) => api.post('/banners', data),
+    deleteBanner: (id) => api.delete(`/banners/${id}`),
+};

@@ -5,10 +5,12 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"time"
 
 	"super_real_estate/models"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -141,5 +143,72 @@ func SeedFakeData(db *gorm.DB) {
 		}
 	}
 
-	log.Printf("Successfully generated %d fake agents and %d fake listings.", len(agents), len(agents)*5)
+	// 4. Create Fake Notifications
+	// Super Admin -> All Agents (Broadcast)
+	var superAdmin models.User
+	db.Where("role = ?", models.RoleSuperAdmin).First(&superAdmin)
+
+	if superAdmin.ID != uuid.Nil {
+		// Public Platform Notification
+		db.Create(&models.Notification{
+			Title:      "Welcome to Super Real Estate!",
+			Message:    "We have updated our terms of service. Please review them.",
+			SenderID:   superAdmin.ID,
+			TargetRole: models.RoleAgent,
+			Type:       "info",
+		})
+
+		// Direct Message to first fake agent
+		if len(agents) > 0 {
+			var agentUser models.User
+			db.Where("agent_id = ?", agents[0].ID).First(&agentUser)
+			if agentUser.ID != uuid.Nil {
+				db.Create(&models.Notification{
+					Title:      "Subscription Expiring Soon",
+					Message:    "Your Starter plan will expire in 3 days.",
+					SenderID:   superAdmin.ID,
+					ReceiverID: &agentUser.ID,
+					Type:       "warning",
+				})
+			}
+		}
+	}
+
+	// 5. Create Fake Banners
+	// Platform Banner
+	if superAdmin.ID != uuid.Nil {
+		startTime := time.Now()
+		endTime := startTime.AddDate(0, 1, 0) // 1 month
+		db.Create(&models.Banner{
+			Title:      "Summer Sale!",
+			ImageURL:   "https://picsum.photos/1200/300",
+			LinkURL:    "/pricing",
+			OwnerID:    superAdmin.ID,
+			TargetRole: "all",
+			IsActive:   true,
+			StartDate:  &startTime,
+			EndDate:    &endTime,
+		})
+	}
+
+	// Agent Banner
+	if len(agents) > 0 {
+		var agentUser models.User
+		db.Where("agent_id = ?", agents[0].ID).First(&agentUser)
+		if agentUser.ID != uuid.Nil {
+			startTime := time.Now()
+			db.Create(&models.Banner{
+				Title:      "Special Discount on Condos",
+				ImageURL:   "https://picsum.photos/1000/300",
+				LinkURL:    "/listings?type=condo",
+				OwnerID:    agentUser.ID,
+				AgentID:    &agents[0].ID,
+				TargetRole: "public",
+				IsActive:   true,
+				StartDate:  &startTime,
+			})
+		}
+	}
+
+	log.Printf("Successfully generated %d fake agents, %d listings, notifications, and banners.", len(agents), len(agents)*5)
 }

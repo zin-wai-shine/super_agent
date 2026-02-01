@@ -5,12 +5,13 @@ import (
 	"super_real_estate/controllers"
 	"super_real_estate/middleware"
 	"super_real_estate/models"
+	"super_real_estate/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config) {
+func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager *utils.WebSocketManager) {
 	// Initialize controllers
 	authController := controllers.NewAuthController(db)
 	superAdminController := controllers.NewSuperAdminController(db)
@@ -55,6 +56,11 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config) {
 			protected.GET("/me", authController.GetProfile)
 			protected.PUT("/me", authController.UpdateProfile)
 			protected.PUT("/me/password", authController.ChangePassword)
+
+			// WebSocket Route
+			protected.GET("/ws", func(c *gin.Context) {
+				wsManager.ServeWS(c)
+			})
 
 			// Super Admin routes
 			superAdmin := protected.Group("/admin")
@@ -115,6 +121,28 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config) {
 				upload.POST("/video", uploadController.UploadVideo)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}
+
+			// Notification routes
+			notificationController := controllers.NewNotificationController(db, wsManager)
+			notifications := protected.Group("/notifications")
+			{
+				notifications.GET("", notificationController.GetMyNotifications)
+				notifications.GET("/sent", notificationController.GetSentNotifications)
+				notifications.POST("", notificationController.CreateNotification)
+				notifications.POST("/:id/read", notificationController.MarkRead)
+			}
+
+			// Banner routes
+			bannerController := controllers.NewBannerController(db)
+			banners := protected.Group("/banners")
+			{
+				banners.GET("", bannerController.GetBanners)
+				banners.POST("", bannerController.CreateBanner)
+				banners.DELETE("/:id", bannerController.DeleteBanner)
+			}
+
+			// Public Banner Route (override protected for fetching)
+			api.GET("/public/banners", bannerController.GetBanners)
 		}
 	}
 

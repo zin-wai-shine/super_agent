@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import NotificationBell from '../Common/NotificationBell';
+import BannerDisplay from '../Common/BannerDisplay';
 import {
     HomeIcon,
     BuildingOfficeIcon,
@@ -12,6 +14,8 @@ import {
     XMarkIcon,
     ChartBarIcon,
     CogIcon,
+    BellIcon,
+    MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardLayout = () => {
@@ -31,12 +35,16 @@ const DashboardLayout = () => {
         { name: 'Listings', href: '/agent/listings', icon: BuildingOfficeIcon },
         { name: 'Sub-Agents', href: '/agent/sub-agents', icon: UsersIcon },
         { name: 'Theme', href: '/agent/theme', icon: SwatchIcon },
+        { name: 'Notifications', href: '/agent/notifications', icon: BellIcon },
+        { name: 'Banners', href: '/agent/banners', icon: MegaphoneIcon },
     ];
 
     const adminNavigation = [
         { name: 'Dashboard', href: '/admin', icon: ChartBarIcon },
         { name: 'Agents', href: '/admin/agents', icon: UsersIcon },
         { name: 'Subscription Plans', href: '/admin/plans', icon: CreditCardIcon },
+        { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
+        { name: 'Banners', href: '/admin/banners', icon: MegaphoneIcon },
     ];
 
     const navigation = isSuperAdmin ? adminNavigation : agentNavigation;
@@ -88,8 +96,8 @@ const DashboardLayout = () => {
                                 to={item.href}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
-                                        ? 'bg-primary-50 text-primary-700 shadow-sm'
-                                        : 'text-gray-600 hover:bg-gray-50'
+                                    ? 'bg-primary-50 text-primary-700 shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
                                 <item.icon className={`w-5 h-5 ${isActive(item.href) ? 'text-primary-600' : ''}`} />
@@ -145,16 +153,20 @@ const DashboardLayout = () => {
                         <div className="flex items-center space-x-4">
                             <Link
                                 to="/"
-                                className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                                className="text-sm text-gray-500 hover:text-primary-600 transition-colors hidden sm:block"
                             >
                                 View Site
                             </Link>
+
+                            {/* Notification Bell */}
+                            <NotificationBell />
                         </div>
                     </div>
                 </header>
 
                 {/* Page content */}
                 <main className="p-4 sm:p-6 lg:p-8">
+                    <BannerDisplay />
                     <Outlet />
                 </main>
             </div>

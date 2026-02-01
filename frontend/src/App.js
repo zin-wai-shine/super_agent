@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { WebSocketProvider } from './context/WebSocketContext';
 
 // Layouts
 import PublicLayout from './components/Layout/PublicLayout';
@@ -25,6 +26,8 @@ import ThemeSettings from './pages/Agent/ThemeSettings';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AgentManagement from './pages/Admin/AgentManagement';
 import SubscriptionPlans from './pages/Admin/SubscriptionPlans';
+import NotificationCenter from './pages/Admin/NotificationCenter';
+import BannerManagement from './pages/Admin/BannerManagement';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -51,52 +54,58 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
 function App() {
     return (
-        <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="listings" element={<ListingsPage />} />
-                <Route path="listings/:id" element={<ListingDetailPage />} />
-            </Route>
+        <WebSocketProvider>
+            <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<PublicLayout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="listings" element={<ListingsPage />} />
+                    <Route path="listings/:id" element={<ListingDetailPage />} />
+                </Route>
 
-            {/* Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+                {/* Auth Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
-            {/* Agent Dashboard Routes */}
-            <Route
-                path="/agent"
-                element={
-                    <ProtectedRoute allowedRoles={['agent', 'sub_agent']}>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }
-            >
-                <Route index element={<AgentDashboard />} />
-                <Route path="listings" element={<AgentListings />} />
-                <Route path="listings/new" element={<CreateListing />} />
-                <Route path="listings/:id/edit" element={<EditListing />} />
-                <Route path="sub-agents" element={<SubAgents />} />
-                <Route path="theme" element={<ThemeSettings />} />
-            </Route>
+                {/* Agent Dashboard Routes */}
+                <Route
+                    path="/agent"
+                    element={
+                        <ProtectedRoute allowedRoles={['agent', 'sub_agent']}>
+                            <DashboardLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<AgentDashboard />} />
+                    <Route path="listings" element={<AgentListings />} />
+                    <Route path="listings/new" element={<CreateListing />} />
+                    <Route path="listings/:id/edit" element={<EditListing />} />
+                    <Route path="sub-agents" element={<SubAgents />} />
+                    <Route path="theme" element={<ThemeSettings />} />
+                    <Route path="notifications" element={<NotificationCenter />} />
+                    <Route path="banners" element={<BannerManagement />} />
+                </Route>
 
-            {/* Super Admin Routes */}
-            <Route
-                path="/admin"
-                element={
-                    <ProtectedRoute allowedRoles={['super_admin']}>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }
-            >
-                <Route index element={<AdminDashboard />} />
-                <Route path="agents" element={<AgentManagement />} />
-                <Route path="plans" element={<SubscriptionPlans />} />
-            </Route>
+                {/* Super Admin Routes */}
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute allowedRoles={['super_admin']}>
+                            <DashboardLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="agents" element={<AgentManagement />} />
+                    <Route path="plans" element={<SubscriptionPlans />} />
+                    <Route path="notifications" element={<NotificationCenter />} />
+                    <Route path="banners" element={<BannerManagement />} />
+                </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </WebSocketProvider>
     );
 }
 

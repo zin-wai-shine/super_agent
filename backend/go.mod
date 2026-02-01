@@ -7,6 +7,7 @@ require (
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.5.0
+	github.com/gorilla/websocket v1.5.1
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.18.0
 	gorm.io/driver/postgres v1.5.4
@@ -39,7 +40,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect

@@ -34,21 +34,28 @@ func CORSMiddleware() gin.HandlerFunc {
 // AuthMiddleware validates JWT tokens
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		tokenString := ""
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+
+		if authHeader != "" {
+			tokenParts := strings.Split(authHeader, " ")
+			if len(tokenParts) == 2 && tokenParts[0] == "Bearer" {
+				tokenString = tokenParts[1]
+			}
+		}
+
+		// Fallback to query param (for WebSocket)
+		if tokenString == "" {
+			tokenString = c.Query("token")
+		}
+
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
 			c.Abort()
 			return
 		}
 
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
-			c.Abort()
-			return
-		}
-
-		claims, err := utils.ValidateToken(tokenParts[1])
+		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 			c.Abort()
