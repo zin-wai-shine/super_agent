@@ -1,0 +1,58 @@
+package config
+
+import (
+	"fmt"
+	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+var DB *gorm.DB
+
+type Config struct {
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	JWTSecret  string
+	UploadPath string
+}
+
+func LoadConfig() *Config {
+	return &Config{
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBPort:     getEnv("DB_PORT", "5432"),
+		DBUser:     getEnv("DB_USER", "super_admin"),
+		DBPassword: getEnv("DB_PASSWORD", "super_secret_password"),
+		DBName:     getEnv("DB_NAME", "super_real_estate"),
+		JWTSecret:  getEnv("JWT_SECRET", "default_jwt_secret"),
+		UploadPath: getEnv("UPLOAD_PATH", "./uploads"),
+	}
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func InitDB(cfg *Config) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	DB = db
+	return db, nil
+}
