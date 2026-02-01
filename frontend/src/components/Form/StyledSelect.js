@@ -5,8 +5,8 @@ import Select from 'react-select';
 const customStyles = {
     control: (base, state) => ({
         ...base,
-        minHeight: '44px',
-        borderRadius: '8px',
+        minHeight: '38px',
+        borderRadius: '3px',
         borderColor: state.isFocused ? '#3b82f6' : '#e5e7eb',
         boxShadow: state.isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
         backgroundColor: state.isDisabled ? '#f9fafb' : '#ffffff',
@@ -17,17 +17,17 @@ const customStyles = {
     }),
     valueContainer: (base) => ({
         ...base,
-        padding: '4px 12px',
+        padding: '2px 8px',
     }),
     placeholder: (base) => ({
         ...base,
         color: '#9ca3af',
-        fontSize: '14px',
+        fontSize: '13px',
     }),
     singleValue: (base) => ({
         ...base,
         color: '#111827',
-        fontSize: '14px',
+        fontSize: '13px',
     }),
     input: (base) => ({
         ...base,
@@ -181,6 +181,28 @@ const StyledSelect = ({
         }
         : {};
 
+    const mergeStyles = (defaultStyles, overrideStyles) => {
+        if (!overrideStyles) return defaultStyles;
+        const merged = { ...defaultStyles };
+
+        Object.keys(overrideStyles).forEach(key => {
+            if (defaultStyles[key]) {
+                const originalFn = defaultStyles[key];
+                const overrideFn = overrideStyles[key];
+                merged[key] = (base, state) => overrideFn(originalFn(base, state), state);
+            } else {
+                merged[key] = overrideStyles[key];
+            }
+        });
+        return merged;
+    };
+
+    const stylesFromProps = props.styles || {};
+    const finalStyles = mergeStyles({ ...customStyles, ...errorStyles }, stylesFromProps);
+
+    // Remove styles from props to avoid overwriting
+    const { styles: _, ...restProps } = props;
+
     return (
         <Select
             options={options}
@@ -192,11 +214,11 @@ const StyledSelect = ({
             isDisabled={isDisabled}
             isMulti={isMulti}
             isLoading={isLoading}
-            styles={{ ...customStyles, ...errorStyles }}
+            styles={finalStyles}
             theme={customTheme}
             className={className}
             classNamePrefix="react-select"
-            {...props}
+            {...restProps}
         />
     );
 };

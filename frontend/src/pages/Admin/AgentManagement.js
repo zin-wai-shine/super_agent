@@ -15,18 +15,26 @@ import {
     PlusIcon,
     PencilIcon,
     TrashIcon,
-    UserGroupIcon,
     MagnifyingGlassIcon,
     PauseIcon,
     PlayIcon,
-    ChevronUpIcon,
-    ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    FunnelIcon,
+    LinkIcon,
+    UserGroupIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
     ClipboardDocumentIcon,
+    ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+
+import { format, startOfDay, endOfDay, isSameDay } from 'date-fns';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 const AgentManagement = () => {
     const [agents, setAgents] = useState([]);
@@ -34,6 +42,19 @@ const AgentManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
     const [globalFilter, setGlobalFilter] = useState('');
+
+    // New Filters
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [planFilter, setPlanFilter] = useState('all');
+    const [dateRange, setDateRange] = useState([
+        {
+            startDate: startOfDay(new Date()),
+            endDate: new Date(),
+            key: 'selection'
+        }
+    ]);
+    const [isDateFiltered, setIsDateFiltered] = useState(true); // Default: Filter by Today
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [sorting, setSorting] = useState([]);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -42,7 +63,6 @@ const AgentManagement = () => {
         setLoading(true);
         try {
             const response = await adminApi.getAgents({});
-            // API returns array directly, not nested in agents property
             const agentData = Array.isArray(response.data) ? response.data : (response.data.agents || []);
             setAgents(agentData);
         } catch (error) {
@@ -57,6 +77,46 @@ const AgentManagement = () => {
     useEffect(() => {
         fetchAgents();
     }, []);
+
+    // Filter Logic
+    const filteredAgents = useMemo(() => {
+        return agents.filter(agent => {
+            // Status Filter
+            // Normalize status to explicit boolean
+            const isSuspended = agent.is_suspended === true || agent.is_suspended === 1 || agent.is_active === false || agent.IsActive === false;
+            const matchesStatus = statusFilter === 'all'
+                ? true
+                : statusFilter === 'active' ? !isSuspended : isSuspended;
+
+            // Plan Filter
+            const planName = agent.subscription?.plan_name || agent.Subscription?.PlanName || '';
+            const matchesPlan = planFilter === 'all'
+                ? true
+                : planName.toLowerCase().includes(planFilter.toLowerCase());
+
+            // Date Range Filter
+            if (!isDateFiltered) return matchesStatus && matchesPlan;
+
+            const agentDate = new Date(agent.created_at || agent.CreatedAt);
+
+            // Invalid date check
+            if (isNaN(agentDate.getTime())) return false;
+
+            // Strict Range Comparison
+            const { startDate, endDate } = dateRange[0];
+
+            const start = startDate ? startOfDay(new Date(startDate)) : null;
+            const end = endDate ? endOfDay(new Date(endDate)) : null;
+
+            // Check boundaries
+            const afterStart = start ? agentDate >= start : true;
+            const beforeEnd = end ? agentDate <= end : true;
+
+            const matchesDate = afterStart && beforeEnd;
+
+            return matchesStatus && matchesPlan && matchesDate;
+        });
+    }, [agents, statusFilter, planFilter, dateRange, isDateFiltered]);
 
     const openModal = (agent = null) => {
         setEditingAgent(agent);
@@ -101,8 +161,8 @@ const AgentManagement = () => {
                 await adminApi.suspendAgent(id);
                 toast.success('Agent suspended');
             } else {
-                await adminApi.activateAgent(id);
-                toast.success('Agent activated');
+                await adminApi.reactivateAgent(id);
+                toast.success('Agent reactivated');
             }
             fetchAgents();
         } catch (error) {
@@ -120,6 +180,7 @@ const AgentManagement = () => {
             toast.error('Failed to delete');
         }
     };
+
 
     // Define table columns
     const columns = useMemo(
@@ -198,6 +259,18 @@ const AgentManagement = () => {
                 },
             },
             {
+                accessorKey: 'created_at',
+                header: 'Created At',
+                cell: ({ row }) => {
+                    const date = row.original.created_at || row.original.CreatedAt;
+                    return (
+                        <span className="text-gray-600 text-sm">
+                            {date ? format(new Date(date), 'MMM dd, yyyy') : '-'}
+                        </span>
+                    );
+                },
+            },
+            {
                 id: 'actions',
                 header: () => <div className="text-right">Actions</div>,
                 cell: ({ row }) => {
@@ -207,21 +280,21 @@ const AgentManagement = () => {
                         <div className="flex items-center justify-end space-x-1">
                             <button
                                 onClick={() => handleSuspend(agent.id || agent.ID, isActive)}
-                                className="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-md transition-colors"
                                 title={isActive ? 'Suspend' : 'Activate'}
                             >
                                 {isActive ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
                             </button>
                             <button
                                 onClick={() => openModal(agent)}
-                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
                                 title="Edit"
                             >
                                 <PencilIcon className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => handleDelete(agent.id || agent.ID)}
-                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                 title="Delete"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -236,7 +309,7 @@ const AgentManagement = () => {
 
     // Create table instance
     const table = useReactTable({
-        data: agents,
+        data: filteredAgents,
         columns,
         state: {
             globalFilter,
@@ -258,51 +331,167 @@ const AgentManagement = () => {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Agent Management</h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {agents.length} total agents
-                    </p>
-                </div>
-                <button onClick={() => openModal()} className="btn-primary flex items-center space-x-2">
-                    <PlusIcon className="w-5 h-5" />
-                    <span>Add Agent</span>
-                </button>
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Agent Management</h1>
+                <p className="text-sm text-gray-500 mt-1">
+                    {agents.length} total agents
+                </p>
             </div>
 
-            {/* Search & Filters */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Global Search */}
-                    <div className="relative flex-1">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            {/* Toolbar: Actions & Filters */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+
+                {/* LEFT: Add Button & Filters */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <button onClick={() => openModal()} className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap w-full sm:w-auto px-4 h-[38px] text-sm shadow-sm">
+                        <PlusIcon className="w-5 h-5" />
+                        <span>Add Agent</span>
+                    </button>
+
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        {/* Status Filter */}
+                        <div className="w-full sm:w-36">
+                            <StyledSelect
+                                options={[
+                                    { value: 'all', label: 'All Status' },
+                                    { value: 'active', label: 'Active' },
+                                    { value: 'suspended', label: 'Suspended' },
+                                ]}
+                                value={{ value: statusFilter, label: statusFilter === 'all' ? 'All Status' : (statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)) }}
+                                onChange={(opt) => setStatusFilter(opt.value)}
+                                isSearchable={false}
+                                placeholder="Status"
+                            />
+                        </div>
+
+                        {/* Plan Filter */}
+                        <div className="w-full sm:w-36">
+                            <StyledSelect
+                                options={[
+                                    { value: 'all', label: 'All Plans' },
+                                    { value: 'starter', label: 'Starter' },
+                                    { value: 'professional', label: 'Professional' },
+                                    { value: 'enterprise', label: 'Enterprise' },
+                                ]}
+                                value={{ value: planFilter, label: planFilter === 'all' ? 'All Plans' : (planFilter.charAt(0).toUpperCase() + planFilter.slice(1)) }}
+                                onChange={(opt) => setPlanFilter(opt.value)}
+                                isSearchable={false}
+                                placeholder="Plan"
+                            />
+                        </div>
+
+                        {/* Date Filters */}
+                        <div className="relative flex items-center gap-2">
+                            {/* Date Range Button */}
+                            <button
+                                onClick={() => setShowDatePicker(!showDatePicker)}
+                                className={`input-field h-[38px] text-sm px-3 flex items-center justify-between gap-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 w-64 ${isDateFiltered ? 'bg-white border-gray-200 text-gray-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="truncate">
+                                        {isDateFiltered
+                                            ? `${format(dateRange[0].startDate, "MMM dd, yyyy")} - ${format(dateRange[0].endDate, "MMM dd, yyyy")}`
+                                            : 'All Time'
+                                        }
+                                    </span>
+                                </div>
+                                <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                            </button>
+
+                            {/* Reset Button - Only show if not filtering by Today */}
+                            {(!isDateFiltered || !isSameDay(dateRange[0].startDate, new Date()) || !isSameDay(dateRange[0].endDate, new Date())) && (
+                                <button
+                                    onClick={() => {
+                                        setDateRange([{
+                                            startDate: startOfDay(new Date()),
+                                            endDate: new Date(),
+                                            key: 'selection'
+                                        }]);
+                                        setIsDateFiltered(true);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                                    title="Reset to Today"
+                                >
+                                    <ArrowPathIcon className="w-5 h-5" />
+                                </button>
+                            )}
+
+
+                            {showDatePicker && (
+                                <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-md overflow-hidden border border-gray-100 bg-white">
+                                    <DateRange
+                                        editableDateInputs={true}
+                                        onChange={item => {
+                                            setDateRange([item.selection]);
+                                            setIsDateFiltered(true);
+                                        }}
+                                        moveRangeOnFirstSelection={false}
+                                        ranges={dateRange}
+                                        rangeColors={['#2563eb']} // primary-600
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT: Search & Page Size */}
+                <div className="flex items-center gap-3 w-full lg:w-auto">
+                    {/* Search - Compact */}
+                    <div className="relative w-full lg:w-56 h-[38px]">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
-                            placeholder="Search agents by name, email, domain..."
-                            className="input-field pl-10 py-2"
+                            placeholder="Search..."
+                            className="input-field pl-9 h-[38px] text-sm flex items-center"
                         />
                     </div>
 
-                    {/* Page Size Selector */}
-                    <div className="w-40">
-                        <StyledSelect
-                            options={[
-                                { value: 5, label: '📄 Show 5' },
-                                { value: 10, label: '📄 Show 10' },
-                                { value: 20, label: '📄 Show 20' },
-                                { value: 50, label: '📄 Show 50' },
-                            ]}
-                            value={{
-                                value: table.getState().pagination.pageSize,
-                                label: `📄 Show ${table.getState().pagination.pageSize}`
-                            }}
-                            onChange={(opt) => table.setPageSize(opt.value)}
-                            isSearchable={false}
-                            isClearable={false}
-                        />
+                    {/* Page Size - "Show" outside */}
+                    <div className="flex items-center space-x-2 h-[38px]">
+                        <span className="text-sm text-gray-500 font-medium">Show</span>
+                        <div className="w-16">
+                            <StyledSelect
+                                options={[
+                                    { value: 5, label: '5' },
+                                    { value: 10, label: '10' },
+                                    { value: 20, label: '20' },
+                                    { value: 50, label: '50' },
+                                ]}
+                                value={{
+                                    value: table.getState().pagination.pageSize,
+                                    label: `${table.getState().pagination.pageSize}`
+                                }}
+                                onChange={(opt) => table.setPageSize(opt.value)}
+                                isSearchable={false}
+                                components={{
+                                    DropdownIndicator: () => null,
+                                    IndicatorSeparator: () => null
+                                }}
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        minHeight: '38px',
+                                        height: '38px',
+                                        textAlign: 'center',
+                                        cursor: 'pointer'
+                                    }),
+                                    valueContainer: (base) => ({
+                                        ...base,
+                                        justifyContent: 'center',
+                                        padding: '0'
+                                    }),
+                                    singleValue: (base) => ({
+                                        ...base,
+                                        margin: '0',
+                                        textAlign: 'center',
+                                        width: '100%'
+                                    })
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

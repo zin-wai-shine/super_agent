@@ -8,12 +8,12 @@ module.exports = {
     extend: {
       borderRadius: {
         'none': '0',
-        'sm': '0.125rem', // 2px
-        DEFAULT: '0.25rem', // 4px
-        'md': '0.3rem', // 4.8px
-        'lg': '0.375rem', // 6px
-        'xl': '0.5rem', // 8px
-        '2xl': '0.625rem', // 10px
+        'sm': '3px',
+        DEFAULT: '3px',
+        'md': '3px',
+        'lg': '3px',
+        'xl': '3px',
+        '2xl': '3px',
         '3xl': '0.75rem', // 12px
         'full': '9999px',
       },
