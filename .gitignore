@@ -1,0 +1,84 @@
+# Environment and Credentials
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+*.env
+secrets.yaml
+secrets.json
+credentials.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+data/
+db/
+postgres_data/
+mysql_data/
+mongo_data/
+
+# Docker volumes
+docker-data/
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Build outputs
+frontend/build/
+frontend/dist/
+backend/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE and Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Go specific
+vendor/
+
+# Uploaded files (if you want to exclude user uploads)
+# uploads/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Package lock files (optional - uncomment if you want to ignore these)
+# package-lock.json
+# yarn.lock
+
+# Gemini/AI agent specific
+.gemini/
