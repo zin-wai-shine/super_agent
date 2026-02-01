@@ -58,10 +58,29 @@ func (sac *SuperAdminController) CreateAgent(c *gin.Context) {
 		Email          string `json:"email" binding:"required,email"`
 		Password       string `json:"password" binding:"required,min=8"`
 		Phone          string `json:"phone"`
+		DomainType     string `json:"domain_type"`   // "subdomain" or "custom"
+		CustomDomain   string `json:"custom_domain"` // e.g., "agent.com"
 		SubscriptionID string `json:"subscription_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Default domain type to subdomain
+	if req.DomainType == "" {
+		req.DomainType = models.DomainTypeSubdomain
+	}
+
+	// Validate domain type
+	if req.DomainType != models.DomainTypeSubdomain && req.DomainType != models.DomainTypeCustom {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid domain type. Must be 'subdomain' or 'custom'"})
+		return
+	}
+
+	// If custom domain type, require custom domain
+	if req.DomainType == models.DomainTypeCustom && req.CustomDomain == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Custom domain is required for custom domain type"})
 		return
 	}
 
@@ -70,6 +89,14 @@ func (sac *SuperAdminController) CreateAgent(c *gin.Context) {
 	if err := sac.db.Where("subdomain = ?", req.Subdomain).First(&existing).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Subdomain already taken"})
 		return
+	}
+
+	// Check custom domain availability if provided
+	if req.CustomDomain != "" {
+		if err := sac.db.Where("custom_domain = ?", req.CustomDomain).First(&existing).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Custom domain already registered"})
+			return
+		}
 	}
 
 	// Check email availability
@@ -84,18 +111,43 @@ func (sac *SuperAdminController) CreateAgent(c *gin.Context) {
 
 	// Create agent
 	agent := models.Agent{
-		Name:      req.Name,
-		Subdomain: req.Subdomain,
-		Email:     req.Email,
-		Phone:     req.Phone,
-		IsActive:  true,
+		Name:         req.Name,
+		Subdomain:    req.Subdomain,
+		DomainType:   req.DomainType,
+		CustomDomain: req.CustomDomain,
+		Email:        req.Email,
+		Phone:        req.Phone,
+		IsActive:     true,
 	}
 
-	// Set subscription if provided
+	// Set the computed domain
+	if req.DomainType == models.DomainTypeCustom && req.CustomDomain != "" {
+		agent.Domain = req.CustomDomain
+	} else {
+		agent.Domain = req.Subdomain + ".super.app"
+	}
+
+	// Set subscription if provided, otherwise auto-assign based on domain type
 	if req.SubscriptionID != "" {
 		subID, err := uuid.Parse(req.SubscriptionID)
 		if err == nil {
 			agent.SubscriptionID = &subID
+		}
+	} else {
+		// Auto-assign plan based on domain type
+		var plan models.Subscription
+		if req.DomainType == models.DomainTypeCustom {
+			// Find a custom domain plan
+			if err := sac.db.Where("domain_type = ? AND is_active = ?", models.DomainTypeCustom, true).
+				Order("price ASC").First(&plan).Error; err == nil {
+				agent.SubscriptionID = &plan.ID
+			}
+		} else {
+			// Find a subdomain plan (usually free tier)
+			if err := sac.db.Where("domain_type = ? AND is_active = ?", models.DomainTypeSubdomain, true).
+				Order("price ASC").First(&plan).Error; err == nil {
+				agent.SubscriptionID = &plan.ID
+			}
 		}
 	}
 

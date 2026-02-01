@@ -36,7 +36,9 @@ type Agent struct {
 	ID             uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Name           string         `gorm:"size:200;not null" json:"name"`
 	Subdomain      string         `gorm:"size:100;uniqueIndex" json:"subdomain"`
-	Domain         string         `gorm:"size:255" json:"domain,omitempty"`
+	DomainType     string         `gorm:"size:20;default:'subdomain'" json:"domain_type"` // subdomain or custom
+	CustomDomain   string         `gorm:"size:255" json:"custom_domain,omitempty"`        // e.g., agent.com
+	Domain         string         `gorm:"size:255" json:"domain,omitempty"`               // Computed full domain
 	Logo           string         `gorm:"size:500" json:"logo,omitempty"`
 	Description    string         `gorm:"type:text" json:"description,omitempty"`
 	Phone          string         `gorm:"size:50" json:"phone,omitempty"`
@@ -68,22 +70,30 @@ type Theme struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 }
 
+// Domain type constants
+const (
+	DomainTypeSubdomain = "subdomain" // e.g., agent.super.app
+	DomainTypeCustom    = "custom"    // e.g., agent.com
+)
+
 // Subscription represents subscription plans
 type Subscription struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	PlanName     string         `gorm:"size:100;not null" json:"plan_name"`
-	Description  string         `gorm:"type:text" json:"description,omitempty"`
-	Price        float64        `gorm:"type:decimal(10,2);default:0" json:"price"`
-	Duration     int            `gorm:"default:30" json:"duration"` // days
-	MaxListings  int            `gorm:"default:10" json:"max_listings"`
-	MaxSubAgents int            `gorm:"default:2" json:"max_sub_agents"`
-	Features     string         `gorm:"type:text" json:"features,omitempty"` // JSON string
-	IsActive     bool           `gorm:"default:true" json:"is_active"`
-	StartDate    *time.Time     `json:"start_date,omitempty"`
-	EndDate      *time.Time     `json:"end_date,omitempty"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	PlanName          string         `gorm:"size:100;not null" json:"plan_name"`
+	Description       string         `gorm:"type:text" json:"description,omitempty"`
+	DomainType        string         `gorm:"size:20;default:'subdomain'" json:"domain_type"` // subdomain or custom
+	Price             float64        `gorm:"type:decimal(10,2);default:0" json:"price"`
+	Duration          int            `gorm:"default:30" json:"duration"` // days
+	MaxListings       int            `gorm:"default:10" json:"max_listings"`
+	MaxSubAgents      int            `gorm:"default:2" json:"max_sub_agents"`
+	AllowCustomDomain bool           `gorm:"default:false" json:"allow_custom_domain"`
+	Features          string         `gorm:"type:text" json:"features,omitempty"` // JSON string
+	IsActive          bool           `gorm:"default:true" json:"is_active"`
+	StartDate         *time.Time     `json:"start_date,omitempty"`
+	EndDate           *time.Time     `json:"end_date,omitempty"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // Listing represents a property listing

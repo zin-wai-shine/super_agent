@@ -31,14 +31,24 @@ const SubscriptionPlans = () => {
         setEditingPlan(plan);
         if (plan) {
             reset({
-                name: plan.name,
+                name: plan.plan_name || plan.name,
+                domain_type: plan.domain_type || 'subdomain',
                 price: plan.price,
                 max_listings: plan.max_listings,
                 max_sub_agents: plan.max_sub_agents,
-                features: plan.features?.join(', ') || '',
+                allow_custom_domain: plan.allow_custom_domain || false,
+                features: plan.features?.join ? plan.features.join(', ') : (plan.features || ''),
             });
         } else {
-            reset({ name: '', price: '', max_listings: 10, max_sub_agents: 1, features: '' });
+            reset({
+                name: '',
+                domain_type: 'subdomain',
+                price: '',
+                max_listings: 10,
+                max_sub_agents: 1,
+                allow_custom_domain: false,
+                features: ''
+            });
         }
         setShowModal(true);
     };
@@ -46,11 +56,13 @@ const SubscriptionPlans = () => {
     const onSubmit = async (data) => {
         try {
             const payload = {
-                ...data,
+                plan_name: data.name,
+                domain_type: data.domain_type,
                 price: parseFloat(data.price),
                 max_listings: parseInt(data.max_listings),
                 max_sub_agents: parseInt(data.max_sub_agents),
-                features: data.features.split(',').map((f) => f.trim()).filter(Boolean),
+                allow_custom_domain: data.allow_custom_domain || false,
+                features: data.features ? data.features.split(',').map((f) => f.trim()).filter(Boolean).join(',') : '',
             };
 
             if (editingPlan) {
@@ -116,7 +128,13 @@ const SubscriptionPlans = () => {
                                 <div className="inline-flex p-3 bg-primary-50 rounded-xl mb-4">
                                     <CreditCardIcon className="w-8 h-8 text-primary-600" />
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+                                <h3 className="text-xl font-bold text-gray-900">{plan.plan_name || plan.name}</h3>
+                                <span className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full ${plan.domain_type === 'custom'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-blue-100 text-blue-700'
+                                    }`}>
+                                    {plan.domain_type === 'custom' ? '🔗 Custom Domain' : '🌐 Subdomain'}
+                                </span>
                                 <div className="mt-4">
                                     <span className="text-4xl font-bold text-gray-900">{formatPrice(plan.price)}</span>
                                     <span className="text-gray-500">/month</span>
@@ -181,6 +199,16 @@ const SubscriptionPlans = () => {
                                 <input type="text" className="input-field" {...register('name', { required: true })} />
                             </div>
                             <div>
+                                <label className="input-label">Domain Type</label>
+                                <select className="input-field" {...register('domain_type', { required: true })}>
+                                    <option value="subdomain">🌐 Subdomain (agent.super.app)</option>
+                                    <option value="custom">🔗 Custom Domain (agent.com)</option>
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    This determines which agents can use this plan
+                                </p>
+                            </div>
+                            <div>
                                 <label className="input-label">Price (THB/month)</label>
                                 <input type="number" className="input-field" {...register('price', { required: true })} />
                             </div>
@@ -193,6 +221,15 @@ const SubscriptionPlans = () => {
                                     <label className="input-label">Max Sub-Agents</label>
                                     <input type="number" className="input-field" {...register('max_sub_agents', { required: true })} />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="input-label flex items-center space-x-2">
+                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Allow Custom Domain</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Enable to allow agents to upgrade to custom domains later
+                                </p>
                             </div>
                             <div>
                                 <label className="input-label">Features (comma-separated)</label>

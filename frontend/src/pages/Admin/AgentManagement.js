@@ -64,21 +64,27 @@ const AgentManagement = () => {
                 name: agent.name,
                 email: agent.owner_email,
                 subdomain: agent.subdomain,
+                domain_type: agent.domain_type || 'subdomain',
                 custom_domain: agent.custom_domain,
             });
         } else {
-            reset({ name: '', email: '', password: '', subdomain: '' });
+            reset({ name: '', email: '', password: '', subdomain: '', domain_type: 'subdomain', custom_domain: '' });
         }
         setShowModal(true);
     };
 
     const onSubmit = async (data) => {
         try {
+            const payload = {
+                ...data,
+                domain_type: data.domain_type || 'subdomain',
+            };
+
             if (editingAgent) {
-                await adminApi.updateAgent(editingAgent.id, data);
+                await adminApi.updateAgent(editingAgent.id, payload);
                 toast.success('Agent updated!');
             } else {
-                await adminApi.createAgent(data);
+                await adminApi.createAgent(payload);
                 toast.success('Agent created!');
             }
             setShowModal(false);
@@ -136,9 +142,17 @@ const AgentManagement = () => {
                 accessorKey: 'subdomain',
                 header: 'Domain',
                 cell: ({ row }) => (
-                    <span className="text-sm text-gray-600">
-                        {row.original.custom_domain || `${row.original.subdomain}.localhost`}
-                    </span>
+                    <div>
+                        <div className="text-sm text-gray-900">
+                            {row.original.custom_domain || row.original.domain || `${row.original.subdomain}.super.app`}
+                        </div>
+                        <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${row.original.domain_type === 'custom'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                            {row.original.domain_type === 'custom' ? '🔗 Custom' : '🌐 Subdomain'}
+                        </span>
+                    </div>
                 ),
             },
             {
@@ -418,7 +432,7 @@ const AgentManagement = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-scale-in">
+                    <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-scale-in">
                         <h2 className="text-xl font-bold mb-6">
                             {editingAgent ? 'Edit Agent' : 'Create Agent'}
                         </h2>
@@ -460,6 +474,43 @@ const AgentManagement = () => {
                                     </div>
                                 </>
                             )}
+
+                            {/* Domain Type Selection */}
+                            <div>
+                                <label className="input-label">Domain Type *</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
+                                        ? 'border-primary-500 bg-primary-50'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}>
+                                        <input
+                                            type="radio"
+                                            value="subdomain"
+                                            defaultChecked
+                                            {...register('domain_type')}
+                                            className="sr-only"
+                                        />
+                                        <span className="text-2xl mb-2">🌐</span>
+                                        <span className="font-medium text-sm">Subdomain</span>
+                                        <span className="text-xs text-gray-500 mt-1">Free Plan</span>
+                                    </label>
+                                    <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${editingAgent?.domain_type === 'custom'
+                                        ? 'border-purple-500 bg-purple-50'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}>
+                                        <input
+                                            type="radio"
+                                            value="custom"
+                                            {...register('domain_type')}
+                                            className="sr-only"
+                                        />
+                                        <span className="text-2xl mb-2">🔗</span>
+                                        <span className="font-medium text-sm">Custom Domain</span>
+                                        <span className="text-xs text-gray-500 mt-1">Premium Plan</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="input-label">Subdomain *</label>
                                 <div className="flex">
@@ -470,20 +521,25 @@ const AgentManagement = () => {
                                         {...register('subdomain', { required: 'Subdomain is required' })}
                                     />
                                     <span className="inline-flex items-center px-4 bg-gray-100 border border-l-0 rounded-r-xl text-gray-500 text-sm">
-                                        .localhost
+                                        .super.app
                                     </span>
                                 </div>
                                 {errors.subdomain && <p className="text-sm text-red-500 mt-1">{errors.subdomain.message}</p>}
                             </div>
+
                             <div>
-                                <label className="input-label">Custom Domain (optional)</label>
+                                <label className="input-label">Custom Domain (for Premium)</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="www.example.com"
+                                    placeholder="www.yourcompany.com"
                                     {...register('custom_domain')}
                                 />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Required if selecting Custom Domain type
+                                </p>
                             </div>
+
                             <div className="flex justify-end space-x-3 pt-4">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">
                                     Cancel
