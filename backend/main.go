@@ -48,6 +48,9 @@ func main() {
 	// Seed initial data
 	seedInitialData(db)
 
+	// Seed fake data (agents and listings) if needed
+	utils.SeedFakeData(db)
+
 	// Create uploads directory
 	if err := os.MkdirAll(cfg.UploadPath, os.ModePerm); err != nil {
 		log.Printf("Warning: Could not create uploads directory: %v", err)

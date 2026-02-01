@@ -218,13 +218,14 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 	id := c.Param("id")
 
 	var agent models.Agent
-	if err := sac.db.First(&agent, "id = ?", id).Error; err != nil {
+	if err := sac.db.Preload("Users").First(&agent, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
 		return
 	}
 
 	var req struct {
 		Name           string `json:"name"`
+		Email          string `json:"email"` // Owner email
 		Domain         string `json:"domain"`
 		Phone          string `json:"phone"`
 		Description    string `json:"description"`
@@ -252,6 +253,26 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 		subID, err := uuid.Parse(req.SubscriptionID)
 		if err == nil {
 			updates["subscription_id"] = subID
+		}
+	}
+
+	// Handle email update
+	if req.Email != "" && req.Email != agent.Email {
+		// Check if email is taken by another user
+		var existingUser models.User
+		if err := sac.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
+			return
+		}
+
+		updates["email"] = req.Email
+
+		// Update associated owner user
+		// Find the user with role 'agent' for this agent
+		if err := sac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agent.ID, models.RoleAgent).
+			Update("email", req.Email).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update owner email"})
+			return
 		}
 	}
 

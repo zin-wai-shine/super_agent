@@ -147,8 +147,8 @@ const AgentManagement = () => {
                             {row.original.custom_domain || row.original.domain || `${row.original.subdomain}.super.app`}
                         </div>
                         <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${row.original.domain_type === 'custom'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-blue-100 text-blue-700'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-blue-100 text-blue-700'
                             }`}>
                             {row.original.domain_type === 'custom' ? '🔗 Custom' : '🌐 Subdomain'}
                         </span>
@@ -446,33 +446,32 @@ const AgentManagement = () => {
                                 />
                                 {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
                             </div>
+                            <div>
+                                <label className="input-label">Owner Email *</label>
+                                <input
+                                    type="email"
+                                    className={`input-field ${errors.email ? 'border-red-300' : ''}`}
+                                    {...register('email', {
+                                        required: 'Email is required',
+                                        pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+                                    })}
+                                />
+                                {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
+                            </div>
+
                             {!editingAgent && (
-                                <>
-                                    <div>
-                                        <label className="input-label">Owner Email *</label>
-                                        <input
-                                            type="email"
-                                            className={`input-field ${errors.email ? 'border-red-300' : ''}`}
-                                            {...register('email', {
-                                                required: 'Email is required',
-                                                pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                                            })}
-                                        />
-                                        {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="input-label">Password *</label>
-                                        <input
-                                            type="password"
-                                            className={`input-field ${errors.password ? 'border-red-300' : ''}`}
-                                            {...register('password', {
-                                                required: 'Password is required',
-                                                minLength: { value: 8, message: 'Password must be at least 8 characters' }
-                                            })}
-                                        />
-                                        {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
-                                    </div>
-                                </>
+                                <div>
+                                    <label className="input-label">Password *</label>
+                                    <input
+                                        type="password"
+                                        className={`input-field ${errors.password ? 'border-red-300' : ''}`}
+                                        {...register('password', {
+                                            required: 'Password is required',
+                                            minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                                        })}
+                                    />
+                                    {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
+                                </div>
                             )}
 
                             {/* Domain Type Selection */}
