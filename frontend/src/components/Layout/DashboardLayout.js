@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import NotificationBell from '../Common/NotificationBell';
-import BannerDisplay from '../Common/BannerDisplay';
+
 import Logo from '../Common/Logo';
 import {
     HomeIcon,
@@ -51,6 +51,7 @@ const DashboardLayout = () => {
         { name: 'Theme', href: '/agent/theme', icon: SwatchIcon },
         { name: 'Notifications', href: '/agent/notifications', icon: BellIcon },
         { name: 'Banners', href: '/agent/banners', icon: MegaphoneIcon },
+        { name: 'Settings', href: '/agent/settings', icon: CogIcon },
     ];
 
     const adminNavigation = [
@@ -207,7 +208,7 @@ const DashboardLayout = () => {
 
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dashboard-dark p-4 sm:p-6 lg:p-8 relative w-full transition-colors duration-200">
-                    <BannerDisplay />
+
                     <Outlet />
                 </main>
             </div>

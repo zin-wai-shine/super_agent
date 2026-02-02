@@ -4,8 +4,8 @@ import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
-import BannerDisplay from '../../components/Common/BannerDisplay';
-import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
+
+
 import {
     FunnelIcon,
     Squares2X2Icon,
@@ -19,13 +19,33 @@ import {
 const ListingsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [listings, setListings] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
+    const observerTarget = React.useRef(null);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState('grid');
     const [showMap, setShowMap] = useState(false);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
+    const [agentId, setAgentId] = useState(null);
+
+    useEffect(() => {
+        const fetchAgentInfo = async () => {
+            try {
+                const response = await publicApi.getAgentInfo();
+                setPriceLimits({
+                    min: parseFloat(response.data.min_price_limit) || 0,
+                    max: parseFloat(response.data.max_price_limit) || 0
+                });
+                setAgentId(response.data.id);
+            } catch (error) {
+                console.error('Failed to fetch agent info:', error);
+            }
+        };
+        fetchAgentInfo();
+    }, []);
 
     // Filter states
     const [filters, setFilters] = useState({
@@ -64,28 +84,63 @@ const ListingsPage = () => {
     ];
 
     const fetchListings = async () => {
+        if (page === 1) {
+            setInitialLoading(true);
+        }
         setLoading(true);
         try {
             const params = {
                 page,
-                limit: 12,
+                limit: 5,
                 ...Object.fromEntries(
                     Object.entries(filters).filter(([_, v]) => v !== '')
                 ),
             };
+
+            // Add artificial delay for smoother UX
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             const response = await publicApi.getListings(params);
-            setListings(response.data.listings || []);
+
+            if (page === 1) {
+                setListings(response.data.listings || []);
+            } else {
+                setListings(prev => [...prev, ...(response.data.listings || [])]);
+            }
+
             setTotal(response.data.total || 0);
         } catch (error) {
             console.error('Failed to fetch listings:', error);
         } finally {
             setLoading(false);
+            setInitialLoading(false);
         }
     };
 
     useEffect(() => {
         fetchListings();
     }, [page, filters]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && !loading && listings.length < total) {
+                    setPage(prev => prev + 1);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
+            }
+        };
+    }, [loading, listings.length, total]);
 
     const handleFilterChange = (key, value) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
@@ -189,7 +244,8 @@ const ListingsPage = () => {
             <div className="flex items-center gap-2">
                 <input
                     type="number"
-                    placeholder="Min Price"
+                    placeholder={priceLimits.min > 0 ? `Min: ${priceLimits.min}` : "Min Price"}
+                    min={priceLimits.min > 0 ? priceLimits.min : 0}
                     value={filters.min_price}
                     onChange={(e) => handleFilterChange('min_price', e.target.value)}
                     className="w-24 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
@@ -197,7 +253,8 @@ const ListingsPage = () => {
                 <span className="text-gray-400">-</span>
                 <input
                     type="number"
-                    placeholder="Max Price"
+                    placeholder={priceLimits.max > 0 ? `Max: ${priceLimits.max}` : "Max Price"}
+                    max={priceLimits.max > 0 ? priceLimits.max : undefined}
                     value={filters.max_price}
                     onChange={(e) => handleFilterChange('max_price', e.target.value)}
                     className="w-24 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
@@ -291,14 +348,16 @@ const ListingsPage = () => {
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
                                             type="number"
-                                            placeholder="Min"
+                                            placeholder={priceLimits.min > 0 ? `Min: ${priceLimits.min}` : "Min"}
+                                            min={priceLimits.min > 0 ? priceLimits.min : 0}
                                             value={filters.min_price}
                                             onChange={(e) => handleFilterChange('min_price', e.target.value)}
                                             className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                                         />
                                         <input
                                             type="number"
-                                            placeholder="Max"
+                                            placeholder={priceLimits.max > 0 ? `Max: ${priceLimits.max}` : "Max"}
+                                            max={priceLimits.max > 0 ? priceLimits.max : undefined}
                                             value={filters.max_price}
                                             onChange={(e) => handleFilterChange('max_price', e.target.value)}
                                             className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
@@ -340,12 +399,9 @@ const ListingsPage = () => {
 
                     {/* Right Column: Listings & Content (Span 8) */}
                     <div className="lg:col-span-8 flex flex-col min-w-0 order-2">
-                        {/* Banners */}
-                        <div className="mb-8">
-                            <BannerDisplay targetRole="all" />
-                        </div>
 
-                        <ShowcaseBanners />
+
+
 
                         {/* Control Bar */}
                         <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mt-8">
@@ -391,37 +447,43 @@ const ListingsPage = () => {
                         )}
 
                         {/* Listings Grid */}
-                        {loading ? (
+                        {initialLoading ? (
                             <div className={`grid gap-6 ${viewMode === 'grid'
                                 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                                 : 'grid-cols-1'
                                 }`}>
-                                {[...Array(6)].map((_, i) => (
+                                {[...Array(5)].map((_, i) => (
                                     <div key={i} className="bg-white rounded-2xl h-80 animate-pulse border border-gray-100 shadow-sm" />
                                 ))}
                             </div>
                         ) : listings.length > 0 ? (
                             <>
                                 <div className={`grid gap-6 ${viewMode === 'grid'
-                                    ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+                                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                                     : 'grid-cols-1'
                                     }`}>
                                     {listings.map((listing) => (
                                         <ListingCard key={listing.id} listing={listing} viewMode={viewMode} />
                                     ))}
+
+                                    {/* Loading Skeletons for Scroll */}
+                                    {loading && !initialLoading && (
+                                        [...Array(5)].map((_, i) => (
+                                            <div key={`skeleton-${i}`} className="bg-white rounded-2xl h-80 animate-pulse border border-gray-100 shadow-sm" />
+                                        ))
+                                    )}
                                 </div>
 
-                                {/* Pagination/Load more */}
-                                {listings.length < total && (
-                                    <div className="mt-12 text-center">
-                                        <button
-                                            onClick={() => setPage((p) => p + 1)}
-                                            className="bg-white px-8 py-3 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                                        >
-                                            Load More Properties
-                                        </button>
-                                    </div>
-                                )}
+                                {/* Infinite Scroll Target */}
+                                <div ref={observerTarget} className="h-10 mt-8 flex items-center justify-center">
+                                    {loading && !initialLoading && (
+                                        <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                                        </div>
+                                    )}
+                                </div>
                             </>
                         ) : (
                             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">

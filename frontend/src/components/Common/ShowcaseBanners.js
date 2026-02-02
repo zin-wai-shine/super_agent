@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { bannerApi, publicApi } from '../../services/api';
 import { SparklesIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
-const ShowcaseBanners = () => {
+const ShowcaseBanners = ({ agentId }) => {
     const navigate = useNavigate();
     const [agentBanners, setAgentBanners] = useState([]);
     const [companyBanners, setCompanyBanners] = useState([]);
@@ -14,22 +14,16 @@ const ShowcaseBanners = () => {
     useEffect(() => {
         const fetchShowcaseBanners = async () => {
             try {
-                // Fetch Agent Banners (where agent_id is NOT null - handled by backend when agent_id is passed or implicitly)
-                // Note: The backend GetBanners logic currently filters by agent_id or Platform (agent_id IS NULL)
-                // We'll fetch platform ones as "Company" and we might need to adjust backend or fetch all if possible.
-                // For now, let's fetch platform banners as company and a sample "agent" banner if we can.
+                const params = { target_role: 'public' };
+                if (agentId) params.agent_id = agentId;
 
-                const companyPromise = publicApi.getPublicBanners({ target_role: 'public' });
-                // We might need a way to specifically get banners created by agents for public view.
-                // Assuming target_role 'public' or 'all' with agent_id != null on backend.
-                // For now, let's get what's available and categorize.
+                const response = await publicApi.getPublicBanners(params);
+                const banners = response.data || [];
 
-                const [companyRes] = await Promise.all([companyPromise]);
-
-                const banners = companyRes.data || [];
-                // Split into Agent (creator has agent role/agentID) and Company (platform)
-                setCompanyBanners(banners.filter(b => b.agent_id === null).slice(0, 1));
-                setAgentBanners(banners.filter(b => b.agent_id !== null).slice(0, 1));
+                // Categorize banners: Agent (has agent_id) vs Company (platform, agent_id is null/undefined)
+                // Use == null to catch both null and undefined
+                setCompanyBanners(banners.filter(b => b.agent_id == null).slice(0, 1));
+                setAgentBanners(banners.filter(b => b.agent_id != null).slice(0, 1));
 
             } catch (error) {
                 console.error("Failed to fetch showcase banners", error);
@@ -39,7 +33,7 @@ const ShowcaseBanners = () => {
         };
 
         fetchShowcaseBanners();
-    }, []);
+    }, [agentId]); // Re-fetch if agentId changes
 
     if (loading) return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -77,7 +71,7 @@ const ShowcaseBanners = () => {
                     src={imageUrl}
                     alt={banner.title}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' }}
+                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80' }}
                 />
 
                 {/* Overlay Gradient */}

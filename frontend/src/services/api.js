@@ -95,6 +95,7 @@ export const agentApi = {
     deleteSubAgent: (id) => api.delete(`/agent/sub-agents/${id}`),
     getTheme: () => api.get('/agent/theme'),
     updateTheme: (data) => api.put('/agent/theme', data),
+    updateSettings: (data) => api.put('/agent/settings', data),
     uploadLogo: (file) => {
         const formData = new FormData();
         formData.append('file', file);

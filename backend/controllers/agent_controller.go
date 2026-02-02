@@ -417,3 +417,38 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 		"recent_listings": recentListings,
 	})
 }
+
+// UpdateSettings updates agent settings (price limits, etc.)
+func (ac *AgentController) UpdateSettings(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var req struct {
+		MinPriceLimit float64 `json:"min_price_limit"`
+		MaxPriceLimit float64 `json:"max_price_limit"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate limits
+	if req.MaxPriceLimit < req.MinPriceLimit && req.MaxPriceLimit != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Max price limit cannot be less than min price limit"})
+		return
+	}
+
+	if err := ac.db.Model(&models.Agent{}).Where("id = ?", agentID).Updates(map[string]interface{}{
+		"min_price_limit": req.MinPriceLimit,
+		"max_price_limit": req.MaxPriceLimit,
+	}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Settings updated successfully", "data": req})
+}

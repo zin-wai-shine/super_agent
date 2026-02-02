@@ -44,6 +44,8 @@ type Agent struct {
 	Phone          string         `gorm:"size:50" json:"phone,omitempty"`
 	Email          string         `gorm:"size:255" json:"email,omitempty"`
 	Address        string         `gorm:"type:text" json:"address,omitempty"`
+	MinPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"min_price_limit"`
+	MaxPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"max_price_limit"`
 	IsActive       bool           `gorm:"default:true" json:"is_active"`
 	IsSuspended    bool           `gorm:"default:false" json:"is_suspended"`
 	SubscriptionID *uuid.UUID     `gorm:"type:uuid" json:"subscription_id,omitempty"`

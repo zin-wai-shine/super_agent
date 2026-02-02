@@ -205,13 +205,15 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 
 	// Public info only
 	c.JSON(http.StatusOK, gin.H{
-		"id":          agent.ID,
-		"name":        agent.Name,
-		"logo":        agent.Logo,
-		"description": agent.Description,
-		"phone":       agent.Phone,
-		"email":       agent.Email,
-		"address":     agent.Address,
-		"theme":       agent.Theme,
+		"id":              agent.ID,
+		"name":            agent.Name,
+		"logo":            agent.Logo,
+		"description":     agent.Description,
+		"phone":           agent.Phone,
+		"email":           agent.Email,
+		"address":         agent.Address,
+		"theme":           agent.Theme,
+		"min_price_limit": agent.MinPriceLimit,
+		"max_price_limit": agent.MaxPriceLimit,
 	})
 }

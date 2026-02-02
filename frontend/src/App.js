@@ -22,6 +22,7 @@ import CreateListing from './pages/Agent/CreateListing';
 import EditListing from './pages/Agent/EditListing';
 import SubAgents from './pages/Agent/SubAgents';
 import ThemeSettings from './pages/Agent/ThemeSettings';
+import AgentSettings from './pages/Agent/AgentSettings';
 
 // Super Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -84,6 +85,7 @@ function App() {
                     <Route path="listings/:id/edit" element={<EditListing />} />
                     <Route path="sub-agents" element={<SubAgents />} />
                     <Route path="theme" element={<ThemeSettings />} />
+                    <Route path="settings" element={<AgentSettings />} />
                     <Route path="notifications" element={<NotificationCenter />} />
                     <Route path="banners" element={<BannerManagement />} />
                 </Route>

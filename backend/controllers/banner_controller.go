@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"super_real_estate/models"
 	"time"
 
@@ -82,32 +83,46 @@ func (bc *BannerController) CreateBanner(c *gin.Context) {
 
 // GetBanners fetches active banners
 func (bc *BannerController) GetBanners(c *gin.Context) {
-	// Query params: context (platform or agent_id)
 	agentID := c.Query("agent_id")
-
 	query := bc.db.Where("is_active = ?", true).
 		Where("start_date <= ? AND (end_date IS NULL OR end_date >= ?)", time.Now(), time.Now())
 
+	// Public check (route starts with /public/)
+	isPublic := strings.Contains(c.Request.URL.Path, "/public/")
+
 	if agentID != "" {
-		// Fetch banners for specific agent site (Owner is Agent)
-		query = query.Where("agent_id = ?", agentID)
+		// Fetch banners for specific agent site
+		if isPublic {
+			query = query.Where(bc.db.Where("agent_id = ?", agentID).Or("agent_id IS NULL"))
+		} else {
+			query = query.Where("agent_id = ?", agentID)
+		}
 	} else {
 		// If authenticated and agent/sub-agent, default to their agency banners
 		userID, exists := c.Get("user_id")
-		if exists {
+		if exists && !isPublic {
 			var user models.User
 			bc.db.First(&user, "id = ?", userID)
 			if (user.Role == models.RoleAgent || user.Role == models.RoleSubAgent) && user.AgentID != nil {
 				query = query.Where("agent_id = ?", user.AgentID)
 			} else if user.Role == models.RoleSuperAdmin {
-				// Super admin sees platform banners in their management view if no agent_id passed
 				query = query.Where("agent_id IS NULL")
 			} else {
-				// Regular users or others see platform public banners
 				query = query.Where("agent_id IS NULL").Where("target_role = 'all' OR target_role = 'public'")
 			}
 		} else {
-			// Unauthenticated public platform banners (from /public/banners)
+			// Unauthenticated public or forced public check
+			tenantID, tenantExists := c.Get("tenant_id")
+			if tenantExists {
+				query = query.Where(bc.db.Where("agent_id = ?", tenantID).Or("agent_id IS NULL"))
+			} else {
+				// No tenant and no agent_id param?
+				// For public view on platform site, return only platform banners
+				// BUT if it's the dev environment (no subdomain), we might want everything or just platform.
+				// Let's stick to platform only for safety, but the frontend can pass agent_id.
+				query = query.Where("agent_id IS NULL")
+			}
+
 			targetRole := c.Query("target_role")
 			if targetRole != "" {
 				query = query.Where("target_role = ? OR target_role = 'all'", targetRole)

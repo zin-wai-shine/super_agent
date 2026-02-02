@@ -182,40 +182,42 @@ const PublicLayout = () => {
             </main>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-gray-400">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div className="col-span-1 md:col-span-2">
-                            <div className="flex items-center space-x-3 mb-4">
-                                <Logo className="w-8 h-8 text-white" />
-                                <span className="text-xl font-bold text-white">Super</span>
+            {!location.pathname.startsWith('/listings') && (
+                <footer className="bg-gray-900 text-gray-400">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div className="col-span-1 md:col-span-2">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <Logo className="w-8 h-8 text-white" />
+                                    <span className="text-xl font-bold text-white">Super</span>
+                                </div>
+                                <p className="text-sm max-w-md">
+                                    Find your dream property near Bangkok's transit stations.
+                                    We make property search easy with our interactive transit map.
+                                </p>
                             </div>
-                            <p className="text-sm max-w-md">
-                                Find your dream property near Bangkok's transit stations.
-                                We make property search easy with our interactive transit map.
-                            </p>
+                            <div>
+                                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link to="/listings" className="hover:text-white">Browse Listings</Link></li>
+                                    <li><Link to="/listings?view=map" className="hover:text-white">Map Search</Link></li>
+                                    <li><Link to="/register" className="hover:text-white">List Your Property</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-white font-semibold mb-4">For Agents</h4>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link to="/register" className="hover:text-white">Become an Agent</Link></li>
+                                    <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
+                                </ul>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to="/listings" className="hover:text-white">Browse Listings</Link></li>
-                                <li><Link to="/listings?view=map" className="hover:text-white">Map Search</Link></li>
-                                <li><Link to="/register" className="hover:text-white">List Your Property</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">For Agents</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to="/register" className="hover:text-white">Become an Agent</Link></li>
-                                <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
-                            </ul>
+                        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+                            <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
                         </div>
                     </div>
-                    <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-                        <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            )}
         </div>
     );
 };

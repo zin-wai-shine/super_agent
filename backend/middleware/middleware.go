@@ -107,7 +107,8 @@ func TenantMiddleware(db *gorm.DB) gin.HandlerFunc {
 		if tenant == "" {
 			host := c.Request.Host
 			parts := strings.Split(host, ".")
-			if len(parts) > 2 {
+			// Support subdomain.localhost:3000 or subdomain.example.com
+			if len(parts) >= 2 && !strings.Contains(parts[0], "localhost") {
 				tenant = parts[0]
 			}
 		}
@@ -116,6 +117,14 @@ func TenantMiddleware(db *gorm.DB) gin.HandlerFunc {
 			// Look up agent by subdomain
 			var agent models.Agent
 			if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", tenant, true, false).First(&agent).Error; err == nil {
+				c.Set("tenant_id", agent.ID)
+				c.Set("tenant", &agent)
+			}
+		} else if strings.Contains(c.Request.Host, "localhost") {
+			// DEV FALLBACK: If on localhost and no subdomain, pick the first active agent
+			// This helps testing public pages without complex DNS setup
+			var agent models.Agent
+			if err := db.Where("is_active = ? AND is_suspended = ?", true, false).First(&agent).Error; err == nil {
 				c.Set("tenant_id", agent.ID)
 				c.Set("tenant", &agent)
 			}
