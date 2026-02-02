@@ -104,12 +104,12 @@ const CreateListing = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-900 mb-8">Create New Listing</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Create New Listing</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Basic Info */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Basic Information</h2>
 
                     <div className="space-y-6">
                         <div>
@@ -182,8 +182,8 @@ const CreateListing = () => {
                 </div>
 
                 {/* Pricing */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Pricing</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Pricing</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -200,8 +200,8 @@ const CreateListing = () => {
                             {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price.message}</p>}
                         </div>
                         <div className="flex items-center">
-                            <div className="p-4 bg-blue-50 rounded-xl">
-                                <p className="text-sm text-blue-700">
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-[3px]">
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
                                     💡 Enter monthly rent for rentals, or total price for sales.
                                 </p>
                             </div>
@@ -210,8 +210,8 @@ const CreateListing = () => {
                 </div>
 
                 {/* Features */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Features</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Features</h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div>
@@ -258,8 +258,8 @@ const CreateListing = () => {
                 </div>
 
                 {/* Location */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Location</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Location</h2>
 
                     <div className="space-y-6">
                         <div>
@@ -278,7 +278,7 @@ const CreateListing = () => {
                                     />
                                 )}
                             />
-                            <p className="text-sm text-gray-500 mt-2">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                 📍 This helps buyers find your property on the interactive transit map.
                             </p>
                         </div>

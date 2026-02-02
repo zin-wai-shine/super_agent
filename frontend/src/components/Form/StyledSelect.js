@@ -2,18 +2,19 @@ import React from 'react';
 import Select from 'react-select';
 
 // Custom styles for React-Select matching our Tailwind design system
-const customStyles = {
+const getCustomStyles = (isDarkMode) => ({
     control: (base, state) => ({
         ...base,
-        minHeight: '38px',
+        minHeight: '34px',
         borderRadius: '3px',
-        borderColor: state.isFocused ? '#3b82f6' : '#e5e7eb',
+        borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
         boxShadow: state.isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
-        backgroundColor: state.isDisabled ? '#f9fafb' : '#ffffff',
+        backgroundColor: state.isDisabled ? (isDarkMode ? '#2A3241' : '#f9fafb') : (isDarkMode ? '#111318' : '#ffffff'),
         '&:hover': {
-            borderColor: state.isFocused ? '#3b82f6' : '#d1d5db',
+            borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
         },
         transition: 'all 0.2s ease',
+        fontSize: '12px',
     }),
     valueContainer: (base) => ({
         ...base,
@@ -21,24 +22,25 @@ const customStyles = {
     }),
     placeholder: (base) => ({
         ...base,
-        color: '#9ca3af',
-        fontSize: '13px',
+        color: isDarkMode ? '#9ca3af' : '#9ca3af',
+        fontSize: '12px',
     }),
     singleValue: (base) => ({
         ...base,
-        color: '#111827',
-        fontSize: '13px',
+        color: isDarkMode ? '#A6ADBB' : '#111827',
+        fontSize: '12px',
     }),
     input: (base) => ({
         ...base,
-        color: '#111827',
-        fontSize: '14px',
+        color: isDarkMode ? '#A6ADBB' : '#111827',
+        fontSize: '12px',
     }),
     menu: (base) => ({
         ...base,
         borderRadius: '8px',
         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e5e7eb',
+        border: isDarkMode ? '1px solid #272E3B' : '1px solid #e5e7eb',
+        backgroundColor: isDarkMode ? '#191D24' : '#ffffff',
         overflow: 'hidden',
         zIndex: 50,
         animation: 'slideIn 0.15s ease-out',
@@ -46,22 +48,23 @@ const customStyles = {
     menuList: (base) => ({
         ...base,
         padding: '8px',
+        backgroundColor: isDarkMode ? '#191D24' : '#ffffff',
     }),
     option: (base, state) => ({
         ...base,
         backgroundColor: state.isSelected
             ? '#3b82f6'
             : state.isFocused
-                ? '#eff6ff'
+                ? (isDarkMode ? '#272E3B' : '#eff6ff')
                 : 'transparent',
-        color: state.isSelected ? '#ffffff' : '#374151',
+        color: state.isSelected ? '#ffffff' : (isDarkMode ? '#A6ADBB' : '#374151'),
         borderRadius: '4px',
         padding: '10px 12px',
-        fontSize: '14px',
+        fontSize: '13px',
         cursor: 'pointer',
         marginBottom: '2px',
         '&:active': {
-            backgroundColor: state.isSelected ? '#2563eb' : '#dbeafe',
+            backgroundColor: state.isSelected ? '#2563eb' : (isDarkMode ? '#444444' : '#dbeafe'),
         },
     }),
     indicatorSeparator: () => ({
@@ -70,7 +73,7 @@ const customStyles = {
     dropdownIndicator: (base, state) => ({
         ...base,
         color: state.isFocused ? '#3b82f6' : '#9ca3af',
-        padding: '8px',
+        padding: '4px',
         transition: 'transform 0.2s ease',
         transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
         '&:hover': {
@@ -87,45 +90,45 @@ const customStyles = {
     }),
     multiValue: (base) => ({
         ...base,
-        backgroundColor: '#eff6ff',
+        backgroundColor: isDarkMode ? '#2A3241' : '#eff6ff',
         borderRadius: '4px',
     }),
     multiValueLabel: (base) => ({
         ...base,
-        color: '#1d4ed8',
+        color: isDarkMode ? '#93c5fd' : '#1d4ed8',
         fontSize: '13px',
         padding: '2px 6px',
     }),
     multiValueRemove: (base) => ({
         ...base,
-        color: '#3b82f6',
+        color: isDarkMode ? '#60a5fa' : '#3b82f6',
         borderRadius: '0 4px 4px 0',
         '&:hover': {
-            backgroundColor: '#dbeafe',
-            color: '#1d4ed8',
+            backgroundColor: isDarkMode ? '#383838' : '#dbeafe',
+            color: isDarkMode ? '#93c5fd' : '#1d4ed8',
         },
     }),
     noOptionsMessage: (base) => ({
         ...base,
         fontSize: '14px',
-        color: '#6b7280',
+        color: isDarkMode ? '#9ca3af' : '#6b7280',
         padding: '12px',
     }),
     loadingMessage: (base) => ({
         ...base,
         fontSize: '14px',
-        color: '#6b7280',
+        color: isDarkMode ? '#9ca3af' : '#6b7280',
     }),
     groupHeading: (base) => ({
         ...base,
         fontSize: '12px',
         fontWeight: '600',
-        color: '#6b7280',
+        color: isDarkMode ? '#9ca3af' : '#6b7280',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
         padding: '8px 12px',
     }),
-};
+});
 
 // Custom theme that matches our design system
 const customTheme = (theme) => ({
@@ -153,6 +156,8 @@ const customTheme = (theme) => ({
     },
 });
 
+import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
+
 // Styled Select Component
 const StyledSelect = ({
     options,
@@ -168,10 +173,21 @@ const StyledSelect = ({
     error = false,
     ...props
 }) => {
+    // Try to get theme, fallback if used outside provider
+    let isDarkMode = false;
+    try {
+        const theme = useDashboardTheme();
+        isDarkMode = theme?.isDarkMode || false;
+    } catch (e) {
+        // Fallback or ignore
+    }
+
+    const currentStyles = getCustomStyles(isDarkMode);
+
     const errorStyles = error
         ? {
             control: (base, state) => ({
-                ...customStyles.control(base, state),
+                ...currentStyles.control(base, state),
                 borderColor: state.isFocused ? '#ef4444' : '#fca5a5',
                 boxShadow: state.isFocused ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none',
                 '&:hover': {
@@ -198,16 +214,45 @@ const StyledSelect = ({
     };
 
     const stylesFromProps = props.styles || {};
-    const finalStyles = mergeStyles({ ...customStyles, ...errorStyles }, stylesFromProps);
+    const finalStyles = mergeStyles({ ...currentStyles, ...errorStyles }, stylesFromProps);
 
     // Remove styles from props to avoid overwriting
     const { styles: _, ...restProps } = props;
 
+    // Support both object and string values
+    const selectValue = React.useMemo(() => {
+        if (!value) return null;
+        if (typeof value === 'object' && !Array.isArray(value)) return value;
+
+        // If it's a string, find the matching option
+        if (typeof value === 'string') {
+            return options?.find(opt => opt.value === value) || null;
+        }
+
+        // For multi-select with array of strings
+        if (Array.isArray(value)) {
+            return value.map(val =>
+                typeof val === 'string'
+                    ? options?.find(opt => opt.value === val)
+                    : val
+            ).filter(Boolean);
+        }
+
+        return value;
+    }, [value, options]);
+
     return (
         <Select
             options={options}
-            value={value}
-            onChange={onChange}
+            value={selectValue}
+            onChange={(selected) => {
+                // If isMulti, return array of values, otherwise return single value
+                if (isMulti) {
+                    onChange(selected ? selected.map(s => s.value) : []);
+                } else {
+                    onChange(selected ? selected.value : null);
+                }
+            }}
             placeholder={placeholder}
             isSearchable={isSearchable}
             isClearable={isClearable}

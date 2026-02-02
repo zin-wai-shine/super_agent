@@ -104,6 +104,7 @@ func seedInitialData(db *gorm.DB) {
 			Duration:     30,
 			MaxListings:  5,
 			MaxSubAgents: 0,
+			Features:     "Up to 5 listings, Basic support, Subdomain access",
 			IsActive:     true,
 		},
 		{
@@ -113,6 +114,7 @@ func seedInitialData(db *gorm.DB) {
 			Duration:     30,
 			MaxListings:  25,
 			MaxSubAgents: 2,
+			Features:     "Up to 25 listings, 2 sub-agents, Subdomain access, Email support",
 			IsActive:     true,
 		},
 		{
@@ -122,6 +124,7 @@ func seedInitialData(db *gorm.DB) {
 			Duration:     30,
 			MaxListings:  100,
 			MaxSubAgents: 10,
+			Features:     "Up to 100 listings, 10 sub-agents, Custom domain, Priority support",
 			IsActive:     true,
 		},
 		{
@@ -131,6 +134,7 @@ func seedInitialData(db *gorm.DB) {
 			Duration:     30,
 			MaxListings:  -1, // unlimited
 			MaxSubAgents: -1, // unlimited
+			Features:     "Unlimited listings, Unlimited agents, Dedicated support, Advanced analytics",
 			IsActive:     true,
 		},
 	}

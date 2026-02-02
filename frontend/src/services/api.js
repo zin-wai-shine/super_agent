@@ -89,9 +89,17 @@ export const agentApi = {
     unpublishListing: (id) => api.post(`/agent/listings/${id}/unpublish`),
     getSubAgents: () => api.get('/agent/sub-agents'),
     createSubAgent: (data) => api.post('/agent/sub-agents', data),
+    updateSubAgent: (id, data) => api.put(`/agent/sub-agents/${id}`, data),
     deleteSubAgent: (id) => api.delete(`/agent/sub-agents/${id}`),
     getTheme: () => api.get('/agent/theme'),
     updateTheme: (data) => api.put('/agent/theme', data),
+    uploadLogo: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/upload/logo', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };
 
 // Super Admin API

@@ -231,3 +231,56 @@ func (uc *UploadController) DeleteMedia(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Media deleted successfully"})
 }
+
+// UploadLogo handles agent logo uploads
+func (uc *UploadController) UploadLogo(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	// Get file
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+	defer file.Close()
+
+	// Check file size (logos should be smaller, e.g., 2MB)
+	if header.Size > 2*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Logo too large. Maximum 2MB allowed"})
+		return
+	}
+
+	// Check file type
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if !allowedImageTypes[ext] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, webp, gif"})
+		return
+	}
+
+	// Create directory structure
+	uploadDir := filepath.Join(uc.cfg.UploadPath, agentID.String(), "logos")
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
+		return
+	}
+
+	// Generate unique filename
+	filename := fmt.Sprintf("logo_%s%s", uuid.New().String()[:8], ext)
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Save file
+	if err := c.SaveUploadedFile(header, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save logo"})
+		return
+	}
+
+	logoURL := fmt.Sprintf("/uploads/%s/logos/%s", agentID.String(), filename)
+
+	c.JSON(http.StatusOK, gin.H{
+		"url": logoURL,
+	})
+}

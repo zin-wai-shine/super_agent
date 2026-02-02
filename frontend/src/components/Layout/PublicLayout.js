@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
     Bars3Icon,
     XMarkIcon,
@@ -9,8 +10,10 @@ import {
     MapPinIcon,
     UserCircleIcon,
 } from '@heroicons/react/24/outline';
+import Logo from '../Common/Logo';
 
 const PublicLayout = () => {
+    const { theme } = useTheme();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const location = useLocation();
@@ -27,17 +30,21 @@ const PublicLayout = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col" style={{ fontFamily: theme.fontFamily }}>
             {/* Navigation */}
             <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
-                                <BuildingOfficeIcon className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-xl font-bold gradient-text">Super</span>
+                        <Link to="/" className="flex items-center space-x-2">
+                            {theme.logoUrl ? (
+                                <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                            ) : (
+                                <Logo className="w-8 h-8" style={{ color: theme.primaryColor }} />
+                            )}
+                            <span className="text-xl font-bold text-gray-900">
+                                {theme.headerText || 'Super'}
+                            </span>
                         </Link>
 
                         {/* Desktop Navigation */}
@@ -47,8 +54,8 @@ const PublicLayout = () => {
                                     key={item.name}
                                     to={item.href}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.href)
-                                            ? 'bg-primary-50 text-primary-700'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                        ? 'bg-primary-50 text-primary-700'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                         }`}
                                 >
                                     {item.name}
@@ -118,8 +125,8 @@ const PublicLayout = () => {
                                     to={item.href}
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={`flex items-center space-x-3 px-4 py-3 rounded-xl ${isActive(item.href)
-                                            ? 'bg-primary-50 text-primary-700'
-                                            : 'text-gray-600'
+                                        ? 'bg-primary-50 text-primary-700'
+                                        : 'text-gray-600'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5" />
@@ -180,9 +187,7 @@ const PublicLayout = () => {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div className="col-span-1 md:col-span-2">
                             <div className="flex items-center space-x-3 mb-4">
-                                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
-                                    <BuildingOfficeIcon className="w-6 h-6 text-white" />
-                                </div>
+                                <Logo className="w-8 h-8 text-white" />
                                 <span className="text-xl font-bold text-white">Super</span>
                             </div>
                             <p className="text-sm max-w-md">
@@ -207,7 +212,7 @@ const PublicLayout = () => {
                         </div>
                     </div>
                     <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-                        <p>&copy; {new Date().getFullYear()} Super Real Estate. All rights reserved.</p>
+                        <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
                     </div>
                 </div>
             </footer>

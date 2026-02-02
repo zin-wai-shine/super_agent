@@ -5,10 +5,13 @@ const ThemeContext = createContext(null);
 
 const defaultTheme = {
     backgroundColor: '#f5f5f5',
-    primaryColor: '#1a73e8',
+    primaryColor: '#3b82f6',
     secondaryColor: '#34a853',
     textColor: '#202124',
     fontFamily: 'Inter, sans-serif',
+    logoUrl: '',
+    headerText: 'Super Real Estate',
+    footerText: '© 2024 Super Real Estate',
 };
 
 export const useTheme = () => {
@@ -30,12 +33,16 @@ export const ThemeProvider = ({ children }) => {
                 // Try to get agent info from subdomain
                 const response = await api.get('/public/agent/info');
                 if (response.data?.theme) {
+                    const t = response.data.theme;
                     setTheme({
-                        backgroundColor: response.data.theme.background_color || defaultTheme.backgroundColor,
-                        primaryColor: response.data.theme.primary_color || defaultTheme.primaryColor,
-                        secondaryColor: response.data.theme.secondary_color || defaultTheme.secondaryColor,
-                        textColor: response.data.theme.text_color || defaultTheme.textColor,
-                        fontFamily: response.data.theme.font_family || defaultTheme.fontFamily,
+                        backgroundColor: t.background_color || defaultTheme.backgroundColor,
+                        primaryColor: t.primary_color || defaultTheme.primaryColor,
+                        secondaryColor: t.secondary_color || defaultTheme.secondaryColor,
+                        textColor: t.text_color || defaultTheme.textColor,
+                        fontFamily: t.font_family || defaultTheme.fontFamily,
+                        logoUrl: t.logo_url || '',
+                        headerText: t.header_text || '',
+                        footerText: t.footer_text || '',
                     });
                 }
             } catch (err) {

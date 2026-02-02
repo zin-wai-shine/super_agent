@@ -104,6 +104,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				// Sub-agent management (Agent only)
 				agent.GET("/sub-agents", middleware.RoleMiddleware(models.RoleAgent), agentController.GetSubAgents)
 				agent.POST("/sub-agents", middleware.RoleMiddleware(models.RoleAgent), agentController.CreateSubAgent)
+				agent.PUT("/sub-agents/:id", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateSubAgent)
 				agent.DELETE("/sub-agents/:id", middleware.RoleMiddleware(models.RoleAgent), agentController.DeleteSubAgent)
 
 				// Theme management
@@ -119,6 +120,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			{
 				upload.POST("/image", uploadController.UploadImage)
 				upload.POST("/video", uploadController.UploadVideo)
+				upload.POST("/logo", uploadController.UploadLogo)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}
 

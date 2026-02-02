@@ -4,6 +4,7 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html"
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       borderRadius: {
@@ -54,6 +55,12 @@ module.exports = {
           800: '#86198f',
           900: '#701a75',
         },
+        'dashboard-dark': '#0D0F11',
+        'dashboard-card': '#191D24',
+        'dashboard-hover': '#2A3241',
+        'dashboard-input': '#111318',
+        'dashboard-border': '#272E3B',
+        'dashboard-text': '#A6ADBB',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

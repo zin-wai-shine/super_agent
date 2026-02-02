@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-    AreaChart,
-    Area,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -24,7 +24,7 @@ const RevenueChart = ({ data }) => {
     return (
         <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
+                <LineChart
                     data={chartData}
                     margin={{
                         top: 10,
@@ -33,12 +33,6 @@ const RevenueChart = ({ data }) => {
                         bottom: 0,
                     }}
                 >
-                    <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                     <XAxis
                         dataKey="name"
@@ -60,18 +54,19 @@ const RevenueChart = ({ data }) => {
                             border: 'none',
                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                         }}
-                        itemStyle={{ color: '#4f46e5' }}
+                        itemStyle={{ color: '#3b82f6' }}
                         formatter={(value) => [`฿${value}`, 'Revenue']}
                     />
-                    <Area
+                    <Line
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#6366f1"
+                        stroke="#3b82f6"
                         strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorRevenue)"
+                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 0 }}
+                        style={{ filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.4))' }}
                     />
-                </AreaChart>
+                </LineChart>
             </ResponsiveContainer>
         </div>
     );

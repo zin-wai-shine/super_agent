@@ -173,37 +173,37 @@ const EditListing = () => {
         <div className="max-w-4xl mx-auto">
             <button
                 onClick={() => navigate('/agent/listings')}
-                className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+                className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
             >
                 <ArrowLeftIcon className="w-5 h-5 mr-2" />
                 Back to listings
             </button>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-8">Edit Listing</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Edit Listing</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Media Upload */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">📸 Photos</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {media.filter((m) => m.type === 'image').map((item) => (
-                            <div key={item.id} className="relative aspect-square rounded-xl overflow-hidden group">
+                            <div key={item.id} className="relative aspect-square rounded-[3px] overflow-hidden group">
                                 <img src={item.url} alt="" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <button
                                     type="button"
                                     onClick={() => handleDeleteMedia(item.id)}
-                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-100 scale-75"
+                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[3px] opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-100 scale-75"
                                 >
                                     <TrashIcon className="w-4 h-4" />
                                 </button>
                             </div>
                         ))}
 
-                        <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-all group">
+                        <label className="aspect-square rounded-[3px] border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group">
                             <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 mb-2 transition-colors" />
-                            <span className="text-sm text-gray-500 group-hover:text-primary-600 transition-colors">
+                            <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                                 {uploading ? 'Uploading...' : 'Add Photo'}
                             </span>
                             <input
@@ -219,8 +219,8 @@ const EditListing = () => {
                 </div>
 
                 {/* Basic Info */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">📋 Basic Information</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📋 Basic Information</h2>
 
                     <div className="space-y-6">
                         <div>
@@ -280,8 +280,8 @@ const EditListing = () => {
                 </div>
 
                 {/* Price & Features */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">💰 Price & Features</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">💰 Price & Features</h2>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div>
@@ -337,8 +337,8 @@ const EditListing = () => {
                 </div>
 
                 {/* Location */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">📍 Location</h2>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📍 Location</h2>
 
                     <div className="space-y-6">
                         <div>

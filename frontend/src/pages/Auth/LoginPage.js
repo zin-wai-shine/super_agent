@@ -144,7 +144,7 @@ const LoginPage = () => {
                 </div>
 
                 {/* Demo credentials */}
-                <div className="mt-6 p-4 bg-gray-100 rounded-xl text-center text-sm text-gray-600">
+                <div className="mt-6 p-4 bg-gray-100 rounded-[3px] text-center text-sm text-gray-600">
                     <p className="font-medium mb-1">Demo Account</p>
                     <p>Email: admin@super-realestate.com</p>
                     <p>Password: superadmin123</p>

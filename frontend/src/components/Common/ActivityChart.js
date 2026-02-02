@@ -56,9 +56,9 @@ const ActivityChart = ({ data }) => {
                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                         }}
                     />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={12}>
                         {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#60a5fa'} />
+                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#93c5fd'} />
                         ))}
                     </Bar>
                 </BarChart>

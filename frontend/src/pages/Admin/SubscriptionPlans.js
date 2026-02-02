@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { adminApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { PlusIcon, PencilIcon, TrashIcon, CreditCardIcon, CheckIcon } from '@heroicons/react/24/outline';
+import StyledSelect from '../../components/Form/StyledSelect';
+import {
+    useReactTable,
+    getCoreRowModel,
+    flexRender
+} from '@tanstack/react-table';
+import {
+    PlusIcon,
+    PencilIcon,
+    TrashIcon,
+    CreditCardIcon,
+    CheckIcon,
+    InboxIcon
+} from '@heroicons/react/24/outline';
+import EmptyState from '../../components/Common/EmptyState';
 
 const SubscriptionPlans = () => {
     const [plans, setPlans] = useState([]);
@@ -10,7 +24,7 @@ const SubscriptionPlans = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
 
-    const { register, handleSubmit, reset } = useForm();
+    const { register, control, handleSubmit, reset } = useForm();
 
     const fetchPlans = async () => {
         try {
@@ -94,12 +108,122 @@ const SubscriptionPlans = () => {
         return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(price);
     };
 
+    // Use useMemo for columns to prevent unnecessary re-renders
+    const columns = React.useMemo(
+        () => [
+            {
+                accessorKey: 'plan_name',
+                header: 'Plan Name',
+                cell: ({ row }) => (
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                            <CreditCardIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        <span className="font-semibold text-gray-900 dark:text-white">{row.original.plan_name || row.original.name}</span>
+                    </div>
+                ),
+            },
+            {
+                accessorKey: 'domain_type',
+                header: 'Domain Type',
+                cell: ({ row }) => (
+                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${row.original.domain_type === 'custom'
+                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                        {row.original.domain_type === 'custom' ? '🔗 Custom Domain' : '🌐 Subdomain'}
+                    </span>
+                ),
+            },
+            {
+                accessorKey: 'price',
+                header: 'Price',
+                cell: ({ row }) => (
+                    <div className="font-medium text-gray-900 dark:text-white">
+                        {formatPrice(row.original.price)}
+                        <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">/mo</span>
+                    </div>
+                ),
+            },
+            {
+                accessorKey: 'max_listings',
+                header: 'Max Listings',
+                cell: ({ row }) => (
+                    <span className="text-gray-600 dark:text-gray-300">{row.original.max_listings}</span>
+                ),
+            },
+            {
+                accessorKey: 'max_sub_agents',
+                header: 'Max Sub-Agents',
+                cell: ({ row }) => (
+                    <span className="text-gray-600 dark:text-gray-300">{row.original.max_sub_agents}</span>
+                ),
+            },
+            {
+                accessorKey: 'features',
+                header: 'Features',
+                cell: ({ row }) => {
+                    const features = Array.isArray(row.original.features)
+                        ? row.original.features
+                        : (row.original.features?.split ? row.original.features.split(',') : []);
+                    return (
+                        <div className="flex flex-wrap gap-1">
+                            {features.slice(0, 2).map((f, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] rounded-md">
+                                    {f.trim()}
+                                </span>
+                            ))}
+                            {features.length > 2 && (
+                                <span className="text-[10px] text-gray-400 dark:text-gray-500">+{features.length - 2} more</span>
+                            )}
+                        </div>
+                    );
+                },
+            },
+            {
+                id: 'actions',
+                header: () => <div className="text-right">Actions</div>,
+                cell: ({ row }) => (
+                    <div className="flex items-center justify-end gap-2">
+                        <button
+                            onClick={() => openModal(row.original)}
+                            className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all duration-200"
+                            title="Edit Plan"
+                        >
+                            <PencilIcon className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={() => handleDelete(row.original.id)}
+                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                            title="Delete Plan"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                ),
+            },
+        ],
+        []
+    );
+
+    const {
+        getHeaderGroups,
+        getRowModel,
+    } = useReactTable({
+        data: plans,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Subscription Plans</h1>
-                <button onClick={() => openModal()} className="btn-primary flex items-center space-x-2">
-                    <PlusIcon className="w-5 h-5" />
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage plans and pricing for your agents</p>
+                </div>
+                <button onClick={() => openModal()} className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap shadow-sm h-[34px] text-[12px] px-3">
+                    <PlusIcon className="w-4 h-4" />
                     <span>Add Plan</span>
                 </button>
             </div>
@@ -109,79 +233,49 @@ const SubscriptionPlans = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {plans.map((plan, index) => (
-                        <div
-                            key={plan.id}
-                            className={`bg-white rounded-2xl p-6 shadow-sm border-2 ${index === 1 ? 'border-primary-500' : 'border-transparent'
-                                }`}
-                        >
-                            {index === 1 && (
-                                <div className="text-center mb-4">
-                                    <span className="bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                        Most Popular
-                                    </span>
-                                </div>
-                            )}
-
-                            <div className="text-center mb-6">
-                                <div className="inline-flex p-3 bg-primary-50 rounded-xl mb-4">
-                                    <CreditCardIcon className="w-8 h-8 text-primary-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900">{plan.plan_name || plan.name}</h3>
-                                <span className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full ${plan.domain_type === 'custom'
-                                        ? 'bg-purple-100 text-purple-700'
-                                        : 'bg-blue-100 text-blue-700'
-                                    }`}>
-                                    {plan.domain_type === 'custom' ? '🔗 Custom Domain' : '🌐 Subdomain'}
-                                </span>
-                                <div className="mt-4">
-                                    <span className="text-4xl font-bold text-gray-900">{formatPrice(plan.price)}</span>
-                                    <span className="text-gray-500">/month</span>
-                                </div>
-                            </div>
-
-                            <ul className="space-y-3 mb-6">
-                                <li className="flex items-center text-sm text-gray-600">
-                                    <CheckIcon className="w-5 h-5 text-green-500 mr-2" />
-                                    Up to {plan.max_listings} listings
-                                </li>
-                                <li className="flex items-center text-sm text-gray-600">
-                                    <CheckIcon className="w-5 h-5 text-green-500 mr-2" />
-                                    {plan.max_sub_agents} sub-agent{plan.max_sub_agents > 1 ? 's' : ''}
-                                </li>
-                                {plan.features?.map((feature, i) => (
-                                    <li key={i} className="flex items-center text-sm text-gray-600">
-                                        <CheckIcon className="w-5 h-5 text-green-500 mr-2" />
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <div className="flex space-x-2">
-                                <button
-                                    onClick={() => openModal(plan)}
-                                    className="flex-1 btn-secondary text-sm py-2"
-                                >
-                                    <PencilIcon className="w-4 h-4 inline mr-1" />
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(plan.id)}
-                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                                >
-                                    <TrashIcon className="w-5 h-5" />
-                                </button>
-                            </div>
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    {plans.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
+                                    {getHeaderGroups().map((headerGroup) => (
+                                        <tr key={headerGroup.id}>
+                                            {headerGroup.headers.map((header) => (
+                                                <th
+                                                    key={header.id}
+                                                    className="text-left px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                                >
+                                                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {getRowModel().rows.map((row) => (
+                                        <tr key={row.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                            {row.getVisibleCells().map((cell) => (
+                                                <td key={cell.id} className="px-6 py-4 text-sm align-middle">
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    ))}
-
-                    {plans.length === 0 && (
-                        <div className="col-span-full text-center py-12">
-                            <CreditCardIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No plans yet</h3>
-                            <p className="text-gray-500">Create subscription plans for your agents.</p>
-                        </div>
+                    ) : (
+                        <EmptyState
+                            icon={CreditCardIcon}
+                            title="No plans yet"
+                            description="You haven't created any subscription plans. Create your first plan to start onboarding agents."
+                            action={
+                                <button onClick={() => openModal()} className="btn-primary flex items-center gap-2">
+                                    <PlusIcon className="w-5 h-5" />
+                                    Create First Plan
+                                </button>
+                            }
+                        />
                     )}
                 </div>
             )}
@@ -189,8 +283,8 @@ const SubscriptionPlans = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-scale-in">
-                        <h2 className="text-xl font-bold mb-6">
+                    <div className="bg-white dark:bg-dashboard-card rounded-2xl w-full max-w-md p-6 animate-scale-in border dark:border-gray-700">
+                        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
                             {editingPlan ? 'Edit Plan' : 'Create Plan'}
                         </h2>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -200,10 +294,20 @@ const SubscriptionPlans = () => {
                             </div>
                             <div>
                                 <label className="input-label">Domain Type</label>
-                                <select className="input-field" {...register('domain_type', { required: true })}>
-                                    <option value="subdomain">🌐 Subdomain (agent.super.app)</option>
-                                    <option value="custom">🔗 Custom Domain (agent.com)</option>
-                                </select>
+                                <Controller
+                                    name="domain_type"
+                                    control={control}
+                                    defaultValue="subdomain"
+                                    render={({ field }) => (
+                                        <StyledSelect
+                                            {...field}
+                                            options={[
+                                                { value: 'subdomain', label: '🌐 Subdomain (agent.super.app)' },
+                                                { value: 'custom', label: '🔗 Custom Domain (agent.com)' },
+                                            ]}
+                                        />
+                                    )}
+                                />
                                 <p className="text-xs text-gray-500 mt-1">
                                     This determines which agents can use this plan
                                 </p>

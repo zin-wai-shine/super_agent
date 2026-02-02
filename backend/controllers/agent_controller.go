@@ -275,6 +275,59 @@ func (ac *AgentController) DeleteSubAgent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Sub-agent deleted successfully"})
 }
 
+// UpdateSubAgent updates a sub-agent
+func (ac *AgentController) UpdateSubAgent(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+
+	var subAgent models.User
+	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RoleSubAgent).First(&subAgent).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sub-agent not found"})
+		return
+	}
+
+	var req struct {
+		Email     string `json:"email" binding:"required,email"`
+		FirstName string `json:"first_name" binding:"required"`
+		LastName  string `json:"last_name" binding:"required"`
+		Password  string `json:"password"` // Optional
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check email availability if changed
+	if req.Email != subAgent.Email {
+		var existingUser models.User
+		if err := ac.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
+			return
+		}
+		subAgent.Email = req.Email
+	}
+
+	subAgent.FirstName = req.FirstName
+	subAgent.LastName = req.LastName
+
+	if req.Password != "" {
+		hashedPassword, _ := utils.HashPassword(req.Password)
+		subAgent.PasswordHash = hashedPassword
+	}
+
+	if err := ac.db.Save(&subAgent).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update sub-agent"})
+		return
+	}
+
+	c.JSON(http.StatusOK, subAgent)
+}
+
 // GetTheme returns the agent's theme
 func (ac *AgentController) GetTheme(c *gin.Context) {
 	agentID, ok := middleware.GetAgentID(c)
