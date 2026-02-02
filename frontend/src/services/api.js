@@ -75,6 +75,8 @@ export const publicApi = {
     getStations: (params) => api.get('/public/stations', { params }),
     getListingsByStation: (stationId) => api.get(`/public/listings/by-station/${stationId}`),
     getAgentInfo: () => api.get('/public/agent/info'),
+    getPublicBanners: (params) => api.get('/public/banners', { params }),
+    getPublicBanner: (id) => api.get(`/public/banners/${id}`),
 };
 
 // Agent API
@@ -97,6 +99,13 @@ export const agentApi = {
         const formData = new FormData();
         formData.append('file', file);
         return api.post('/upload/logo', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+    uploadBanner: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/upload/banner', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
@@ -153,6 +162,7 @@ export const notificationApi = {
 // Banner API
 export const bannerApi = {
     getBanners: (params) => api.get('/banners', { params }), // params can include target_role, agent_id
+    getBanner: (id) => api.get(`/banners/${id}`),
     createBanner: (data) => api.post('/banners', data),
     deleteBanner: (id) => api.delete(`/banners/${id}`),
 };

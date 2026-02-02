@@ -121,6 +121,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				upload.POST("/image", uploadController.UploadImage)
 				upload.POST("/video", uploadController.UploadVideo)
 				upload.POST("/logo", uploadController.UploadLogo)
+				upload.POST("/banner", uploadController.UploadBanner)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}
 
@@ -139,12 +140,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			banners := protected.Group("/banners")
 			{
 				banners.GET("", bannerController.GetBanners)
+				banners.GET("/:id", bannerController.GetBanner)
 				banners.POST("", bannerController.CreateBanner)
 				banners.DELETE("/:id", bannerController.DeleteBanner)
 			}
 
 			// Public Banner Route (override protected for fetching)
 			api.GET("/public/banners", bannerController.GetBanners)
+			api.GET("/public/banners/:id", bannerController.GetBanner)
 		}
 	}
 

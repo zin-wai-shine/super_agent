@@ -31,12 +31,13 @@ func (bc *BannerController) CreateBanner(c *gin.Context) {
 	bc.db.First(&user, "id = ?", ownerID)
 
 	var req struct {
-		Title      string `json:"title" binding:"required"`
-		ImageURL   string `json:"image_url" binding:"required"`
-		LinkURL    string `json:"link_url"`
-		TargetRole string `json:"target_role"` // "all", "agent", "public"
-		IsActive   bool   `json:"is_active"`
-		DaysActive int    `json:"days_active"`
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description"`
+		ImageURL    string `json:"image_url" binding:"required"`
+		LinkURL     string `json:"link_url"`
+		TargetRole  string `json:"target_role"` // "all", "agent", "public"
+		IsActive    bool   `json:"is_active"`
+		DaysActive  int    `json:"days_active"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -52,18 +53,19 @@ func (bc *BannerController) CreateBanner(c *gin.Context) {
 	}
 
 	banner := models.Banner{
-		Title:      req.Title,
-		ImageURL:   req.ImageURL,
-		LinkURL:    req.LinkURL,
-		OwnerID:    ownerID,
-		TargetRole: req.TargetRole,
-		IsActive:   req.IsActive,
-		StartDate:  &startDate,
-		EndDate:    endDate,
+		Title:       req.Title,
+		Description: req.Description,
+		ImageURL:    req.ImageURL,
+		LinkURL:     req.LinkURL,
+		OwnerID:     ownerID,
+		TargetRole:  req.TargetRole,
+		IsActive:    req.IsActive,
+		StartDate:   &startDate,
+		EndDate:     endDate,
 	}
 
 	// Agent created banners are scoped to their site
-	if user.Role == models.RoleAgent {
+	if user.Role == models.RoleAgent || user.Role == models.RoleSubAgent {
 		banner.AgentID = user.AgentID
 	} else if user.Role != models.RoleSuperAdmin {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
@@ -90,14 +92,28 @@ func (bc *BannerController) GetBanners(c *gin.Context) {
 		// Fetch banners for specific agent site (Owner is Agent)
 		query = query.Where("agent_id = ?", agentID)
 	} else {
-		// Fetch Platform banners (AgentID is NULL)
-		// Optionally filter by target role if user is logged in
-		targetRole := c.Query("target_role")
-		if targetRole != "" {
-			query = query.Where("agent_id IS NULL").Where("target_role = ? OR target_role = 'all'", targetRole)
+		// If authenticated and agent/sub-agent, default to their agency banners
+		userID, exists := c.Get("user_id")
+		if exists {
+			var user models.User
+			bc.db.First(&user, "id = ?", userID)
+			if (user.Role == models.RoleAgent || user.Role == models.RoleSubAgent) && user.AgentID != nil {
+				query = query.Where("agent_id = ?", user.AgentID)
+			} else if user.Role == models.RoleSuperAdmin {
+				// Super admin sees platform banners in their management view if no agent_id passed
+				query = query.Where("agent_id IS NULL")
+			} else {
+				// Regular users or others see platform public banners
+				query = query.Where("agent_id IS NULL").Where("target_role = 'all' OR target_role = 'public'")
+			}
 		} else {
-			// Public platform banners
-			query = query.Where("agent_id IS NULL").Where("target_role = 'all' OR target_role = 'public'")
+			// Unauthenticated public platform banners (from /public/banners)
+			targetRole := c.Query("target_role")
+			if targetRole != "" {
+				query = query.Where("target_role = ? OR target_role = 'all'", targetRole)
+			} else {
+				query = query.Where("target_role = 'all' OR target_role = 'public'")
+			}
 		}
 	}
 
@@ -108,6 +124,17 @@ func (bc *BannerController) GetBanners(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, banners)
+}
+
+// GetBanner fetches a single banner
+func (bc *BannerController) GetBanner(c *gin.Context) {
+	id := c.Param("id")
+	var banner models.Banner
+	if err := bc.db.First(&banner, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Banner not found"})
+		return
+	}
+	c.JSON(http.StatusOK, banner)
 }
 
 // DeleteBanner

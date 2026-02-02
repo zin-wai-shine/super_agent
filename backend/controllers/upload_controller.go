@@ -284,3 +284,53 @@ func (uc *UploadController) UploadLogo(c *gin.Context) {
 		"url": logoURL,
 	})
 }
+
+// UploadBanner handles agent banner uploads
+func (uc *UploadController) UploadBanner(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	// Get file
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+	defer file.Close()
+
+	// Check file size (banners can be larger, e.g., 5MB)
+	if header.Size > 5*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Banner too large. Maximum 5MB allowed"})
+		return
+	}
+
+	// Check file type
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if !allowedImageTypes[ext] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, webp, gif"})
+		return
+	}
+
+	// Create directory structure
+	uploadDir := filepath.Join(uc.cfg.UploadPath, agentID.String(), "banners")
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
+		return
+	}
+
+	// Generate unique filename
+	filename := fmt.Sprintf("banner_%s%s", uuid.New().String()[:8], ext)
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Save file
+	if err := c.SaveUploadedFile(header, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save banner"})
+		return
+	}
+
+	bannerURL := fmt.Sprintf("/uploads/%s/banners/%s", agentID.String(), filename)
+	c.JSON(http.StatusOK, gin.H{"url": bannerURL})
+}

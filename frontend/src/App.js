@@ -13,6 +13,7 @@ import ListingsPage from './pages/Public/ListingsPage';
 import ListingDetailPage from './pages/Public/ListingDetailPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
+import BannerDetail from './pages/Public/BannerDetail';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -61,6 +62,7 @@ function App() {
                     <Route index element={<HomePage />} />
                     <Route path="listings" element={<ListingsPage />} />
                     <Route path="listings/:id" element={<ListingDetailPage />} />
+                    <Route path="banners/:id" element={<BannerDetail />} />
                 </Route>
 
                 {/* Auth Routes */}

@@ -173,17 +173,18 @@ type Notification struct {
 
 // Banner represents a promotional or informational banner
 type Banner struct {
-	ID         uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	Title      string         `gorm:"size:255;not null" json:"title"`
-	ImageURL   string         `gorm:"size:500;not null" json:"image_url"`
-	LinkURL    string         `gorm:"size:500" json:"link_url,omitempty"`
-	OwnerID    uuid.UUID      `gorm:"type:uuid;not null" json:"owner_id"` // Creator
-	TargetRole string         `gorm:"size:50;default:'all'" json:"target_role"`
-	AgentID    *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"` // Null for Platform banners
-	IsActive   bool           `gorm:"default:true" json:"is_active"`
-	StartDate  *time.Time     `json:"start_date,omitempty"`
-	EndDate    *time.Time     `json:"end_date,omitempty"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Title       string         `gorm:"size:255;not null" json:"title"`
+	Description string         `gorm:"type:text" json:"description,omitempty"`
+	ImageURL    string         `gorm:"size:500;not null" json:"image_url"`
+	LinkURL     string         `gorm:"size:500" json:"link_url,omitempty"`
+	OwnerID     uuid.UUID      `gorm:"type:uuid;not null" json:"owner_id"` // Creator
+	TargetRole  string         `gorm:"size:50;default:'all'" json:"target_role"`
+	AgentID     *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"` // Null for Platform banners
+	IsActive    bool           `gorm:"default:true" json:"is_active"`
+	StartDate   *time.Time     `json:"start_date,omitempty"`
+	EndDate     *time.Time     `json:"end_date,omitempty"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }

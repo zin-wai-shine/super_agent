@@ -4,11 +4,14 @@ import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
+import BannerDisplay from '../../components/Common/BannerDisplay';
+import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
 import {
     FunnelIcon,
     Squares2X2Icon,
     ListBulletIcon,
     MapIcon,
+    MapPinIcon,
     XMarkIcon,
     BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
@@ -21,7 +24,8 @@ const ListingsPage = () => {
     const [page, setPage] = useState(1);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState('grid');
-    const [showMap, setShowMap] = useState(searchParams.get('view') === 'map');
+    const [showMap, setShowMap] = useState(false);
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     // Filter states
     const [filters, setFilters] = useState({
@@ -123,230 +127,315 @@ const ListingsPage = () => {
     const getSelectedOption = (options, value) =>
         options.find(opt => opt.value === value) || null;
 
+    const renderTopFilters = () => (
+        <div className="hidden lg:flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-16 z-30 mb-8 border-t-0 rounded-t-none">
+            {/* Search */}
+            <div className="flex-1 min-w-[200px]">
+                <input
+                    type="text"
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    placeholder="Search properties..."
+                    className="w-full bg-gray-50 border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 transition-all"
+                />
+            </div>
+
+            {/* Property Type */}
+            <div className="w-40">
+                <StyledSelect
+                    options={propertyTypeOptions}
+                    value={getSelectedOption(propertyTypeOptions, filters.type)}
+                    onChange={(opt) => handleSelectChange('type', opt)}
+                    placeholder="Type"
+                    isClearable={false}
+                    isSearchable={false}
+                    styles={{
+                        control: (base) => ({ ...base, minHeight: '38px', height: '38px' }),
+                    }}
+                />
+            </div>
+
+            {/* Listing Type */}
+            <div className="w-36">
+                <StyledSelect
+                    options={listingTypeOptions}
+                    value={getSelectedOption(listingTypeOptions, filters.listing_type)}
+                    onChange={(opt) => handleSelectChange('listing_type', opt)}
+                    placeholder="Action"
+                    isClearable={false}
+                    isSearchable={false}
+                    styles={{
+                        control: (base) => ({ ...base, minHeight: '38px', height: '38px' }),
+                    }}
+                />
+            </div>
+
+            {/* Bedrooms */}
+            <div className="w-36">
+                <StyledSelect
+                    options={bedroomOptions}
+                    value={getSelectedOption(bedroomOptions, filters.bedrooms)}
+                    onChange={(opt) => handleSelectChange('bedrooms', opt)}
+                    placeholder="Beds"
+                    isClearable={false}
+                    isSearchable={false}
+                    styles={{
+                        control: (base) => ({ ...base, minHeight: '38px', height: '38px' }),
+                    }}
+                />
+            </div>
+
+            {/* Price Range */}
+            <div className="flex items-center gap-2">
+                <input
+                    type="number"
+                    placeholder="Min Price"
+                    value={filters.min_price}
+                    onChange={(e) => handleFilterChange('min_price', e.target.value)}
+                    className="w-24 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+                />
+                <span className="text-gray-400">-</span>
+                <input
+                    type="number"
+                    placeholder="Max Price"
+                    value={filters.max_price}
+                    onChange={(e) => handleFilterChange('max_price', e.target.value)}
+                    className="w-24 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+                />
+            </div>
+
+            {hasActiveFilters && (
+                <button
+                    onClick={clearFilters}
+                    className="text-xs text-red-500 hover:text-red-700 font-bold px-2"
+                >
+                    Reset
+                </button>
+            )}
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 sticky top-16 z-20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Property Listings</h1>
-                            <p className="text-sm text-gray-500 mt-1">
-                                {total} {total === 1 ? 'property' : 'properties'} found
-                            </p>
-                        </div>
+            {/* Header / Mobile Breadcrumb or Title */}
+            <div className="bg-white border-b border-gray-200 py-4 lg:hidden">
+                <div className="max-w-7xl mx-auto px-4">
+                    <h1 className="text-xl font-bold text-gray-900">Property Listings</h1>
+                    <p className="text-xs text-gray-500">{total} properties found</p>
+                </div>
+            </div>
 
-                        <div className="flex items-center space-x-3">
-                            {/* Map toggle */}
-                            <button
-                                onClick={() => setShowMap(!showMap)}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${showMap
-                                    ? 'bg-primary-100 text-primary-700'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                            >
-                                <MapIcon className="w-5 h-5" />
-                                <span className="hidden sm:inline">Map</span>
-                            </button>
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-0">
+                {/* Floating Mobile Filter Toggle */}
+                <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+                    <button
+                        onClick={() => setShowMobileFilters(true)}
+                        className="bg-primary-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-bold animate-bounce-subtle"
+                    >
+                        <FunnelIcon className="w-5 h-5" />
+                        Filters {hasActiveFilters && <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>}
+                    </button>
+                </div>
 
-                            {/* View mode */}
-                            <div className="flex bg-gray-100 rounded-lg p-1">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white shadow' : ''}`}
-                                >
-                                    <Squares2X2Icon className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white shadow' : ''}`}
-                                >
-                                    <ListBulletIcon className="w-5 h-5" />
+                {/* Mobile Filters Overlay */}
+                {showMobileFilters && (
+                    <div className="fixed inset-0 z-50 lg:hidden">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)} />
+                        <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-white shadow-2xl animate-slide-right flex flex-col">
+                            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                                <button onClick={() => setShowMobileFilters(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                                    <XMarkIcon className="w-6 h-6 text-gray-500" />
                                 </button>
                             </div>
-
-                            {/* Filter toggle */}
-                            <button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${showFilters || hasActiveFilters
-                                    ? 'bg-primary-100 text-primary-700'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                            >
-                                <FunnelIcon className="w-5 h-5" />
-                                <span>Filters</span>
-                                {hasActiveFilters && (
-                                    <span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                        {Object.values(filters).filter((v) => v !== '').length}
-                                    </span>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Filters Panel */}
-                    {showFilters && (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-xl animate-slide-down">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                                {/* Property Type */}
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        Property Type
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Search</label>
+                                    <input
+                                        type="text"
+                                        value={filters.search}
+                                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                                        placeholder="Search properties..."
+                                        className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Property Type</label>
                                     <StyledSelect
                                         options={propertyTypeOptions}
                                         value={getSelectedOption(propertyTypeOptions, filters.type)}
                                         onChange={(opt) => handleSelectChange('type', opt)}
                                         placeholder="All Types"
-                                        isClearable={false}
-                                        isSearchable={false}
                                     />
                                 </div>
-
-                                {/* Listing Type */}
                                 <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        For
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Listing Type</label>
                                     <StyledSelect
                                         options={listingTypeOptions}
                                         value={getSelectedOption(listingTypeOptions, filters.listing_type)}
                                         onChange={(opt) => handleSelectChange('listing_type', opt)}
                                         placeholder="Sale & Rent"
-                                        isClearable={false}
-                                        isSearchable={false}
                                     />
                                 </div>
-
-                                {/* Bedrooms */}
                                 <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        Bedrooms
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Bedrooms</label>
                                     <StyledSelect
                                         options={bedroomOptions}
                                         value={getSelectedOption(bedroomOptions, filters.bedrooms)}
                                         onChange={(opt) => handleSelectChange('bedrooms', opt)}
                                         placeholder="Any Beds"
-                                        isClearable={false}
-                                        isSearchable={false}
                                     />
                                 </div>
-
-                                {/* Min Price */}
                                 <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        Min Price
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={filters.min_price}
-                                        onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                                        placeholder="฿ 0"
-                                        className="input-field py-2 text-sm"
-                                    />
+                                    <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Price Range</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input
+                                            type="number"
+                                            placeholder="Min"
+                                            value={filters.min_price}
+                                            onChange={(e) => handleFilterChange('min_price', e.target.value)}
+                                            className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="Max"
+                                            value={filters.max_price}
+                                            onChange={(e) => handleFilterChange('max_price', e.target.value)}
+                                            className="w-full bg-gray-50 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+                                        />
+                                    </div>
                                 </div>
+                            </div>
+                            <div className="p-6 border-t border-gray-100">
+                                <button
+                                    onClick={() => setShowMobileFilters(false)}
+                                    className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-primary-200"
+                                >
+                                    Show Results ({total})
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                                {/* Max Price */}
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        Max Price
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={filters.max_price}
-                                        onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                                        placeholder="฿ Any"
-                                        className="input-field py-2 text-sm"
-                                    />
-                                </div>
+                {/* Top Filters (Desktop) */}
+                {renderTopFilters()}
 
-                                {/* Clear */}
-                                <div className="flex items-end">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column: Map (Span 4) */}
+                    <div className="lg:col-span-4 hidden lg:block order-1">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-44">
+                            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <MapIcon className="w-4 h-4 text-primary-600" />
+                                Explore by Transit
+                            </h3>
+                            <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 h-[600px]">
+                                <TransitMapFilter
+                                    onStationClick={handleStationSelect}
+                                    selectedStation={filters.station_id}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Listings & Content (Span 8) */}
+                    <div className="lg:col-span-8 flex flex-col min-w-0 order-2">
+                        {/* Banners */}
+                        <div className="mb-8">
+                            <BannerDisplay targetRole="all" />
+                        </div>
+
+                        <ShowcaseBanners />
+
+                        {/* Control Bar */}
+                        <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mt-8">
+                            <div className="hidden sm:block">
+                                <h2 className="text-lg font-bold text-gray-900">
+                                    Properties for you
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    Showing {listings.length} of {total} listings
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-4 ml-auto">
+                                <div className="flex bg-gray-100 rounded-lg p-1">
                                     <button
-                                        onClick={clearFilters}
-                                        className="text-sm text-gray-500 hover:text-red-600 flex items-center space-x-1 transition-colors h-[44px] px-3 rounded-lg hover:bg-red-50"
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-2 rounded transition-all duration-200 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
                                     >
-                                        <XMarkIcon className="w-4 h-4" />
-                                        <span>Clear all</span>
+                                        <Squares2X2Icon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`p-2 rounded transition-all duration-200 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        <ListBulletIcon className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Active station filter */}
-                            {filters.station_id && (
-                                <div className="mt-4 flex items-center space-x-2">
-                                    <span className="text-sm text-gray-600">Filtering by station:</span>
-                                    <span className="badge badge-info">{filters.station_id}</span>
-                                    <button
-                                        onClick={() => handleFilterChange('station_id', '')}
-                                        className="text-gray-400 hover:text-gray-600"
-                                    >
-                                        <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Map View */}
-            {showMap && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm">
-                        <TransitMapFilter
-                            onStationClick={handleStationSelect}
-                            selectedStation={filters.station_id}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Listings Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {loading ? (
-                    <div className={`grid gap-6 ${viewMode === 'grid'
-                        ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                        : 'grid-cols-1'
-                        }`}>
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-2xl h-80 animate-pulse" />
-                        ))}
-                    </div>
-                ) : listings.length > 0 ? (
-                    <>
-                        <div className={`grid gap-6 ${viewMode === 'grid'
-                            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                            : 'grid-cols-1'
-                            }`}>
-                            {listings.map((listing) => (
-                                <ListingCard key={listing.id} listing={listing} />
-                            ))}
                         </div>
 
-                        {/* Load more */}
-                        {listings.length < total && (
-                            <div className="mt-8 text-center">
+                        {/* Active station filter */}
+                        {filters.station_id && (
+                            <div className="mb-6 flex items-center gap-2 bg-primary-50 text-primary-700 px-4 py-2 rounded-xl border border-primary-100 w-fit animate-fade-in">
+                                <MapPinIcon className="w-4 h-4" />
+                                <span className="text-sm font-medium">Station: {filters.station_id}</span>
                                 <button
-                                    onClick={() => setPage((p) => p + 1)}
-                                    className="btn-secondary"
+                                    onClick={() => handleFilterChange('station_id', '')}
+                                    className="p-1 hover:bg-primary-100 rounded-full transition-colors"
                                 >
-                                    Load More
+                                    <XMarkIcon className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
-                    </>
-                ) : (
-                    <div className="text-center py-16">
-                        <BuildingOfficeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-medium text-gray-900 mb-2">No properties found</h3>
-                        <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
-                        <button onClick={clearFilters} className="btn-primary">
-                            Clear Filters
-                        </button>
+
+                        {/* Listings Grid */}
+                        {loading ? (
+                            <div className={`grid gap-6 ${viewMode === 'grid'
+                                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                                : 'grid-cols-1'
+                                }`}>
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="bg-white rounded-2xl h-80 animate-pulse border border-gray-100 shadow-sm" />
+                                ))}
+                            </div>
+                        ) : listings.length > 0 ? (
+                            <>
+                                <div className={`grid gap-6 ${viewMode === 'grid'
+                                    ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+                                    : 'grid-cols-1'
+                                    }`}>
+                                    {listings.map((listing) => (
+                                        <ListingCard key={listing.id} listing={listing} viewMode={viewMode} />
+                                    ))}
+                                </div>
+
+                                {/* Pagination/Load more */}
+                                {listings.length < total && (
+                                    <div className="mt-12 text-center">
+                                        <button
+                                            onClick={() => setPage((p) => p + 1)}
+                                            className="bg-white px-8 py-3 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                                        >
+                                            Load More Properties
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
+                                <BuildingOfficeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">No properties found</h3>
+                                <p className="text-gray-500 mb-6">Try adjusting your filters or search criteria</p>
+                                <button onClick={clearFilters} className="btn-primary">
+                                    Clear All Filters
+                                </button>
+                            </div>
+                        )}
                     </div>
-                )}
+
+                </div>
             </div>
         </div>
     );

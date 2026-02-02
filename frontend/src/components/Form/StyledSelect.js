@@ -173,14 +173,8 @@ const StyledSelect = ({
     error = false,
     ...props
 }) => {
-    // Try to get theme, fallback if used outside provider
+    // Force light mode for public interface
     let isDarkMode = false;
-    try {
-        const theme = useDashboardTheme();
-        isDarkMode = theme?.isDarkMode || false;
-    } catch (e) {
-        // Fallback or ignore
-    }
 
     const currentStyles = getCustomStyles(isDarkMode);
 
