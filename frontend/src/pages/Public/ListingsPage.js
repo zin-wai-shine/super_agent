@@ -4,6 +4,7 @@ import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
+import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
 
 
 import {
@@ -34,18 +35,21 @@ const ListingsPage = () => {
     useEffect(() => {
         const fetchAgentInfo = async () => {
             try {
-                const response = await publicApi.getAgentInfo();
+                // Prioritize agent_id from URL for development/testing
+                const urlAgentId = searchParams.get('agent_id') || searchParams.get('agent');
+
+                const response = await publicApi.getAgentInfo(urlAgentId ? { agent_id: urlAgentId } : {});
                 setPriceLimits({
                     min: parseFloat(response.data.min_price_limit) || 0,
                     max: parseFloat(response.data.max_price_limit) || 0
                 });
-                setAgentId(response.data.id);
+                setAgentId(urlAgentId || response.data.id);
             } catch (error) {
                 console.error('Failed to fetch agent info:', error);
             }
         };
         fetchAgentInfo();
-    }, []);
+    }, [searchParams]);
 
     // Filter states
     const [filters, setFilters] = useState({
@@ -401,6 +405,8 @@ const ListingsPage = () => {
                     <div className="lg:col-span-8 flex flex-col min-w-0 order-2">
 
 
+                        {/* Showcase Banners */}
+                        <ShowcaseBanners agentId={agentId} />
 
 
                         {/* Control Bar */}

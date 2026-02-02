@@ -22,8 +22,12 @@ const ShowcaseBanners = ({ agentId }) => {
 
                 // Categorize banners: Agent (has agent_id) vs Company (platform, agent_id is null/undefined)
                 // Use == null to catch both null and undefined
-                setCompanyBanners(banners.filter(b => b.agent_id == null).slice(0, 1));
-                setAgentBanners(banners.filter(b => b.agent_id != null).slice(0, 1));
+                const company = banners.filter(b => b.agent_id == null);
+                const agent = banners.filter(b => b.agent_id != null);
+
+
+                setCompanyBanners(company.slice(0, 1));
+                setAgentBanners(agent.slice(0, 1));
 
             } catch (error) {
                 console.error("Failed to fetch showcase banners", error);

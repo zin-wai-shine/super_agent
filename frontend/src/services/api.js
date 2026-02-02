@@ -74,7 +74,7 @@ export const publicApi = {
     getListing: (id) => api.get(`/public/listings/${id}`),
     getStations: (params) => api.get('/public/stations', { params }),
     getListingsByStation: (stationId) => api.get(`/public/listings/by-station/${stationId}`),
-    getAgentInfo: () => api.get('/public/agent/info'),
+    getAgentInfo: (params) => api.get('/public/agent/info', { params }),
     getPublicBanners: (params) => api.get('/public/banners', { params }),
     getPublicBanner: (id) => api.get(`/public/banners/${id}`),
 };

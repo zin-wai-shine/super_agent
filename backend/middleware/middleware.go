@@ -122,8 +122,18 @@ func TenantMiddleware(db *gorm.DB) gin.HandlerFunc {
 			}
 		} else if strings.Contains(c.Request.Host, "localhost") {
 			// DEV FALLBACK: If on localhost and no subdomain, pick the first active agent
-			// This helps testing public pages without complex DNS setup
+			// Or check for agent_id query param for easier testing
+			devAgentID := c.Query("agent_id")
 			var agent models.Agent
+			if devAgentID != "" {
+				if err := db.Where("id = ? AND is_active = ? AND is_suspended = ?", devAgentID, true, false).First(&agent).Error; err == nil {
+					c.Set("tenant_id", agent.ID)
+					c.Set("tenant", &agent)
+					c.Next()
+					return
+				}
+			}
+
 			if err := db.Where("is_active = ? AND is_suspended = ?", true, false).First(&agent).Error; err == nil {
 				c.Set("tenant_id", agent.ID)
 				c.Set("tenant", &agent)
