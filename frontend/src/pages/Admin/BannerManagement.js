@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { bannerApi, publicApi, agentApi } from '../../services/api';
@@ -24,6 +24,9 @@ import {
     ChevronRightIcon,
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
+    XMarkIcon,
+    ArrowPathIcon,
+    FunnelIcon,
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 import {
@@ -34,7 +37,10 @@ import {
     getFilteredRowModel,
     flexRender,
 } from '@tanstack/react-table';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay, subDays, startOfMonth, isWithinInterval, subMonths, addMonths, getMonth, getYear, setMonth, setYear } from 'date-fns';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import toast from 'react-hot-toast';
 
 const BannerManagement = () => {
@@ -46,6 +52,23 @@ const BannerManagement = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [sorting, setSorting] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
+
+    // Modal & Filter States
+    const [showModal, setShowModal] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [dateRange, setDateRange] = useState([
+        {
+            startDate: startOfDay(new Date()),
+            endDate: endOfDay(new Date()),
+            key: 'selection'
+        }
+    ]);
+    const [datePreset, setDatePreset] = useState('today');
+    const [isDateFiltered, setIsDateFiltered] = useState(false); // Default: Off for banners unless user clicks
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [shownDate, setShownDate] = useState(new Date());
+    const datePickerRef = useRef(null);
+
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 10,
@@ -62,6 +85,19 @@ const BannerManagement = () => {
         }
     });
 
+    // Close datepicker when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setShowDatePicker(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     useEffect(() => {
         fetchBanners();
     }, []);
@@ -73,6 +109,56 @@ const BannerManagement = () => {
         } catch (error) {
             console.error("Failed to fetch banners", error);
             toast.error("Failed to load banners");
+        }
+    };
+
+    const handleDatePresetChange = (preset) => {
+        setDatePreset(preset);
+        setShowDatePicker(false);
+        const today = new Date();
+
+        switch (preset) {
+            case 'today':
+                setDateRange([{
+                    startDate: startOfDay(today),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'yesterday':
+                const yesterday = subDays(today, 1);
+                setDateRange([{
+                    startDate: startOfDay(yesterday),
+                    endDate: endOfDay(yesterday),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'last7days':
+                setDateRange([{
+                    startDate: startOfDay(subDays(today, 6)),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'thismonth':
+                setDateRange([{
+                    startDate: startOfMonth(today),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'alltime':
+                setIsDateFiltered(false);
+                break;
+            case 'custom':
+                setShowDatePicker(true);
+                break;
+            default:
+                break;
         }
     };
 
@@ -120,6 +206,7 @@ const BannerManagement = () => {
             reset();
             setBannerFile(null);
             setPreviewUrl(null);
+            setShowModal(false);
         } catch (error) {
             console.error("Failed to create banner", error);
             toast.error("Failed to create banner");
@@ -140,7 +227,41 @@ const BannerManagement = () => {
         }
     };
 
-    // Table Columns
+    // Filter banners client-side for smoother interaction
+    const filteredBanners = useMemo(() => {
+        return banners.filter(banner => {
+            // Status Filter
+            const matchesStatus = statusFilter === 'all'
+                ? true
+                : statusFilter === 'active' ? banner.is_active : !banner.is_active;
+
+            // Global Filter (Search)
+            const matchesSearch = globalFilter
+                ? (banner.title?.toLowerCase().includes(globalFilter.toLowerCase()) ||
+                    banner.target_role?.toLowerCase().includes(globalFilter.toLowerCase()))
+                : true;
+
+            // Date Filter
+            let matchesDate = true;
+            if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
+                if (!banner.created_at) {
+                    matchesDate = false;
+                } else {
+                    const bannerDate = parseISO(banner.created_at);
+                    if (isNaN(bannerDate.getTime())) {
+                        matchesDate = false;
+                    } else {
+                        matchesDate = isWithinInterval(bannerDate, {
+                            start: startOfDay(dateRange[0].startDate),
+                            end: endOfDay(dateRange[0].endDate)
+                        });
+                    }
+                }
+            }
+
+            return matchesStatus && matchesSearch && matchesDate;
+        });
+    }, [banners, globalFilter, statusFilter, isDateFiltered, dateRange]);
     const columns = useMemo(() => [
         {
             header: 'Banner',
@@ -224,16 +345,6 @@ const BannerManagement = () => {
         }
     ], []);
 
-    // Filter banners client-side for smoother interaction
-    const filteredBanners = useMemo(() => {
-        return banners.filter(banner => {
-            return globalFilter
-                ? (banner.title?.toLowerCase().includes(globalFilter.toLowerCase()) ||
-                    banner.target_role?.toLowerCase().includes(globalFilter.toLowerCase()))
-                : true;
-        });
-    }, [banners, globalFilter]);
-
     const table = useReactTable({
         data: filteredBanners,
         columns,
@@ -257,7 +368,7 @@ const BannerManagement = () => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Banner Management</h1>
@@ -265,292 +376,411 @@ const BannerManagement = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                {/* Creation Sidebar */}
-                <div className="xl:col-span-12 xxl:col-span-4 space-y-6">
-                    <div className="bg-white dark:bg-dashboard-card shadow-sm rounded-[3px] p-8 border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-bl-full -mr-10 -mt-10" />
-
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                            <PlusIcon className="w-6 h-6 text-primary-500" />
-                            {isSuperAdmin ? 'Platform Banner' : 'Upload New Design'}
-                        </h2>
-
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">Banner Title</label>
-                                        <input
-                                            type="text"
-                                            className="input-field rounded-[3px]"
-                                            placeholder="E.g. Special Offer - Condo for Sale"
-                                            {...register('title')}
-                                        />
-                                        {errors.title && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.title.message}</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">
-                                            {isSuperAdmin ? 'Image URL' : 'Banner Graphic'}
-                                        </label>
-                                        {isSuperAdmin ? (
-                                            <input
-                                                type="url"
-                                                className="input-field rounded-[3px]"
-                                                placeholder="https://example.com/image.jpg"
-                                                {...register('image_url', { required: 'Image URL is required' })}
-                                            />
-                                        ) : (
-                                            <div className="space-y-4">
-                                                <div className="relative group">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleFileChange}
-                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                                    />
-                                                    <div className={`h-40 border-2 border-dashed rounded-[3px] flex flex-col items-center justify-center transition-all duration-300 ${previewUrl ? 'border-primary-500 bg-primary-50/50' : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-primary-400'}`}>
-                                                        {previewUrl ? (
-                                                            <img src={previewUrl} className="w-full h-full object-cover rounded-[3px]" />
-                                                        ) : (
-                                                            <>
-                                                                <div className="p-3 bg-white dark:bg-gray-700 rounded-[3px] shadow-lg text-primary-500 mb-3 group-hover:scale-110 transition-transform">
-                                                                    <ArrowUpTrayIcon className="w-6 h-6" />
-                                                                </div>
-                                                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Select Graphic</span>
-                                                                <span className="text-[10px] text-gray-400 mt-1">Recommended 1200x400px</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {errors.image_url && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.image_url.message}</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">Link Destination (Optional)</label>
-                                        <div className="relative">
-                                            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                            <input
-                                                type="url"
-                                                className="input-field pl-10 rounded-[3px]"
-                                                placeholder="https://..."
-                                                {...register('link_url')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {isSuperAdmin && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">Target Audience</label>
-                                                <Controller
-                                                    name="target_role"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <StyledSelect
-                                                            {...field}
-                                                            options={[
-                                                                { value: 'all', label: 'Everyone' },
-                                                                { value: 'agent', label: 'Agents only' },
-                                                                { value: 'public', label: 'Site visitors' },
-                                                            ]}
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">Visibility (Days)</label>
-                                                <input
-                                                    type="number"
-                                                    className="input-field rounded-[3px]"
-                                                    {...register('days_active')}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block">Rich Description</label>
-                                        <div className="bg-white dark:bg-gray-800 rounded-[3px] overflow-hidden border border-gray-200 dark:border-gray-700">
-                                            <Controller
-                                                name="description"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <ReactQuill
-                                                        {...field}
-                                                        theme="snow"
-                                                        modules={quillModules}
-                                                        placeholder="Add detailed content for this banner campaign..."
-                                                        className="h-64 dark:text-white"
-                                                    />
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4">
-                                        <button
-                                            type="submit"
-                                            disabled={loading || uploading || (!isSuperAdmin && !bannerFile)}
-                                            className="btn-primary w-full py-4 rounded-[3px] shadow-sm text-sm font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 group transition-all"
-                                        >
-                                            {loading ? (
-                                                <>
-                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/50 border-t-white" />
-                                                    <span>Designing...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                                    <span>{isSuperAdmin ? 'Publish Banner' : 'Activate Banner'}</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+            {/* Toolbar */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+                {/* LEFT: Page Size */}
+                <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
+                    <div className="w-16">
+                        <StyledSelect
+                            options={[
+                                { value: 5, label: '5' },
+                                { value: 10, label: '10' },
+                                { value: 20, label: '20' },
+                                { value: 50, label: '50' },
+                            ]}
+                            value={{ value: table.getState().pagination.pageSize, label: `${table.getState().pagination.pageSize}` }}
+                            onChange={(val) => table.setPageSize(val)}
+                            isSearchable={false}
+                            components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+                            styles={{
+                                control: (base) => ({ ...base, minHeight: '34px', height: '34px', textAlign: 'center', cursor: 'pointer', fontSize: '12px' }),
+                                valueContainer: (base) => ({ ...base, justifyContent: 'center', padding: '0' }),
+                                singleValue: (base) => ({ ...base, margin: '0', textAlign: 'center', width: '100% ' })
+                            }}
+                        />
                     </div>
                 </div>
 
-                {/* Data Table */}
-                <div className="xl:col-span-12 space-y-4">
-                    <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                {/* CENTER: Status & Date Filters */}
+                <div className="flex flex-wrap items-center lg:justify-center gap-3 flex-1 w-full">
+                    {/* Status Filter */}
+                    <div className="w-full sm:w-36">
+                        <StyledSelect
+                            options={[
+                                { value: 'all', label: 'All Status' },
+                                { value: 'active', label: 'Active' },
+                                { value: 'inactive', label: 'Inactive' },
+                            ]}
+                            value={{ value: statusFilter, label: statusFilter === 'all' ? 'All Status' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) }}
+                            onChange={(val) => setStatusFilter(val)}
+                            isSearchable={false}
+                            styles={{ control: (base) => ({ ...base, minHeight: '34px', height: '34px' }), valueContainer: (base) => ({ ...base, padding: '0 8px' }) }}
+                        />
+                    </div>
 
-                        {/* Table Toolbar/Header */}
-                        <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                            <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-500 font-medium">Show</span>
-                                <div className="w-16">
-                                    <StyledSelect
-                                        options={[
-                                            { value: 5, label: '5' },
-                                            { value: 10, label: '10' },
-                                            { value: 20, label: '20' },
-                                            { value: 50, label: '50' },
-                                        ]}
-                                        value={{ value: table.getState().pagination.pageSize, label: `${table.getState().pagination.pageSize}` }}
-                                        onChange={(val) => table.setPageSize(val)}
-                                        isSearchable={false}
-                                        styles={{
-                                            control: (base) => ({ ...base, minHeight: '30px', height: '30px', borderRadius: '3px' }),
-                                            valueContainer: (base) => ({ ...base, padding: '0 8px' }),
-                                            singleValue: (base) => ({ ...base, fontSize: '12px' })
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="relative w-full sm:w-64">
-                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={globalFilter}
-                                    onChange={(e) => setGlobalFilter(e.target.value)}
-                                    placeholder="Search campaigns..."
-                                    className="input-field pl-9 h-[34px] text-[12px] rounded-[3px]"
-                                />
-                            </div>
+                    {/* Date Filters */}
+                    <div className="relative flex items-center gap-2" ref={datePickerRef}>
+                        <div className="w-full sm:w-56">
+                            <StyledSelect
+                                options={[
+                                    { value: 'today', label: 'Today' },
+                                    { value: 'yesterday', label: 'Yesterday' },
+                                    { value: 'last7days', label: 'Last 7 Days' },
+                                    { value: 'thismonth', label: 'This Month' },
+                                    { value: 'alltime', label: 'All Time' },
+                                    { value: 'custom', label: 'Custom Range...' },
+                                ]}
+                                value={{
+                                    value: datePreset,
+                                    label: datePreset === 'custom'
+                                        ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
+                                        : datePreset === 'alltime' ? 'All Time' : datePreset.charAt(0).toUpperCase() + datePreset.slice(1).replace('7', ' 7 ')
+                                }}
+                                onChange={(val) => handleDatePresetChange(val)}
+                                isSearchable={false}
+                                styles={{ control: (base) => ({ ...base, minHeight: '34px', height: '34px', fontSize: '12px' }), valueContainer: (base) => ({ ...base, padding: '0 8px' }) }}
+                            />
                         </div>
 
-                        {banners.length === 0 ? (
-                            <div className="py-20">
-                                <EmptyState
-                                    icon={InboxIcon}
-                                    title="No active banners"
-                                    description="Your showcase is currently empty. Design your first banner to stand out."
-                                />
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50/50 dark:bg-gray-800/20 border-b dark:border-gray-800">
-                                        {table.getHeaderGroups().map(headerGroup => (
-                                            <tr key={headerGroup.id}>
-                                                {headerGroup.headers.map(header => (
-                                                    <th key={header.id} className="px-8 py-5 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
-                                                        <div
-                                                            className={`flex items-center gap-1 group ${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`}
-                                                            onClick={header.column.getToggleSortingHandler()}
-                                                        >
-                                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                                            {header.column.getCanSort() && (
-                                                                <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <ChevronUpIcon className={`w-2 h-2 ${header.column.getIsSorted() === 'asc' ? 'text-primary-500' : ''}`} />
-                                                                    <ChevronDownIcon className={`w-2 h-2 ${header.column.getIsSorted() === 'desc' ? 'text-primary-500' : ''}`} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                                        {table.getRowModel().rows.map(row => (
-                                            <tr key={row.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors group">
-                                                {row.getVisibleCells().map(cell => (
-                                                    <td key={cell.id} className="px-8 py-5 text-sm whitespace-nowrap">
-                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        <button
+                            onClick={() => handleDatePresetChange('alltime')}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            title="Clear Date Filter"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                        </button>
 
-                                {/* Pagination Controls */}
-                                <div className="px-8 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 dark:bg-gray-800/10">
-                                    <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
-                                        Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of {table.getFilteredRowModel().rows.length} campaigns
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={() => table.setPageIndex(0)}
-                                            disabled={!table.getCanPreviousPage()}
-                                            className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                                        >
-                                            <ChevronDoubleLeftIcon className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => table.previousPage()}
-                                            disabled={!table.getCanPreviousPage()}
-                                            className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                                        >
-                                            <ChevronLeftIcon className="w-4 h-4" />
-                                        </button>
-                                        <div className="flex items-center space-x-1 mx-2">
-                                            <span className="text-xs text-gray-500 font-bold">Page</span>
-                                            <span className="text-xs text-primary-600 font-bold px-2 py-0.5 bg-primary-50 rounded-[3px]">{table.getState().pagination.pageIndex + 1}</span>
-                                            <span className="text-xs text-gray-500 font-bold">of {table.getPageCount()}</span>
+                        {showDatePicker && (
+                            <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                                    <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500"><ChevronLeftIcon className="w-5 h-5" /></button>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-32">
+                                            <StyledSelect
+                                                value={{ value: getMonth(shownDate), label: format(shownDate, 'MMMM') }}
+                                                onChange={(opt) => setShownDate(setMonth(shownDate, opt.value))}
+                                                options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
+                                                isSearchable={false}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
+                                            />
                                         </div>
-                                        <button
-                                            onClick={() => table.nextPage()}
-                                            disabled={!table.getCanNextPage()}
-                                            className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                                        >
-                                            <ChevronRightIcon className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                                            disabled={!table.getCanNextPage()}
-                                            className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                                        >
-                                            <ChevronDoubleRightIcon className="w-4 h-4" />
-                                        </button>
+                                        <div className="w-24">
+                                            <StyledSelect
+                                                value={{ value: getYear(shownDate), label: getYear(shownDate).toString() }}
+                                                onChange={(opt) => setShownDate(setYear(shownDate, opt.value))}
+                                                options={Array.from({ length: 5 }, (_, i) => ({ value: getYear(new Date()) - 2 + i, label: (getYear(new Date()) - 2 + i).toString() }))}
+                                                isSearchable={false}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
+                                            />
+                                        </div>
                                     </div>
+                                    <button onClick={() => setShownDate(addMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500"><ChevronRightIcon className="w-5 h-5" /></button>
                                 </div>
+                                <DateRange
+                                    editableDateInputs={true}
+                                    onChange={item => {
+                                        setDateRange([item.selection]);
+                                        setIsDateFiltered(true);
+                                        setDatePreset('custom');
+                                    }}
+                                    moveRangeOnFirstSelection={false}
+                                    ranges={dateRange}
+                                    shownDate={shownDate}
+                                    showMonthAndYearPickers={false}
+                                    rangeColors={['#3b82f6']}
+                                />
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* RIGHT: Search & Add Button */}
+                <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <div className="relative w-full lg:w-64 h-[34px]">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                            type="text"
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            placeholder="Search campaigns..."
+                            className="input-field pl-9 h-[34px] text-[12px] flex items-center rounded-[3px]"
+                        />
+                    </div>
+                    <button
+                        onClick={() => {
+                            reset();
+                            setBannerFile(null);
+                            setPreviewUrl(null);
+                            setShowModal(true);
+                        }}
+                        className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] shadow-sm rounded-[3px]"
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        <span>Add Banner</span>
+                    </button>
+                </div>
             </div>
+
+            {/* Table */}
+            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                {banners.length === 0 ? (
+                    <div className="py-20">
+                        <EmptyState
+                            icon={InboxIcon}
+                            title="No active banners"
+                            description="Your showcase is currently empty. Design your first banner to stand out."
+                        />
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50/50 dark:bg-gray-800/20 border-b dark:border-gray-800">
+                                {table.getHeaderGroups().map(headerGroup => (
+                                    <tr key={headerGroup.id}>
+                                        {headerGroup.headers.map(header => (
+                                            <th key={header.id} className="px-8 py-5 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                                                <div className={`flex items-center gap-1 group ${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`} onClick={header.column.getToggleSortingHandler()}>
+                                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                                    {header.column.getCanSort() && (
+                                                        <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <ChevronUpIcon className={`w-2 h-2 ${header.column.getIsSorted() === 'asc' ? 'text-primary-500' : ''}`} />
+                                                            <ChevronDownIcon className={`w-2 h-2 ${header.column.getIsSorted() === 'desc' ? 'text-primary-500' : ''}`} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                                {table.getRowModel().rows.map(row => (
+                                    <tr key={row.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors group">
+                                        {row.getVisibleCells().map(cell => (
+                                            <td key={cell.id} className="px-8 py-5 text-sm whitespace-nowrap">
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* Pagination */}
+                        <div className="px-8 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 dark:bg-gray-800/10">
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of {table.getFilteredRowModel().rows.length} campaigns
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronDoubleLeftIcon className="w-4 h-4" /></button>
+                                <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronLeftIcon className="w-4 h-4" /></button>
+                                <div className="flex items-center space-x-1 mx-2">
+                                    <span className="text-xs text-gray-500 font-bold">Page</span>
+                                    <span className="text-xs text-primary-600 font-bold px-2 py-0.5 bg-primary-50 rounded-[3px]">{table.getState().pagination.pageIndex + 1}</span>
+                                    <span className="text-xs text-gray-500 font-bold">of {table.getPageCount()}</span>
+                                </div>
+                                <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronRightIcon className="w-4 h-4" /></button>
+                                <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronDoubleRightIcon className="w-4 h-4" /></button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Creation Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[3px] border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
+
+                        {/* Premium Header with Gradient - Compacted */}
+                        <div className="relative z-20 shadow-none overflow-hidden flex items-center justify-between p-5 bg-gradient-to-r from-primary-600 to-indigo-700 text-white">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm border border-white/30 shadow-none">
+                                    <SparklesIcon className="w-6 h-6 text-white animate-pulse" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 tracking-tight">
+                                        {isSuperAdmin ? 'Platform Campaign Studio' : 'Banner Design Studio'}
+                                    </h2>
+                                    <p className="text-white/60 text-[10px] font-medium tracking-wide uppercase">Craft high-impact visual campaigns</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowModal(false)} className="relative z-10 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all duration-300">
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="overflow-y-auto overflow-x-hidden flex-1 bg-white dark:bg-gray-900">
+                            <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+                                <div className="w-full">
+                                    {/* Unified Unified Card */}
+                                    <div className="bg-white dark:bg-dashboard-card border-b border-gray-200 dark:border-gray-800 space-y-10 p-10">
+
+                                        {/* Row 1: Visual Asset */}
+                                        <div className="space-y-4">
+                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">
+                                                {isSuperAdmin ? '1. Asset Source' : '1. Campaign Visual Design'}
+                                            </label>
+                                            {isSuperAdmin ? (
+                                                <input
+                                                    type="url"
+                                                    className="input-field rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700"
+                                                    placeholder="https://images.unsplash.com/..."
+                                                    {...register('image_url', { required: 'Image URL is required' })}
+                                                />
+                                            ) : (
+                                                <div className="relative group">
+                                                    <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" />
+                                                    <div className={`aspect-video sm:aspect-[16/6] rounded-[3px] flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
+                                                        {previewUrl ? (
+                                                            <div className="relative w-full h-full">
+                                                                <img src={previewUrl} className="w-full h-full object-cover rounded-[3px]" alt="Preview" />
+                                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[1px] backdrop-blur-[2px]">
+                                                                    <ArrowPathIcon className="w-8 h-8 text-white animate-spin-slow" />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="p-5 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-2xl shadow-xl text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                                    <ArrowUpTrayIcon className="w-8 h-8" />
+                                                                </div>
+                                                                <span className="text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-tighter">Click to Upload Graphic</span>
+                                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 font-bold tracking-widest uppercase">1200 × 400 PX RECOMMENDED</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {errors.image_url && <p className="text-red-500 text-[10px] mt-2 font-black tracking-widest uppercase">{errors.image_url.message}</p>}
+                                        </div>
+
+                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                                        {/* Row 2: Identity & Deployment */}
+                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                            <div className="md:col-span-12 lg:col-span-12 space-y-6">
+                                                <div className="space-y-4">
+                                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">2. Campaign Identity</label>
+                                                    <div className="relative group">
+                                                        <input
+                                                            type="text"
+                                                            className="input-field rounded-[3px] h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
+                                                            placeholder="E.g. Exclusive Waterfront Properties"
+                                                            {...register('title')}
+                                                        />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                                                            <SparklesIcon className="w-4 h-4 text-primary-400" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {isSuperAdmin && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div className="space-y-3">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Visibility Duration</label>
+                                                            <div className="relative">
+                                                                <input type="number" className="input-field rounded-[3px] h-[46px] pr-12" {...register('days_active')} />
+                                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Days</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Targeting</label>
+                                                            <Controller
+                                                                name="target_role"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <StyledSelect
+                                                                        {...field}
+                                                                        options={[
+                                                                            { value: 'all', label: 'Everyone' },
+                                                                            { value: 'agent', label: 'Agents' },
+                                                                            { value: 'public', label: 'Visitors' },
+                                                                        ]}
+                                                                        styles={{ control: (b) => ({ ...b, height: '46px', minHeight: '46px', borderRadius: '3px' }) }}
+                                                                    />
+                                                                )}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {isSuperAdmin && (
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Action Destination (URL)</label>
+                                                        <div className="relative group">
+                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50 dark:bg-gray-800 rounded group-focus-within:bg-primary-50 transition-colors">
+                                                                <LinkIcon className="w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
+                                                            </div>
+                                                            <input type="url" className="input-field pl-12 rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                                        {/* Row 3: Rich Details */}
+                                        <div className="space-y-4">
+                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">3. Storytelling & Details</label>
+                                            <div className="bg-white dark:bg-gray-950 rounded-[3px] border border-gray-200 dark:border-gray-800 overflow-hidden group">
+                                                <Controller
+                                                    name="description"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <ReactQuill
+                                                            {...field}
+                                                            theme="snow"
+                                                            modules={{
+                                                                toolbar: [
+                                                                    [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
+                                                                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                                    [{ 'align': [] }],
+                                                                    [{ 'color': [] }, { 'background': [] }],
+                                                                    ['link'],
+                                                                    ['clean']
+                                                                ],
+                                                            }}
+                                                            placeholder="Craft a compelling story that captures interest..."
+                                                            className="h-[250px] dark:text-white"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Footer Actions */}
+                                <div className="flex items-center justify-between px-10 py-8 border-t border-gray-100 dark:border-gray-800">
+                                    <div className="hidden sm:flex items-center gap-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        <EyeIcon className="w-4 h-4" />
+                                        Interactive Preview enabled
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                        <button type="button" onClick={() => setShowModal(false)} className="h-[38px] px-6 text-[11px] font-black text-gray-500 hover:text-primary-600 uppercase tracking-widest transition-colors">Discard Draft</button>
+                                        <button
+                                            type="submit"
+                                            disabled={loading || uploading || (!isSuperAdmin && !bannerFile)}
+                                            className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] shadow-[0_5px_15px_rgba(59,130,246,0.15)] text-[11px] font-black uppercase tracking-[0.15em] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
+                                            {loading ? (
+                                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/30 border-t-white" />
+                                            ) : (
+                                                <SparklesIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                            )}
+                                            <span>{isSuperAdmin ? 'Deploy Campaign' : 'Initialize Design'}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
