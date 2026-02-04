@@ -39,87 +39,146 @@ const ShowcaseBanners = ({ agentId }) => {
         fetchShowcaseBanners();
     }, [agentId]); // Re-fetch if agentId changes
 
+    // --- Refactored for Single Row Infinite Scroll (Sidebar Friendly) ---
+
+    // Combine all banners into a single flow
+    const allBanners = [...agentBanners, ...companyBanners];
+
+    // We need at least one banner to show something
+    // If we have banners, we duplicate them to create a seamless infinite scroll effect
+    // [A, B] -> [A, B, A, B] to allow scrolling past B back to A without a jump
+    const displayBanners = allBanners.length > 0 ? [...allBanners, ...allBanners, ...allBanners] : [];
+
+    const scrollContainerRef = React.useRef(null);
+
+    // Auto-scroll Logic
+    useEffect(() => {
+        const scrollContainer = scrollContainerRef.current;
+        if (!scrollContainer || allBanners.length <= 1) return; // No scroll needed if 0 or 1 item (though 1 item duplicate handles loop stability, strictly 1 static is better but let's scroll for "infinity" feel if requested, or just toggle)
+
+        // Actually, for "Infinity Scroll", we typically want smooth continuous movement or auto-paging.
+        // Let's do a smooth auto-paging interval.
+
+        const scrollWidth = scrollContainer.scrollWidth;
+        const itemWidth = scrollContainer.clientWidth; // Assuming 1 item visible at a time
+
+        let scrollPos = 0;
+
+        const interval = setInterval(() => {
+            if (!scrollContainer) return;
+
+            // Increment scroll position
+            scrollPos += 1;
+
+            // If we've scrolled past the first set (1/3 of total since we tripled it), reset to 0 (or seamless point)
+            // Real set width:
+            const singleSetWidth = scrollWidth / 3;
+
+            if (scrollContainer.scrollLeft >= singleSetWidth) {
+                scrollContainer.scrollLeft = 0; // Snap back to start (which is identical to current view)
+            } else {
+                scrollContainer.scrollLeft += 1; // Smooth pixel movement
+            }
+
+        }, 20); // 20ms update for smooth ticker look? Or use CSS animation?
+
+        // Let's stick to the previous interval-based snap-scroll if preferred, OR a CSS marquee?
+        // User asked for "infinity scroll". A gentle constant slide is often what this means in modern UI.
+        // BUT, JS-based constant scroll can be jittery. 
+        // Let's try a CSS-based approach for the "track".
+
+        return () => clearInterval(interval);
+
+    }, [allBanners.length]);
+
+    // Alternative: CSS Animation Approach for smoother performance
+    // tailored for the sidebar width
+
     if (loading) return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {[1, 2].map(i => (
-                <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl" />
-            ))}
+        <div className="h-48 bg-gray-100 animate-pulse rounded-2xl w-full" />
+    );
+
+    if (allBanners.length === 0) return (
+        // Default Placeholder if empty
+        <div className="h-48 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
+            <SparklesIcon className="w-8 h-8 text-gray-300 mb-2" />
+            <p className="text-[10px] text-gray-400">Agent Showcase</p>
         </div>
     );
 
-    if (agentBanners.length === 0 && companyBanners.length === 0) return null;
-
-    const renderBanner = (banner, type) => {
-        const isAgent = type === 'agent';
-        const hasRichContent = !!banner.description;
-
-        const imageUrl = banner.image_url.startsWith('http')
-            ? banner.image_url
-            : `${API_URL}${banner.image_url}`;
-
-        const handleClick = () => {
-            if (hasRichContent) {
-                navigate(`/banners/${banner.id}`);
-            } else if (banner.link_url) {
-                window.open(banner.link_url, '_blank');
-            }
-        };
+    const renderBanner = (banner, idx) => {
+        const isAgent = banner.agent_id != null;
+        const imageUrl = banner.image_url?.startsWith('http') ? banner.image_url : `${API_URL}${banner.image_url}`;
 
         return (
             <div
-                className="relative group h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100"
-                onClick={handleClick}
+                key={`${banner.id}-${idx}`}
+                onClick={() => {
+                    if (banner.link_url) window.open(banner.link_url, '_blank');
+                    else navigate(`/banners/${banner.id}`);
+                }}
+                className="w-full flex-shrink-0 snap-center relative group h-48 rounded-2xl overflow-hidden cursor-pointer border border-gray-100 box-border"
+                style={{ flex: '0 0 100%' }} // Force single item width
             >
-                {/* Background Image */}
                 <img
                     src={imageUrl}
                     alt={banner.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80' }}
+                    className="absolute inset-0 w-full h-full object-cover"
                 />
+                <div className={`absolute inset-0 bg-gradient-to-t ${isAgent ? 'from-blue-900/80' : 'from-emerald-900/80'} via-transparent to-transparent opacity-90`} />
 
-                {/* Overlay Gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-500 ${isAgent
-                    ? 'from-blue-600/80 via-blue-600/40 to-transparent opacity-90 group-hover:opacity-100'
-                    : 'from-emerald-600/80 via-emerald-600/40 to-transparent opacity-90 group-hover:opacity-100'
-                    }`} />
-
-                {/* Content */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
-                    <div className="flex items-center gap-2 mb-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full w-fit">
-                        {isAgent ? <SparklesIcon className="w-4 h-4" /> : <BuildingOffice2Icon className="w-4 h-4" />}
-                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                            {isAgent ? 'Agent Showcase' : 'Company Spotlight'}
-                        </span>
-                    </div>
-                    <h4 className="text-xl font-bold mb-1 line-clamp-1 group-hover:translate-x-1 transition-transform">{banner.title}</h4>
-                    <p className="text-xs text-white/80 line-clamp-2">Premium listing exclusive</p>
-
-                    {/* Glass Button Reveal */}
-                    <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="text-xs font-bold border-b-2 border-white pb-1">Learn More &rarr;</span>
-                    </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-80 mb-1 block">
+                        {isAgent ? 'Featured Agent' : 'Spotlight'}
+                    </span>
+                    <h4 className="text-lg font-bold leading-tight line-clamp-1">{banner.title}</h4>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 overflow-hidden px-1">
-            {agentBanners.length > 0 ? renderBanner(agentBanners[0], 'agent') : (
-                <div className="relative group h-48 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
-                    <SparklesIcon className="w-8 h-8 text-gray-300 mb-2" />
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Agent Showcase</span>
-                    <p className="text-[10px] text-gray-400 mt-1">Contact us to feature your listing here</p>
-                </div>
-            )}
-            {companyBanners.length > 0 ? renderBanner(companyBanners[0], 'company') : (
-                <div className="relative group h-48 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
-                    <BuildingOffice2Icon className="w-8 h-8 text-gray-300 mb-2" />
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Company Spotlight</span>
-                    <p className="text-[10px] text-gray-400 mt-1">Partner with the best in Bangkok</p>
-                </div>
-            )}
+        <div className="w-full relative overflow-hidden rounded-2xl group/slider">
+            {/* Slider Track */}
+            {/* We use a simple auto-scroll logic wrapper */}
+            <InfiniteSlider banners={allBanners} renderBanner={renderBanner} />
+        </div>
+    );
+};
+
+// Sub-component for clean Infinite Slider (CSS Animation)
+const InfiniteSlider = ({ banners, renderBanner }) => {
+    // If only 1 banner, just show it static
+    if (banners.length === 1) {
+        return <div className="w-full">{renderBanner(banners[0], 0)}</div>;
+    }
+
+    // For infinite scroll, we need a duplicated list
+    return (
+        <div className="w-full overflow-hidden">
+            {/* CSS Scroll Track */}
+            {/* We translate X. Total duration based on count. */}
+            <div className="flex animate-infinite-scroll hover:pause-scroll">
+                {/* Original Set */}
+                {banners.map((b, i) => renderBanner(b, i))}
+                {/* Duplicate Set for gapless loop */}
+                {banners.map((b, i) => renderBanner(b, `dup-${i}`))}
+            </div>
+
+            {/* Add Tailwind custom animation style if not exists, or inline style */}
+            <style>{`
+                @keyframes infinite-scroll {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-50%); } 
+                }
+                .animate-infinite-scroll {
+                    animation: infinite-scroll ${banners.length * 5}s linear infinite;
+                    width: 200%; /* accommodate 2 sets */
+                }
+                .hover\\:pause-scroll:hover {
+                    animation-play-state: paused;
+                }
+             `}</style>
         </div>
     );
 };

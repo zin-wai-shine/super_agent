@@ -192,7 +192,7 @@ const HomePage = () => {
                             to="/listings"
                             className="btn-secondary hidden sm:flex items-center space-x-2"
                         >
-                            <span>View all listings</span>
+                            <span>View all properties</span>
                             <ArrowRightIcon className="w-4 h-4" />
                         </Link>
                     </div>
@@ -212,14 +212,14 @@ const HomePage = () => {
                     ) : (
                         <div className="text-center py-16">
                             <BuildingOfficeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-xl font-medium text-gray-900 mb-2">No listings yet</h3>
+                            <h3 className="text-xl font-medium text-gray-900 mb-2">No properties yet</h3>
                             <p className="text-gray-500">Check back soon for new properties!</p>
                         </div>
                     )}
 
                     <div className="mt-8 text-center sm:hidden">
                         <Link to="/listings" className="btn-primary">
-                            View all listings
+                            View all properties
                         </Link>
                     </div>
                 </div>

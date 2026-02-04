@@ -81,59 +81,64 @@ func (bc *BannerController) CreateBanner(c *gin.Context) {
 	c.JSON(http.StatusCreated, banner)
 }
 
-// GetBanners fetches active banners
+// GetBanners fetches banners with strict scoping
 func (bc *BannerController) GetBanners(c *gin.Context) {
-	agentID := c.Query("agent_id")
-	query := bc.db.Where("is_active = ?", true).
-		Where("start_date <= ? AND (end_date IS NULL OR end_date >= ?)", time.Now(), time.Now())
+	query := bc.db.Order("created_at DESC")
 
-	// Public check (route starts with /public/)
+	// Check context: Public or Management
 	isPublic := strings.Contains(c.Request.URL.Path, "/public/")
 
-	if agentID != "" {
-		// Fetch banners for specific agent site
-		if isPublic {
+	if isPublic {
+		// PUBLIC VIEW: Strict filtering (Active only, Valid Dates)
+		query = query.Where("is_active = ?", true).
+			Where("start_date <= ? AND (end_date IS NULL OR end_date >= ?)", time.Now(), time.Now())
+
+		agentID := c.Query("agent_id")
+		if agentID != "" {
+			// Show Agent specific banners AND Platform banners (Global)
 			query = query.Where(bc.db.Where("agent_id = ?", agentID).Or("agent_id IS NULL"))
 		} else {
-			query = query.Where("agent_id = ?", agentID)
+			// Platform only
+			query = query.Where("agent_id IS NULL")
 		}
-	} else {
-		// If authenticated and agent/sub-agent, default to their agency banners
-		userID, exists := c.Get("user_id")
-		if exists && !isPublic {
-			var user models.User
-			bc.db.First(&user, "id = ?", userID)
-			if (user.Role == models.RoleAgent || user.Role == models.RoleSubAgent) && user.AgentID != nil {
-				query = query.Where("agent_id = ?", user.AgentID)
-			} else if user.Role == models.RoleSuperAdmin {
-				query = query.Where("agent_id IS NULL")
-			} else {
-				query = query.Where("agent_id IS NULL").Where("target_role = 'all' OR target_role = 'public'")
-			}
-		} else {
-			// Unauthenticated public or forced public check
-			tenantID, tenantExists := c.Get("tenant_id")
-			if tenantExists {
-				query = query.Where(bc.db.Where("agent_id = ?", tenantID).Or("agent_id IS NULL"))
-			} else {
-				// No tenant and no agent_id param?
-				// For public view on platform site, return only platform banners
-				// BUT if it's the dev environment (no subdomain), we might want everything or just platform.
-				// Let's stick to platform only for safety, but the frontend can pass agent_id.
-				query = query.Where("agent_id IS NULL")
-			}
 
-			targetRole := c.Query("target_role")
-			if targetRole != "" {
-				query = query.Where("target_role = ? OR target_role = 'all'", targetRole)
-			} else {
-				query = query.Where("target_role = 'all' OR target_role = 'public'")
-			}
+		// Public Target Role Filtering
+		targetRole := c.Query("target_role")
+		if targetRole != "" {
+			query = query.Where("target_role = ? OR target_role = 'all'", targetRole)
+		} else {
+			query = query.Where("target_role = 'all' OR target_role = 'public'")
+		}
+
+	} else {
+		// MANAGEMENT VIEW: Scoped by User Role (Show All Status: Active/Inactive)
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		var user models.User
+		if err := bc.db.First(&user, "id = ?", userID.(uuid.UUID)).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+			return
+		}
+
+		if user.Role == models.RoleSuperAdmin {
+			// Super Admin manages Platform Banners
+			query = query.Where("agent_id IS NULL")
+		} else if (user.Role == models.RoleAgent || user.Role == models.RoleSubAgent) && user.AgentID != nil {
+			// Agents manage their Agency Banners
+			query = query.Where("agent_id = ?", user.AgentID)
+		} else {
+			// Others see nothing
+			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
+			return
 		}
 	}
 
 	var banners []models.Banner
-	if err := query.Order("created_at DESC").Find(&banners).Error; err != nil {
+	if err := query.Find(&banners).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch banners"})
 		return
 	}
@@ -149,6 +154,73 @@ func (bc *BannerController) GetBanner(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Banner not found"})
 		return
 	}
+	c.JSON(http.StatusOK, banner)
+}
+
+// UpdateBanner updates an existing banner
+func (bc *BannerController) UpdateBanner(c *gin.Context) {
+	id := c.Param("id")
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	ownerID := userID.(uuid.UUID)
+
+	var user models.User
+	bc.db.First(&user, "id = ?", ownerID)
+
+	var banner models.Banner
+	if err := bc.db.First(&banner, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Banner not found"})
+		return
+	}
+
+	// Check ownership
+	if user.Role != models.RoleSuperAdmin {
+		if banner.OwnerID != ownerID && (banner.AgentID == nil || *banner.AgentID != *user.AgentID) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
+			return
+		}
+	}
+
+	var req struct {
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description"`
+		ImageURL    string `json:"image_url" binding:"required"`
+		LinkURL     string `json:"link_url"`
+		TargetRole  string `json:"target_role"`
+		IsActive    bool   `json:"is_active"`
+		DaysActive  int    `json:"days_active"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update dates if needed
+	if req.DaysActive > 0 {
+		startDate := time.Now()
+		banner.StartDate = &startDate
+		end := startDate.AddDate(0, 0, req.DaysActive)
+		banner.EndDate = &end
+	}
+
+	banner.Title = req.Title
+	banner.Description = req.Description
+	banner.ImageURL = req.ImageURL
+	banner.LinkURL = req.LinkURL
+	banner.TargetRole = req.TargetRole
+	banner.IsActive = req.IsActive
+	banner.IsActive = req.IsActive
+	// DaysActive is not stored in DB, only used to calculate EndDate
+
+	if err := bc.db.Save(&banner).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update banner"})
+		return
+	}
+
 	c.JSON(http.StatusOK, banner)
 }
 

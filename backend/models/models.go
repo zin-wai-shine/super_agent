@@ -67,6 +67,9 @@ type Theme struct {
 	SecondaryColor  string    `gorm:"size:20;default:'#34a853'" json:"secondary_color"`
 	TextColor       string    `gorm:"size:20;default:'#202124'" json:"text_color"`
 	FontFamily      string    `gorm:"size:100;default:'Inter, sans-serif'" json:"font_family"`
+	LogoURL         string    `gorm:"size:500" json:"logo_url,omitempty"`
+	HeaderText      string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
+	FooterText      string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
 	CustomCSS       string    `gorm:"type:text" json:"custom_css,omitempty"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`

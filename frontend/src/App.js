@@ -11,9 +11,11 @@ import DashboardLayout from './components/Layout/DashboardLayout';
 import HomePage from './pages/Public/HomePage';
 import ListingsPage from './pages/Public/ListingsPage';
 import ListingDetailPage from './pages/Public/ListingDetailPage';
+import MobileSearchPage from './pages/Public/MobileSearchPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import BannerDetail from './pages/Public/BannerDetail';
+import UserProfile from './pages/Public/UserProfile';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -64,11 +66,21 @@ function App() {
                     <Route path="listings" element={<ListingsPage />} />
                     <Route path="listings/:id" element={<ListingDetailPage />} />
                     <Route path="banners/:id" element={<BannerDetail />} />
+                    <Route path="search" element={<MobileSearchPage />} />
+                    <Route
+                        path="profile"
+                        element={
+                            <ProtectedRoute>
+                                <UserProfile />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Route>
 
                 {/* Auth Routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+
 
                 {/* Agent Dashboard Routes */}
                 <Route

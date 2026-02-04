@@ -145,6 +145,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				banners.GET("", bannerController.GetBanners)
 				banners.GET("/:id", bannerController.GetBanner)
 				banners.POST("", bannerController.CreateBanner)
+				banners.PUT("/:id", bannerController.UpdateBanner)
 				banners.DELETE("/:id", bannerController.DeleteBanner)
 			}
 

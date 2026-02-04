@@ -19,10 +19,11 @@ const ThemeSettings = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
-    const [preview, setPreview] = useState({});
     const logoInputRef = useRef(null);
 
-    const { register, control, handleSubmit, reset, watch, setValue } = useForm();
+    const { register, control, handleSubmit, reset, watch, setValue } = useForm({
+        mode: 'onChange'
+    });
     const watchAll = watch();
 
     const fontOptions = [
@@ -35,6 +36,24 @@ const ThemeSettings = () => {
         { value: 'system-ui, sans-serif', label: 'System Default' },
     ];
 
+    const DEFAULT_THEME = {
+        background_color: '#f5f5f5',
+        primary_color: '#3b82f6',
+        secondary_color: '#34a853',
+        text_color: '#202124',
+        logo_url: '',
+        header_text: 'Super Real Estate',
+        footer_text: '© 2024 Super Real Estate',
+        font_family: 'Inter, sans-serif'
+    };
+
+    // Derived state for live preview (always reflects form state)
+    const preview = {
+        ...DEFAULT_THEME,
+        ...watchAll,
+        font_family: watchAll.font_family?.value || watchAll.font_family || DEFAULT_THEME.font_family
+    };
+
     useEffect(() => {
         fetchTheme();
     }, []);
@@ -44,33 +63,24 @@ const ThemeSettings = () => {
             const response = await agentApi.getTheme();
             const theme = response.data;
             const initialData = {
-                background_color: theme.background_color || '#f5f5f5',
-                primary_color: theme.primary_color || '#3b82f6',
-                secondary_color: theme.secondary_color || '#34a853',
-                text_color: theme.text_color || '#202124',
+                background_color: theme.background_color || DEFAULT_THEME.background_color,
+                primary_color: theme.primary_color || DEFAULT_THEME.primary_color,
+                secondary_color: theme.secondary_color || DEFAULT_THEME.secondary_color,
+                text_color: theme.text_color || DEFAULT_THEME.text_color,
                 logo_url: theme.logo_url || '',
                 header_text: theme.header_text || '',
                 footer_text: theme.footer_text || '',
             };
             reset(initialData);
 
-            const fontOption = fontOptions.find(f => f.value === (theme.font_family || 'Inter, sans-serif'));
+            const fontOption = fontOptions.find(f => f.value === (theme.font_family || DEFAULT_THEME.font_family));
             setValue('font_family', fontOption || fontOptions[0]);
-
-            setPreview({ ...initialData, font_family: theme.font_family || 'Inter, sans-serif' });
         } catch (error) {
             console.error('Failed to fetch theme:', error);
         } finally {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        setPreview({
-            ...watchAll,
-            font_family: watchAll.font_family?.value || watchAll.font_family || 'Inter, sans-serif',
-        });
-    }, [watchAll]);
 
     const onSubmit = async (data) => {
         setSaving(true);
@@ -110,17 +120,7 @@ const ThemeSettings = () => {
 
     const resetToDefaults = () => {
         if (!window.confirm('Reset all theme settings to defaults?')) return;
-
-        const defaults = {
-            background_color: '#f5f5f5',
-            primary_color: '#3b82f6',
-            secondary_color: '#34a853',
-            text_color: '#202124',
-            logo_url: '',
-            header_text: 'Super Real Estate',
-            footer_text: '© 2024 Super Real Estate',
-        };
-        reset(defaults);
+        reset(DEFAULT_THEME);
         setValue('font_family', fontOptions[0]);
         toast.success('Reset to defaults');
     };
@@ -231,85 +231,15 @@ const ThemeSettings = () => {
                         </div>
 
                         {/* 2. COLORS & STYLE */}
-                        <div className="bg-white dark:bg-dashboard-card rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm">
-                            <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+                        <div className="bg-white dark:bg-dashboard-card rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 rounded-t-2xl">
                                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                     <SwatchIcon className="w-4 h-4 text-primary-500" />
                                     Visual Style
                                 </h2>
                             </div>
                             <div className="p-6 space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    {/* Primary Color */}
-                                    <div className="space-y-2">
-                                        <label className="input-label">Primary Accent</label>
-                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
-                                            <input
-                                                type="color"
-                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-                                                {...register('primary_color')}
-                                            />
-                                            <input
-                                                type="text"
-                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
-                                                {...register('primary_color')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Secondary Color */}
-                                    <div className="space-y-2">
-                                        <label className="input-label">Secondary Color</label>
-                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
-                                            <input
-                                                type="color"
-                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-                                                {...register('secondary_color')}
-                                            />
-                                            <input
-                                                type="text"
-                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
-                                                {...register('secondary_color')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Background Color */}
-                                    <div className="space-y-2">
-                                        <label className="input-label">Background</label>
-                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
-                                            <input
-                                                type="color"
-                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-                                                {...register('background_color')}
-                                            />
-                                            <input
-                                                type="text"
-                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
-                                                {...register('background_color')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Text Color */}
-                                    <div className="space-y-2">
-                                        <label className="input-label">Body Text</label>
-                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
-                                            <input
-                                                type="color"
-                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-                                                {...register('text_color')}
-                                            />
-                                            <input
-                                                type="text"
-                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
-                                                {...register('text_color')}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 border-t border-gray-50 dark:border-gray-800">
+                                <div className="pb-6 border-b border-gray-50 dark:border-gray-800">
                                     <label className="input-label">Typography</label>
                                     <Controller
                                         name="font_family"
@@ -323,6 +253,84 @@ const ThemeSettings = () => {
                                             />
                                         )}
                                     />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Primary Color */}
+                                    <div className="space-y-2">
+                                        <label className="input-label">Primary Accent</label>
+                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            <input
+                                                type="color"
+                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
+                                                {...register('primary_color')}
+                                                value={preview.primary_color}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
+                                                {...register('primary_color')}
+                                                value={preview.primary_color}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Secondary Color */}
+                                    <div className="space-y-2">
+                                        <label className="input-label">Secondary Color</label>
+                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            <input
+                                                type="color"
+                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
+                                                {...register('secondary_color')}
+                                                value={preview.secondary_color}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
+                                                {...register('secondary_color')}
+                                                value={preview.secondary_color}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Background Color */}
+                                    <div className="space-y-2">
+                                        <label className="input-label">Background</label>
+                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            <input
+                                                type="color"
+                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
+                                                {...register('background_color')}
+                                                value={preview.background_color}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
+                                                {...register('background_color')}
+                                                value={preview.background_color}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Text Color */}
+                                    <div className="space-y-2">
+                                        <label className="input-label">Body Text</label>
+                                        <div className="flex items-center gap-3 p-1 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-800">
+                                            <input
+                                                type="color"
+                                                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
+                                                {...register('text_color')}
+                                                value={preview.text_color}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="bg-transparent border-0 focus:ring-0 text-xs font-mono w-full"
+                                                {...register('text_color')}
+                                                value={preview.text_color}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

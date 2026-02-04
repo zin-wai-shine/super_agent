@@ -165,5 +165,6 @@ export const bannerApi = {
     getBanners: (params) => api.get('/banners', { params }), // params can include target_role, agent_id
     getBanner: (id) => api.get(`/banners/${id}`),
     createBanner: (data) => api.post('/banners', data),
+    updateBanner: (id, data) => api.put(`/banners/${id}`, data),
     deleteBanner: (id) => api.delete(`/banners/${id}`),
 };

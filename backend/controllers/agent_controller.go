@@ -346,6 +346,8 @@ func (ac *AgentController) GetTheme(c *gin.Context) {
 			SecondaryColor:  "#34a853",
 			TextColor:       "#202124",
 			FontFamily:      "Inter, sans-serif",
+			HeaderText:      "Super Real Estate",
+			FooterText:      "© 2024 Super Real Estate. All rights reserved.",
 		}
 	}
 

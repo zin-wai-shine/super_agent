@@ -27,6 +27,7 @@ import {
     XMarkIcon,
     ArrowPathIcon,
     FunnelIcon,
+    PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 import {
@@ -76,7 +77,12 @@ const BannerManagement = () => {
 
     const API_URL = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:8080';
 
-    const { register, handleSubmit, reset, control, setValue, watch, formState: { errors } } = useForm({
+    // UI States
+    const [showConfirmClose, setShowConfirmClose] = useState(false);
+    const [viewMode, setViewMode] = useState('create'); // 'create', 'edit', 'view'
+    const [selectedBanner, setSelectedBanner] = useState(null);
+
+    const { register, handleSubmit, reset, control, setValue, watch, formState: { errors, isDirty } } = useForm({
         defaultValues: {
             title: '',
             description: '',
@@ -84,6 +90,46 @@ const BannerManagement = () => {
             days_active: 30
         }
     });
+
+    // Unsaved Changes Protection
+    const hasUnsavedChanges = isDirty || !!bannerFile;
+
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (showModal && hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [showModal, hasUnsavedChanges]);
+
+    const handleCloseModal = (force = false) => {
+        if (!force && viewMode !== 'view' && hasUnsavedChanges) {
+            setShowConfirmClose(true);
+        } else {
+            setShowModal(false);
+            setShowConfirmClose(false);
+            reset();
+            setBannerFile(null);
+            setPreviewUrl(null);
+            setSelectedBanner(null);
+        }
+    };
+
+    const confirmClose = () => {
+        setShowConfirmClose(false);
+        setShowModal(false);
+        reset();
+        setBannerFile(null);
+        setPreviewUrl(null);
+    };
+
+    const cancelClose = () => {
+        setShowConfirmClose(false);
+    };
 
     // Close datepicker when clicking outside
     useEffect(() => {
@@ -175,6 +221,7 @@ const BannerManagement = () => {
         try {
             let imageUrl = data.image_url;
 
+            // Handle file upload if a new file is selected
             if (!isSuperAdmin && bannerFile) {
                 setUploading(true);
                 try {
@@ -187,6 +234,9 @@ const BannerManagement = () => {
                     return;
                 }
                 setUploading(false);
+            } else if (viewMode === 'edit' && selectedBanner && !bannerFile) {
+                // Keep existing image if no new file
+                imageUrl = selectedBanner.image_url;
             }
 
             // For agents, title can be custom if they provide it, otherwise use default
@@ -200,16 +250,20 @@ const BannerManagement = () => {
                 is_active: true
             };
 
-            await bannerApi.createBanner(payload);
-            toast.success("Banner created successfully");
+            if (viewMode === 'edit' && selectedBanner) {
+                await bannerApi.updateBanner(selectedBanner.id, payload);
+                toast.success("Banner updated successfully");
+            } else {
+                await bannerApi.createBanner(payload);
+                toast.success("Banner created successfully");
+            }
+
             fetchBanners();
-            reset();
-            setBannerFile(null);
-            setPreviewUrl(null);
-            setShowModal(false);
+            handleCloseModal(true); // Force close
         } catch (error) {
-            console.error("Failed to create banner", error);
-            toast.error("Failed to create banner");
+            console.error("Failed to save banner", error);
+            toast.error("Failed to save banner");
+            setLoading(false);
         } finally {
             setLoading(false);
         }
@@ -225,6 +279,52 @@ const BannerManagement = () => {
             console.error("Failed to delete banner", error);
             toast.error("Failed to delete banner");
         }
+    };
+
+    const handlePreview = (banner) => { // Now handles View Mode
+        setViewMode('view');
+        setSelectedBanner(banner);
+        setValue('title', banner.title);
+        setValue('description', banner.description || '');
+        setValue('target_role', banner.target_role);
+        setValue('days_active', banner.days_active || 30);
+
+        const fullImageUrl = banner.image_url.startsWith('http')
+            ? banner.image_url
+            : `${API_URL}${banner.image_url}`;
+        setPreviewUrl(fullImageUrl);
+
+        setShowModal(true);
+    };
+
+    const handleEdit = (banner) => {
+        setViewMode('edit');
+        setSelectedBanner(banner);
+        setValue('title', banner.title);
+        setValue('description', banner.description || '');
+        setValue('target_role', banner.target_role);
+        setValue('days_active', banner.days_active || 30);
+
+        const fullImageUrl = banner.image_url.startsWith('http')
+            ? banner.image_url
+            : `${API_URL}${banner.image_url}`;
+        setPreviewUrl(fullImageUrl);
+
+        setShowModal(true);
+    };
+
+    const handleCreate = () => {
+        setViewMode('create');
+        setSelectedBanner(null);
+        reset({
+            title: '',
+            description: '',
+            target_role: 'public',
+            days_active: 30
+        });
+        setBannerFile(null);
+        setPreviewUrl(null);
+        setShowModal(true);
     };
 
     // Filter banners client-side for smoother interaction
@@ -326,13 +426,20 @@ const BannerManagement = () => {
             id: 'actions',
             cell: ({ row }) => (
                 <div className="flex items-center justify-end whitespace-nowrap gap-2">
-                    <Link
-                        to={`/banners/${row.original.id}`}
-                        className="p-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-[3px] transition-colors border border-transparent hover:border-primary-100"
-                        title="Preview Banner"
+                    <button
+                        onClick={() => handlePreview(row.original)}
+                        className="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-[3px] transition-colors border border-transparent hover:border-gray-200"
+                        title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
-                    </Link>
+                    </button>
+                    <button
+                        onClick={() => handleEdit(row.original)}
+                        className="p-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-[3px] transition-colors border border-transparent hover:border-primary-100"
+                        title="Edit Banner"
+                    >
+                        <PencilSquareIcon className="w-5 h-5" />
+                    </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
                         className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-[3px] transition-colors border border-transparent hover:border-red-100"
@@ -343,7 +450,7 @@ const BannerManagement = () => {
                 </div>
             )
         }
-    ], []);
+    ], [handleDelete, handlePreview]);
 
     const table = useReactTable({
         data: filteredBanners,
@@ -508,12 +615,7 @@ const BannerManagement = () => {
                         />
                     </div>
                     <button
-                        onClick={() => {
-                            reset();
-                            setBannerFile(null);
-                            setPreviewUrl(null);
-                            setShowModal(true);
-                        }}
+                        onClick={handleCreate}
                         className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] shadow-sm rounded-[3px]"
                     >
                         <PlusIcon className="w-4 h-4" />
@@ -590,7 +692,7 @@ const BannerManagement = () => {
 
             {/* Creation Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fade-in">
                     <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[3px] border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
 
                         {/* Premium Header with Gradient - Compacted */}
@@ -601,12 +703,14 @@ const BannerManagement = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 tracking-tight">
-                                        {isSuperAdmin ? 'Platform Campaign Studio' : 'Banner Design Studio'}
+                                        {viewMode === 'create'
+                                            ? (isSuperAdmin ? 'Platform Campaign Studio' : 'Banner Design Studio')
+                                            : viewMode === 'edit' ? 'Edit Campaign' : 'Campaign Details'}
                                     </h2>
                                     <p className="text-white/60 text-[10px] font-medium tracking-wide uppercase">Craft high-impact visual campaigns</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowModal(false)} className="relative z-10 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all duration-300">
+                            <button onClick={() => handleCloseModal()} className="relative z-10 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all duration-300">
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -623,22 +727,32 @@ const BannerManagement = () => {
                                                 {isSuperAdmin ? '1. Asset Source' : '1. Campaign Visual Design'}
                                             </label>
                                             {isSuperAdmin ? (
-                                                <input
-                                                    type="url"
-                                                    className="input-field rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700"
-                                                    placeholder="https://images.unsplash.com/..."
-                                                    {...register('image_url', { required: 'Image URL is required' })}
-                                                />
+                                                viewMode === 'view' ? (
+                                                    <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300">
+                                                        {watch('image_url')}
+                                                    </div>
+                                                ) : (
+                                                    <input
+                                                        type="url"
+                                                        className="input-field rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700"
+                                                        placeholder="https://images.unsplash.com/..."
+                                                        {...register('image_url', { required: 'Image URL is required' })}
+                                                    />
+                                                )
                                             ) : (
                                                 <div className="relative group">
-                                                    <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" />
+                                                    {viewMode !== 'view' && (
+                                                        <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" />
+                                                    )}
                                                     <div className={`aspect-video sm:aspect-[16/6] rounded-[3px] flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
                                                         {previewUrl ? (
                                                             <div className="relative w-full h-full">
                                                                 <img src={previewUrl} className="w-full h-full object-cover rounded-[3px]" alt="Preview" />
-                                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[1px] backdrop-blur-[2px]">
-                                                                    <ArrowPathIcon className="w-8 h-8 text-white animate-spin-slow" />
-                                                                </div>
+                                                                {viewMode !== 'view' && (
+                                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[1px] backdrop-blur-[2px]">
+                                                                        <ArrowPathIcon className="w-8 h-8 text-white animate-spin-slow" />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <>
@@ -663,12 +777,18 @@ const BannerManagement = () => {
                                                 <div className="space-y-4">
                                                     <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">2. Campaign Identity</label>
                                                     <div className="relative group">
-                                                        <input
-                                                            type="text"
-                                                            className="input-field rounded-[3px] h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
-                                                            placeholder="E.g. Exclusive Waterfront Properties"
-                                                            {...register('title')}
-                                                        />
+                                                        {viewMode === 'view' ? (
+                                                            <div className="h-[46px] flex items-center text-xl font-bold text-gray-900 dark:text-white px-1">
+                                                                {watch('title')}
+                                                            </div>
+                                                        ) : (
+                                                            <input
+                                                                type="text"
+                                                                className="input-field rounded-[3px] h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
+                                                                placeholder="E.g. Exclusive Waterfront Properties"
+                                                                {...register('title')}
+                                                            />
+                                                        )}
                                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
                                                             <SparklesIcon className="w-4 h-4 text-primary-400" />
                                                         </div>
@@ -680,27 +800,41 @@ const BannerManagement = () => {
                                                         <div className="space-y-3">
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Visibility Duration</label>
                                                             <div className="relative">
-                                                                <input type="number" className="input-field rounded-[3px] h-[46px] pr-12" {...register('days_active')} />
-                                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Days</span>
+                                                                {viewMode === 'view' ? (
+                                                                    <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                                        {watch('days_active')} Days
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <input type="number" className="input-field rounded-[3px] h-[46px] pr-12" {...register('days_active')} />
+                                                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Days</span>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="space-y-3">
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Targeting</label>
-                                                            <Controller
-                                                                name="target_role"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <StyledSelect
-                                                                        {...field}
-                                                                        options={[
-                                                                            { value: 'all', label: 'Everyone' },
-                                                                            { value: 'agent', label: 'Agents' },
-                                                                            { value: 'public', label: 'Visitors' },
-                                                                        ]}
-                                                                        styles={{ control: (b) => ({ ...b, height: '46px', minHeight: '46px', borderRadius: '3px' }) }}
-                                                                    />
-                                                                )}
-                                                            />
+                                                            {viewMode === 'view' ? (
+                                                                <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 capitalize">
+                                                                    {watch('target_role') === 'all' ? 'Everyone' : watch('target_role') === 'agent' ? 'Agents' : 'Visitors'}
+                                                                </div>
+                                                            ) : (
+                                                                <Controller
+                                                                    name="target_role"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <StyledSelect
+                                                                            {...field}
+                                                                            options={[
+                                                                                { value: 'all', label: 'Everyone' },
+                                                                                { value: 'agent', label: 'Agents' },
+                                                                                { value: 'public', label: 'Visitors' },
+                                                                            ]}
+                                                                            styles={{ control: (b) => ({ ...b, height: '46px', minHeight: '46px', borderRadius: '3px' }) }}
+                                                                        />
+                                                                    )}
+                                                                />
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -712,7 +846,13 @@ const BannerManagement = () => {
                                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50 dark:bg-gray-800 rounded group-focus-within:bg-primary-50 transition-colors">
                                                                 <LinkIcon className="w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
                                                             </div>
-                                                            <input type="url" className="input-field pl-12 rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
+                                                            {viewMode === 'view' ? (
+                                                                <div className="h-[46px] flex items-center px-4 pl-12 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-primary-600 truncate">
+                                                                    {watch('link_url')}
+                                                                </div>
+                                                            ) : (
+                                                                <input type="url" className="input-field pl-12 rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -725,29 +865,36 @@ const BannerManagement = () => {
                                         <div className="space-y-4">
                                             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">3. Storytelling & Details</label>
                                             <div className="bg-white dark:bg-gray-950 rounded-[3px] border border-gray-200 dark:border-gray-800 overflow-hidden group">
-                                                <Controller
-                                                    name="description"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <ReactQuill
-                                                            {...field}
-                                                            theme="snow"
-                                                            modules={{
-                                                                toolbar: [
-                                                                    [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
-                                                                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                                                    [{ 'align': [] }],
-                                                                    [{ 'color': [] }, { 'background': [] }],
-                                                                    ['link'],
-                                                                    ['clean']
-                                                                ],
-                                                            }}
-                                                            placeholder="Craft a compelling story that captures interest..."
-                                                            className="h-[250px] dark:text-white"
-                                                        />
-                                                    )}
-                                                />
+                                                {viewMode === 'view' ? (
+                                                    <div
+                                                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-[3px] text-gray-700 dark:text-gray-300 min-h-[250px] prose dark:prose-invert max-w-none"
+                                                        dangerouslySetInnerHTML={{ __html: watch('description') }}
+                                                    />
+                                                ) : (
+                                                    <Controller
+                                                        name="description"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <ReactQuill
+                                                                {...field}
+                                                                theme="snow"
+                                                                modules={{
+                                                                    toolbar: [
+                                                                        [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
+                                                                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                                        [{ 'align': [] }],
+                                                                        [{ 'color': [] }, { 'background': [] }],
+                                                                        ['link'],
+                                                                        ['clean']
+                                                                    ],
+                                                                }}
+                                                                placeholder="Craft a compelling story that captures interest..."
+                                                                className="h-[250px] dark:text-white"
+                                                            />
+                                                        )}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -760,23 +907,85 @@ const BannerManagement = () => {
                                         Interactive Preview enabled
                                     </div>
                                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                        <button type="button" onClick={() => setShowModal(false)} className="h-[38px] px-6 text-[11px] font-black text-gray-500 hover:text-primary-600 uppercase tracking-widest transition-colors">Discard Draft</button>
-                                        <button
-                                            type="submit"
-                                            disabled={loading || uploading || (!isSuperAdmin && !bannerFile)}
-                                            className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] shadow-[0_5px_15px_rgba(59,130,246,0.15)] text-[11px] font-black uppercase tracking-[0.15em] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
-                                        >
-                                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
-                                            {loading ? (
-                                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/30 border-t-white" />
-                                            ) : (
-                                                <SparklesIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                            )}
-                                            <span>{isSuperAdmin ? 'Deploy Campaign' : 'Initialize Design'}</span>
-                                        </button>
+                                        {viewMode === 'view' ? (
+                                            <div className="flex gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCloseModal()}
+                                                    className="h-[38px] px-6 text-[11px] font-black text-white hover:text-white/80 uppercase tracking-widest bg-gray-900 dark:bg-gray-700 rounded-[3px] transition-colors"
+                                                >
+                                                    Close
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setViewMode('edit')}
+                                                    className="h-[38px] px-8 bg-primary-600 text-white rounded-[3px] text-[11px] font-black uppercase tracking-widest hover:bg-primary-700 transition-colors flex items-center gap-2"
+                                                >
+                                                    <PencilSquareIcon className="w-4 h-4" />
+                                                    Edit Campaign
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <button type="button" onClick={() => handleCloseModal()} className="h-[38px] px-6 text-[11px] font-black text-gray-500 hover:text-primary-600 uppercase tracking-widest transition-colors">
+                                                    {viewMode === 'edit' ? 'Cancel' : 'Discard Draft'}
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    disabled={loading || uploading || (!isSuperAdmin && !bannerFile && viewMode === 'create')}
+                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] shadow-[0_5px_15px_rgba(59,130,246,0.15)] text-[11px] font-black uppercase tracking-[0.15em] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                                                >
+                                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
+                                                    {loading ? (
+                                                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/30 border-t-white" />
+                                                    ) : (
+                                                        <SparklesIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                                    )}
+                                                    <span>
+                                                        {viewMode === 'create'
+                                                            ? (isSuperAdmin ? 'Deploy Campaign' : 'Initialize Design')
+                                                            : 'Save Changes'}
+                                                    </span>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Confirmation Alert */}
+            {showConfirmClose && (
+                <div className="fixed inset-0 z-[10000] flex items-start justify-center pt-20 px-4 bg-gray-900/20 backdrop-blur-sm animate-fade-in pointer-events-auto">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-gray-700 animate-slide-down relative overflow-hidden">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
+                        <div className="flex gap-4">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                                <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide mb-1">Unsaved Changes</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+                                    You have unsaved changes in your banner design. Discarding them will lose all progress.
+                                </p>
+                                <div className="flex items-center justify-end gap-3">
+                                    <button
+                                        onClick={cancelClose}
+                                        className="px-4 py-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                    >
+                                        Keep Editing
+                                    </button>
+                                    <button
+                                        onClick={confirmClose}
+                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-[3px] shadow-lg shadow-red-500/20 transition-all transform hover:-translate-y-0.5"
+                                    >
+                                        Discard Changes
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
