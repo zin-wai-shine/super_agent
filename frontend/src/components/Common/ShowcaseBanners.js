@@ -41,7 +41,7 @@ const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
     const allBanners = [...agentBanners, ...companyBanners];
 
     if (isLoading) return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+        <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden animate-pulse">
             <div className="h-48 bg-gray-200 relative">
                 <div className="absolute bottom-4 left-4 space-y-2">
                     <div className="h-3 w-16 bg-gray-300 rounded" />
@@ -53,7 +53,7 @@ const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
 
     if (allBanners.length === 0) return (
         // Default Placeholder if empty
-        <div className="h-48 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
+        <div className="h-48 rounded-[3px] bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
             <SparklesIcon className="w-8 h-8 text-gray-300 mb-2" />
             <p className="text-[10px] text-gray-400">Agent Showcase</p>
         </div>
@@ -70,7 +70,7 @@ const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
                     if (banner.link_url) window.open(banner.link_url, '_blank');
                     else navigate(`/banners/${banner.id}`);
                 }}
-                className="w-full flex-shrink-0 snap-center relative group h-48 rounded-2xl overflow-hidden cursor-pointer border border-gray-100 box-border"
+                className="w-full flex-shrink-0 snap-center relative group h-48 rounded-[3px] overflow-hidden cursor-pointer border border-gray-100 box-border"
                 style={{ flex: '0 0 100%' }} // Force single item width
             >
                 <img
@@ -91,7 +91,7 @@ const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
     };
 
     return (
-        <div className="w-full relative overflow-hidden rounded-2xl group/slider">
+        <div className="w-full relative overflow-hidden rounded-[3px] group/slider">
             {/* Slider Track */}
             {/* We use a simple auto-scroll logic wrapper */}
             <InfiniteSlider banners={allBanners} renderBanner={renderBanner} />

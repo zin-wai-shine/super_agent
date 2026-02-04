@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { publicApi } from '../../services/api';
 import { TransitMapSVG } from './transit_map.svg';
 import { renderToString } from 'react-dom/server';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 const TransitMapFilter = ({ onStationClick, selectedStation }) => {
     const [stations, setStations] = useState([]);
@@ -142,9 +142,9 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
     }
 
     return (
-        <div className="relative">
-            {/* Legend - Compact Grid */}
-            <div className="mb-4 grid grid-cols-2 gap-2 px-2">
+        <div className="relative h-full flex flex-col">
+            {/* Legend - Modern Pill Chips with 3px Radius & Padding */}
+            <div className="mb-6 flex flex-wrap gap-2 px-1 py-4 bg-gray-50/30 rounded-[3px] border border-gray-100/50">
                 {[
                     { name: 'BTS Sukhumvit', color: '#7FBA00' },
                     { name: 'BTS Silom', color: '#006633' },
@@ -155,52 +155,59 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                     { name: 'Pink Line', color: '#FF69B4' },
                     { name: 'Gold Line', color: '#D4AF37' },
                 ].map((line) => (
-                    <div key={line.name} className="flex items-center space-x-2">
+                    <div
+                        key={line.name}
+                        className="flex items-center gap-2 px-3 py-2 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
+                    >
                         <div
-                            className="w-2.5 h-2.5 rounded-full flex-none"
+                            className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
                             style={{ backgroundColor: line.color }}
                         />
-                        <span className="text-[10px] text-gray-400 font-semibold truncate">{line.name}</span>
+                        <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
                     </div>
                 ))}
             </div>
 
-            {/* Interactive Map Container */}
-            <div className="relative bg-white p-2 overflow-hidden group">
-                {/* Zoom Controls Overlay */}
-                <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
-                    <button
-                        onClick={() => {
-                            const newZoom = Math.min(zoom + 0.1, 2.0);
-                            setZoom(newZoom);
-                            setPan(p => constrainPan(p, newZoom));
-                        }}
-                        className="w-10 h-10 bg-white/90 backdrop-blur shadow-lg border border-gray-100 rounded-xl flex items-center justify-center text-primary-600 font-bold hover:bg-white transition-all active:scale-95"
-                        title="Zoom In"
-                    >
-                        +
-                    </button>
-                    <button
-                        onClick={() => {
-                            const newZoom = Math.max(zoom - 0.1, 0.2);
-                            setZoom(newZoom);
-                            setPan(p => constrainPan(p, newZoom));
-                        }}
-                        className="w-10 h-10 bg-white/90 backdrop-blur shadow-lg border border-gray-100 rounded-xl flex items-center justify-center text-primary-600 font-bold hover:bg-white transition-all active:scale-95"
-                        title="Zoom Out"
-                    >
-                        -
-                    </button>
+            {/* Interactive Map Container - Full Bleed */}
+            <div className="relative bg-white overflow-hidden group flex-1">
+                {/* Zoom Controls Overlay - Floating Glassmorphism */}
+                <div className="absolute top-6 right-6 z-50 flex flex-col gap-2">
+                    <div className="flex flex-col bg-white/80 backdrop-blur-md rounded-[3px] shadow-xl border border-white/20 p-1">
+                        <button
+                            onClick={() => {
+                                const newZoom = Math.min(zoom + 0.1, 2.0);
+                                setZoom(newZoom);
+                                setPan(p => constrainPan(p, newZoom));
+                            }}
+                            className="w-11 h-11 flex items-center justify-center text-gray-700 font-bold hover:bg-white hover:text-primary-600 rounded-[3px] transition-all active:scale-95"
+                            title="Zoom In"
+                        >
+                            <span className="text-xl">+</span>
+                        </button>
+                        <div className="h-px bg-gray-100 mx-2" />
+                        <button
+                            onClick={() => {
+                                const newZoom = Math.max(zoom - 0.1, 0.2);
+                                setZoom(newZoom);
+                                setPan(p => constrainPan(p, newZoom));
+                            }}
+                            className="w-11 h-11 flex items-center justify-center text-gray-700 font-bold hover:bg-white hover:text-primary-600 rounded-[3px] transition-all active:scale-95"
+                            title="Zoom Out"
+                        >
+                            <span className="text-xl">−</span>
+                        </button>
+                    </div>
+
                     <button
                         onClick={() => {
                             const defaultZoom = 0.8;
                             setZoom(defaultZoom);
                             setPan(constrainPan({ x: -200, y: -200 }, defaultZoom));
                         }}
-                        className="w-10 h-10 bg-white/90 backdrop-blur shadow-lg border border-gray-100 rounded-xl flex items-center justify-center text-primary-600 hover:bg-white transition-all active:scale-95"
+                        className="w-11 h-11 bg-white/80 backdrop-blur-md shadow-xl border border-white/20 rounded-[3px] flex items-center justify-center text-gray-500 hover:text-primary-600 hover:bg-white transition-all active:scale-95"
                         title="Reset View"
                     >
-                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
@@ -208,7 +215,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
 
                 <div
                     ref={mapWrapperRef}
-                    className="relative cursor-grab active:cursor-grabbing select-none h-[450px] bg-slate-50 border border-gray-100 rounded-2xl"
+                    className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50"
                     style={{ overflow: 'hidden' }}
                     onMouseDown={(e) => {
                         const startX = e.pageX - pan.x;
@@ -265,7 +272,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                             >
                                 <div className="relative flex items-center justify-center">
                                     <div className="w-8 h-8 bg-red-500/30 rounded-full animate-ping absolute"></div>
-                                    <div className="w-4 h-4 bg-red-600 rounded-full shadow-lg border-2 border-white relative z-10"></div>
+                                    <div className="w-4 h-4 bg-red-600 rounded-[1px] shadow-lg border-2 border-white relative z-10"></div>
                                 </div>
                             </div>
                         )}
@@ -274,25 +281,22 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
 
                 {/* Map Controls Tips */}
                 <div className="absolute bottom-6 right-6 flex flex-col items-end space-y-2 pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-lg shadow-sm border border-gray-100 flex items-center space-x-2">
+                    <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-[3px] shadow-sm border border-gray-100 flex items-center space-x-2">
                         <span className="text-[10px] text-gray-400 font-medium">Scroll to explore map</span>
                     </div>
                 </div>
             </div>
 
-            {/* Selected Station Info Card - Compact */}
+            {/* Selected Station Info Card - Modern Premium with 3px Radius */}
             {selectedStation && (
-                <div className="mt-4 p-3 bg-primary-50 rounded-xl border-l-4 border-primary-500 flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                            <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                <div className="mt-6 p-4 bg-white rounded-[3px] border border-gray-100 shadow-xl flex items-center justify-between animate-fade-in ring-1 ring-black/[0.02]">
+                    <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-primary-50 rounded-[3px] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                            <MapPinIcon className="w-6 h-6 text-primary-600" />
                         </div>
                         <div>
-                            <span className="block text-[10px] font-bold text-primary-600 uppercase tracking-wider leading-none mb-1">Station Selected</span>
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="block text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] leading-none mb-1.5">Station Active</span>
+                            <span className="text-lg font-black text-gray-900 tracking-tight">
                                 {stations.find(s => s.id === selectedStation)?.name_en || selectedStation}
                             </span>
                         </div>
@@ -302,20 +306,25 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                             setMarkerPos(null);
                             onStationClick('', '');
                         }}
-                        className="p-1.5 hover:bg-white text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                        className="p-2.5 hover:bg-gray-50 text-gray-400 hover:text-red-500 rounded-[3px] transition-all hover:rotate-90"
+                        title="Clear Selection"
                     >
-                        <XMarkIcon className="w-4 h-4" />
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
             )}
 
             {!selectedStation && (
-                <p className="text-center text-gray-400 text-sm mt-6 font-medium">
-                    Click on any station in the map to find nearby properties
-                </p>
+                <div className="flex items-center justify-center gap-2 mt-8 py-4 px-6 bg-gray-50/50 rounded-[3px] border border-dashed border-gray-200">
+                    <SparklesIcon className="w-4 h-4 text-primary-400" />
+                    <p className="text-gray-400 text-sm font-bold tracking-tight">
+                        Click any station on the map to find nearby properties
+                    </p>
+                </div>
             )}
 
-            <style jsx>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .transit-map-svg svg { width: 100%; height: 100%; }
                 
                 @keyframes fade-in {
@@ -323,7 +332,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                     to { opacity: 1; transform: translateY(0); }
                 }
                 .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-            `}</style>
+            `}} />
         </div>
     );
 };
