@@ -233,112 +233,169 @@ const ListingsPage = () => {
                     : 'rounded-xl shadow-sm px-4'
                     }`}>
 
-                    {/* Left Side: Logo (Visible on Scroll) */}
-                    <div className="flex-1 flex items-center">
-                        <a href="/" className={`flex items-center gap-2 transition-all duration-300 origin-left ${!navVisible
-                            ? 'w-auto opacity-100 scale-100 mr-4'
-                            : 'w-0 opacity-0 scale-90 overflow-hidden'
-                            }`}>
-                            <Logo className="h-8 w-8 text-primary-600" />
-                            <span className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
-                                Super Real Estate
-                            </span>
-                        </a>
-                    </div>
-
-                    {/* Center Group: Search + Filters (Absolute Centered) */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-full max-w-fit flex justify-center">
-                        <div className="flex items-center gap-3">
-                            {/* Search Input */}
-                            <div className="w-72 flex items-center h-10 px-4 bg-white rounded-full shadow-sm border border-gray-200 hover:shadow-md focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
-                                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
-                                <input
-                                    type="text"
-                                    value={filters.search}
-                                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                                    placeholder="Search..."
-                                    className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-sm text-gray-900 placeholder-gray-500 p-0"
-                                />
+                    {initialLoading ? (
+                        <div className="flex items-center justify-between w-full animate-pulse px-4">
+                            <div className="flex-1">
+                                <div className="w-0 overflow-hidden" />
                             </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-72 h-10 bg-gray-100 rounded-full" />
+                                <div className="w-px h-8 bg-gray-200 hidden sm:block" />
+                                <div className="flex items-center gap-2">
+                                    <div className="w-24 h-10 bg-gray-100 rounded-full" />
+                                    <div className="w-24 h-10 bg-gray-100 rounded-full" />
+                                    <div className="w-20 h-10 bg-gray-100 rounded-full" />
+                                </div>
+                            </div>
+                            <div className="flex-1 flex justify-end">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-4 w-24 bg-gray-50 rounded hidden lg:block" />
+                                    <div className="flex gap-1">
+                                        <div className="w-10 h-10 bg-gray-100 rounded-lg" />
+                                        <div className="w-10 h-10 bg-gray-100 rounded-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
 
-                            {/* Separator */}
-                            <div className="w-px h-8 bg-gray-300/50 hidden sm:block" />
-
-                            {/* Filter Buttons */}
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setIsFilterModalOpen(true)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border shrink-0 ${hasActiveFilters
-                                        ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
-                                        : 'bg-white text-gray-700 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
-                                        }`}
-                                >
-                                    <FunnelIcon className="w-4 h-4" />
-                                    <span>Filters</span>
-                                </button>
-
-                                <button
-                                    onClick={() => setIsTransitModalOpen(true)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border shrink-0 ${filters.station_id
-                                        ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
-                                        : 'bg-white text-gray-700 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
-                                        }`}
-                                >
-                                    <MapPinIcon className="w-4 h-4" />
-                                    <span>Transit</span>
-                                </button>
-
-                                <a
-                                    href="/listings?view=map"
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-700 border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all shrink-0"
-                                >
-                                    <GlobeAltIcon className="w-4 h-4" />
-                                    <span>Map</span>
+                            {/* Left Side: Logo (Visible on Scroll) */}
+                            <div className="flex-1 flex items-center">
+                                <a href="/" className={`flex items-center gap-2 transition-all duration-300 origin-left ${!navVisible
+                                    ? 'w-auto opacity-100 scale-100 mr-4'
+                                    : 'w-0 opacity-0 scale-90 overflow-hidden'
+                                    }`}>
+                                    <Logo className="h-8 w-8 text-primary-600" />
+                                    <span className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
+                                        Super Real Estate
+                                    </span>
                                 </a>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Right Side: Properties Count & View Toggles */}
-                    <div className="flex-1 flex justify-end z-20">
-                        <div className="flex items-center gap-4 bg-gray-50/50 rounded-lg p-1.5 backdrop-blur-sm">
-                            <div className="hidden sm:flex items-baseline gap-2 text-right pr-2">
-                                <span className="text-sm font-bold text-gray-900">Properties</span>
-                                <span className="text-xs text-gray-500 font-medium">
-                                    {listings.length} results
-                                </span>
+                            {/* Center Group: Search + Filters (Absolute Centered) */}
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-full max-w-fit flex justify-center">
+                                <div className="flex items-center gap-3">
+                                    {/* Search Input */}
+                                    <div className="w-72 flex items-center h-10 px-4 bg-white rounded-full shadow-sm border border-gray-200 hover:shadow-md focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
+                                        <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
+                                        <input
+                                            type="text"
+                                            value={filters.search}
+                                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                                            placeholder="Search..."
+                                            className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-sm text-gray-900 placeholder-gray-500 p-0"
+                                        />
+                                    </div>
+
+                                    {/* Separator */}
+                                    <div className="w-px h-8 bg-gray-300/50 hidden sm:block" />
+
+                                    {/* Filter Buttons */}
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsFilterModalOpen(true)}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border shrink-0 ${hasActiveFilters
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
+                                                : 'bg-white text-gray-700 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <FunnelIcon className="w-4 h-4" />
+                                            <span>Filters</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setIsTransitModalOpen(true)}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border shrink-0 ${filters.station_id
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
+                                                : 'bg-white text-gray-700 border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <MapPinIcon className="w-4 h-4" />
+                                            <span>Transit</span>
+                                        </button>
+
+                                        <a
+                                            href="/listings?view=map"
+                                            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-700 border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all shrink-0"
+                                        >
+                                            <GlobeAltIcon className="w-4 h-4" />
+                                            <span>Map</span>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+                            {/* Right Side: Properties Count & View Toggles */}
+                            <div className="flex-1 flex justify-end z-20">
+                                <div className="flex items-center gap-4 bg-gray-50/50 rounded-lg p-1.5 backdrop-blur-sm">
+                                    <div className="hidden sm:flex items-baseline gap-2 text-right pr-2">
+                                        <span className="text-sm font-bold text-gray-900">Properties</span>
+                                        <span className="text-xs text-gray-500 font-medium">
+                                            {listings.length} results
+                                        </span>
+                                    </div>
 
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
-                                        ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
-                                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    <Squares2X2Icon className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-2 rounded-lg transition-all ${viewMode === 'list'
-                                        ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
-                                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    <ListBulletIcon className="w-5 h-5" />
-                                </button>
+                                    <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => setViewMode('grid')}
+                                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
+                                                ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
+                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <Squares2X2Icon className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('list')}
+                                            className={`p-2 rounded-lg transition-all ${viewMode === 'list'
+                                                ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
+                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <ListBulletIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
     );
 
     const ActiveFiltersSidebar = () => {
+        if (initialLoading) {
+            return (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 animate-pulse">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                        <div className="h-5 w-32 bg-gray-200 rounded" />
+                        <div className="h-4 w-12 bg-gray-100 rounded" />
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex gap-3">
+                            <div className="w-4 h-4 bg-gray-100 rounded" />
+                            <div className="space-y-2 flex-1">
+                                <div className="h-3 w-12 bg-gray-50 rounded" />
+                                <div className="h-4 w-24 bg-gray-200 rounded" />
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="w-4 h-4 bg-gray-100 rounded" />
+                            <div className="space-y-2 flex-1">
+                                <div className="h-3 w-16 bg-gray-50 rounded" />
+                                <div className="h-4 w-32 bg-gray-200 rounded" />
+                            </div>
+                        </div>
+                        <div className="mt-6 h-12 w-full bg-green-50/50 rounded-lg border border-green-50" />
+                    </div>
+                </div>
+            );
+        }
+
         if (!hasActiveFilters) {
             return (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -579,36 +636,66 @@ const ListingsPage = () => {
     }
 
     // Skeleton Component
-    const ListingSkeleton = () => (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full animate-pulse">
-            {/* Image Skeleton */}
-            <div className="h-48 bg-gray-200 w-full relative">
-                <div className="absolute top-4 left-4 w-16 h-6 bg-gray-300 rounded-full" />
-                <div className="absolute top-4 right-4 w-16 h-6 bg-gray-300 rounded-full" />
-            </div>
-            {/* Content Skeleton */}
-            <div className="p-4 flex-1 flex flex-col space-y-3">
-                {/* Price & Badge */}
-                <div className="flex justify-between items-center">
-                    <div className="h-8 w-24 bg-gray-200 rounded-lg" />
-                    <div className="h-4 w-12 bg-gray-100 rounded" />
-                </div>
-                {/* Title */}
-                <div className="space-y-2">
-                    <div className="h-5 w-3/4 bg-gray-200 rounded" />
-                    <div className="h-5 w-1/2 bg-gray-200 rounded" />
-                </div>
-                {/* Location */}
-                <div className="h-4 w-1/3 bg-gray-100 rounded mt-2" />
+    const ListingSkeleton = ({ viewMode = 'grid' }) => {
+        const isListView = viewMode === 'list';
 
-                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between">
-                    <div className="h-4 w-8 bg-gray-100 rounded" />
-                    <div className="h-4 w-8 bg-gray-100 rounded" />
-                    <div className="h-4 w-8 bg-gray-100 rounded" />
+        if (isListView) {
+            return (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-full animate-pulse">
+                    <div className="md:w-72 h-48 md:h-full bg-gray-200 relative flex-none">
+                        <div className="absolute top-4 left-4 w-12 h-5 bg-gray-300 rounded" />
+                        <div className="absolute top-4 right-4 w-12 h-5 bg-gray-300 rounded" />
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="h-5 w-16 bg-gray-100 rounded" />
+                                <div className="h-8 w-24 bg-gray-200 rounded-lg" />
+                            </div>
+                            <div className="space-y-3 mb-6">
+                                <div className="h-6 w-3/4 bg-gray-200 rounded" />
+                                <div className="h-6 w-1/2 bg-gray-200 rounded" />
+                            </div>
+                            <div className="h-4 w-32 bg-gray-100 rounded" />
+                        </div>
+                        <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
+                            <div className="flex gap-6">
+                                <div className="h-8 w-12 bg-gray-50 rounded" />
+                                <div className="h-8 w-12 bg-gray-50 rounded" />
+                                <div className="h-8 w-12 bg-gray-50 rounded" />
+                            </div>
+                            <div className="h-10 w-24 bg-gray-200 rounded-xl" />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full animate-pulse">
+                <div className="h-48 bg-gray-200 w-full relative">
+                    <div className="absolute top-4 left-4 w-16 h-6 bg-gray-300 rounded-full" />
+                    <div className="absolute top-4 right-4 w-16 h-6 bg-gray-300 rounded-full" />
+                </div>
+                <div className="p-4 flex-1 flex flex-col space-y-3">
+                    <div className="flex justify-between items-center">
+                        <div className="h-8 w-24 bg-gray-200 rounded-lg" />
+                        <div className="h-4 w-12 bg-gray-100 rounded" />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                        <div className="h-5 w-1/2 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-4 w-1/3 bg-gray-100 rounded mt-2" />
+                    <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between">
+                        <div className="h-4 w-8 bg-gray-100 rounded" />
+                        <div className="h-4 w-8 bg-gray-100 rounded" />
+                        <div className="h-4 w-8 bg-gray-100 rounded" />
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -633,7 +720,7 @@ const ListingsPage = () => {
                         <div className={`sticky transition-[top] duration-300 space-y-6 ${navVisible ? 'top-40' : 'top-24'}`}>
                             {/* Banners in Sidebar */}
                             <div className="w-full">
-                                <ShowcaseBanners agentId={agentId} />
+                                <ShowcaseBanners agentId={agentId} loading={initialLoading} />
                             </div>
                             <ActiveFiltersSidebar />
                         </div>
@@ -650,7 +737,7 @@ const ListingsPage = () => {
                                     : 'grid-cols-1'
                                     }`}>
                                     {[...Array(6)].map((_, i) => (
-                                        <ListingSkeleton key={i} />
+                                        <ListingSkeleton key={i} viewMode={viewMode} />
                                     ))}
                                 </div>
                             ) : listings.length > 0 ? (
@@ -666,7 +753,7 @@ const ListingsPage = () => {
                                         {/* Scroll Loading */}
                                         {listings.length < total && loading && (
                                             [...Array(3)].map((_, i) => (
-                                                <ListingSkeleton key={`skel-${i}`} />
+                                                <ListingSkeleton key={`skel-${i}`} viewMode={viewMode} />
                                             ))
                                         )}
                                     </div>
@@ -683,26 +770,43 @@ const ListingsPage = () => {
                                 </>
                             ) : (
                                 <div className="text-center flex flex-col items-center justify-center min-h-[600px] bg-white rounded-3xl border border-gray-100 shadow-sm animate-fade-in p-12">
-                                    <div className="bg-primary-50 w-24 h-24 rounded-full flex items-center justify-center mb-8">
-                                        <SparklesIcon className="w-12 h-12 text-primary-600" />
+                                    <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                                        <SparklesIcon className="w-12 h-12 text-blue-600" />
                                     </div>
-                                    <h3 className="text-3xl font-bold text-gray-900 mb-4">Discover Your Perfect Home</h3>
-                                    <p className="text-gray-500 mb-10 max-w-lg text-lg leading-relaxed">
-                                        Use the search bar or filters above to find properties<br />that match your lifestyle.
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Discover Your Home</h3>
+                                    <p className="text-gray-500 mb-8 max-w-md text-lg leading-relaxed">
+                                        Use the filters above or select a station to find properties that match your lifestyle.
                                     </p>
 
-                                    {!hasActiveFilters ? (
+                                    <div className="flex flex-wrap justify-center gap-3">
                                         <button
-                                            onClick={() => setIsFilterModalOpen(true)}
-                                            className="px-8 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-gray-50 transition-all shadow-sm"
+                                            onClick={() => {
+                                                setInitialLoading(true);
+                                                setFilters(prev => ({ ...prev, type: 'condo' }));
+                                            }}
+                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
                                         >
-                                            Browse Filters
+                                            Condos
                                         </button>
-                                    ) : (
-                                        <button onClick={clearFilters} className="btn-primary">
-                                            Clear Filters
+                                        <button
+                                            onClick={() => {
+                                                setInitialLoading(true);
+                                                setFilters(prev => ({ ...prev, search: 'BTS' }));
+                                            }}
+                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+                                        >
+                                            Near BTS
                                         </button>
-                                    )}
+                                        <button
+                                            onClick={() => {
+                                                setInitialLoading(true);
+                                                setFilters(prev => ({ ...prev, min_price: '5000000', search: 'Luxury' }));
+                                            }}
+                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+                                        >
+                                            Luxury
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { bannerApi, publicApi } from '../../services/api';
 import { SparklesIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
-const ShowcaseBanners = ({ agentId }) => {
+const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
     const navigate = useNavigate();
     const [agentBanners, setAgentBanners] = useState([]);
     const [companyBanners, setCompanyBanners] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [internalLoading, setInternalLoading] = useState(true);
+
+    const isLoading = externalLoading || internalLoading;
 
     const API_URL = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:8080';
 
@@ -20,11 +22,8 @@ const ShowcaseBanners = ({ agentId }) => {
                 const response = await publicApi.getPublicBanners(params);
                 const banners = response.data || [];
 
-                // Categorize banners: Agent (has agent_id) vs Company (platform, agent_id is null/undefined)
-                // Use == null to catch both null and undefined
                 const company = banners.filter(b => b.agent_id == null);
                 const agent = banners.filter(b => b.agent_id != null);
-
 
                 setCompanyBanners(company.slice(0, 1));
                 setAgentBanners(agent.slice(0, 1));
@@ -32,70 +31,24 @@ const ShowcaseBanners = ({ agentId }) => {
             } catch (error) {
                 console.error("Failed to fetch showcase banners", error);
             } finally {
-                setLoading(false);
+                setInternalLoading(false);
             }
         };
 
         fetchShowcaseBanners();
-    }, [agentId]); // Re-fetch if agentId changes
+    }, [agentId]);
 
-    // --- Refactored for Single Row Infinite Scroll (Sidebar Friendly) ---
-
-    // Combine all banners into a single flow
     const allBanners = [...agentBanners, ...companyBanners];
 
-    // We need at least one banner to show something
-    // If we have banners, we duplicate them to create a seamless infinite scroll effect
-    // [A, B] -> [A, B, A, B] to allow scrolling past B back to A without a jump
-    const displayBanners = allBanners.length > 0 ? [...allBanners, ...allBanners, ...allBanners] : [];
-
-    const scrollContainerRef = React.useRef(null);
-
-    // Auto-scroll Logic
-    useEffect(() => {
-        const scrollContainer = scrollContainerRef.current;
-        if (!scrollContainer || allBanners.length <= 1) return; // No scroll needed if 0 or 1 item (though 1 item duplicate handles loop stability, strictly 1 static is better but let's scroll for "infinity" feel if requested, or just toggle)
-
-        // Actually, for "Infinity Scroll", we typically want smooth continuous movement or auto-paging.
-        // Let's do a smooth auto-paging interval.
-
-        const scrollWidth = scrollContainer.scrollWidth;
-        const itemWidth = scrollContainer.clientWidth; // Assuming 1 item visible at a time
-
-        let scrollPos = 0;
-
-        const interval = setInterval(() => {
-            if (!scrollContainer) return;
-
-            // Increment scroll position
-            scrollPos += 1;
-
-            // If we've scrolled past the first set (1/3 of total since we tripled it), reset to 0 (or seamless point)
-            // Real set width:
-            const singleSetWidth = scrollWidth / 3;
-
-            if (scrollContainer.scrollLeft >= singleSetWidth) {
-                scrollContainer.scrollLeft = 0; // Snap back to start (which is identical to current view)
-            } else {
-                scrollContainer.scrollLeft += 1; // Smooth pixel movement
-            }
-
-        }, 20); // 20ms update for smooth ticker look? Or use CSS animation?
-
-        // Let's stick to the previous interval-based snap-scroll if preferred, OR a CSS marquee?
-        // User asked for "infinity scroll". A gentle constant slide is often what this means in modern UI.
-        // BUT, JS-based constant scroll can be jittery. 
-        // Let's try a CSS-based approach for the "track".
-
-        return () => clearInterval(interval);
-
-    }, [allBanners.length]);
-
-    // Alternative: CSS Animation Approach for smoother performance
-    // tailored for the sidebar width
-
-    if (loading) return (
-        <div className="h-48 bg-gray-100 animate-pulse rounded-2xl w-full" />
+    if (isLoading) return (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+            <div className="h-48 bg-gray-200 relative">
+                <div className="absolute bottom-4 left-4 space-y-2">
+                    <div className="h-3 w-16 bg-gray-300 rounded" />
+                    <div className="h-6 w-32 bg-gray-300 rounded" />
+                </div>
+            </div>
+        </div>
     );
 
     if (allBanners.length === 0) return (

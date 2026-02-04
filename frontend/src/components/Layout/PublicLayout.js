@@ -32,6 +32,7 @@ const PublicLayout = () => {
     // Auto-hide navbar logic
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const [isNavLoading, setIsNavLoading] = useState(true);
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -50,7 +51,14 @@ const PublicLayout = () => {
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        // Match the ListingsPage 800ms delay
+        const timer = setTimeout(() => setIsNavLoading(false), 800);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            clearTimeout(timer);
+        };
     }, [lastScrollY]);
 
     return (
@@ -60,78 +68,99 @@ const PublicLayout = () => {
                 }`}>
                 <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-2">
-                            {theme.logoUrl ? (
-                                <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
-                            ) : (
-                                <Logo className="w-8 h-8" style={{ color: theme.primaryColor }} />
-                            )}
-                            <span className="text-xl font-bold text-gray-900">
-                                {theme.headerText || 'Super'}
-                            </span>
-                        </Link>
-
-                        {/* Desktop Navigation */}
-                        <div className="hidden md:flex items-center space-x-1">
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    to={item.href}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.href)
-                                        ? 'bg-primary-50 text-primary-700'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                        }`}
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* Auth Buttons */}
-                        <div className="hidden md:flex items-center space-x-4">
-                            {isAuthenticated ? (
-                                <div className="flex items-center space-x-4">
-                                    <Link
-                                        to={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                                        className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
-                                    >
-                                        Dashboard
-                                    </Link>
-                                    <div className="flex items-center space-x-2">
-                                        <UserCircleIcon className="w-8 h-8 text-gray-400" />
-                                        <span className="text-sm font-medium text-gray-700">
-                                            {user?.first_name}
-                                        </span>
-                                    </div>
-                                    <button
-                                        onClick={logout}
-                                        className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
-                                    >
-                                        Logout
-                                    </button>
+                        {isNavLoading ? (
+                            <div className="flex items-center justify-between w-full animate-pulse">
+                                {/* Logo Skeleton */}
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-8 h-8 bg-gray-200 rounded" />
+                                    <div className="w-32 h-6 bg-gray-200 rounded" />
                                 </div>
-                            ) : (
-                                <>
-                                    <Link
-                                        to="/login"
-                                        className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
-                                    >
-                                        Sign in
-                                    </Link>
-                                    <Link to="/register" className="btn-primary text-sm py-2">
-                                        Get Started
-                                    </Link>
-                                </>
-                            )}
-                        </div>
+                                {/* Nav Links Skeleton */}
+                                <div className="hidden md:flex items-center space-x-1">
+                                    <div className="w-16 h-8 bg-gray-100 rounded-lg mx-1" />
+                                    <div className="w-24 h-8 bg-gray-100 rounded-lg mx-1" />
+                                </div>
+                                {/* Auth Skeleton */}
+                                <div className="hidden md:flex items-center space-x-4">
+                                    <div className="w-20 h-4 bg-gray-100 rounded" />
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                                    <div className="w-16 h-4 bg-gray-100 rounded" />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Logo */}
+                                <Link to="/" className="flex items-center space-x-2">
+                                    {theme.logoUrl ? (
+                                        <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                                    ) : (
+                                        <Logo className="w-8 h-8" style={{ color: theme.primaryColor }} />
+                                    )}
+                                    <span className="text-xl font-bold text-gray-900">
+                                        {theme.headerText || 'Super Real Estate'}
+                                    </span>
+                                </Link>
+
+                                {/* Desktop Navigation */}
+                                <div className="hidden md:flex items-center space-x-1">
+                                    {navigation.map((item) => (
+                                        <Link
+                                            key={item.name}
+                                            to={item.href}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.href)
+                                                ? 'bg-primary-50 text-primary-700'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                }`}
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    ))}
+                                </div>
+
+                                {/* Auth Buttons */}
+                                <div className="hidden md:flex items-center space-x-4">
+                                    {isAuthenticated ? (
+                                        <div className="flex items-center space-x-4">
+                                            <Link
+                                                to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                                                className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
+                                            >
+                                                Dashboard
+                                            </Link>
+                                            <div className="flex items-center space-x-2">
+                                                <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {user?.first_name}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={logout}
+                                                className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                                            >
+                                                Logout
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Link
+                                                to="/login"
+                                                className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
+                                            >
+                                                Sign in
+                                            </Link>
+                                            <Link to="/register" className="btn-primary text-sm py-2">
+                                                Get Started
+                                            </Link>
+                                        </>
+                                    )}
+                                </div>
+                            </>
+                        )}
 
                         {/* Mobile menu button removed for Bottom Nav */}
                         <div className="md:hidden w-8"></div> {/* Spacer to balance logo */}
                     </div>
                 </div>
-
-
             </nav>
 
             {/* Main Content */}
