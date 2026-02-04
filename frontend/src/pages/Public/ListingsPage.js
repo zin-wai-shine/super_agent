@@ -43,6 +43,20 @@ const ListingsPage = () => {
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
     const [agentId, setAgentId] = useState(null);
 
+    // Lock background scroll when modals are open
+    useEffect(() => {
+        if (isFilterModalOpen || isTransitModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isFilterModalOpen, isTransitModalOpen]);
+
     useEffect(() => {
         const fetchAgentInfo = async () => {
             try {
