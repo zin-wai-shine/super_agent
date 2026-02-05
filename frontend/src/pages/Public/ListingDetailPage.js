@@ -13,6 +13,7 @@ import {
     HeartIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { getMediaUrl } from '../../utils/media';
 
 const ListingDetailPage = () => {
     const { id } = useParams();
@@ -100,7 +101,7 @@ const ListingDetailPage = () => {
                                 <img
                                     src={
                                         hasImages
-                                            ? images[currentImageIndex].url
+                                            ? getMediaUrl(images[currentImageIndex].url)
                                             : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'
                                     }
                                     alt={listing.title}
@@ -172,7 +173,7 @@ const ListingDetailPage = () => {
                                                 }`}
                                         >
                                             <img
-                                                src={img.url}
+                                                src={getMediaUrl(img.url)}
                                                 alt={`Thumbnail ${index + 1}`}
                                                 className="w-full h-full object-cover"
                                             />
@@ -263,15 +264,22 @@ const ListingDetailPage = () => {
                         </div>
 
                         {/* Station Badge */}
-                        {listing.station_id && (
+                        {((listing.station_id || listing.station_name) || (listing.station?.id || listing.station?.name_en)) && (
                             <div className="bg-white rounded-2xl p-6 shadow-sm">
                                 <h3 className="font-semibold text-gray-900 mb-4">Nearby Transit</h3>
                                 <Link
-                                    to={`/listings?station_id=${listing.station_id}`}
-                                    className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                                    to={`/listings?station_id=${listing.station_id || listing.station?.id}`}
+                                    className="inline-flex items-center px-4 py-2 rounded-lg transition-colors"
+                                    style={{
+                                        backgroundColor: `${listing.station?.line_color || '#3b82f6'}15`,
+                                        color: listing.station?.line_color || '#3b82f6'
+                                    }}
                                 >
-                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                                    <span className="font-medium">{listing.station_name || listing.station_id}</span>
+                                    <div
+                                        className="w-3 h-3 rounded-full mr-2"
+                                        style={{ backgroundColor: listing.station?.line_color || '#3b82f6' }}
+                                    ></div>
+                                    <span className="font-medium">{listing.station_name || listing.station?.name_en || listing.station_id || listing.station?.id}</span>
                                 </Link>
                             </div>
                         )}

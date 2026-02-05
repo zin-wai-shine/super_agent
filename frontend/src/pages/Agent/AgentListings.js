@@ -29,6 +29,7 @@ import {
 } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
+import { getMediaUrl } from '../../utils/media';
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, isWithinInterval, parseISO, subDays, startOfMonth } from 'date-fns';
 import { DateRange } from 'react-date-range';
@@ -220,17 +221,11 @@ const AgentListings = () => {
                 return (
                     <div className="flex items-center space-x-4">
                         <div className="w-16 h-12 bg-gray-200 dark:bg-gray-700 rounded-[3px] overflow-hidden flex-shrink-0">
-                            {listing.media?.[0]?.url ? (
-                                <img
-                                    src={listing.media[0].url}
-                                    alt={listing.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <BuildingOfficeIcon className="w-6 h-6 text-gray-400" />
-                                </div>
-                            )}
+                            <img
+                                src={getMediaUrl(listing.media?.[0]?.url)}
+                                alt={listing.title}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         <div>
                             <div className="font-medium text-gray-900 dark:text-white line-clamp-1">{listing.title}</div>
@@ -272,7 +267,14 @@ const AgentListings = () => {
         {
             header: 'Date',
             accessorKey: 'created_at',
-            cell: ({ getValue }) => <span className="text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">{format(parseISO(getValue()), 'MMM dd, yyyy')}</span>
+            cell: ({ getValue }) => {
+                const value = getValue();
+                return (
+                    <span className="text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">
+                        {value ? format(parseISO(value), 'MMM dd, yyyy') : '-'}
+                    </span>
+                );
+            }
         },
         {
             header: 'Views',

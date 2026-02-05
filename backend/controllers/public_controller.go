@@ -21,7 +21,9 @@ func NewPublicController(db *gorm.DB) *PublicController {
 // GetListings returns published listings with optional filters
 func (pc *PublicController) GetListings(c *gin.Context) {
 	var listings []models.Listing
-	query := pc.db.Preload("Media").Preload("Agent").Where("is_published = ?", true)
+	query := pc.db.Model(&models.Listing{}).
+		Preload("Media").Preload("Agent").Preload("Station").
+		Where("is_published = ?", true)
 
 	// Tenant filtering (if accessed via agent subdomain)
 	if tenantID, exists := c.Get("tenant_id"); exists {
@@ -109,7 +111,7 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	query := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Where("id = ? AND is_published = ?", id, true)
+	query := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").Where("id = ? AND is_published = ?", id, true)
 
 	// Tenant filtering
 	if tenantID, exists := c.Get("tenant_id"); exists {
@@ -215,5 +217,6 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"theme":           agent.Theme,
 		"min_price_limit": agent.MinPriceLimit,
 		"max_price_limit": agent.MaxPriceLimit,
+		"price_format":    agent.PriceFormat,
 	})
 }

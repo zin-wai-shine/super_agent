@@ -43,6 +43,7 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import toast from 'react-hot-toast';
+import { getMediaUrl } from '../../utils/media';
 
 const BannerManagement = () => {
     const { user, isSuperAdmin } = useAuth();
@@ -75,7 +76,7 @@ const BannerManagement = () => {
         pageSize: 10,
     });
 
-    const API_URL = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:8080';
+
 
     // UI States
     const [showConfirmClose, setShowConfirmClose] = useState(false);
@@ -289,9 +290,7 @@ const BannerManagement = () => {
         setValue('target_role', banner.target_role);
         setValue('days_active', banner.days_active || 30);
 
-        const fullImageUrl = banner.image_url.startsWith('http')
-            ? banner.image_url
-            : `${API_URL}${banner.image_url}`;
+        const fullImageUrl = getMediaUrl(banner.image_url);
         setPreviewUrl(fullImageUrl);
 
         setShowModal(true);
@@ -305,9 +304,7 @@ const BannerManagement = () => {
         setValue('target_role', banner.target_role);
         setValue('days_active', banner.days_active || 30);
 
-        const fullImageUrl = banner.image_url.startsWith('http')
-            ? banner.image_url
-            : `${API_URL}${banner.image_url}`;
+        const fullImageUrl = getMediaUrl(banner.image_url);
         setPreviewUrl(fullImageUrl);
 
         setShowModal(true);
@@ -368,9 +365,7 @@ const BannerManagement = () => {
             accessorKey: 'image_url',
             cell: ({ row }) => {
                 const banner = row.original;
-                const fullImageUrl = banner.image_url.startsWith('http')
-                    ? banner.image_url
-                    : `${API_URL}${banner.image_url}`;
+                const fullImageUrl = getMediaUrl(banner.image_url);
 
                 return (
                     <div className="flex items-center space-x-4 py-1 whitespace-nowrap">
@@ -416,7 +411,7 @@ const BannerManagement = () => {
                 return (
                     <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-[11px] whitespace-nowrap">
                         <CalendarIcon className="w-3.5 h-3.5" />
-                        {format(parseISO(date), 'MMM dd, yyyy')}
+                        {date ? format(parseISO(date), 'MMM dd, yyyy') : '-'}
                     </div>
                 );
             }

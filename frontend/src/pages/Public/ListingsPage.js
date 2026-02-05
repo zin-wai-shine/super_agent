@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useOutletContext } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
@@ -62,29 +63,32 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
     if (isListView) {
         return (
             <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-full animate-pulse">
-                <div className="md:w-72 h-48 md:h-full bg-gray-200 relative flex-none">
-                    <div className="absolute top-4 left-4 w-12 h-5 bg-gray-300 rounded-[3px]" />
-                    <div className="absolute top-4 right-4 w-12 h-5 bg-gray-300 rounded-[3px]" />
+                <div className="md:w-[480px] h-64 md:h-auto bg-gray-200 relative flex-none">
+                    <div className="absolute top-4 right-4 w-20 h-6 bg-gray-300 rounded-[3px]" />
+                    <div className="absolute top-4 left-4 w-16 h-5 bg-gray-300 rounded-[3px]" />
                 </div>
-                <div className="p-6 flex-1 flex flex-col justify-between">
+                <div className="p-8 flex-1 flex flex-col justify-between">
                     <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="h-5 w-16 bg-gray-100 rounded-[3px]" />
-                            <div className="h-8 w-24 bg-gray-200 rounded-[3px]" />
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="h-7 w-20 bg-gray-100 rounded-[3px]" />
+                            <div className="h-10 w-40 bg-gray-200 rounded-[3px]" />
                         </div>
                         <div className="space-y-3 mb-6">
-                            <div className="h-6 w-3/4 bg-gray-200 rounded-[3px]" />
-                            <div className="h-6 w-1/2 bg-gray-200 rounded-[3px]" />
+                            <div className="h-8 w-3/4 bg-primary-50 rounded-[3px]" />
                         </div>
-                        <div className="h-4 w-32 bg-gray-100 rounded-[3px]" />
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-5 w-48 bg-gray-100 rounded-[3px]" />
+                            <div className="h-6 w-24 bg-blue-100 rounded-[3px]" />
+                        </div>
                     </div>
-                    <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
-                        <div className="flex gap-6">
-                            <div className="h-8 w-12 bg-gray-50 rounded-[3px]" />
-                            <div className="h-8 w-12 bg-gray-50 rounded-[3px]" />
-                            <div className="h-8 w-12 bg-gray-50 rounded-[3px]" />
+                    <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                        <div className="flex gap-4">
+                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
+                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
+                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
                         </div>
-                        <div className="h-10 w-24 bg-gray-200 rounded-[3px]" />
+                        <div className="ml-4 h-5 w-20 bg-gray-50 rounded-[3px]" />
+                        <div className="h-10 w-32 bg-gray-200 rounded-[3px]" />
                     </div>
                 </div>
             </div>
@@ -93,24 +97,25 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
 
     return (
         <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full animate-pulse">
-            <div className="h-48 bg-gray-200 w-full relative">
-                <div className="absolute top-4 left-4 w-16 h-6 bg-gray-300 rounded-full" />
-                <div className="absolute top-4 right-4 w-16 h-6 bg-gray-300 rounded-full" />
+            <div className="aspect-[16/10] bg-gray-200 w-full relative">
+                <div className="absolute top-3 left-3 w-12 h-4 bg-gray-300 rounded-[3px]" />
+                <div className="absolute top-3 right-3 w-12 h-4 bg-gray-300 rounded-[3px]" />
+                <div className="absolute bottom-3 left-3 w-24 h-8 bg-white/50 rounded-[3px]" />
             </div>
             <div className="p-4 flex-1 flex flex-col space-y-3">
                 <div className="flex justify-between items-center">
-                    <div className="h-8 w-24 bg-gray-200 rounded-[3px]" />
-                    <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
+                    <div className="h-4 w-16 bg-gray-200 rounded-[3px]" />
+                    <div className="h-3 w-10 bg-gray-100 rounded-[3px]" />
                 </div>
-                <div className="space-y-2">
-                    <div className="h-5 w-3/4 bg-gray-200 rounded-[3px]" />
-                    <div className="h-5 w-1/2 bg-gray-200 rounded-[3px]" />
-                </div>
-                <div className="h-4 w-1/3 bg-gray-100 rounded-[3px] mt-2" />
-                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between">
-                    <div className="h-4 w-8 bg-gray-100 rounded-[3px]" />
-                    <div className="h-4 w-8 bg-gray-100 rounded-[3px]" />
-                    <div className="h-4 w-8 bg-gray-100 rounded-[3px]" />
+                <div className="h-5 w-full bg-gray-200 rounded-[3px]" />
+                <div className="h-3 w-3/4 bg-gray-100 rounded-[3px]" />
+                <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center">
+                    <div className="flex gap-2">
+                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
+                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
+                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
+                    </div>
+                    <div className="h-7 w-7 bg-gray-100 rounded-[3px]" />
                 </div>
             </div>
         </div>
@@ -118,6 +123,7 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
 };
 
 const ListingsPage = () => {
+    const { user } = useAuth();
     const { navVisible } = useOutletContext() || { navVisible: true }; // Fallback for dev
     const [searchParams, setSearchParams] = useSearchParams();
     const [listings, setListings] = useState([]);
@@ -131,9 +137,30 @@ const ListingsPage = () => {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
 
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
+    const [priceFormat, setPriceFormat] = useState('short'); // Default to short to match previous behavior
     const [agentId, setAgentId] = useState(null);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    // Scroll listener for filter bar margin
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 0) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Save view mode selection
+    useEffect(() => {
+        localStorage.setItem('listings_view_mode', viewMode);
+    }, [viewMode]);
 
     // Lock background scroll when modals are open
     useEffect(() => {
@@ -153,13 +180,21 @@ const ListingsPage = () => {
         const fetchAgentInfo = async () => {
             try {
                 // Prioritize agent_id from URL for development/testing
-                const urlAgentId = searchParams.get('agent_id') || searchParams.get('agent');
+                let urlAgentId = searchParams.get('agent_id') || searchParams.get('agent');
+
+                // If on localhost and no URL param, use logged-in agent (simulating domain)
+                if (!urlAgentId && window.location.hostname.includes('localhost') && user?.agent_id) {
+                    urlAgentId = user.agent_id;
+                }
 
                 const response = await publicApi.getAgentInfo(urlAgentId ? { agent_id: urlAgentId } : {});
                 setPriceLimits({
                     min: parseFloat(response.data.min_price_limit) || 0,
                     max: parseFloat(response.data.max_price_limit) || 0
                 });
+                if (response.data.price_format) {
+                    setPriceFormat(response.data.price_format);
+                }
                 setAgentId(urlAgentId || response.data.id);
             } catch (error) {
                 console.error('Failed to fetch agent info:', error);
@@ -199,44 +234,23 @@ const ListingsPage = () => {
             if (listings.length === 0) setInitialLoading(true);
             setLoading(true);
             try {
-                // Determine layout mode based on filters (example logic)
-                // For now, standard fetch
-                const queryParams = new URLSearchParams();
-                Object.entries(filters).forEach(([key, value]) => {
-                    if (value) queryParams.append(key, value);
-                });
-                queryParams.append('page', page);
-                queryParams.append('limit', 6); // Initial limit 6 per request as requested
+                // Determine layout mode based on filters
+                const params = {
+                    ...filters,
+                    page,
+                    limit: 6
+                };
 
-                // Simulate API delay for smoothness
-                await new Promise(r => setTimeout(r, 800));
+                // If on localhost, inject logged-in agent ID to simulate domain filtering
+                if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
+                    params.agent_id = user.agent_id;
+                }
 
-                /* 
-                   Replace with actual API call:
-                   const response = await api.get(`/listings?${queryParams}`);
-                   setListings(prev => page === 1 ? response.data : [...prev, ...response.data]);
-                   setTotal(response.total);
-                */
+                const response = await publicApi.getListings(params);
+                const data = response.data;
 
-                // MOCK DATA: Generate 6 items per page
-                const mockListings = Array(6).fill(null).map((_, i) => ({
-                    id: `mock-${page}-${i}`,
-                    title: `Beautiful Property ${page}-${i}`,
-                    price: 2500000 + (i * 100000),
-                    location: 'Bangkok, Thailand',
-                    bedrooms: 2,
-                    bathrooms: 2,
-                    area: 85,
-                    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-                    type: ['condo', 'house', 'townhome'][i % 3],
-                    tags: ['BTS', 'Luxury']
-                }));
-                // Filter mock data based on search/type (basic)
-                let filtered = mockListings;
-                if (filters.type) filtered = filtered.filter(l => l.type === filters.type);
-
-                setListings(prev => page === 1 ? filtered : [...prev, ...filtered]);
-                setTotal(120); // Mock total
+                setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+                setTotal(data.total || 0);
 
             } catch (error) {
                 console.error('Failed to fetch listings', error);
@@ -284,7 +298,10 @@ const ListingsPage = () => {
     };
 
     const handleSelectChange = (key, option) => {
-        handleFilterChange(key, option?.value || '');
+        // StyledSelect now returns the value if s.value is used in onChange
+        // We handle both object and primitive cases for robustness
+        const val = (option && typeof option === 'object') ? option.value : option;
+        handleFilterChange(key, val || '');
     };
 
     const handleStationSelect = (stationId) => {
@@ -330,8 +347,8 @@ const ListingsPage = () => {
             </div>
 
             {/* Render Control Bar Outside Main Container for Full Width */}
-            <div className={`w-full mb-8 sticky z-40 ${navVisible ? 'top-16' : 'top-0'
-                }`}>
+            <div className={`w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'
+                } ${!isScrolled ? 'mt-6' : 'mt-0'}`}>
                 <div className={`transition-all duration-300 mx-auto ${!navVisible
                     ? 'w-full px-0'
                     : 'max-w-[1600px] px-4 sm:px-6 lg:px-8'
@@ -375,7 +392,7 @@ const ListingsPage = () => {
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-3 w-full max-w-fit">
-                                    <div className="w-48 sm:w-72 flex items-center h-10 px-4 bg-white rounded-[3px] border border-gray-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
+                                    <div className="w-64 sm:w-96 flex items-center h-10 px-4 bg-white rounded-[3px] border border-gray-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
                                         <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
                                         <input
                                             type="text"
@@ -439,8 +456,8 @@ const ListingsPage = () => {
                             ) : (
                                 <div className="flex items-center gap-4 bg-gray-50/50 rounded-lg p-1.5 backdrop-blur-sm">
                                     <div className="hidden sm:flex items-baseline gap-2 text-right pr-2 lg:pr-4">
-                                        <span className="text-sm font-bold text-gray-900">Properties</span>
-                                        <span className="text-xs text-gray-500 font-medium">
+                                        <span className="text-base font-bold text-gray-900">Properties</span>
+                                        <span className="text-sm text-gray-500 font-medium">
                                             {listings.length} results
                                         </span>
                                     </div>
@@ -522,9 +539,9 @@ const ListingsPage = () => {
                                                 Use the filters above or select a station to find properties that match your lifestyle.
                                             </p>
                                             <div className="flex flex-wrap gap-2 justify-center">
-                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Apartments</span>
-                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Near BTS</span>
-                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Luxury</span>
+                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Apartments</span>
+                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Near BTS</span>
+                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Luxury</span>
                                             </div>
                                         </div>
                                     </div>
@@ -535,7 +552,7 @@ const ListingsPage = () => {
                                                 <FunnelIcon className="w-4 h-4 text-primary-600" />
                                                 Active Filters
                                             </h3>
-                                            <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 font-medium">
+                                            <button onClick={clearFilters} className="text-sm text-red-500 hover:text-red-700 font-medium">
                                                 Clear All
                                             </button>
                                         </div>
@@ -555,7 +572,7 @@ const ListingsPage = () => {
                                                 <div className="flex items-start gap-3 text-sm text-gray-700">
                                                     <MapPinIcon className="w-4 h-4 text-primary-500 mt-0.5" />
                                                     <div>
-                                                        <span className="text-xs text-gray-500 block">Station</span>
+                                                        <span className="text-sm text-gray-500 block">Station</span>
                                                         <span className="font-medium text-primary-700">{filters.station_id}</span>
                                                     </div>
                                                 </div>
@@ -575,7 +592,7 @@ const ListingsPage = () => {
                                                 <div className="flex items-start gap-3 text-sm text-gray-700">
                                                     <TagIcon className="w-4 h-4 text-gray-400 mt-0.5" />
                                                     <div>
-                                                        <span className="text-xs text-gray-500 block">Listing Type</span>
+                                                        <span className="text-sm text-gray-500 block">Listing Type</span>
                                                         <span className="font-medium capitalize">{filters.listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
                                                     </div>
                                                 </div>
@@ -635,7 +652,7 @@ const ListingsPage = () => {
                                         : 'grid-cols-1'
                                         }`}>
                                         {listings.map((listing) => (
-                                            <ListingCard key={listing.id} listing={listing} viewMode={viewMode} />
+                                            <ListingCard key={listing.id} listing={listing} viewMode={viewMode} priceFormat={priceFormat} />
                                         ))}
 
                                         {/* Scroll Loading */}
@@ -797,7 +814,7 @@ const ListingsPage = () => {
                                         </div>
                                         Select Transit Station
                                     </h3>
-                                    <p className="text-xs font-medium text-gray-400 mt-0.5 ml-9">Click a station to filter properties nearby</p>
+                                    <p className="text-sm font-medium text-gray-400 mt-0.5 ml-9">Click a station to filter properties nearby</p>
                                 </div>
                                 <button onClick={() => setIsTransitModalOpen(false)} className="p-2 hover:bg-gray-100/50 rounded-[3px] transition-all hover:scale-110 active:scale-95 group">
                                     <XMarkIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />

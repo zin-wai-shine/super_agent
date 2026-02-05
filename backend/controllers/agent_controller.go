@@ -431,6 +431,7 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 	var req struct {
 		MinPriceLimit float64 `json:"min_price_limit"`
 		MaxPriceLimit float64 `json:"max_price_limit"`
+		PriceFormat   string  `json:"price_format"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -444,13 +445,40 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 		return
 	}
 
-	if err := ac.db.Model(&models.Agent{}).Where("id = ?", agentID).Updates(map[string]interface{}{
+	updates := map[string]interface{}{
 		"min_price_limit": req.MinPriceLimit,
 		"max_price_limit": req.MaxPriceLimit,
-	}).Error; err != nil {
+	}
+
+	if req.PriceFormat != "" {
+		updates["price_format"] = req.PriceFormat
+	}
+
+	if err := ac.db.Model(&models.Agent{}).Where("id = ?", agentID).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Settings updated successfully", "data": req})
+}
+
+// GetSettings returns agent settings
+func (ac *AgentController) GetSettings(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var agent models.Agent
+	if err := ac.db.Where("id = ?", agentID).First(&agent).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"min_price_limit": agent.MinPriceLimit,
+		"max_price_limit": agent.MaxPriceLimit,
+		"price_format":    agent.PriceFormat,
+	})
 }

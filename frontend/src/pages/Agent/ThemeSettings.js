@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useAuth } from '../../contexts/AuthContext';
+import { getMediaUrl } from '../../utils/media';
 
 const ThemeSettings = () => {
     const { user } = useAuth();
@@ -179,7 +180,7 @@ const ThemeSettings = () => {
                                         <div className="space-y-1 text-center">
                                             {watchAll.logo_url ? (
                                                 <div className="relative inline-block">
-                                                    <img src={watchAll.logo_url} alt="Preview" className="h-16 w-auto mx-auto object-contain rounded" />
+                                                    <img src={getMediaUrl(watchAll.logo_url)} alt="Preview" className="h-16 w-auto mx-auto object-contain rounded" />
                                                     <div className="mt-2 text-xs text-primary-600 dark:text-primary-400 font-medium">Click to change</div>
                                                 </div>
                                             ) : (
@@ -398,7 +399,7 @@ const ThemeSettings = () => {
                                 <div className="bg-white/90 backdrop-blur-md px-4 py-3 border-b flex items-center justify-between shadow-sm sticky top-0 z-10">
                                     <div className="flex items-center gap-2">
                                         {preview.logo_url ? (
-                                            <img src={preview.logo_url} className="h-6 w-auto object-contain" alt="Logo" />
+                                            <img src={getMediaUrl(preview.logo_url)} className="h-6 w-auto object-contain" alt="Logo" />
                                         ) : (
                                             <div className="w-6 h-6 rounded bg-gray-200" />
                                         )}

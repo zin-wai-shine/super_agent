@@ -5,6 +5,7 @@ import { agentApi, publicApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
+import { getMediaUrl } from '../../utils/media';
 
 const EditListing = () => {
     const { id } = useParams();
@@ -19,17 +20,27 @@ const EditListing = () => {
 
     // Dropdown options
     const propertyTypeOptions = [
-        { value: 'condo', label: '🏢 Condo' },
-        { value: 'house', label: '🏠 House' },
-        { value: 'townhouse', label: '🏘️ Townhouse' },
-        { value: 'apartment', label: '🏬 Apartment' },
-        { value: 'land', label: '🌳 Land' },
+        { value: 'condo', label: '🏢 Condo', description: 'Condominium unit' },
+        { value: 'house', label: '🏠 House', description: 'Single-family home' },
+        { value: 'townhouse', label: '🏘️ Townhouse', description: 'Row house' },
+        { value: 'apartment', label: '🏬 Apartment', description: 'Apartment unit' },
+        { value: 'land', label: '🌳 Land', description: 'Vacant land' },
     ];
 
     const listingTypeOptions = [
-        { value: 'sale', label: '💰 For Sale' },
-        { value: 'rent', label: '🔑 For Rent' },
+        { value: 'sale', label: '💰 For Sale', description: 'Property for sale' },
+        { value: 'rent', label: '🔑 For Rent', description: 'Property for rent' },
     ];
+
+    // Custom option renderer for property types
+    const formatOptionLabel = ({ label, description }) => (
+        <div className="flex items-center">
+            <span className="font-medium">{label}</span>
+            {description && (
+                <span className="text-gray-400 text-xs ml-2">— {description}</span>
+            )}
+        </div>
+    );
 
     // Group stations by line
     const stationOptions = useMemo(() => {
@@ -81,16 +92,22 @@ const EditListing = () => {
             const propertyType = propertyTypeOptions.find(o => o.value === listing.property_type);
             const listingType = listingTypeOptions.find(o => o.value === listing.listing_type);
 
-            setValue('property_type', propertyType || null);
-            setValue('listing_type', listingType || null);
+            setValue('property_type', propertyType || listing.property_type || null);
+            setValue('listing_type', listingType || listing.listing_type || null);
 
             // Find station
             if (listing.station_id) {
-                const station = stationData.find(s => (s.id || s.ID) === listing.station_id);
-                if (station) {
+                // Flatten station options to find the station
+                const allStationOptions = stationOptions.reduce((acc, group) => [...acc, ...group.options], []);
+                const stationOption = allStationOptions.find(opt => opt.value === listing.station_id);
+
+                if (stationOption) {
+                    setValue('station_id', stationOption);
+                } else {
+                    // Fallback to manual object if not found in options yet
                     setValue('station_id', {
-                        value: station.id || station.ID,
-                        label: `${station.id || station.ID} - ${station.name_en || station.NameEN}`,
+                        value: listing.station_id,
+                        label: listing.station_name || listing.station_id
                     });
                 }
             }
@@ -114,9 +131,9 @@ const EditListing = () => {
             await agentApi.updateListing(id, {
                 title: data.title,
                 description: data.description,
-                property_type: data.property_type?.value,
-                listing_type: data.listing_type?.value,
-                station_id: data.station_id?.value || null,
+                property_type: data.property_type?.value || data.property_type,
+                listing_type: data.listing_type?.value || data.listing_type,
+                station_id: data.station_id?.value || data.station_id || null,
                 address: data.address,
                 district: data.district,
                 province: data.province,
@@ -186,25 +203,30 @@ const EditListing = () => {
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {media.filter((m) => m.type === 'image').map((item) => (
-                            <div key={item.id} className="relative aspect-square rounded-[3px] overflow-hidden group">
-                                <img src={item.url} alt="" className="w-full h-full object-cover" />
+                            <div key={item.id} className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800">
+                                <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <button
                                     type="button"
                                     onClick={() => handleDeleteMedia(item.id)}
-                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[3px] opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-100 scale-75"
+                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 transition-all hover:bg-red-600"
                                 >
                                     <TrashIcon className="w-4 h-4" />
                                 </button>
+                                <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Click to delete
+                                </div>
                             </div>
                         ))}
 
-                        <label className="aspect-square rounded-[3px] border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group">
-                            <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 mb-2 transition-colors" />
-                            <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                {uploading ? 'Uploading...' : 'Add Photo'}
+                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
+                            <div className="p-4 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform mb-3">
+                                <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors px-4 text-center">
+                                {uploading ? 'Uploading your photos...' : 'Add High-Quality Photos'}
                             </span>
                             <input
                                 type="file"
@@ -245,6 +267,7 @@ const EditListing = () => {
                                             {...field}
                                             options={propertyTypeOptions}
                                             placeholder="Select property type..."
+                                            formatOptionLabel={formatOptionLabel}
                                             isClearable
                                         />
                                     )}
@@ -260,6 +283,7 @@ const EditListing = () => {
                                             {...field}
                                             options={listingTypeOptions}
                                             placeholder="Select listing type..."
+                                            formatOptionLabel={formatOptionLabel}
                                             isClearable
                                         />
                                     )}

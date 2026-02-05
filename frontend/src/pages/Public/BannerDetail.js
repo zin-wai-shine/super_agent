@@ -4,13 +4,14 @@ import { publicApi } from '../../services/api';
 import { ArrowLeftIcon, CalendarIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
+import { getMediaUrl } from '../../utils/media';
 
 const BannerDetail = () => {
     const { id } = useParams();
     const [banner, setBanner] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:8080';
+
 
     useEffect(() => {
         fetchBanner();
@@ -51,9 +52,7 @@ const BannerDetail = () => {
         );
     }
 
-    const imageUrl = banner.image_url.startsWith('http')
-        ? banner.image_url
-        : `${API_URL}${banner.image_url}`;
+    const imageUrl = getMediaUrl(banner.image_url);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
@@ -92,7 +91,7 @@ const BannerDetail = () => {
                         </h1>
                         <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-bold bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-full border dark:border-gray-800 w-fit">
                             <CalendarIcon className="w-4 h-4" />
-                            {format(parseISO(banner.created_at), 'MMMM dd, yyyy')}
+                            {banner.created_at ? format(parseISO(banner.created_at), 'MMMM dd, yyyy') : '-'}
                         </div>
                     </div>
 

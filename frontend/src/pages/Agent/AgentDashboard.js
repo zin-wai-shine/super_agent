@@ -12,6 +12,7 @@ import {
     EllipsisHorizontalIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { getMediaUrl } from '../../utils/media';
 
 const AgentDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -153,13 +154,7 @@ const AgentDashboard = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <Link to={`/agent/listings/${listing.id}/edit`} className="flex items-center">
                                                 <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
-                                                    {listing.media?.[0]?.url ? (
-                                                        <img src={listing.media[0].url} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                                            <BuildingOfficeIcon className="w-6 h-6 text-gray-400" />
-                                                        </div>
-                                                    )}
+                                                    <img src={getMediaUrl(listing.media?.[0]?.url)} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                                 </div>
                                                 <div className="ml-3">
                                                     <div className="text-[13px] font-semibold text-gray-900 dark:text-white truncate max-w-[200px] group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
@@ -184,7 +179,7 @@ const AgentDashboard = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-[12px] text-gray-500 dark:text-gray-400">
-                                            {format(new Date(listing.created_at), 'MMM dd, yyyy')}
+                                            {listing.created_at ? format(new Date(listing.created_at), 'MMM dd, yyyy') : '-'}
                                         </td>
                                     </tr>
                                 ))}

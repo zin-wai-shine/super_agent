@@ -230,7 +230,7 @@ const NotificationCenter = () => {
                                                         notification.receiver_id ? 'Specific User' : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                {new Date(notification.created_at).toLocaleDateString()}
+                                                {notification.created_at ? new Date(notification.created_at).toLocaleDateString() : '-'}
                                             </td>
                                         </tr>
                                     ))}

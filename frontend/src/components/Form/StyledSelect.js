@@ -218,16 +218,24 @@ const StyledSelect = ({
         if (!value) return null;
         if (typeof value === 'object' && !Array.isArray(value)) return value;
 
+        // Flatten options if they are grouped
+        const allOptions = options?.reduce((acc, opt) => {
+            if (opt.options) {
+                return [...acc, ...opt.options];
+            }
+            return [...acc, opt];
+        }, []) || [];
+
         // If it's a string, find the matching option
         if (typeof value === 'string') {
-            return options?.find(opt => opt.value === value) || null;
+            return allOptions.find(opt => opt.value === value) || null;
         }
 
         // For multi-select with array of strings
         if (Array.isArray(value)) {
             return value.map(val =>
                 typeof val === 'string'
-                    ? options?.find(opt => opt.value === val)
+                    ? allOptions.find(opt => opt.value === val)
                     : val
             ).filter(Boolean);
         }

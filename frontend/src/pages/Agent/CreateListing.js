@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import { PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
 
 const CreateListing = () => {
     const [loading, setLoading] = useState(false);
     const [stations, setStations] = useState([]);
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [uploading, setUploading] = useState(false);
     const navigate = useNavigate();
 
     const {
@@ -38,24 +41,54 @@ const CreateListing = () => {
             const response = await agentApi.createListing({
                 title: data.title,
                 description: data.description,
-                property_type: data.property_type?.value,
-                listing_type: data.listing_type?.value,
-                station_id: data.station_id?.value || null,
+                property_type: data.property_type?.value || data.property_type,
+                listing_type: data.listing_type?.value || data.listing_type,
+                station_id: data.station_id?.value || data.station_id || null,
                 address: data.address,
                 district: data.district,
                 province: data.province,
-                price: parseFloat(data.price),
+                price: parseFloat(data.price) || 0,
                 bedrooms: parseInt(data.bedrooms) || 0,
                 bathrooms: parseInt(data.bathrooms) || 0,
                 area: parseFloat(data.area) || 0,
             });
-            toast.success('Listing created successfully!');
-            navigate(`/agent/listings/${response.data.id}/edit`);
+
+            const listingId = response.data.id;
+
+            // Upload images if any
+            if (selectedImages.length > 0) {
+                setUploading(true);
+                try {
+                    for (const file of selectedImages) {
+                        await uploadApi.uploadImage(listingId, file);
+                    }
+                    toast.success('Listing and images created successfully!');
+                } catch (uploadError) {
+                    toast.error('Listing created, but some images failed to upload');
+                } finally {
+                    setUploading(false);
+                }
+            } else {
+                toast.success('Listing created successfully!');
+            }
+
+            navigate(`/agent/listings/${listingId}/edit`);
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to create listing');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleImageSelect = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            setSelectedImages(prev => [...prev, ...files]);
+        }
+    };
+
+    const removeImage = (index) => {
+        setSelectedImages(prev => prev.filter((_, i) => i !== index));
     };
 
     // Dropdown options
@@ -107,6 +140,55 @@ const CreateListing = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Create New Listing</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                {/* Media Selection */}
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {selectedImages.map((file, index) => (
+                            <div key={index} className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800">
+                                <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Selected ${index}`}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 transition-all hover:bg-red-600"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                                <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {file.name}
+                                </div>
+                            </div>
+                        ))}
+
+                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
+                            <div className="p-4 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform mb-3">
+                                <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors px-4 text-center">
+                                Add High-Quality Photos
+                            </span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleImageSelect}
+                                className="hidden"
+                            />
+                        </label>
+                    </div>
+                    {selectedImages.length > 0 && (
+                        <p className="mt-4 text-sm text-gray-500">
+                            {selectedImages.length} image(s) selected. They will be uploaded after you create the listing.
+                        </p>
+                    )}
+                </div>
+
                 {/* Basic Info */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Basic Information</h2>

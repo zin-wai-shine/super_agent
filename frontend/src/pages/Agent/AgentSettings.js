@@ -68,6 +68,7 @@ const AgentSettings = () => {
             await agentApi.updateSettings({
                 min_price_limit: parseFloat(data.min_price_limit),
                 max_price_limit: parseFloat(data.max_price_limit),
+                price_format: data.price_format
             });
             toast.success('Settings updated successfully!');
         } catch (error) {
@@ -145,6 +146,54 @@ const AgentSettings = () => {
                                         {...register('max_price_limit', { min: 0 })}
                                     />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Price Format Selection */}
+                        <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <label className="input-label mb-3 block">Price Display Format</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-gray-800 dark:border-gray-700">
+                                    <input
+                                        type="radio"
+                                        value="full"
+                                        {...register('price_format')}
+                                        className="sr-only"
+                                    />
+                                    <span className="flex flex-1">
+                                        <span className="flex flex-col">
+                                            <span className="block text-sm font-medium text-gray-900 dark:text-white">Full Price</span>
+                                            <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                e.g. 3,000 / mo
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : 'border-gray-300'}`}>
+                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${register('price_format').value === 'full' ? 'block' : 'hidden'}`} />
+                                    </span>
+                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${"full" === (document.querySelector('input[name="price_format"]:checked')?.value) ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                </label>
+
+                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-gray-800 dark:border-gray-700">
+                                    <input
+                                        type="radio"
+                                        value="short"
+                                        {...register('price_format')}
+                                        className="sr-only"
+                                    />
+                                    <span className="flex flex-1">
+                                        <span className="flex flex-col">
+                                            <span className="block text-sm font-medium text-gray-900 dark:text-white">Short Price</span>
+                                            <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                e.g. 3K / mo
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : 'border-gray-300'}`}>
+                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${register('price_format').value === 'short' ? 'block' : 'hidden'}`} />
+                                    </span>
+                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${"short" === (document.querySelector('input[name="price_format"]:checked')?.value) ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                </label>
                             </div>
                         </div>
 

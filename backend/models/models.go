@@ -46,6 +46,7 @@ type Agent struct {
 	Address        string         `gorm:"type:text" json:"address,omitempty"`
 	MinPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"min_price_limit"`
 	MaxPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"max_price_limit"`
+	PriceFormat    string         `gorm:"size:20;default:'full'" json:"price_format"` // full (e.g. 3,000) or short (e.g. 3K)
 	IsActive       bool           `gorm:"default:true" json:"is_active"`
 	IsSuspended    bool           `gorm:"default:false" json:"is_suspended"`
 	SubscriptionID *uuid.UUID     `gorm:"type:uuid" json:"subscription_id,omitempty"`
@@ -116,6 +117,7 @@ type Listing struct {
 	Bedrooms     int            `gorm:"default:0" json:"bedrooms"`
 	Bathrooms    int            `gorm:"default:0" json:"bathrooms"`
 	Area         float64        `gorm:"type:decimal(10,2)" json:"area"` // sqm
+	Road         string         `gorm:"size:255" json:"road,omitempty"`
 	Address      string         `gorm:"type:text" json:"address,omitempty"`
 	District     string         `gorm:"size:100" json:"district,omitempty"`
 	Province     string         `gorm:"size:100" json:"province,omitempty"`
@@ -124,6 +126,7 @@ type Listing struct {
 	Longitude    float64        `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
 	StationID    string         `gorm:"size:20;index" json:"station_id,omitempty"` // Transit station ID from SVG
 	StationName  string         `gorm:"size:100" json:"station_name,omitempty"`
+	Station      *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
 	Features     string         `gorm:"type:text" json:"features,omitempty"` // JSON array
 	IsPublished  bool           `gorm:"default:false" json:"is_published"`
 	IsFeatured   bool           `gorm:"default:false" json:"is_featured"`

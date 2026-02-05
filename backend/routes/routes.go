@@ -112,6 +112,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.PUT("/theme", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateTheme)
 
 				// Settings management
+				agent.GET("/settings", agentController.GetSettings)
 				agent.PUT("/settings", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateSettings)
 
 				// Dashboard
