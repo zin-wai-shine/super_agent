@@ -684,11 +684,11 @@ const CreateListing = () => {
                         </div>
 
                         <div>
-                            <label className="input-label">Google Maps Link</label>
+                            <label className="input-label">Google Maps Link or Coordinates</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="Paste Google Maps link here (e.g., https://maps.app.goo.gl/...)"
+                                placeholder="Paste Google Maps link or Coordinates (e.g., 13.75, 100.5)"
                                 {...register('map_url', {
                                     onChange: (e) => {
                                         const url = e.target.value;
@@ -700,6 +700,7 @@ const CreateListing = () => {
                                             /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng
                                             /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng
                                             /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng
+                                            /(-?\d+\.\d+),\s*(-?\d+\.\d+)/, // Plain lat, lng (anywhere)
                                         ];
 
                                         for (const pattern of patterns) {
