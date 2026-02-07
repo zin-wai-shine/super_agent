@@ -1,11 +1,22 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { agentApi, publicApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { PhotoIcon, TrashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { getMediaUrl } from '../../utils/media';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { format, addMonths, subMonths, getYear, getMonth, setYear, setMonth } from 'date-fns';
+
+const availabilityOptions = [
+    { value: 'ready', label: '✅ Ready to Move In' },
+    { value: 'date', label: '📅 Rented / Unavailable until...' }
+];
 
 const EditListing = () => {
     const { id } = useParams();
@@ -14,9 +25,38 @@ const EditListing = () => {
     const [saving, setSaving] = useState(false);
     const [stations, setStations] = useState([]);
     const [media, setMedia] = useState([]);
-    const [uploading, setUploading] = useState(false);
 
-    const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+    const [uploading, setUploading] = useState(false);
+    const [walkingTime, setWalkingTime] = useState('');
+
+    // Availability State
+    const [availabilityType, setAvailabilityType] = useState(null);
+    const [availabilityDate, setAvailabilityDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [shownDate, setShownDate] = useState(new Date());
+    const datePickerRef = useRef(null);
+    const [lightboxIndex, setLightboxIndex] = useState(null);
+
+    const WALKING_SPEED_MPM = 80; // Meters per minute
+
+    // Options
+
+
+    const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+    const fieldValues = watch();
+
+    // Close datepicker when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setShowDatePicker(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Dropdown options
     const propertyTypeOptions = [
@@ -33,10 +73,10 @@ const EditListing = () => {
     ];
 
     // Custom option renderer for property types
-    const formatOptionLabel = ({ label, description }) => (
+    const formatOptionLabel = ({ label, description }, { context }) => (
         <div className="flex items-center">
             <span className="font-medium">{label}</span>
-            {description && (
+            {context === 'menu' && description && (
                 <span className="text-gray-400 text-xs ml-2">— {description}</span>
             )}
         </div>
@@ -86,7 +126,25 @@ const EditListing = () => {
                 address: listing.address,
                 district: listing.district,
                 province: listing.province,
+                floor: listing.floor,
+                distance_to_station: listing.distance_to_station,
+                availability_status: listing.availability_status,
+                year_built: listing.year_built,
             });
+
+            // Parse features
+            if (listing.features) {
+                try {
+                    const featureList = JSON.parse(listing.features);
+                    const unitAmenities = ['refrigerator', 'bathtub', 'tv', 'ac', 'microwave', 'washing_machine', 'water_heater', 'kitchen'];
+                    const buildingFeatures = ['parking', 'pool', 'gym', 'security', 'sauna', 'garden', 'playground', 'coworking'];
+
+                    setValue('unit_amenities', featureList.filter(f => unitAmenities.includes(f)));
+                    setValue('building_features', featureList.filter(f => buildingFeatures.includes(f)));
+                } catch (e) {
+                    console.error('Failed to parse features:', e);
+                }
+            }
 
             // Set select values
             const propertyType = propertyTypeOptions.find(o => o.value === listing.property_type);
@@ -109,6 +167,23 @@ const EditListing = () => {
                         value: listing.station_id,
                         label: listing.station_name || listing.station_id
                     });
+                }
+            }
+
+            if (listing.distance_to_station) {
+                setWalkingTime(Math.round(listing.distance_to_station / WALKING_SPEED_MPM));
+            }
+
+            // Availability Parsing
+            if (listing.availability_status === 'Ready to Move In') {
+                setAvailabilityType('ready');
+            } else if (listing.availability_status && listing.availability_status.includes('Unavailable until')) {
+                setAvailabilityType('date');
+                const dateStr = listing.availability_status.replace('Unavailable until ', '');
+                const date = new Date(dateStr);
+                if (!isNaN(date)) {
+                    setAvailabilityDate(date);
+                    setShownDate(date);
                 }
             }
 
@@ -141,6 +216,14 @@ const EditListing = () => {
                 bedrooms: parseInt(data.bedrooms) || 0,
                 bathrooms: parseInt(data.bathrooms) || 0,
                 area: parseFloat(data.area) || 0,
+                floor: data.floor || '',
+                distance_to_station: parseInt(data.distance_to_station) || 0,
+                availability_status: data.availability_status || '',
+                year_built: parseInt(data.year_built) || 0,
+                features: JSON.stringify([
+                    ...(data.unit_amenities || []),
+                    ...(data.building_features || [])
+                ]),
             });
             toast.success('Listing updated!');
         } catch (error) {
@@ -171,11 +254,29 @@ const EditListing = () => {
     const handleDeleteMedia = async (mediaId) => {
         try {
             await uploadApi.deleteMedia(mediaId);
+            const index = media.findIndex(m => m.id === mediaId);
             setMedia(media.filter((m) => m.id !== mediaId));
+
+            if (lightboxIndex === index) {
+                setLightboxIndex(null);
+            } else if (lightboxIndex > index) {
+                setLightboxIndex(lightboxIndex - 1);
+            }
+
             toast.success('Image deleted');
         } catch (error) {
             toast.error('Failed to delete');
         }
+    };
+
+    const nextImage = (e) => {
+        e.stopPropagation();
+        setLightboxIndex((prev) => (prev + 1) % media.length);
+    };
+
+    const prevImage = (e) => {
+        e.stopPropagation();
+        setLightboxIndex((prev) => (prev - 1 + media.length) % media.length);
     };
 
     if (loading) {
@@ -198,25 +299,69 @@ const EditListing = () => {
 
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Edit Listing</h1>
 
+            <style>
+                {`
+                    .ql-toolbar {
+                        border-top-left-radius: 0.5rem;
+                        border-top-right-radius: 0.5rem;
+                        border: 1px solid #d1d5db !important;
+                        border-bottom: none !important;
+                    }
+                    .ql-container {
+                        border-bottom-left-radius: 0.5rem;
+                        border-bottom-right-radius: 0.5rem;
+                        border: 1px solid #d1d5db !important;
+                        border-top: 1px solid #e5e7eb !important;
+                        min-height: 300px;
+                        font-family: inherit;
+                        font-size: 0.875rem;
+                    }
+                    .dark .ql-toolbar {
+                        background-color: #1f2937;
+                        border-color: #374151 !important;
+                    }
+                    .dark .ql-container {
+                        background-color: #111827;
+                        border-color: #374151 !important;
+                        color: white;
+                    }
+                    .dark .ql-stroke {
+                        stroke: #9ca3af !important;
+                    }
+                    .dark .ql-fill {
+                        fill: #9ca3af !important;
+                    }
+                    .dark .ql-picker {
+                        color: #9ca3af !important;
+                    }
+                `}
+            </style>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Media Upload */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {media.filter((m) => m.type === 'image').map((item) => (
-                            <div key={item.id} className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800">
+                        {media.filter((m) => m.type === 'image').map((item, index) => (
+                            <div key={item.id}
+                                className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
+                                onClick={() => setLightboxIndex(index)}
+                            >
                                 <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <button
                                     type="button"
-                                    onClick={() => handleDeleteMedia(item.id)}
-                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 transition-all hover:bg-red-600"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteMedia(item.id);
+                                    }}
+                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                 >
                                     <TrashIcon className="w-4 h-4" />
                                 </button>
                                 <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Click to delete
+                                    Click to view
                                 </div>
                             </div>
                         ))}
@@ -293,21 +438,271 @@ const EditListing = () => {
 
                         <div>
                             <label className="input-label">Description</label>
-                            <textarea
-                                rows={4}
-                                className="input-field"
-                                placeholder="Describe the property features, amenities, and unique selling points..."
-                                {...register('description')}
+                            <Controller
+                                name="description"
+                                control={control}
+                                render={({ field }) => (
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
+                                        modules={{
+                                            toolbar: [
+                                                [{ 'header': [1, 2, false] }],
+                                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                ['link'],
+                                                ['clean']
+                                            ],
+                                        }}
+                                        className="bg-white dark:bg-gray-900 rounded-lg"
+                                        placeholder="Describe the property features, amenities, and unique selling points..."
+                                    />
+                                )}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Price & Features */}
+                {/* Location */}
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📍 Location</h2>
+
+                    <div className="space-y-6">
+                        <div>
+                            <label className="input-label">Availability / Status</label>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="w-full sm:w-1/2 relative z-20">
+                                    <StyledSelect
+                                        options={availabilityOptions}
+                                        value={availabilityType}
+                                        onChange={(val) => {
+                                            setAvailabilityType(val);
+                                            if (val === 'ready') {
+                                                setValue('availability_status', 'Ready to Move In');
+                                            } else {
+                                                setValue('availability_status', `Unavailable until ${format(availabilityDate, 'MMM dd, yyyy')}`);
+                                                setShowDatePicker(true);
+                                            }
+                                        }}
+                                        isSearchable={false}
+                                        placeholder="Select status..."
+                                    />
+                                </div>
+
+                                <div className="relative w-full sm:w-1/2 z-10" ref={datePickerRef}>
+                                    <div
+                                        className={`input-field flex items-center h-[38px] transition-colors ${availabilityType === 'date'
+                                            ? 'cursor-pointer bg-white dark:bg-dashboard-card'
+                                            : 'cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400 opacity-70'
+                                            }`}
+                                        onClick={() => availabilityType === 'date' && setShowDatePicker(!showDatePicker)}
+                                    >
+                                        <CalendarIcon className={`w-5 h-5 mr-2 ${availabilityType === 'date' ? 'text-gray-400' : 'text-gray-300'}`} />
+                                        <span className="text-sm">
+                                            {availabilityType === 'date'
+                                                ? format(availabilityDate, 'MMM dd, yyyy')
+                                                : '—'}
+                                        </span>
+                                    </div>
+
+                                    {showDatePicker && (
+                                        <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 z-50 shadow-lg rounded-md border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-auto min-w-[300px]">
+                                            {/* Custom Header */}
+                                            <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShownDate(subMonths(shownDate, 1))}
+                                                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400"
+                                                >
+                                                    <ChevronLeftIcon className="w-5 h-5" />
+                                                </button>
+
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-32">
+                                                        <StyledSelect
+                                                            value={{
+                                                                value: getMonth(shownDate),
+                                                                label: format(shownDate, 'MMMM')
+                                                            }}
+                                                            onChange={(val) => setShownDate(setMonth(shownDate, val))}
+                                                            options={Array.from({ length: 12 }, (_, i) => ({
+                                                                value: i,
+                                                                label: format(new Date(2000, i, 1), 'MMMM')
+                                                            }))}
+                                                            isSearchable={false}
+                                                            styles={{
+                                                                control: (base) => ({
+                                                                    ...base,
+                                                                    minHeight: '30px',
+                                                                    height: '30px',
+                                                                    fontSize: '0.8rem'
+                                                                }),
+                                                                dropdownIndicator: (base) => ({
+                                                                    ...base,
+                                                                    padding: '2px'
+                                                                })
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="w-28">
+                                                        <StyledSelect
+                                                            value={{
+                                                                value: getYear(shownDate),
+                                                                label: getYear(shownDate).toString()
+                                                            }}
+                                                            onChange={(val) => setShownDate(setYear(shownDate, val))}
+                                                            options={Array.from({ length: 10 }, (_, i) => {
+                                                                const year = new Date().getFullYear() + i;
+                                                                return { value: year, label: year.toString() };
+                                                            })}
+                                                            isSearchable={false}
+                                                            styles={{
+                                                                control: (base) => ({
+                                                                    ...base,
+                                                                    minHeight: '30px',
+                                                                    height: '30px',
+                                                                    fontSize: '0.8rem'
+                                                                }),
+                                                                dropdownIndicator: (base) => ({
+                                                                    ...base,
+                                                                    padding: '2px'
+                                                                })
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShownDate(addMonths(shownDate, 1))}
+                                                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400"
+                                                >
+                                                    <ChevronRightIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+
+                                            <DateRange
+                                                editableDateInputs={false}
+                                                showDateDisplay={false}
+                                                onChange={(item) => {
+                                                    const date = item.selection.startDate;
+                                                    setAvailabilityDate(date);
+                                                    setValue('availability_status', `Unavailable until ${format(date, 'MMM dd, yyyy')}`);
+                                                    setShowDatePicker(false);
+                                                }}
+                                                moveRangeOnFirstSelection={false}
+                                                ranges={[{
+                                                    startDate: availabilityDate,
+                                                    endDate: availabilityDate,
+                                                    key: 'selection'
+                                                }]}
+                                                shownDate={shownDate}
+                                                showMonthAndYearPickers={false}
+                                                rangeColors={['#3b82f6']}
+                                                minDate={new Date()}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="input-label">Nearby Transit Station</label>
+                                <Controller
+                                    name="station_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <StyledSelect
+                                            {...field}
+                                            options={stationOptions}
+                                            placeholder="🚇 Search and select a transit station..."
+                                            isSearchable
+                                            isClearable
+                                            noOptionsMessage={() => 'No stations found'}
+                                        />
+                                    )}
+                                />
+
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="input-label">Distance (meters)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">🚶</span>
+                                        <input
+                                            type="number"
+                                            className="input-field pl-12"
+                                            placeholder="e.g. 350"
+                                            {...register('distance_to_station', {
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    setWalkingTime(val ? Math.round(val / WALKING_SPEED_MPM) : '');
+                                                }
+                                            })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="input-label">Walking Time (min)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">⏱️</span>
+                                        <input
+                                            type="number"
+                                            className="input-field pl-12"
+                                            placeholder="e.g. 5"
+                                            value={walkingTime}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setWalkingTime(val);
+                                                setValue('distance_to_station', val ? Math.round(val * WALKING_SPEED_MPM) : '');
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="input-label">Address</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Full street address"
+                                {...register('address')}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label className="input-label">District</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g., Watthana"
+                                    {...register('district')}
+                                />
+                            </div>
+                            <div>
+                                <label className="input-label">Province</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g., Bangkok"
+                                    {...register('province')}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Features */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">💰 Price & Features</h2>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                         <div>
                             <label className="input-label">Price (THB)</label>
                             <div className="relative">
@@ -357,61 +752,90 @@ const EditListing = () => {
                                 />
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Location */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📍 Location</h2>
-
-                    <div className="space-y-6">
                         <div>
-                            <label className="input-label">Transit Station</label>
-                            <Controller
-                                name="station_id"
-                                control={control}
-                                render={({ field }) => (
-                                    <StyledSelect
-                                        {...field}
-                                        options={stationOptions}
-                                        placeholder="🚇 Search and select a transit station..."
-                                        isSearchable
-                                        isClearable
-                                        noOptionsMessage={() => 'No stations found'}
-                                    />
-                                )}
-                            />
-                            <p className="text-sm text-gray-500 mt-2">
-                                This helps buyers find your property on the transit map.
-                            </p>
-                        </div>
-                        <div>
-                            <label className="input-label">Address</label>
-                            <input
-                                type="text"
-                                className="input-field"
-                                placeholder="Full street address"
-                                {...register('address')}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                                <label className="input-label">District</label>
+                            <label className="input-label">Floor</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🏢</span>
                                 <input
                                     type="text"
-                                    className="input-field"
-                                    placeholder="e.g., Watthana"
-                                    {...register('district')}
+                                    className="input-field pl-12"
+                                    placeholder="e.g. 12A"
+                                    {...register('floor')}
                                 />
                             </div>
-                            <div>
-                                <label className="input-label">Province</label>
+                        </div>
+                        <div>
+                            <label className="input-label">Year Built</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🏗️</span>
                                 <input
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="e.g., Bangkok"
-                                    {...register('province')}
+                                    type="number"
+                                    className="input-field pl-12"
+                                    placeholder="e.g. 2013"
+                                    min="1900"
+                                    max={new Date().getFullYear()}
+                                    {...register('year_built')}
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Unit Amenities</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { id: 'refrigerator', label: 'Refrigerator', icon: '❄️' },
+                                    { id: 'bathtub', label: 'Bathtub', icon: '🛁' },
+                                    { id: 'tv', label: 'TV', icon: '📺' },
+                                    { id: 'ac', label: 'Air Conditioning', icon: '💨' },
+                                    { id: 'microwave', label: 'Microwave', icon: '🥘' },
+                                    { id: 'washing_machine', label: 'Washing Machine', icon: '🧺' },
+                                    { id: 'water_heater', label: 'Water Heater', icon: '🚿' },
+                                    { id: 'kitchen', label: 'Kitchen / Stove', icon: '🍳' },
+                                ].map((item) => (
+                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                        <input
+                                            type="checkbox"
+                                            value={item.id}
+                                            {...register('unit_amenities')}
+                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
+                                            <span className="mr-2">{item.icon}</span>
+                                            {item.label}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Building Features</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { id: 'parking', label: 'Covered Car Park', icon: '🚗' },
+                                    { id: 'pool', label: 'Swimming Pool', icon: '🏊' },
+                                    { id: 'gym', label: 'Fitness / Gym', icon: '🏋️' },
+                                    { id: 'security', label: '24h Security', icon: '🛡️' },
+                                    { id: 'sauna', label: 'Sauna', icon: '🧖' },
+                                    { id: 'garden', label: 'Garden / BBQ', icon: '🌳' },
+                                    { id: 'playground', label: 'Playground', icon: '🎠' },
+                                    { id: 'coworking', label: 'Co-working Space', icon: '💻' },
+                                ].map((item) => (
+                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                        <input
+                                            type="checkbox"
+                                            value={item.id}
+                                            {...register('building_features')}
+                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
+                                            <span className="mr-2">{item.icon}</span>
+                                            {item.label}
+                                        </span>
+                                    </label>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -440,8 +864,76 @@ const EditListing = () => {
                         )}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+
+            {/* Lightbox */}
+            {lightboxIndex !== null && media.length > 0 && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
+                    onClick={() => setLightboxIndex(null)}
+                >
+                    {/* Dynamic Blurred Background */}
+                    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                        <img
+                            src={getMediaUrl(media[lightboxIndex].url)}
+                            alt=""
+                            className="w-full h-full object-cover blur-2xl opacity-40 scale-110 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 bg-black/60" />
+                    </div>
+                    <button
+                        className="absolute top-6 right-6 p-3 text-white hover:text-gray-300 transition-colors z-[110]"
+                        onClick={() => setLightboxIndex(null)}
+                    >
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <button
+                        className="absolute bottom-6 right-6 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xl transition-all flex items-center gap-2 font-bold z-[110]"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMedia(media[lightboxIndex].id);
+                        }}
+                    >
+                        <TrashIcon className="w-6 h-6" />
+                        <span>Delete Permanently</span>
+                    </button>
+
+                    {media.length > 1 && (
+                        <>
+                            <button
+                                className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
+                                onClick={prevImage}
+                            >
+                                <ChevronLeftIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button
+                                className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
+                                onClick={nextImage}
+                            >
+                                <ChevronRightIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
+                            </button>
+                        </>
+                    )}
+
+                    <div
+                        className="relative z-10 max-w-5xl w-full max-h-[85vh] flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={getMediaUrl(media[lightboxIndex].url)}
+                            alt="Full Preview"
+                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
+                        />
+                        <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
+                            {lightboxIndex + 1} / {media.length}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div >
     );
 };
 

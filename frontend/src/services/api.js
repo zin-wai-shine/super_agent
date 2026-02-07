@@ -4,6 +4,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
     baseURL: API_URL,
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -71,7 +72,7 @@ export const authApi = {
 // Public API
 export const publicApi = {
     getListings: (params) => api.get('/public/listings', { params }),
-    getListing: (id) => api.get(`/public/listings/${id}`),
+    getListing: (id, params) => api.get(`/public/listings/${id}`, { params }),
     getStations: (params) => api.get('/public/stations', { params }),
     getListingsByStation: (stationId) => api.get(`/public/listings/by-station/${stationId}`),
     getAgentInfo: (params) => api.get('/public/agent/info', { params }),

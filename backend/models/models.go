@@ -104,37 +104,41 @@ type Subscription struct {
 
 // Listing represents a property listing
 type Listing struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	AgentID      uuid.UUID      `gorm:"type:uuid;not null" json:"agent_id"`
-	Agent        *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
-	CreatedBy    uuid.UUID      `gorm:"type:uuid;not null" json:"created_by"`
-	Title        string         `gorm:"size:255;not null" json:"title"`
-	Description  string         `gorm:"type:text" json:"description,omitempty"`
-	PropertyType string         `gorm:"size:50" json:"property_type"` // condo, house, land, etc.
-	ListingType  string         `gorm:"size:20" json:"listing_type"`  // sale, rent
-	Price        float64        `gorm:"type:decimal(15,2)" json:"price"`
-	PriceUnit    string         `gorm:"size:20;default:'THB'" json:"price_unit"`
-	Bedrooms     int            `gorm:"default:0" json:"bedrooms"`
-	Bathrooms    int            `gorm:"default:0" json:"bathrooms"`
-	Area         float64        `gorm:"type:decimal(10,2)" json:"area"` // sqm
-	Road         string         `gorm:"size:255" json:"road,omitempty"`
-	Address      string         `gorm:"type:text" json:"address,omitempty"`
-	District     string         `gorm:"size:100" json:"district,omitempty"`
-	Province     string         `gorm:"size:100" json:"province,omitempty"`
-	PostalCode   string         `gorm:"size:10" json:"postal_code,omitempty"`
-	Latitude     float64        `gorm:"type:decimal(10,7)" json:"latitude,omitempty"`
-	Longitude    float64        `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
-	StationID    string         `gorm:"size:20;index" json:"station_id,omitempty"` // Transit station ID from SVG
-	StationName  string         `gorm:"size:100" json:"station_name,omitempty"`
-	Station      *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
-	Features     string         `gorm:"type:text" json:"features,omitempty"` // JSON array
-	IsPublished  bool           `gorm:"default:false" json:"is_published"`
-	IsFeatured   bool           `gorm:"default:false" json:"is_featured"`
-	ViewCount    int            `gorm:"default:0" json:"view_count"`
-	Media        []Media        `gorm:"foreignKey:ListingID" json:"media,omitempty"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID            uuid.UUID      `gorm:"type:uuid;not null" json:"agent_id"`
+	Agent              *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	CreatedBy          uuid.UUID      `gorm:"type:uuid;not null" json:"created_by"`
+	Title              string         `gorm:"size:255;not null" json:"title"`
+	Description        string         `gorm:"type:text" json:"description,omitempty"`
+	PropertyType       string         `gorm:"size:50" json:"property_type"` // condo, house, land, etc.
+	ListingType        string         `gorm:"size:20" json:"listing_type"`  // sale, rent
+	Price              float64        `gorm:"type:decimal(15,2)" json:"price"`
+	PriceUnit          string         `gorm:"size:20;default:'THB'" json:"price_unit"`
+	Bedrooms           int            `gorm:"default:0" json:"bedrooms"`
+	Bathrooms          int            `gorm:"default:0" json:"bathrooms"`
+	Area               float64        `gorm:"type:decimal(10,2)" json:"area"` // sqm
+	Floor              string         `gorm:"size:50" json:"floor,omitempty"` // e.g., "G", "12A", "PH"
+	Road               string         `gorm:"size:255" json:"road,omitempty"`
+	Address            string         `gorm:"type:text" json:"address,omitempty"`
+	District           string         `gorm:"size:100" json:"district,omitempty"`
+	Province           string         `gorm:"size:100" json:"province,omitempty"`
+	PostalCode         string         `gorm:"size:10" json:"postal_code,omitempty"`
+	Latitude           float64        `gorm:"type:decimal(10,7)" json:"latitude,omitempty"`
+	Longitude          float64        `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
+	StationID          string         `gorm:"size:20;index" json:"station_id,omitempty"` // Transit station ID from SVG
+	StationName        string         `gorm:"size:100" json:"station_name,omitempty"`
+	DistanceToStation  int            `gorm:"default:0" json:"distance_to_station"` // Distance in meters
+	AvailabilityStatus string         `gorm:"size:50" json:"availability_status"`   // e.g., "Ready to Move", "Rent until Oct"
+	YearBuilt          int            `gorm:"default:0" json:"year_built"`
+	Station            *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
+	Features           string         `gorm:"type:text" json:"features,omitempty"` // JSON array
+	IsPublished        bool           `gorm:"default:false" json:"is_published"`
+	IsFeatured         bool           `gorm:"default:false" json:"is_featured"`
+	ViewCount          int            `gorm:"default:0" json:"view_count"`
+	Media              []Media        `gorm:"foreignKey:ListingID" json:"media,omitempty"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // Media represents images and videos for listings

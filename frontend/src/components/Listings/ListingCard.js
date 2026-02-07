@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPinIcon, HomeIcon, ArrowRightIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
+import { TbTrain } from "react-icons/tb";
+import { LiaBedSolid } from "react-icons/lia";
+import { PiBathtub } from "react-icons/pi";
 
 const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     const {
@@ -190,9 +193,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                 {((station_name || station_id) || (station?.name_en || station?.id)) && (
                                     <div className="flex items-center gap-2">
                                         {/* Train Icon */}
-                                        <svg className="w-5 h-5 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M18 11c0-.958-.337-1.842-.897-2.541.052-.397.086-.803.086-1.217C17.189 4.195 14.865 2 12 2s-5.189 2.195-5.189 5.242c0 .414.034.82.086 1.217C6.337 9.158 6 10.042 6 11v6c0 1.55 1.168 2.828 2.662 2.978L8 22h1v-2h6v2h1l-.662-2.022C16.832 19.828 18 18.55 18 17v-6zm-6-7c1.472 0 2.721 1.052 3.065 2.458-2.028-.291-4.102-.291-6.13 0C9.279 5.052 10.528 4 12 4zM8 11h8v2H8v-2zm-1 6v-2h10v2c0 .991-.72 1.838-1.677 1.973l.006.009-.329.982v.036H9v-.036l-.337-1.004c-.958-.135-1.663-.982-1.663-1.96z" />
-                                        </svg>
+                                        <TbTrain className="w-5 h-5 text-primary-600 flex-shrink-0" />
 
                                         <span className="text-sm text-primary-600 font-bold whitespace-nowrap">
                                             {line_name || station?.line_name || 'BTS'}
@@ -215,15 +216,11 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                             {/* Features for List View */}
                             <div className="flex items-center gap-6 pt-2">
                                 <div className="flex items-center gap-2 text-gray-600">
-                                    <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10V18M21 18V10M3 10C3 8.34315 4.34315 7 6 7H18C19.6569 7 21 8.34315 21 10M3 10V14H21V10M3 14V18M21 14V18M7 10V14M17 10V14M11 10V14M13 10V14" />
-                                    </svg>
+                                    <LiaBedSolid className="w-5 h-5 text-primary-600" />
                                     <span className="text-sm font-medium">{bedrooms} Beds</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
-                                    <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M4 11H20V17C20 18.1046 19.1046 19 18 19H6C4.89543 19 4 18.1046 4 17V11Z" />
-                                    </svg>
+                                    <PiBathtub className="w-5 h-5 text-primary-600" />
                                     <span className="text-sm font-medium">{bathrooms} Baths</span>
                                 </div>
                                 {area > 0 && (
@@ -324,9 +321,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                         {((station_name || station_id) || (station?.name_en || station?.id)) && (
                             <div className="flex items-center gap-1.5 ml-0.5">
                                 {/* Train Icon */}
-                                <svg className="w-4 h-4 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18 11c0-.958-.337-1.842-.897-2.541.052-.397.086-.803.086-1.217C17.189 4.195 14.865 2 12 2s-5.189 2.195-5.189 5.242c0 .414.034.82.086 1.217C6.337 9.158 6 10.042 6 11v6c0 1.55 1.168 2.828 2.662 2.978L8 22h1v-2h6v2h1l-.662-2.022C16.832 19.828 18 18.55 18 17v-6zm-6-7c1.472 0 2.721 1.052 3.065 2.458-2.028-.291-4.102-.291-6.13 0C9.279 5.052 10.528 4 12 4zM8 11h8v2H8v-2zm-1 6v-2h10v2c0 .991-.72 1.838-1.677 1.973l.006.009-.329.982v.036H9v-.036l-.337-1.004c-.958-.135-1.663-.982-1.663-1.96z" />
-                                </svg>
+                                <TbTrain className="w-4 h-4 text-primary-600 flex-shrink-0" />
 
                                 <div className="flex items-baseline gap-1.5 overflow-hidden">
                                     {/* Line Name */}
@@ -354,15 +349,11 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                     {/* Features (Now Grouped Here) */}
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1" title="Bedrooms">
-                            <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10V18M21 18V10M3 10C3 8.34315 4.34315 7 6 7H18C19.6569 7 21 8.34315 21 10M3 10V14H21V10M3 14V18M21 14V18M7 10V14M17 10V14M11 10V14M13 10V14" />
-                            </svg>
+                            <LiaBedSolid className="w-4 h-4 text-primary-600" />
                             <span className="text-[13px] text-gray-500">{bedrooms}</span>
                         </div>
                         <div className="flex items-center gap-1" title="Bathrooms">
-                            <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M4 11H20V17C20 18.1046 19.1046 19 18 19H6C4.89543 19 4 18.1046 4 17V11Z" />
-                            </svg>
+                            <PiBathtub className="w-4 h-4 text-primary-600" />
                             <span className="text-[13px] text-gray-500">{bathrooms}</span>
                         </div>
                         {area > 0 && (

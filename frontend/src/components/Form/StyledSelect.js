@@ -5,7 +5,7 @@ import Select from 'react-select';
 const getCustomStyles = (isDarkMode) => ({
     control: (base, state) => ({
         ...base,
-        minHeight: '34px',
+        minHeight: '38px',
         borderRadius: '3px',
         borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
         boxShadow: state.isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
@@ -18,7 +18,7 @@ const getCustomStyles = (isDarkMode) => ({
     }),
     valueContainer: (base) => ({
         ...base,
-        padding: '2px 8px',
+        padding: '2px 16px',
     }),
     placeholder: (base) => ({
         ...base,

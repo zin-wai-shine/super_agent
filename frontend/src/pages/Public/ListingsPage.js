@@ -176,6 +176,8 @@ const ListingsPage = () => {
         };
     }, [isFilterModalOpen, isTransitModalOpen]);
 
+    const [stations, setStations] = useState([]);
+
     useEffect(() => {
         const fetchAgentInfo = async () => {
             try {
@@ -200,21 +202,50 @@ const ListingsPage = () => {
                 console.error('Failed to fetch agent info:', error);
             }
         };
+
+        const fetchStations = async () => {
+            try {
+                const response = await publicApi.getStations();
+                setStations(response.data.stations || []);
+            } catch (error) {
+                console.error('Failed to fetch stations:', error);
+            }
+        };
+
         fetchAgentInfo();
+        fetchStations();
     }, [searchParams]);
 
     // Filter states
-    const [filters, setFilters] = useState({
-        type: searchParams.get('type') || '',
-        listing_type: searchParams.get('listing_type') || '',
-        min_price: searchParams.get('min_price') || '',
-        max_price: searchParams.get('max_price') || '',
-        bedrooms: searchParams.get('bedrooms') || '',
-        station_id: searchParams.get('station_id') || '',
-        search: searchParams.get('search') || '',
+    const [filters, setFilters] = useState(() => {
+        const saved = JSON.parse(localStorage.getItem('listing_filters') || '{}');
+        return {
+            type: searchParams.get('type') || saved.type || '',
+            listing_type: searchParams.get('listing_type') || saved.listing_type || '',
+            min_price: searchParams.get('min_price') || saved.min_price || '',
+            max_price: searchParams.get('max_price') || saved.max_price || '',
+            bedrooms: searchParams.get('bedrooms') || saved.bedrooms || '',
+            station_id: searchParams.get('station_id') || saved.station_id || '',
+            search: searchParams.get('search') || saved.search || '',
+        };
     });
     const [searchTerm, setSearchTerm] = useState(filters.search);
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
+
+    // Sync URL with restored filters on mount if URL was empty
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams);
+        let updated = false;
+        Object.keys(filters).forEach(key => {
+            if (filters[key] && !params.has(key)) {
+                params.set(key, filters[key]);
+                updated = true;
+            }
+        });
+        if (updated) {
+            setSearchParams(params, { replace: true });
+        }
+    }, []);
 
     // Debounce search input
     useEffect(() => {
@@ -229,6 +260,8 @@ const ListingsPage = () => {
 
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchListings = async () => {
             // Only set initial loading if we don't have listings yet (first load or new search)
             if (listings.length === 0) setInitialLoading(true);
@@ -246,22 +279,29 @@ const ListingsPage = () => {
                     params.agent_id = user.agent_id;
                 }
 
-                const response = await publicApi.getListings(params);
+                // Pass signal to axios
+                const response = await publicApi.getListings(params, { signal: controller.signal });
                 const data = response.data;
 
                 setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
                 setTotal(data.total || 0);
 
             } catch (error) {
+                // Ignore abort errors
+                if (axios.isCancel(error) || error.name === 'CanceledError') return;
                 console.error('Failed to fetch listings', error);
             } finally {
-                setLoading(false);
-                // initialLoading is only for the first load of the entire page
-                if (initialLoading) setInitialLoading(false);
+                // Only update state if not aborted
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                    setInitialLoading(false);
+                }
             }
         };
 
         fetchListings();
+
+        return () => controller.abort();
     }, [filters, page, viewMode]); // Re-run when filters/page change
 
     useEffect(() => {
@@ -286,7 +326,12 @@ const ListingsPage = () => {
     }, [loading, listings.length, total]);
 
     const handleFilterChange = (key, value) => {
-        setFilters((prev) => ({ ...prev, [key]: value }));
+        const newFilters = { ...filters, [key]: value };
+        setFilters(newFilters);
+
+        // Persist to localStorage
+        localStorage.setItem('listing_filters', JSON.stringify(newFilters));
+
         setPage(1);
         const newParams = new URLSearchParams(searchParams);
         if (value) {
@@ -319,6 +364,7 @@ const ListingsPage = () => {
             station_id: '',
             search: '',
         });
+        localStorage.removeItem('listing_filters');
         setSearchTerm('');
         setSearchParams({});
         setIsFilterModalOpen(false); // Close modal on reset
@@ -573,7 +619,9 @@ const ListingsPage = () => {
                                                     <MapPinIcon className="w-4 h-4 text-primary-500 mt-0.5" />
                                                     <div>
                                                         <span className="text-sm text-gray-500 block">Station</span>
-                                                        <span className="font-medium text-primary-700">{filters.station_id}</span>
+                                                        <span className="font-medium text-primary-700">
+                                                            {stations.find(s => s.id === filters.station_id)?.name_en || filters.station_id}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             )}
@@ -741,6 +789,8 @@ const ListingsPage = () => {
                                             placeholder="Any Type"
                                             isClearable={false}
                                             isSearchable={false}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </div>
                                     <div>
@@ -752,6 +802,8 @@ const ListingsPage = () => {
                                             placeholder="Sale & Rent"
                                             isClearable={false}
                                             isSearchable={false}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </div>
                                     <div>
@@ -763,6 +815,8 @@ const ListingsPage = () => {
                                             placeholder="Any"
                                             isClearable={false}
                                             isSearchable={false}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </div>
                                     <div>

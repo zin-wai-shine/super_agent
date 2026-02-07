@@ -1,7 +1,6 @@
-export const TransitMapSVG = () => (
 <svg id="train-map" width="1368" height="1340" viewBox="0 0 1368 1340" version="1.1" class="css-1qmhtch"><g id="metro" class="locale-en"><svg xmlns="http://www.w3.org/2000/svg" width="1362.22" height="1306.51" fill="none" viewBox="0 0 1362.22 1306.51">
 <defs>
-<style>{`
+<style>
  #river path {
    opacity: 0.6;
    stroke: #B8E5FA;
@@ -64,7 +63,7 @@ export const TransitMapSVG = () => (
  .locale-en [data-name="label-th"] {
    display: none;
  }
-`}</style>
+</style>
 </defs>
 
 <g id="river">
@@ -3136,4 +3135,3 @@ export const TransitMapSVG = () => (
 
 </g>
 </g></g></svg></g></svg>
-);

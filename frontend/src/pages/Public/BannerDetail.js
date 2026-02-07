@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { publicApi } from '../../services/api';
 import { ArrowLeftIcon, CalendarIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { format, parseISO } from 'date-fns';
@@ -8,6 +8,7 @@ import { getMediaUrl } from '../../utils/media';
 
 const BannerDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [banner, setBanner] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -59,10 +60,13 @@ const BannerDetail = () => {
             {/* Header / Navigation */}
             <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-800 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+                    >
                         <ArrowLeftIcon className="w-5 h-5" />
                         <span className="font-bold text-sm">Back</span>
-                    </Link>
+                    </button>
                     <button
                         onClick={handleShare}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
