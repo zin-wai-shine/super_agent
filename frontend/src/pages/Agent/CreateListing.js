@@ -3,7 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { agentApi, publicApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
-import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import {
+    MdBed, MdBathtub, MdSquareFoot, MdLayers, MdCalendarToday,
+    MdKitchen, MdTv, MdAir, MdMicrowave, MdLocalLaundryService, MdShower, MdRestaurant,
+    MdLocalParking, MdPool, MdFitnessCenter, MdSecurity, MdHotTub, MdPark, MdChildCare, MdComputer,
+    MdElevator, MdGroups, MdStore, MdDirectionsBus, MdSpa, MdGarage, MdMeetingRoom
+} from 'react-icons/md';
 import StyledSelect from '../../components/Form/StyledSelect';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -759,7 +765,9 @@ const CreateListing = () => {
                         <div>
                             <label className="input-label">Bedrooms</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🛏️</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
+                                    <MdBed />
+                                </span>
                                 <input
                                     type="number"
                                     className="input-field pl-12"
@@ -772,7 +780,9 @@ const CreateListing = () => {
                         <div>
                             <label className="input-label">Bathrooms</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🚿</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
+                                    <MdBathtub />
+                                </span>
                                 <input
                                     type="number"
                                     className="input-field pl-12"
@@ -785,7 +795,9 @@ const CreateListing = () => {
                         <div>
                             <label className="input-label">Area (sqm)</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">📐</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
+                                    <MdSquareFoot />
+                                </span>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -799,7 +811,9 @@ const CreateListing = () => {
                         <div>
                             <label className="input-label">Floor</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🏢</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
+                                    <MdLayers />
+                                </span>
                                 <input
                                     type="text"
                                     className="input-field pl-12"
@@ -811,7 +825,9 @@ const CreateListing = () => {
                         <div>
                             <label className="input-label">Year Built</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🏗️</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
+                                    <MdCalendarToday />
+                                </span>
                                 <input
                                     type="number"
                                     className="input-field pl-12"
@@ -829,14 +845,14 @@ const CreateListing = () => {
                             <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Unit Amenities</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { id: 'refrigerator', label: 'Refrigerator', icon: '❄️' },
-                                    { id: 'bathtub', label: 'Bathtub', icon: '🛁' },
-                                    { id: 'tv', label: 'TV', icon: '📺' },
-                                    { id: 'ac', label: 'Air Conditioning', icon: '💨' },
-                                    { id: 'microwave', label: 'Microwave', icon: '🥘' },
-                                    { id: 'washing_machine', label: 'Washing Machine', icon: '🧺' },
-                                    { id: 'water_heater', label: 'Water Heater', icon: '🚿' },
-                                    { id: 'kitchen', label: 'Kitchen / Stove', icon: '🍳' },
+                                    { id: 'refrigerator', label: 'Refrigerator', icon: <MdKitchen className="w-5 h-5 text-blue-400" /> },
+                                    { id: 'bathtub', label: 'Bathtub', icon: <MdBathtub className="w-5 h-5 text-blue-300" /> },
+                                    { id: 'tv', label: 'TV', icon: <MdTv className="w-5 h-5 text-gray-600" /> },
+                                    { id: 'ac', label: 'Air Conditioning', icon: <MdAir className="w-5 h-5 text-cyan-400" /> },
+                                    { id: 'microwave', label: 'Microwave', icon: <MdMicrowave className="w-5 h-5 text-orange-400" /> },
+                                    { id: 'washing_machine', label: 'Washing Machine', icon: <MdLocalLaundryService className="w-5 h-5 text-gray-400" /> },
+                                    { id: 'water_heater', label: 'Water Heater', icon: <MdShower className="w-5 h-5 text-blue-400" /> },
+                                    { id: 'kitchen', label: 'Kitchen / Stove', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
                                 ].map((item) => (
                                     <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
@@ -846,7 +862,7 @@ const CreateListing = () => {
                                             className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                         />
                                         <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2">{item.icon}</span>
+                                            <span className="mr-2 flex items-center justify-center">{item.icon}</span>
                                             {item.label}
                                         </span>
                                     </label>
@@ -858,14 +874,14 @@ const CreateListing = () => {
                             <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Building Features</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { id: 'parking', label: 'Covered Car Park', icon: '🚗' },
-                                    { id: 'pool', label: 'Swimming Pool', icon: '🏊' },
-                                    { id: 'gym', label: 'Fitness / Gym', icon: '🏋️' },
-                                    { id: 'security', label: '24h Security', icon: '🛡️' },
-                                    { id: 'sauna', label: 'Sauna', icon: '🧖' },
-                                    { id: 'garden', label: 'Garden / BBQ', icon: '🌳' },
-                                    { id: 'playground', label: 'Playground', icon: '🎠' },
-                                    { id: 'coworking', label: 'Co-working Space', icon: '💻' },
+                                    { id: 'parking', label: 'Covered Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
+                                    { id: 'pool', label: 'Swimming Pool', icon: <MdPool className="w-5 h-5 text-cyan-500" /> },
+                                    { id: 'gym', label: 'Fitness / Gym', icon: <MdFitnessCenter className="w-5 h-5 text-gray-700" /> },
+                                    { id: 'security', label: '24h Security', icon: <MdSecurity className="w-5 h-5 text-red-500" /> },
+                                    { id: 'sauna', label: 'Sauna', icon: <MdHotTub className="w-5 h-5 text-orange-400" /> },
+                                    { id: 'garden', label: 'Garden / BBQ', icon: <MdPark className="w-5 h-5 text-green-500" /> },
+                                    { id: 'playground', label: 'Playground', icon: <MdChildCare className="w-5 h-5 text-purple-400" /> },
+                                    { id: 'coworking', label: 'Co-working Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
                                 ].map((item) => (
                                     <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
@@ -875,7 +891,7 @@ const CreateListing = () => {
                                             className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                         />
                                         <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2">{item.icon}</span>
+                                            <span className="mr-2 flex items-center justify-center">{item.icon}</span>
                                             {item.label}
                                         </span>
                                     </label>
@@ -888,17 +904,17 @@ const CreateListing = () => {
                         <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Project Facilities</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             {[
-                                { id: 'communal_elevator', label: 'Communal Elevator', icon: '🛗' },
-                                { id: 'communal_reception', label: 'Communal Reception', icon: '🛎️' },
-                                { id: 'communal_restaurant', label: 'Communal Restaurant', icon: '🍽️' },
-                                { id: 'communal_shop', label: 'Communal Shop', icon: '🏪' },
-                                { id: 'communal_shuttle', label: 'Communal Shuttle Service', icon: '🚐' },
-                                { id: 'communal_spa', label: 'Communal Spa', icon: '💆' },
-                                { id: 'communal_coworking', label: 'Communal Coworking Space', icon: '💻' },
-                                { id: 'communal_security_24', label: 'Communal Security 24 hours', icon: '🛡️' },
-                                { id: 'communal_parking', label: 'Communal Car Park', icon: '🅿️' },
-                                { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: '🏠' },
-                                { id: 'communal_function_room', label: 'Communal Function Room', icon: '🤝' },
+                                { id: 'communal_elevator', label: 'Communal Elevator', icon: <MdElevator className="w-5 h-5 text-gray-500" /> },
+                                { id: 'communal_reception', label: 'Communal Reception', icon: <MdGroups className="w-5 h-5 text-amber-600" /> },
+                                { id: 'communal_restaurant', label: 'Communal Restaurant', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
+                                { id: 'communal_shop', label: 'Communal Shop', icon: <MdStore className="w-5 h-5 text-emerald-600" /> },
+                                { id: 'communal_shuttle', label: 'Communal Shuttle Service', icon: <MdDirectionsBus className="w-5 h-5 text-blue-500" /> },
+                                { id: 'communal_spa', label: 'Communal Spa', icon: <MdSpa className="w-5 h-5 text-pink-400" /> },
+                                { id: 'communal_coworking', label: 'Communal Coworking Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
+                                { id: 'communal_security_24', label: 'Communal Security 24 hours', icon: <MdSecurity className="w-5 h-5 text-red-500" /> },
+                                { id: 'communal_parking', label: 'Communal Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
+                                { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: <MdGarage className="w-5 h-5 text-blue-600" /> },
+                                { id: 'communal_function_room', label: 'Communal Function Room', icon: <MdMeetingRoom className="w-5 h-5 text-amber-700" /> },
                             ].map((item) => (
                                 <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                     <input
