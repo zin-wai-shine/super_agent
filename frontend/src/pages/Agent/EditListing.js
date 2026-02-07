@@ -753,6 +753,32 @@ const EditListing = () => {
                                 Tip: Paste a Google Maps link to automatically set coordinates.
                             </p>
                         </div>
+
+                        {/* Map Preview Showcase */}
+                        {(fieldValues.map_url || (fieldValues.latitude && fieldValues.longitude)) && (
+                            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-6">
+                                <label className="input-label mb-4 block">Map Preview Showcase</label>
+                                <div className="w-full h-[300px] rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        frameBorder="0"
+                                        scrolling="no"
+                                        marginHeight="0"
+                                        marginWidth="0"
+                                        src={fieldValues.map_url && !fieldValues.map_url.includes('maps.app.goo.gl')
+                                            ? `https://maps.google.com/maps?q=${encodeURIComponent(fieldValues.map_url)}&hl=en&z=15&output=embed`
+                                            : `https://maps.google.com/maps?q=${fieldValues.latitude},${fieldValues.longitude}&hl=en&z=15&output=embed`
+                                        }
+                                        title="Map Preview"
+                                    ></iframe>
+                                </div>
+                                <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 flex items-center">
+                                    <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                                    Live Preview Active
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
