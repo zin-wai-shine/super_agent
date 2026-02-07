@@ -277,7 +277,7 @@ const ListingDetailPage = () => {
 
                             {/* Confirmed Button */}
                             <div className="">
-                                <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors uppercase text-sm tracking-wide">
+                                <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide">
                                     <CheckBadgeIcon className="w-5 h-5 mr-2" />
                                     Confirmed Available Today
                                 </button>
@@ -581,7 +581,7 @@ const ListingDetailPage = () => {
                                                                                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
                                                                                     {item.icon}
                                                                                 </div>
-                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors uppercase tracking-tight text-sm">{item.label}</span>
+                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors tracking-tight text-sm">{item.label}</span>
                                                                             </div>
                                                                         );
                                                                     })}
@@ -600,7 +600,7 @@ const ListingDetailPage = () => {
                                                                                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
                                                                                     {item.icon}
                                                                                 </div>
-                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors uppercase tracking-tight text-sm">{item.label}</span>
+                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors tracking-tight text-sm">{item.label}</span>
                                                                             </div>
                                                                         );
                                                                     })}
