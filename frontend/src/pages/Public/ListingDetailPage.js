@@ -637,6 +637,37 @@ const ListingDetailPage = () => {
                                     <p className="text-gray-600">No description provided.</p>
                                 )}
                             </div>
+
+                            {/* Location Map */}
+                            {listing.latitude && listing.longitude && (
+                                <div className="mt-12">
+                                    <h3 className="text-3xl font-extrabold text-gray-900 mb-6">Location map</h3>
+                                    <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            frameBorder="0"
+                                            scrolling="no"
+                                            marginHeight="0"
+                                            marginWidth="0"
+                                            src={`https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`}
+                                            title="Property Location"
+                                        ></iframe>
+                                    </div>
+                                    <div className="mt-4 flex items-center text-sm text-gray-500">
+                                        <MapPinIcon className="w-4 h-4 mr-2" />
+                                        <span>Coordinates: {listing.latitude}, {listing.longitude}</span>
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-4 text-primary-600 hover:text-primary-700 font-medium"
+                                        >
+                                            View on Google Maps
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

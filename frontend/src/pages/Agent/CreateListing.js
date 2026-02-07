@@ -111,6 +111,8 @@ const CreateListing = () => {
                 bedrooms: parseInt(data.bedrooms) || 0,
                 bathrooms: parseInt(data.bathrooms) || 0,
                 area: parseFloat(data.area) || 0,
+                latitude: parseFloat(data.latitude) || 0,
+                longitude: parseFloat(data.longitude) || 0,
                 floor: data.floor || '',
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
@@ -653,6 +655,29 @@ const CreateListing = () => {
                                     className="input-field"
                                     placeholder="e.g., Bangkok"
                                     {...register('province')}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label className="input-label">Latitude</label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    className="input-field"
+                                    placeholder="e.g., 13.7563"
+                                    {...register('latitude')}
+                                />
+                            </div>
+                            <div>
+                                <label className="input-label">Longitude</label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    className="input-field"
+                                    placeholder="e.g., 100.5018"
+                                    {...register('longitude')}
                                 />
                             </div>
                         </div>
