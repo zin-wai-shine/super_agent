@@ -113,6 +113,7 @@ const CreateListing = () => {
                 area: parseFloat(data.area) || 0,
                 latitude: parseFloat(data.latitude) || 0,
                 longitude: parseFloat(data.longitude) || 0,
+                map_url: data.map_url || '',
                 floor: data.floor || '',
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
@@ -680,6 +681,32 @@ const CreateListing = () => {
                                     {...register('longitude')}
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="input-label">Google Maps Link</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Paste Google Maps link here (e.g., https://maps.app.goo.gl/...)"
+                                {...register('map_url', {
+                                    onChange: (e) => {
+                                        const url = e.target.value;
+                                        if (!url) return;
+
+                                        // Try to extract coordinates from full Google Maps URL
+                                        // Format: ...@13.7563,100.5018...
+                                        const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                                        if (coordMatch) {
+                                            setValue('latitude', coordMatch[1]);
+                                            setValue('longitude', coordMatch[2]);
+                                        }
+                                    }
+                                })}
+                            />
+                            <p className="mt-1 text-xs text-gray-500 italic">
+                                Tip: Paste a Google Maps link to automatically set coordinates.
+                            </p>
                         </div>
                     </div>
                 </div>

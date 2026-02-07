@@ -639,10 +639,10 @@ const ListingDetailPage = () => {
                             </div>
 
                             {/* Location Map */}
-                            {listing.latitude && listing.longitude && (
+                            {(listing.map_url || (listing.latitude && listing.longitude)) && (
                                 <div className="mt-12">
                                     <h3 className="text-3xl font-extrabold text-gray-900 mb-6">Location map</h3>
-                                    <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                                    <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
                                         <iframe
                                             width="100%"
                                             height="100%"
@@ -650,21 +650,44 @@ const ListingDetailPage = () => {
                                             scrolling="no"
                                             marginHeight="0"
                                             marginWidth="0"
-                                            src={`https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`}
+                                            src={listing.map_url && !listing.map_url.includes('maps.app.goo.gl')
+                                                ? `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`
+                                                : `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`
+                                            }
                                             title="Property Location"
                                         ></iframe>
                                     </div>
-                                    <div className="mt-4 flex items-center text-sm text-gray-500">
-                                        <MapPinIcon className="w-4 h-4 mr-2" />
-                                        <span>Coordinates: {listing.latitude}, {listing.longitude}</span>
-                                        <a
-                                            href={`https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="ml-4 text-primary-600 hover:text-primary-700 font-medium"
-                                        >
-                                            View on Google Maps
-                                        </a>
+                                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                                        <div className="flex items-center">
+                                            <MapPinIcon className="w-4 h-4 mr-2" />
+                                            <span>
+                                                {listing.latitude && listing.longitude
+                                                    ? `Coordinates: ${listing.latitude}, ${listing.longitude}`
+                                                    : 'Location pinpointed via link'}
+                                            </span>
+                                        </div>
+                                        {listing.map_url ? (
+                                            <a
+                                                href={listing.map_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
+                                            >
+                                                <span>View on Google Maps</span>
+                                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                        ) : (
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary-600 hover:text-primary-700 font-medium"
+                                            >
+                                                View on Google Maps
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             )}

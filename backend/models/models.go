@@ -125,6 +125,7 @@ type Listing struct {
 	PostalCode         string         `gorm:"size:10" json:"postal_code,omitempty"`
 	Latitude           float64        `gorm:"type:decimal(10,7)" json:"latitude,omitempty"`
 	Longitude          float64        `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
+	MapURL             string         `gorm:"type:text" json:"map_url,omitempty"`
 	StationID          string         `gorm:"size:20;index" json:"station_id,omitempty"` // Transit station ID from SVG
 	StationName        string         `gorm:"size:100" json:"station_name,omitempty"`
 	DistanceToStation  int            `gorm:"default:0" json:"distance_to_station"` // Distance in meters
