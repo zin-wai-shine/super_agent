@@ -117,7 +117,8 @@ const CreateListing = () => {
                 year_built: parseInt(data.year_built) || 0,
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
-                    ...(data.building_features || [])
+                    ...(data.building_features || []),
+                    ...(data.project_facilities || [])
                 ]),
             });
 
@@ -788,6 +789,38 @@ const CreateListing = () => {
                                     </label>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Project Facilities</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {[
+                                { id: 'communal_elevator', label: 'Communal Elevator', icon: '🛗' },
+                                { id: 'communal_reception', label: 'Communal Reception', icon: '🛎️' },
+                                { id: 'communal_restaurant', label: 'Communal Restaurant', icon: '🍽️' },
+                                { id: 'communal_shop', label: 'Communal Shop', icon: '🏪' },
+                                { id: 'communal_shuttle', label: 'Communal Shuttle Service', icon: '🚐' },
+                                { id: 'communal_spa', label: 'Communal Spa', icon: '💆' },
+                                { id: 'communal_coworking', label: 'Communal Coworking Space', icon: '💻' },
+                                { id: 'communal_security_24', label: 'Communal Security 24 hours', icon: '🛡️' },
+                                { id: 'communal_parking', label: 'Communal Car Park', icon: '🅿️' },
+                                { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: '🏠' },
+                                { id: 'communal_function_room', label: 'Communal Function Room', icon: '🤝' },
+                            ].map((item) => (
+                                <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                    <input
+                                        type="checkbox"
+                                        value={item.id}
+                                        {...register('project_facilities')}
+                                        className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                    />
+                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
+                                        <span className="mr-2">{item.icon}</span>
+                                        {item.label}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
                     </div>
                 </div>

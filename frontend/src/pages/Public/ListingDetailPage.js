@@ -45,7 +45,16 @@ import {
     MdOutlineMicrowave,
     MdOutlineLocalLaundryService,
     MdOutlineSecurity,
-    MdOutlineSoupKitchen
+    MdOutlineSoupKitchen,
+    MdOutlineElevator,
+    MdOutlineSupportAgent,
+    MdOutlineRestaurant,
+    MdOutlineStorefront,
+    MdOutlineDirectionsBus,
+    MdOutlineSpa,
+    MdOutlineLaptop,
+    MdOutlineMeetingRoom,
+    MdOutlineGarage
 } from "react-icons/md";
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
@@ -539,21 +548,67 @@ const ListingDetailPage = () => {
                                                     'garden': { label: 'Garden / BBQ', icon: <MdOutlinePark className="w-6 h-6 text-green-600" /> },
                                                     'playground': { label: 'Playground', icon: <MdOutlineChildCare className="w-6 h-6 text-yellow-500" /> },
                                                     'coworking': { label: 'Co-working Space', icon: <MdOutlineComputer className="w-6 h-6 text-indigo-500" /> },
+                                                    'communal_elevator': { label: 'Communal Elevator', icon: <MdOutlineElevator className="w-6 h-6 text-gray-600" /> },
+                                                    'communal_reception': { label: 'Communal Reception', icon: <MdOutlineSupportAgent className="w-6 h-6 text-blue-500" /> },
+                                                    'communal_restaurant': { label: 'Communal Restaurant On Premises', icon: <MdOutlineRestaurant className="w-6 h-6 text-orange-500" /> },
+                                                    'communal_shop': { label: 'Communal Shop On Premises', icon: <MdOutlineStorefront className="w-6 h-6 text-orange-600" /> },
+                                                    'communal_shuttle': { label: 'Communal Shuttle Service', icon: <MdOutlineDirectionsBus className="w-6 h-6 text-blue-400" /> },
+                                                    'communal_spa': { label: 'Communal Spa', icon: <MdOutlineSpa className="w-6 h-6 text-pink-500" /> },
+                                                    'communal_coworking': { label: 'Communal Coworking Space', icon: <MdOutlineLaptop className="w-6 h-6 text-indigo-500" /> },
+                                                    'communal_security_24': { label: 'Communal Security 24 hours', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
+                                                    'communal_parking': { label: 'Communal Car Park', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-600" /> },
+                                                    'communal_covered_parking': { label: 'Communal Covered Car Park', icon: <MdOutlineGarage className="w-6 h-6 text-gray-700" /> },
+                                                    'communal_function_room': { label: 'Communal Function Room', icon: <MdOutlineMeetingRoom className="w-6 h-6 text-gray-800" /> },
                                                 };
+
+                                                const unitBuildingIds = ['refrigerator', 'bathtub', 'tv', 'ac', 'microwave', 'washing_machine', 'water_heater', 'kitchen', 'parking', 'pool', 'gym', 'security', 'sauna', 'garden', 'playground', 'coworking'];
+                                                const projectFacilityIds = ['communal_elevator', 'communal_reception', 'communal_restaurant', 'communal_shop', 'communal_shuttle', 'communal_spa', 'communal_coworking', 'communal_security_24', 'communal_parking', 'communal_covered_parking', 'communal_function_room'];
+
+                                                const amenities = featureList.filter(id => unitBuildingIds.includes(id));
+                                                const facilities = featureList.filter(id => projectFacilityIds.includes(id));
 
                                                 if (!featureList.length) return <p className="text-gray-500 italic">No specific amenities listed.</p>;
 
-                                                return featureList.map(featureId => {
-                                                    const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
-                                                    return (
-                                                        <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
-                                                                {item.icon}
+                                                return (
+                                                    <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-3">
+                                                        {amenities.length > 0 && (
+                                                            <div>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
+                                                                    {amenities.map(featureId => {
+                                                                        const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
+                                                                        return (
+                                                                            <div key={featureId} className="flex items-center space-x-4 py-1 group">
+                                                                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                                                                                    {item.icon}
+                                                                                </div>
+                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors uppercase tracking-tight text-sm">{item.label}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             </div>
-                                                            <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors">{item.label}</span>
-                                                        </div>
-                                                    );
-                                                });
+                                                        )}
+
+                                                        {facilities.length > 0 && (
+                                                            <div>
+                                                                <h3 className="text-2xl font-extrabold text-gray-900 mb-6 border-b border-gray-100 pb-4">Project Facilities</h3>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
+                                                                    {facilities.map(featureId => {
+                                                                        const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
+                                                                        return (
+                                                                            <div key={featureId} className="flex items-center space-x-4 py-1 group">
+                                                                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                                                                                    {item.icon}
+                                                                                </div>
+                                                                                <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors uppercase tracking-tight text-sm">{item.label}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
                                             } catch (e) {
                                                 return null;
                                             }
