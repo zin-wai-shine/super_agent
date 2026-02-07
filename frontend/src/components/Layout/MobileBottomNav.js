@@ -95,8 +95,8 @@ const MobileBottomNav = () => {
 
     return (
         /* Full Width Bottom Nav - Scroll Aware */
-        <div className={`md:hidden fixed z-50 bottom-0 left-0 right-0 bg-white shadow-[0_-4px_30px_rgba(0,0,0,0.08)] border-t border-gray-100 pb-safe transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}>
-            <div className="grid grid-cols-4 h-[72px] items-center px-2">
+        <div className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] border-t border-gray-100/50 pb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}>
+            <div className="grid grid-cols-4 h-[72px] items-center px-4">
                 {allItems.map((item) => {
                     const active = isActive(item);
                     const Icon = active ? item.activeIcon : item.icon;
@@ -105,12 +105,15 @@ const MobileBottomNav = () => {
                         <Link
                             key={item.name}
                             to={item.path}
-                            className="relative flex flex-col items-center justify-center w-full h-full group"
+                            className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
                         >
-
+                            {/* Active Indicator Background Pill */}
+                            {active && (
+                                <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
+                            )}
 
                             {/* Icon */}
-                            <div className={`relative z-10 mb-0.5 transition-transform duration-300 ${active ? 'scale-105' : 'scale-100'}`}>
+                            <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
                                 <Icon
                                     className={`w-6 h-6 transition-colors duration-300 ${active
                                         ? 'text-primary-600'
@@ -120,9 +123,9 @@ const MobileBottomNav = () => {
                             </div>
 
                             {/* Label */}
-                            <span className={`text-[10px] font-bold tracking-tight transition-all duration-300 ${active
-                                ? 'text-primary-600 translate-y-0'
-                                : 'text-gray-400 translate-y-0.5'
+                            <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 ${active
+                                ? 'text-primary-600 opacity-100'
+                                : 'text-gray-400 opacity-80'
                                 }`}>
                                 {item.name}
                             </span>

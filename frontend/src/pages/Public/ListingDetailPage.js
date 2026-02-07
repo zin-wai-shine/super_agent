@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
@@ -21,6 +21,8 @@ import {
     ChatBubbleOvalLeftEllipsisIcon,
     ChatBubbleLeftRightIcon,
     DevicePhoneMobileIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
@@ -58,6 +60,7 @@ import {
 } from "react-icons/md";
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
+import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 
 // Custom Icons for "cool" look
 const BedIcon = (props) => (
@@ -131,6 +134,98 @@ const ListingDetailPage = () => {
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
     const [relatedListings, setRelatedListings] = useState([]);
+    const [activeMapTab, setActiveMapTab] = useState('google');
+    const [mapState, setMapState] = useState({
+        zoom: 0.8,
+        pan: { x: -200, y: -200 },
+        markerPos: null
+    });
+    const transitMapRef = useRef(null);
+    const transitWrapperRef = useRef(null);
+    const [showAllAmenities, setShowAllAmenities] = useState(false);
+    const [showAllFacilities, setShowAllFacilities] = useState(false);
+    const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
+
+    // Lock background scroll when modals are open
+    useEffect(() => {
+        if (isGalleryOpen || isContactOverlayOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isGalleryOpen, isContactOverlayOpen]);
+
+    // Map Constants
+    const MAP_WIDTH = 1368;
+    const MAP_HEIGHT = 1340;
+
+    const constrainPan = (newPan, currentZoom) => {
+        if (!transitWrapperRef.current) return newPan;
+
+        const containerWidth = transitWrapperRef.current.clientWidth;
+        const containerHeight = transitWrapperRef.current.clientHeight;
+
+        const scaledWidth = MAP_WIDTH * currentZoom;
+        const scaledHeight = MAP_HEIGHT * currentZoom;
+
+        let minX, maxX, minY, maxY;
+
+        if (scaledWidth > containerWidth) {
+            minX = containerWidth - scaledWidth;
+            maxX = 0;
+        } else {
+            minX = (containerWidth - scaledWidth) / 2;
+            maxX = minX;
+        }
+
+        if (scaledHeight > containerHeight) {
+            minY = containerHeight - scaledHeight;
+            maxY = 0;
+        } else {
+            minY = (containerHeight - scaledHeight) / 2;
+            maxY = minY;
+        }
+
+        return {
+            x: Math.min(Math.max(newPan.x, minX), maxX),
+            y: Math.min(Math.max(newPan.y, minY), maxY)
+        };
+    };
+
+    const getMinZoom = () => {
+        if (!transitWrapperRef.current) return 0.4;
+        const containerWidth = transitWrapperRef.current.clientWidth;
+        const containerHeight = transitWrapperRef.current.clientHeight;
+        return Math.max(containerWidth / MAP_WIDTH, containerHeight / MAP_HEIGHT);
+    };
+
+    useEffect(() => {
+        if (activeMapTab === 'transit' && listing?.station_id && transitMapRef.current) {
+            // Wait for SVG to be rendered in the next tick
+            setTimeout(() => {
+                const stationEl = transitMapRef.current.querySelector(`[data-station-id="${listing.station_id}"]`);
+                if (stationEl) {
+                    const circle = stationEl.querySelector('circle') || stationEl.querySelector('rect') || stationEl;
+                    const x = parseFloat(circle.getAttribute('cx') || circle.getAttribute('x') || 0);
+                    const y = parseFloat(circle.getAttribute('cy') || circle.getAttribute('y') || 0);
+
+                    if (x && y) {
+                        setMapState(prev => ({
+                            ...prev,
+                            markerPos: { x, y },
+                            pan: {
+                                x: -(x * prev.zoom) + 250, // Center in 500px height container
+                                y: -(y * prev.zoom) + 250
+                            }
+                        }));
+                    }
+                }
+            }, 100);
+        }
+    }, [activeMapTab, listing?.station_id]);
 
     useEffect(() => {
         // Smooth scroll to top when changing listings
@@ -231,30 +326,33 @@ const ListingDetailPage = () => {
 
     return (
         <div key={id} className="min-h-screen bg-white animate-in fade-in duration-500">
-            {/* Back button */}
-            <div className="sticky top-0 z-40 bg-white max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-20 pt-6 pb-4">
+            {/* Back button - Modern Floating style for mobile */}
+            <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 md:pt-6 md:pb-4 pointer-events-none">
                 <Link
                     to="/listings"
-                    className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                    className="inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 text-white rounded-2xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-xl hover:-translate-y-0.5 transition-all group pointer-events-auto active:scale-95"
                 >
-                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                    Back to listings
+                    <ArrowLeftIcon className="w-5 h-5 md:mr-2 group-hover:-translate-x-1 transition-transform" />
+                    <span className="hidden md:inline font-bold text-sm">Back to listings</span>
                 </Link>
             </div>
 
-            <div className="max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-20 py-6">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Main Content */}
-                    <div className="lg:col-span-3 space-y-6">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex justify-center">
+                    <div className="w-full max-w-7xl space-y-6">
                         {/* Details - Header Section */}
                         <div className="">
-                            {/* Title & ID */}
-                            <div className="flex justify-between items-start mb-2">
-                                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
-                                    {listing.title}
-                                </h1>
-                                <div className="flex-shrink-0 ml-4 pt-1">
-                                    <span className="text-gray-500 font-bold text-sm bg-gray-100 px-2 py-1 rounded">ID: {listing.id}</span>
+                            {/* Title & ID - Fixed overlapping on mobile */}
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                                        {listing.title}
+                                    </h1>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold bg-gray-50/50 border border-gray-100 px-2 py-1 rounded-lg">
+                                        ID: {listing.id?.slice(0, 8)}...
+                                    </span>
                                 </div>
                             </div>
 
@@ -287,7 +385,7 @@ const ListingDetailPage = () => {
                         {/* Image Gallery - Desktop Bento Grid & Mobile Carousel */}
                         <div className="rounded-2xl overflow-hidden shadow-sm bg-white">
                             {/* Mobile Carousel (Visible on small screens) */}
-                            <div className="lg:hidden relative aspect-[16/10]">
+                            <div className="lg:hidden relative aspect-[16/10] group">
                                 <img
                                     src={
                                         hasImages
@@ -303,21 +401,24 @@ const ListingDetailPage = () => {
                                         }
                                     }}
                                 />
+                                {/* Bottom Gradient for counter legibility */}
+                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+
                                 {hasImages && images.length > 1 && (
                                     <>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-md p-3 rounded-2xl shadow-lg hover:bg-white transition-all active:scale-90"
                                         >
-                                            <ChevronLeftIcon className="w-5 h-5 text-gray-700" />
+                                            <ChevronLeftIcon className="w-5 h-5 text-gray-900" />
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-md p-3 rounded-2xl shadow-lg hover:bg-white transition-all active:scale-90"
                                         >
-                                            <ChevronRightIcon className="w-5 h-5 text-gray-700" />
+                                            <ChevronRightIcon className="w-5 h-5 text-gray-900" />
                                         </button>
-                                        <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                                        <div className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-sm text-white px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10">
                                             {currentImageIndex + 1} / {images.length}
                                         </div>
                                     </>
@@ -459,49 +560,49 @@ const ListingDetailPage = () => {
                             {/* Features */}
                             {/* Features */}
                             {/* Features Grid */}
-                            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden mb-8 mt-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                            <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden mb-8 mt-8 shadow-sm">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
                                     {/* Row 1 */}
-                                    <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors">
-                                        <LiaBedSolid className="w-8 h-8 text-gray-900" />
+                                    <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
+                                        <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-gray-700">{listing.bedrooms || 0} Bedrooms</div>
+                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
                                         </div>
                                     </div>
-                                    <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t md:border-t-0">
-                                        <PiBathtub className="w-8 h-8 text-gray-900" />
+                                    <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t md:border-t-0">
+                                        <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-gray-700">{listing.bathrooms || 0} Bathrooms</div>
+                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
                                         </div>
                                     </div>
-                                    <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
-                                        <ArrowsPointingOutIcon className="w-8 h-8 text-gray-900" />
+                                    <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
+                                        <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-gray-700">{listing.area || 0} m²</div>
+                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.area || 0} m²</div>
                                         </div>
                                     </div>
-                                    <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
-                                        <RiStairsLine className="w-8 h-8 text-gray-900" />
+                                    <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
+                                        <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-gray-700">{listing.floor ? `${listing.floor} floor` : '-'}</div>
+                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
                                         </div>
                                     </div>
 
                                     {/* Additional Highlights */}
                                     {listing.year_built > 0 && (
-                                        <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t">
-                                            <div className="text-2xl">🏗️</div>
+                                        <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
+                                            <div className="text-xl md:text-2xl flex-shrink-0">🏗️</div>
                                             <div>
-                                                <div className="font-medium text-gray-700">Built in {listing.year_built}</div>
+                                                <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">Built in {listing.year_built}</div>
                                             </div>
                                         </div>
                                     )}
 
                                     {listing.listing_type === 'sale' && (
-                                        <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t">
-                                            <TbCurrencyBaht className="w-8 h-8 text-gray-900" />
+                                        <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
+                                            <TbCurrencyBaht className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                             <div>
-                                                <div className="font-medium text-gray-700">
+                                                <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">
                                                     {listing.price && listing.area
                                                         ? `฿${Math.round(listing.price / listing.area).toLocaleString()}/sqm`
                                                         : '-'}
@@ -510,10 +611,10 @@ const ListingDetailPage = () => {
                                         </div>
                                     )}
 
-                                    <div className="p-6 flex items-center space-x-4 hover:bg-gray-50 transition-colors border-t col-span-1 md:col-span-2">
-                                        <TbTrain className="w-8 h-8 text-gray-900 flex-shrink-0" />
+                                    <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t col-span-1 md:col-span-2">
+                                        <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-gray-700 truncate">
+                                            <div className="text-sm md:text-base font-medium text-gray-700 truncate leading-tight">
                                                 {(listing.station_id || listing.station_name)
                                                     ? `${listing.distance_to_station || 0}m to ${listing.station_name || listing.station?.name_en || 'Station'}`
                                                     : 'Near Transit'}
@@ -523,11 +624,13 @@ const ListingDetailPage = () => {
                                 </div>
                             </div>
 
+
+
                             {/* Features & Amenities Section */}
                             {listing.features && (
                                 <div className="mb-12">
                                     <h3 className="text-2xl font-extrabold text-gray-900 mb-6 border-b border-gray-100 pb-4">Amenities & Features</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
                                         {(() => {
                                             try {
                                                 const featureList = JSON.parse(listing.features || '[]');
@@ -570,11 +673,11 @@ const ListingDetailPage = () => {
                                                 if (!featureList.length) return <p className="text-gray-500 italic">No specific amenities listed.</p>;
 
                                                 return (
-                                                    <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-3">
+                                                    <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-4">
                                                         {amenities.length > 0 && (
                                                             <div>
-                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
-                                                                    {amenities.map(featureId => {
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                                                                    {(showAllAmenities ? amenities : amenities.slice(0, 4)).map(featureId => {
                                                                         const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
                                                                         return (
                                                                             <div key={featureId} className="flex items-center space-x-4 py-1 group">
@@ -586,14 +689,30 @@ const ListingDetailPage = () => {
                                                                         );
                                                                     })}
                                                                 </div>
+                                                                {amenities.length > 4 && (
+                                                                    <button
+                                                                        onClick={() => setShowAllAmenities(!showAllAmenities)}
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group"
+                                                                    >
+                                                                        {showAllAmenities ? (
+                                                                            <>
+                                                                                See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                See more ({amenities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
 
                                                         {facilities.length > 0 && (
                                                             <div>
                                                                 <h3 className="text-2xl font-extrabold text-gray-900 mb-6 border-b border-gray-100 pb-4">Project Facilities</h3>
-                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
-                                                                    {facilities.map(featureId => {
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                                                                    {(showAllFacilities ? facilities : facilities.slice(0, 4)).map(featureId => {
                                                                         const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
                                                                         return (
                                                                             <div key={featureId} className="flex items-center space-x-4 py-1 group">
@@ -605,6 +724,22 @@ const ListingDetailPage = () => {
                                                                         );
                                                                     })}
                                                                 </div>
+                                                                {facilities.length > 4 && (
+                                                                    <button
+                                                                        onClick={() => setShowAllFacilities(!showAllFacilities)}
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group"
+                                                                    >
+                                                                        {showAllFacilities ? (
+                                                                            <>
+                                                                                See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                See more ({facilities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -638,221 +773,392 @@ const ListingDetailPage = () => {
                                 )}
                             </div>
 
-                            {/* Location Map */}
-                            {(listing.map_url || (listing.latitude && listing.longitude)) && (
-                                <div className="mt-12">
-                                    <h3 className="text-3xl font-extrabold text-gray-900 mb-6">Location map</h3>
-                                    <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
-                                        <iframe
-                                            width="100%"
-                                            height="100%"
-                                            frameBorder="0"
-                                            scrolling="no"
-                                            marginHeight="0"
-                                            marginWidth="0"
-                                            src={(() => {
-                                                if (listing.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`;
-                                                if (listing.latitude && listing.longitude) return `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`;
-                                                // Fallback to address search
-                                                const addr = `${listing.address || ''} ${listing.district || ''} ${listing.province || ''}`.trim();
-                                                if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
-                                                return '';
-                                            })()}
-                                            title="Property Location"
-                                        ></iframe>
-                                    </div>
-                                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                        <div className="flex items-center">
-                                            <MapPinIcon className="w-4 h-4 mr-2" />
-                                            <span>
-                                                {listing.latitude && listing.longitude
-                                                    ? `Coordinates: ${listing.latitude}, ${listing.longitude}`
-                                                    : 'Location pinpointed via link'}
-                                            </span>
+                            {/* Map Section - Tabbed Selector */}
+                            {(listing.map_url || (listing.latitude && listing.longitude) || listing.station_id) && (
+                                <>
+                                    <div className="mt-12">
+                                        {/* Tabs Header */}
+                                        <div className="border-b border-gray-100 mb-8">
+                                            <nav className="-mb-px flex space-x-10">
+                                                <button
+                                                    onClick={() => setActiveMapTab('google')}
+                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-sm transition-all ${activeMapTab === 'google'
+                                                        ? 'border-primary-500 text-primary-600'
+                                                        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    Google Map
+                                                </button>
+                                                <button
+                                                    onClick={() => setActiveMapTab('transit')}
+                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-sm transition-all ${activeMapTab === 'transit'
+                                                        ? 'border-primary-500 text-primary-600'
+                                                        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    Transit Map
+                                                </button>
+                                            </nav>
                                         </div>
-                                        {listing.map_url ? (
-                                            <a
-                                                href={listing.map_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
-                                            >
-                                                <span>View on Google Maps</span>
-                                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                            </a>
-                                        ) : (
-                                            <a
-                                                href={`https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-primary-600 hover:text-primary-700 font-medium"
-                                            >
-                                                View on Google Maps
-                                            </a>
-                                        )}
+
+                                        {/* Map Content */}
+                                        <div className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
+                                            {activeMapTab === 'google' ? (
+                                                <iframe
+                                                    width="100%"
+                                                    height="100%"
+                                                    frameBorder="0"
+                                                    scrolling="no"
+                                                    marginHeight="0"
+                                                    marginWidth="0"
+                                                    src={(() => {
+                                                        if (listing.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`;
+                                                        if (listing.latitude && listing.longitude) return `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`;
+                                                        const addr = `${listing.address || ''} ${listing.district || ''} ${listing.province || ''}`.trim();
+                                                        if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
+                                                        return '';
+                                                    })()}
+                                                    title="Property Location"
+                                                    className="w-full h-full"
+                                                ></iframe>
+                                            ) : (
+                                                <div className="relative w-full h-full bg-slate-50 flex flex-col">
+                                                    {/* Legend Overlay */}
+                                                    <div className="absolute top-4 left-4 z-40 hidden md:flex flex-wrap gap-1.5 max-w-[300px]">
+                                                        {[
+                                                            { name: 'BTS Sukhumvit', color: '#7FBA00' },
+                                                            { name: 'BTS Silom', color: '#006633' },
+                                                            { name: 'MRT Blue', color: '#1E50A0' },
+                                                        ].map((line) => (
+                                                            <div key={line.name} className="flex items-center gap-1.5 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm">
+                                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: line.color }} />
+                                                                <span className="text-[10px] font-bold text-gray-600">{line.name}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Zoom Controls Overlay */}
+                                                    <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
+                                                        <div className="flex flex-col bg-white/90 backdrop-blur-sm rounded-xl border border-gray-100 shadow-lg p-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const nextZoom = Math.min(mapState.zoom + 0.1, 2.0);
+                                                                    setMapState(prev => ({
+                                                                        ...prev,
+                                                                        zoom: nextZoom,
+                                                                        pan: constrainPan(prev.pan, nextZoom)
+                                                                    }));
+                                                                }}
+                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
+                                                            >
+                                                                <span className="text-xl font-bold">+</span>
+                                                            </button>
+                                                            <div className="h-px bg-gray-100 mx-1.5" />
+                                                            <button
+                                                                onClick={() => {
+                                                                    const minZoom = getMinZoom();
+                                                                    const nextZoom = Math.max(mapState.zoom - 0.1, minZoom);
+                                                                    setMapState(prev => ({
+                                                                        ...prev,
+                                                                        zoom: nextZoom,
+                                                                        pan: constrainPan(prev.pan, nextZoom)
+                                                                    }));
+                                                                }}
+                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
+                                                            >
+                                                                <span className="text-xl font-bold">−</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Map Component */}
+                                                    <div
+                                                        ref={transitWrapperRef}
+                                                        className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing"
+                                                        onMouseDown={(e) => {
+                                                            const startX = e.pageX - mapState.pan.x;
+                                                            const startY = e.pageY - mapState.pan.y;
+                                                            const handleMouseMove = (mm) => {
+                                                                const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
+                                                                setMapState(prev => ({
+                                                                    ...prev,
+                                                                    pan: constrainPan(newPan, prev.zoom)
+                                                                }));
+                                                            };
+                                                            const handleMouseUp = () => {
+                                                                window.removeEventListener('mousemove', handleMouseMove);
+                                                                window.removeEventListener('mouseup', handleMouseUp);
+                                                            };
+                                                            window.addEventListener('mousemove', handleMouseMove);
+                                                            window.addEventListener('mouseup', handleMouseUp);
+                                                        }}
+                                                        onWheel={(e) => {
+                                                            if (activeMapTab !== 'transit') return;
+                                                            const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                                                            const minZoom = getMinZoom();
+                                                            const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
+                                                            setMapState(prev => ({
+                                                                ...prev,
+                                                                zoom: nextZoom,
+                                                                pan: constrainPan(prev.pan, nextZoom)
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: '1368px',
+                                                                height: '1340px',
+                                                                transform: `translate(${mapState.pan.x}px, ${mapState.pan.y}px) scale(${mapState.zoom})`,
+                                                                transformOrigin: '0 0',
+                                                                transition: 'transform 0.1s ease-out'
+                                                            }}
+                                                        >
+                                                            <div
+                                                                ref={transitMapRef}
+                                                                className="w-full h-full"
+                                                            >
+                                                                <TransitMapSVG />
+                                                            </div>
+
+                                                            {/* Station Marker */}
+                                                            {mapState.markerPos && (
+                                                                <div
+                                                                    className="absolute pointer-events-none z-50"
+                                                                    style={{
+                                                                        left: `${mapState.markerPos.x}px`,
+                                                                        top: `${mapState.markerPos.y}px`,
+                                                                        transform: 'translate(-50%, -50%)'
+                                                                    }}
+                                                                >
+                                                                    <div className="relative flex items-center justify-center">
+                                                                        <div className="w-10 h-10 bg-primary-500/30 rounded-full animate-ping absolute" />
+                                                                        <div className="w-5 h-5 bg-primary-600 rounded-full shadow-lg border-4 border-white relative z-10" />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Map Utilities */}
+                                        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 py-4 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center text-sm text-gray-500">
+                                                    <MapPinIcon className="w-5 h-5 mr-2 text-primary-500" />
+                                                    <span className="font-medium text-gray-700">
+                                                        {listing.latitude && listing.longitude
+                                                            ? `Coordinates: ${listing.latitude}, ${listing.longitude}`
+                                                            : listing.address || 'Location Verified'}
+                                                    </span>
+                                                </div>
+                                                {listing.station_name && (
+                                                    <div className="flex items-center text-sm text-gray-500 border-l border-gray-100 pl-6">
+                                                        <TbTrain className="w-5 h-5 mr-2 text-primary-600" />
+                                                        <span className="font-bold text-primary-900">{listing.station_name}</span>
+                                                        <span className="ml-2 font-medium text-gray-400">({listing.distance_to_station}m)</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <a
+                                                    href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-5 py-2.5 rounded-xl bg-gray-50 text-gray-900 font-bold text-sm flex items-center hover:bg-gray-100 transition-all border border-gray-100"
+                                                >
+                                                    View on Google Maps
+                                                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </>
                             )}
+
                         </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6 sticky top-24 self-start">
-
-
-                        {/* Contact Card */}
-                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6">
-                            {/* Contact Header */}
-                            <div>
-                                <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Interested in this property?</h3>
-                                <p className="text-gray-600 leading-relaxed">
-                                    Ready to make this yours? Contact us immediately to schedule a private viewing.
-                                </p>
-                            </div>
-
-
-
-                            {/* Direct Contact Buttons */}
-                            <div className="pt-6 border-t border-gray-100 space-y-3">
-                                {/* Line */}
-                                <a
-                                    href="https://line.me/ti/p/~kiki33467"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full flex items-center justify-center py-3.5 rounded-lg text-white font-semibold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                                    style={{ backgroundColor: '#06C755' }}
-                                >
-                                    <div className="flex items-center w-36 space-x-3">
-                                        <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6 flex-shrink-0" />
-                                        <span>Line</span>
-                                    </div>
-                                </a>
-
-                                {/* Phone */}
-                                <a
-                                    href="tel:0951953607"
-                                    className="w-full flex items-center justify-center py-3.5 rounded-lg text-white font-semibold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 bg-gray-900 hover:bg-black"
-                                >
-                                    <div className="flex items-center w-36 space-x-3">
-                                        <PhoneIcon className="w-6 h-6 flex-shrink-0" />
-                                        <span>Call Agent</span>
-                                    </div>
-                                </a>
-
-                                {/* Viber */}
-                                <a
-                                    href="viber://chat?number=%2B66951953607"
-                                    className="w-full flex items-center justify-center py-3.5 rounded-lg text-white font-semibold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                                    style={{ backgroundColor: '#7360f2' }}
-                                >
-                                    <div className="flex items-center w-36 space-x-3">
-                                        <ChatBubbleLeftRightIcon className="w-6 h-6 flex-shrink-0" />
-                                        <span>Viber</span>
-                                    </div>
-                                </a>
-
-                                {/* WhatsApp */}
-                                <a
-                                    href="https://wa.me/66951953607"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full flex items-center justify-center py-3.5 rounded-lg text-white font-semibold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                                    style={{ backgroundColor: '#25D366' }}
-                                >
-                                    <div className="flex items-center w-36 space-x-3">
-                                        <DevicePhoneMobileIcon className="w-6 h-6 flex-shrink-0" />
-                                        <span>WhatsApp</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Station Badge - Compact Flex */}
-
-                    </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Related Listings Section */}
-            {relatedListings.length > 0 && (
-                <div className="max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-20 py-12 border-t border-gray-100">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {relatedListings.map((related) => (
-                            <ListingCard key={related.id} listing={related} viewMode="grid" />
-                        ))}
+            {
+                relatedListings.length > 0 && (
+                    <div className="max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-20 py-12 border-t border-gray-100">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {relatedListings.map((related) => (
+                                <ListingCard key={related.id} listing={related} viewMode="grid" />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Gallery Modal - Lightbox Style */}
-            {isGalleryOpen && (
-                <div className="fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm animate-in fade-in duration-300">
-                    {/* Dynamic Blurred Background */}
-                    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-                        <img
-                            src={getMediaUrl(images[galleryIndex].url)}
-                            alt=""
-                            className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
-                        />
-                        <div className="absolute inset-0 bg-black/60" />
-                    </div>
-
-                    {/* Header: Counter & Close */}
-                    <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[120] font-bold">
-                        <div className="text-white/90 font-medium tracking-wide">
-                            {galleryIndex + 1} / {images.length}
+            {
+                isGalleryOpen && (
+                    <div className="fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm animate-in fade-in duration-300">
+                        {/* Dynamic Blurred Background */}
+                        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                            <img
+                                src={getMediaUrl(images[galleryIndex].url)}
+                                alt=""
+                                className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/60" />
                         </div>
-                        <button
-                            onClick={() => setIsGalleryOpen(false)}
-                            className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-105 pointer-events-auto"
-                        >
-                            <XMarkIcon className="w-8 h-8" />
-                        </button>
-                    </div>
 
-                    {/* Main Image */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
-                        <img
-                            src={getMediaUrl(images[galleryIndex].url)}
-                            alt={`Gallery ${galleryIndex + 1}`}
-                            className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
-                        />
-                    </div>
-
-                    {/* Navigation Buttons (Huge) */}
-                    {images.length > 1 && (
-                        <>
+                        {/* Header: Counter & Close */}
+                        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[120] font-bold">
+                            <div className="text-white/90 font-medium tracking-wide">
+                                {galleryIndex + 1} / {images.length}
+                            </div>
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
-                                }}
-                                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
+                                onClick={() => setIsGalleryOpen(false)}
+                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-105 pointer-events-auto"
                             >
-                                <ChevronLeftIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:-translate-x-1 transition-transform" />
+                                <XMarkIcon className="w-8 h-8" />
                             </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setGalleryIndex((prev) => (prev + 1) % images.length);
-                                }}
-                                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
-                            >
-                                <ChevronRightIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </>
-                    )}
+                        </div>
 
-                    {/* Bottom Caption (Optional) */}
-                    <div className="absolute bottom-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90 text-sm font-medium tracking-wide z-[120]">
-                        {listing.title} | {formatPrice(listing.price)}{listing.listing_type === 'rent' && '/mo'}
+                        {/* Main Image */}
+                        <div className="relative z-10 w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
+                            <img
+                                src={getMediaUrl(images[galleryIndex].url)}
+                                alt={`Gallery ${galleryIndex + 1}`}
+                                className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+                            />
+                        </div>
+
+                        {/* Navigation Buttons (Huge) */}
+                        {images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
+                                    }}
+                                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
+                                >
+                                    <ChevronLeftIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:-translate-x-1 transition-transform" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setGalleryIndex((prev) => (prev + 1) % images.length);
+                                    }}
+                                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
+                                >
+                                    <ChevronRightIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </>
+                        )}
+
+                        {/* Bottom Caption (Optional) */}
+                        <div className="absolute bottom-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90 text-sm font-medium tracking-wide z-[120]">
+                            {listing.title} | {formatPrice(listing.price)}{listing.listing_type === 'rent' && '/mo'}
+                        </div>
+                    </div>
+                )
+            }
+            {isContactOverlayOpen && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
+                    {/* Backdrop with extreme dark blur */}
+                    <div
+                        className="absolute inset-0 bg-black/70 backdrop-blur-2xl"
+                        onClick={() => setIsContactOverlayOpen(false)}
+                    />
+
+                    {/* Absolute Viewport Close Button (X) */}
+                    <button
+                        onClick={() => setIsContactOverlayOpen(false)}
+                        className="fixed top-8 right-8 p-4 text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-full z-[120] active:scale-95 group shadow-2xl"
+                    >
+                        <XMarkIcon className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
+                    </button>
+
+                    {/* Content Container - No background, just centered content */}
+                    <div className="relative w-full max-w-lg p-8 pb-12 sm:pb-8 flex flex-col items-center text-center animate-in slide-in-from-bottom-20 duration-500 ease-out">
+                        {/* Pull Bar for mobile feel */}
+                        <div className="w-12 h-1.5 bg-white/20 rounded-full mb-8 sm:hidden" />
+
+                        <div className="mb-8">
+                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
+                                <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-3xl font-black text-white tracking-tight mb-2">Interested?</h3>
+                            <p className="text-white/80 font-bold px-4 leading-relaxed">Select your preferred contact method to schedule a viewing.</p>
+                        </div>
+
+                        <div className="w-full grid grid-cols-1 gap-4">
+                            <a
+                                href="https://line.me/ti/p/~kiki33467"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
+                                style={{ backgroundColor: '#06C755' }}
+                            >
+                                <div className="flex items-center w-40 space-x-5">
+                                    <ChatBubbleOvalLeftEllipsisIcon className="w-7 h-7 flex-shrink-0" />
+                                    <span className="text-xl">Line</span>
+                                </div>
+                            </a>
+
+                            <a
+                                href="tel:0951953607"
+                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-gray-900 hover:bg-black shadow-lg active:shadow-inner"
+                            >
+                                <div className="flex items-center w-40 space-x-5">
+                                    <PhoneIcon className="w-7 h-7 flex-shrink-0" />
+                                    <span className="text-xl">Call Agent</span>
+                                </div>
+                            </a>
+
+                            <a
+                                href="viber://chat?number=%2B66951953607"
+                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
+                                style={{ backgroundColor: '#7360f2' }}
+                            >
+                                <div className="flex items-center w-40 space-x-5">
+                                    <ChatBubbleLeftRightIcon className="w-7 h-7 flex-shrink-0" />
+                                    <span className="text-xl">Viber</span>
+                                </div>
+                            </a>
+
+                            <a
+                                href="https://wa.me/66951953607"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
+                                style={{ backgroundColor: '#25D366' }}
+                            >
+                                <div className="flex items-center w-40 space-x-5">
+                                    <DevicePhoneMobileIcon className="w-7 h-7 flex-shrink-0" />
+                                    <span className="text-xl">WhatsApp</span>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* Floating Contact FAB - Modern Circular Design (Visible on all devices) */}
+            <div className={`fixed bottom-24 md:bottom-10 right-6 md:right-10 z-[45] transition-all duration-500 ${isContactOverlayOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
+                <button
+                    onClick={() => setIsContactOverlayOpen(true)}
+                    className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-primary-600 text-white rounded-full shadow-[0_20px_40px_rgba(37,99,235,0.35)] hover:bg-primary-700 hover:scale-110 transition-all active:scale-90 group overflow-hidden"
+                >
+                    {/* Ripple/Pulse Effect */}
+                    <div className="absolute inset-0 bg-white/20 animate-ping rounded-full opacity-20" />
+                    <ChatBubbleLeftRightIcon className="w-7 h-7 md:w-9 md:h-9 relative z-10" />
+                </button>
+            </div>
+        </div >
     );
 };
 

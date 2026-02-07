@@ -16,20 +16,20 @@
 
   /* Custom scrollbar - Global */
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    @apply bg-gray-100/50;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-200 rounded-full;
+    @apply bg-primary-600 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-300;
+    @apply bg-primary-700;
   }
 
   /* Left side scrollbar utility */
@@ -42,22 +42,22 @@
     direction: ltr;
   }
 
-  /* Specific Slim Scrollbar - Primary Blue */
+  /* Specific Scrollbar - Primary Blue */
   .custom-scrollbar-primary::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    @apply bg-gray-100/50;
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-thumb {
-    @apply bg-primary-200 rounded-full;
+    @apply bg-primary-600 rounded-full;
   }
 
   .custom-scrollbar-primary:hover::-webkit-scrollbar-thumb {
-    @apply bg-primary-500;
+    @apply bg-primary-700;
   }
 }
 

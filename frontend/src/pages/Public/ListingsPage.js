@@ -230,6 +230,7 @@ const ListingsPage = () => {
         };
     });
     const [searchTerm, setSearchTerm] = useState(filters.search);
+    const [stationSearch, setStationSearch] = useState('');
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
     // Sync URL with restored filters on mount if URL was empty
@@ -400,34 +401,34 @@ const ListingsPage = () => {
                     : 'max-w-[1600px] px-4 sm:px-6 lg:px-8'
                     }`}>
 
-                    <div className={`flex items-center relative h-16 bg-white/95 backdrop-blur-sm transition-all duration-300 ${!navVisible
-                        ? 'rounded-none border-b border-gray-200 px-4 sm:px-6 lg:px-8'
-                        : 'rounded-[3px] shadow-sm px-4'
+                    <div className={`flex items-center relative h-16 transition-all duration-500 ${!navVisible
+                        ? 'bg-primary-600 rounded-none border-b border-white/10 px-4 sm:px-6 lg:px-8 shadow-lg'
+                        : 'bg-white/95 backdrop-blur-sm rounded-[3px] shadow-sm px-4'
                         }`}>
 
                         {/* 3-Column Layout: Logo (Left), Search/Filters (Center), Stats (Right) */}
-                        <div className="flex-1 flex items-center min-w-0">
+                        <div className={`flex items-center min-w-0 transition-all duration-500 ${!navVisible ? 'flex-1' : 'w-0 flex-none'}`}>
                             {initialLoading ? (
                                 <div className="flex items-center gap-2 animate-pulse">
                                     <div className="h-8 w-8 bg-gray-200 rounded-[3px]" />
                                     <div className="h-6 w-32 bg-gray-200 rounded-[3px] hidden sm:block" />
                                 </div>
                             ) : (
-                                <a href="/" className={`flex items-center gap-2 transition-all duration-300 origin-left shrink-0 ${!navVisible
+                                <a href="/" className={`flex items-center gap-2 transition-all duration-500 origin-left shrink-0 ${!navVisible
                                     ? 'w-auto opacity-100 scale-100 mr-4'
                                     : 'w-0 opacity-0 scale-90 overflow-hidden'
                                     }`}>
-                                    <Logo className="h-8 w-8 text-primary-600" />
-                                    <span className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
+                                    <Logo className="h-8 w-8 text-white" />
+                                    <span className="text-xl font-bold text-white tracking-tight whitespace-nowrap">
                                         Super Real Estate
                                     </span>
                                 </a>
                             )}
                         </div>
 
-                        <div className="flex-[2] flex justify-center min-w-0">
+                        <div className={`flex-[2] flex min-w-0 transition-all duration-500 ${!navVisible ? 'justify-center' : 'justify-start'}`}>
                             {initialLoading ? (
-                                <div className="flex items-center gap-3 animate-pulse w-full max-w-fit">
+                                <div className={`flex items-center gap-3 animate-pulse w-full transition-all ${!navVisible ? 'justify-center max-w-fit' : 'justify-start max-w-full'}`}>
                                     <div className="w-48 sm:w-72 h-10 bg-gray-200 rounded-[3px]" />
                                     <div className="w-px h-8 bg-gray-200 hidden sm:block" />
                                     <div className="flex items-center gap-2">
@@ -437,26 +438,34 @@ const ListingsPage = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-3 w-full max-w-fit">
-                                    <div className="w-64 sm:w-96 flex items-center h-10 px-4 bg-white rounded-[3px] border border-gray-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
-                                        <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
+                                <div className={`flex items-center gap-3 w-full transition-all duration-500 ${!navVisible ? 'max-w-fit justify-center' : 'max-w-full justify-start'}`}>
+                                    <div className={`w-64 sm:w-96 flex items-center h-10 px-4 rounded-[3px] transition-all ${!navVisible
+                                        ? 'bg-white/10 border border-white/20 focus-within:bg-white/20 focus-within:border-white/40'
+                                        : 'bg-white border border-gray-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent'
+                                        }`}>
+                                        <MagnifyingGlassIcon className={`w-5 h-5 mr-3 shrink-0 ${!navVisible ? 'text-white/60' : 'text-gray-400'}`} />
                                         <input
                                             type="text"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             placeholder="Search..."
-                                            className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-sm text-gray-900 placeholder-gray-500 p-0"
+                                            className={`bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-sm p-0 ${!navVisible
+                                                ? 'text-white placeholder-white/50'
+                                                : 'text-gray-900 placeholder-gray-500'
+                                                }`}
                                         />
                                     </div>
 
-                                    <div className="w-px h-8 bg-gray-300/50 hidden sm:block" />
+                                    <div className={`w-px h-8 hidden sm:block ${!navVisible ? 'bg-white/20' : 'bg-gray-300/50'}`} />
 
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => setIsFilterModalOpen(true)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-semibold transition-all border shrink-0 ${hasActiveFilters
-                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold transition-all border shrink-0 ${hasActiveFilters
+                                                ? 'bg-white text-primary-600 border-primary-600 shadow-md'
+                                                : !navVisible
+                                                    ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
+                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             <FunnelIcon className="w-4 h-4" />
@@ -465,9 +474,11 @@ const ListingsPage = () => {
 
                                         <button
                                             onClick={() => setIsTransitModalOpen(true)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-semibold transition-all border shrink-0 ${filters.station_id
-                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold transition-all border shrink-0 ${filters.station_id
+                                                ? 'bg-white text-primary-600 border-primary-600 shadow-md'
+                                                : !navVisible
+                                                    ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
+                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             <MapPinIcon className="w-4 h-4" />
@@ -476,7 +487,10 @@ const ListingsPage = () => {
 
                                         <a
                                             href="/listings?view=map"
-                                            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-semibold bg-white text-gray-700 border border-gray-200 hover:border-gray-300 transition-all shrink-0"
+                                            className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-semibold border transition-all shrink-0 ${!navVisible
+                                                ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
+                                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                                }`}
                                         >
                                             <GlobeAltIcon className="w-4 h-4" />
                                             <span>Map</span>
@@ -500,22 +514,22 @@ const ListingsPage = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-4 bg-gray-50/50 rounded-lg p-1.5 backdrop-blur-sm">
+                                <div className={`flex items-center gap-4 rounded-lg p-1.5 pl-4 transition-all ${!navVisible ? 'bg-white/10 backdrop-blur-md' : 'bg-gray-50/50 backdrop-blur-sm'}`}>
                                     <div className="hidden sm:flex items-baseline gap-2 text-right pr-2 lg:pr-4">
-                                        <span className="text-base font-bold text-gray-900">Properties</span>
-                                        <span className="text-sm text-gray-500 font-medium">
+                                        <span className={`text-base font-bold ${!navVisible ? 'text-white' : 'text-gray-900'}`}>Properties</span>
+                                        <span className={`text-sm font-medium ${!navVisible ? 'text-white/60' : 'text-gray-500'}`}>
                                             {listings.length} results
                                         </span>
                                     </div>
 
-                                    <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+                                    <div className={`w-px h-6 hidden sm:block ${!navVisible ? 'bg-white/20' : 'bg-gray-200'}`} />
 
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => setViewMode('grid')}
                                             className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
-                                                ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
-                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                ? (!navVisible ? 'bg-white text-primary-600 shadow-lg' : 'bg-primary-600 text-white shadow-md shadow-primary-200')
+                                                : (!navVisible ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
                                                 }`}
                                         >
                                             <Squares2X2Icon className="w-5 h-5" />
@@ -523,8 +537,8 @@ const ListingsPage = () => {
                                         <button
                                             onClick={() => setViewMode('list')}
                                             className={`p-2 rounded-lg transition-all ${viewMode === 'list'
-                                                ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
-                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                ? (!navVisible ? 'bg-white text-primary-600 shadow-lg' : 'bg-primary-600 text-white shadow-md shadow-primary-200')
+                                                : (!navVisible ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
                                                 }`}
                                         >
                                             <ListBulletIcon className="w-5 h-5" />
@@ -769,7 +783,7 @@ const ListingsPage = () => {
                 {/* Render Modals Inlined */}
                 {isFilterModalOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" />
                         <div className="bg-white rounded-[3px] shadow-2xl w-full max-w-lg overflow-hidden relative z-10 animate-scale-up">
                             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-gray-900">Filter Properties</h3>
@@ -858,10 +872,10 @@ const ListingsPage = () => {
 
                 {isTransitModalOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/5 backdrop-blur-sm transition-opacity backdrop-saturate-150" />
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity backdrop-saturate-150" />
                         <div className="bg-white/95 backdrop-blur-xl rounded-[3px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] w-full max-w-5xl h-[85vh] overflow-hidden relative z-10 flex flex-col animate-scale-up border border-white/20">
-                            <div className="p-4 px-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md z-20">
-                                <div>
+                            <div className="p-4 px-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md z-20 gap-4">
+                                <div className="shrink-0">
                                     <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 tracking-tight">
                                         <div className="p-1.5 bg-primary-100 rounded-[3px]">
                                             <MapPinIcon className="w-5 h-5 text-primary-600" />
@@ -870,7 +884,59 @@ const ListingsPage = () => {
                                     </h3>
                                     <p className="text-sm font-medium text-gray-400 mt-0.5 ml-9">Click a station to filter properties nearby</p>
                                 </div>
-                                <button onClick={() => setIsTransitModalOpen(false)} className="p-2 hover:bg-gray-100/50 rounded-[3px] transition-all hover:scale-110 active:scale-95 group">
+
+                                {/* Station Search Input */}
+                                <div className="flex-1 max-w-md relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={stationSearch}
+                                        onChange={(e) => setStationSearch(e.target.value)}
+                                        placeholder="Search station name or code (e.g. Asok, E4)..."
+                                        className="block w-full pl-10 pr-3 py-2 bg-white/50 border border-gray-200 rounded-[3px] text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                                    />
+                                    {stationSearch && (
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-[3px] shadow-lg border border-gray-100 max-h-60 overflow-y-auto z-50 animate-fade-in custom-scrollbar">
+                                            {stations
+                                                .filter(s =>
+                                                    s.name_en?.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                                                    s.id?.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                                                    s.code?.toLowerCase().includes(stationSearch.toLowerCase())
+                                                )
+                                                .map(station => (
+                                                    <button
+                                                        key={station.id}
+                                                        onClick={() => {
+                                                            handleStationSelect(station.id);
+                                                            setIsTransitModalOpen(false);
+                                                            setStationSearch('');
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between group/item transition-colors"
+                                                    >
+                                                        <div>
+                                                            <div className="font-medium text-gray-900">{station.name_en}</div>
+                                                            <div className="text-xs text-gray-500">{station.id}</div>
+                                                        </div>
+                                                        <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-xs font-bold transition-opacity">Select</span>
+                                                    </button>
+                                                ))
+                                            }
+                                            {stations.filter(s =>
+                                                s.name_en?.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                                                s.id?.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                                                s.code?.toLowerCase().includes(stationSearch.toLowerCase())
+                                            ).length === 0 && (
+                                                    <div className="p-4 text-center text-sm text-gray-500">
+                                                        No stations found
+                                                    </div>
+                                                )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button onClick={() => setIsTransitModalOpen(false)} className="p-2 hover:bg-gray-100/50 rounded-[3px] transition-all hover:scale-110 active:scale-95 group shrink-0">
                                     <XMarkIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
                                 </button>
                             </div>

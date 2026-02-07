@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { publicApi } from '../../services/api';
-import { TransitMapSVG } from './transit_map.svg';
-import { renderToString } from 'react-dom/server';
+import { TransitMapSVG } from './transit_map.svg.js';
 import { XMarkIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 const TransitMapFilter = ({ onStationClick, selectedStation }) => {
@@ -55,6 +54,13 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
         };
     };
 
+    const getMinZoom = () => {
+        if (!mapWrapperRef.current) return 0.2;
+        const containerWidth = mapWrapperRef.current.clientWidth;
+        const containerHeight = mapWrapperRef.current.clientHeight;
+        return Math.max(containerWidth / MAP_WIDTH, containerHeight / MAP_HEIGHT);
+    };
+
     // Fetch stations data
     useEffect(() => {
         const fetchStations = async () => {
@@ -76,10 +82,8 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
     // Load SVG and attach listeners
     useEffect(() => {
         if (!loading && svgContainerRef.current) {
-            // Use the integrated SVG component instead of fetching external file
+            // Use the integrated SVG component directly
             // This ensures the map is bundled with the code
-            const svgString = renderToString(<TransitMapSVG />);
-            svgContainerRef.current.innerHTML = svgString;
 
             // Add click listeners to stations
             const stationsGroups = svgContainerRef.current.querySelectorAll('[data-name="station"], [data-name="transit-station"], [data-name="transit"]');
@@ -187,7 +191,8 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                         <div className="h-px bg-gray-100 mx-2" />
                         <button
                             onClick={() => {
-                                const newZoom = Math.max(zoom - 0.1, 0.2);
+                                const minZoom = getMinZoom();
+                                const newZoom = Math.max(zoom - 0.1, minZoom);
                                 setZoom(newZoom);
                                 setPan(p => constrainPan(p, newZoom));
                             }}
@@ -240,7 +245,8 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                     onWheel={(e) => {
                         e.preventDefault();
                         const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                        const newZoom = Math.max(0.2, Math.min(2.0, zoom + delta));
+                        const minZoom = getMinZoom();
+                        const newZoom = Math.max(minZoom, Math.min(2.0, zoom + delta));
                         setZoom(newZoom);
                         setPan(p => constrainPan(p, newZoom));
                     }}
@@ -258,7 +264,9 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                         <div
                             ref={svgContainerRef}
                             className="w-full h-full transit-map-svg"
-                        />
+                        >
+                            <TransitMapSVG />
+                        </div>
 
                         {/* Selected Station Highlighter (Pulsing Dot) */}
                         {markerPos && (
@@ -272,7 +280,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                             >
                                 <div className="relative flex items-center justify-center">
                                     <div className="w-8 h-8 bg-red-500/30 rounded-full animate-ping absolute"></div>
-                                    <div className="w-4 h-4 bg-red-600 rounded-[1px] shadow-lg border-2 border-white relative z-10"></div>
+                                    <div className="w-4 h-4 bg-red-600 rounded-full shadow-lg border-2 border-white relative z-10"></div>
                                 </div>
                             </div>
                         )}

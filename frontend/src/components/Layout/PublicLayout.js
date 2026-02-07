@@ -66,7 +66,7 @@ const PublicLayout = () => {
     return (
         <div className="min-h-screen flex flex-col" style={{ fontFamily: theme.fontFamily }}>
             {/* Navigation */}
-            <nav className={`bg-white border-b border-gray-200 sticky top-0 z-50 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+            <nav className={`bg-primary-600 border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'
                 }`}>
                 <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -74,31 +74,31 @@ const PublicLayout = () => {
                             <div className="flex items-center justify-between w-full animate-pulse">
                                 {/* Logo Skeleton */}
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-gray-200 rounded" />
-                                    <div className="w-32 h-6 bg-gray-200 rounded" />
+                                    <div className="w-8 h-8 bg-white/20 rounded" />
+                                    <div className="w-32 h-6 bg-white/20 rounded" />
                                 </div>
                                 {/* Nav Links Skeleton */}
                                 <div className="hidden md:flex items-center space-x-1">
-                                    <div className="w-16 h-8 bg-gray-100 rounded-lg mx-1" />
-                                    <div className="w-24 h-8 bg-gray-100 rounded-lg mx-1" />
+                                    <div className="w-16 h-8 bg-white/10 rounded-lg mx-1" />
+                                    <div className="w-24 h-8 bg-white/10 rounded-lg mx-1" />
                                 </div>
                                 {/* Auth Skeleton */}
                                 <div className="hidden md:flex items-center space-x-4">
-                                    <div className="w-20 h-4 bg-gray-100 rounded" />
-                                    <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                                    <div className="w-16 h-4 bg-gray-100 rounded" />
+                                    <div className="w-20 h-4 bg-white/10 rounded" />
+                                    <div className="w-8 h-8 bg-white/20 rounded-full" />
+                                    <div className="w-16 h-4 bg-white/10 rounded" />
                                 </div>
                             </div>
                         ) : (
                             <>
                                 {/* Logo */}
-                                <Link to="/" className="flex items-center space-x-2">
+                                <Link to="/" className="flex items-center space-x-2 group">
                                     {theme.logoUrl ? (
-                                        <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                                        <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
                                     ) : (
-                                        <Logo className="w-8 h-8" style={{ color: theme.primaryColor }} />
+                                        <Logo className="w-8 h-8 text-white" />
                                     )}
-                                    <span className="text-xl font-bold text-gray-900">
+                                    <span className="text-xl font-bold text-white group-hover:text-white/90 transition-colors">
                                         {theme.headerText || 'Super Real Estate'}
                                     </span>
                                 </Link>
@@ -109,9 +109,9 @@ const PublicLayout = () => {
                                         <Link
                                             key={item.name}
                                             to={item.href}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.href)
-                                                ? 'bg-primary-50 text-primary-700'
-                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive(item.href)
+                                                ? 'bg-white/15 text-white shadow-sm'
+                                                : 'text-white/80 hover:bg-white/10 hover:text-white'
                                                 }`}
                                         >
                                             {item.name}
@@ -125,19 +125,19 @@ const PublicLayout = () => {
                                         <div className="flex items-center space-x-4">
                                             <Link
                                                 to={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                                                className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
+                                                className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
                                             >
                                                 Dashboard
                                             </Link>
-                                            <div className="flex items-center space-x-2">
-                                                <UserCircleIcon className="w-8 h-8 text-gray-400" />
-                                                <span className="text-sm font-medium text-gray-700">
+                                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/10">
+                                                <UserCircleIcon className="w-5 h-5 text-white/70" />
+                                                <span className="text-sm font-semibold text-white">
                                                     {user?.first_name}
                                                 </span>
                                             </div>
                                             <button
                                                 onClick={logout}
-                                                className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                                                className="text-sm font-semibold text-white/60 hover:text-white transition-colors"
                                             >
                                                 Logout
                                             </button>
@@ -146,11 +146,11 @@ const PublicLayout = () => {
                                         <>
                                             <Link
                                                 to="/login"
-                                                className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
+                                                className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
                                             >
                                                 Sign in
                                             </Link>
-                                            <Link to="/register" className="btn-primary text-sm py-2">
+                                            <Link to="/register" className="bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-black/5 hover:bg-gray-50 active:scale-95 transition-all">
                                                 Get Started
                                             </Link>
                                         </>
