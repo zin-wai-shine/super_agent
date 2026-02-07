@@ -650,10 +650,14 @@ const ListingDetailPage = () => {
                                             scrolling="no"
                                             marginHeight="0"
                                             marginWidth="0"
-                                            src={listing.map_url && !listing.map_url.includes('maps.app.goo.gl')
-                                                ? `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`
-                                                : `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`
-                                            }
+                                            src={(() => {
+                                                if (listing.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`;
+                                                if (listing.latitude && listing.longitude) return `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`;
+                                                // Fallback to address search
+                                                const addr = `${listing.address || ''} ${listing.district || ''} ${listing.province || ''}`.trim();
+                                                if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
+                                                return '';
+                                            })()}
                                             title="Property Location"
                                         ></iframe>
                                     </div>

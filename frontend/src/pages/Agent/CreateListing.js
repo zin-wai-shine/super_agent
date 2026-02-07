@@ -694,12 +694,21 @@ const CreateListing = () => {
                                         const url = e.target.value;
                                         if (!url) return;
 
-                                        // Try to extract coordinates from full Google Maps URL
-                                        // Format: ...@13.7563,100.5018...
-                                        const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-                                        if (coordMatch) {
-                                            setValue('latitude', coordMatch[1]);
-                                            setValue('longitude', coordMatch[2]);
+                                        // Robust extraction from various formats
+                                        const patterns = [
+                                            /@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng
+                                            /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng
+                                            /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng
+                                            /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng
+                                        ];
+
+                                        for (const pattern of patterns) {
+                                            const match = url.match(pattern);
+                                            if (match) {
+                                                setValue('latitude', match[1]);
+                                                setValue('longitude', match[2]);
+                                                break;
+                                            }
                                         }
                                     }
                                 })}
@@ -721,10 +730,14 @@ const CreateListing = () => {
                                         scrolling="no"
                                         marginHeight="0"
                                         marginWidth="0"
-                                        src={fieldValues.map_url && !fieldValues.map_url.includes('maps.app.goo.gl')
-                                            ? `https://maps.google.com/maps?q=${encodeURIComponent(fieldValues.map_url)}&hl=en&z=15&output=embed`
-                                            : `https://maps.google.com/maps?q=${fieldValues.latitude},${fieldValues.longitude}&hl=en&z=15&output=embed`
-                                        }
+                                        src={(() => {
+                                            if (fieldValues.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(fieldValues.map_url)}&hl=en&z=15&output=embed`;
+                                            if (fieldValues.latitude && fieldValues.longitude) return `https://maps.google.com/maps?q=${fieldValues.latitude},${fieldValues.longitude}&hl=en&z=15&output=embed`;
+                                            // Fallback to address search
+                                            const addr = `${fieldValues.address || ''} ${fieldValues.district || ''} ${fieldValues.province || ''}`.trim();
+                                            if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
+                                            return '';
+                                        })()}
                                         title="Map Preview"
                                     ></iframe>
                                 </div>
