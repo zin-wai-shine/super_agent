@@ -11,6 +11,7 @@ import {
     MdElevator, MdGroups, MdStore, MdDirectionsBus, MdSpa, MdGarage, MdMeetingRoom
 } from 'react-icons/md';
 import StyledSelect from '../../components/Form/StyledSelect';
+import LocationPicker from '../../components/Listings/LocationPicker';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { DateRange } from 'react-date-range';
@@ -725,35 +726,37 @@ const CreateListing = () => {
                             </p>
                         </div>
 
-                        {/* Map Preview Showcase */}
-                        {(fieldValues.map_url || (fieldValues.latitude && fieldValues.longitude)) && (
-                            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-6">
-                                <label className="input-label mb-4 block">Map Preview Showcase</label>
-                                <div className="w-full h-[300px] rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                                    <iframe
-                                        width="100%"
-                                        height="100%"
-                                        frameBorder="0"
-                                        scrolling="no"
-                                        marginHeight="0"
-                                        marginWidth="0"
-                                        src={(() => {
-                                            if (fieldValues.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(fieldValues.map_url)}&hl=en&z=15&output=embed`;
-                                            if (fieldValues.latitude && fieldValues.longitude) return `https://maps.google.com/maps?q=${fieldValues.latitude},${fieldValues.longitude}&hl=en&z=15&output=embed`;
-                                            // Fallback to address search
-                                            const addr = `${fieldValues.address || ''} ${fieldValues.district || ''} ${fieldValues.province || ''}`.trim();
-                                            if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
-                                            return '';
-                                        })()}
-                                        title="Map Preview"
-                                    ></iframe>
-                                </div>
-                                <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 flex items-center">
-                                    <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-                                    Live Preview Active
-                                </p>
+                        {/* Map Picker & Preview */}
+                        <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-6">
+                            <label className="input-label mb-4 block flex justify-between items-center">
+                                <span>📍 Pin Property Location</span>
+                                {fieldValues.latitude && fieldValues.longitude && (
+                                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">
+                                        Location Pinned
+                                    </span>
+                                )}
+                            </label>
+                            <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-lg border-2 border-primary-50 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group relative">
+                                <LocationPicker
+                                    value={{
+                                        lat: fieldValues.latitude,
+                                        lng: fieldValues.longitude
+                                    }}
+                                    onChange={(pos) => {
+                                        setValue('latitude', pos.lat);
+                                        setValue('longitude', pos.lng);
+                                    }}
+                                    address={`${fieldValues.address || ''} ${fieldValues.district || ''} ${fieldValues.province || ''}`}
+                                />
                             </div>
-                        )}
+                            <p className="mt-3 text-xs text-gray-400 flex items-start gap-2 leading-relaxed">
+                                <SparklesIcon className="w-4 h-4 text-primary-500 shrink-0" />
+                                <span>
+                                    Click anywhere on the map to set the exact location, or search for an address.
+                                    This will help users find your property more easily!
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 

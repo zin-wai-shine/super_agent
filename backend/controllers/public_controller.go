@@ -77,6 +77,28 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 			"%"+search+"%", "%"+search+"%", "%"+search+"%")
 	}
 
+	// Geographic bounds filtering (for map-based search)
+	if minLat := c.Query("min_lat"); minLat != "" {
+		if lat, err := strconv.ParseFloat(minLat, 64); err == nil {
+			query = query.Where("CAST(latitude AS DECIMAL) >= ?", lat)
+		}
+	}
+	if maxLat := c.Query("max_lat"); maxLat != "" {
+		if lat, err := strconv.ParseFloat(maxLat, 64); err == nil {
+			query = query.Where("CAST(latitude AS DECIMAL) <= ?", lat)
+		}
+	}
+	if minLng := c.Query("min_lng"); minLng != "" {
+		if lng, err := strconv.ParseFloat(minLng, 64); err == nil {
+			query = query.Where("CAST(longitude AS DECIMAL) >= ?", lng)
+		}
+	}
+	if maxLng := c.Query("max_lng"); maxLng != "" {
+		if lng, err := strconv.ParseFloat(maxLng, 64); err == nil {
+			query = query.Where("CAST(longitude AS DECIMAL) <= ?", lng)
+		}
+	}
+
 	// Sorting
 	sortBy := c.DefaultQuery("sort", "created_at")
 	sortOrder := c.DefaultQuery("order", "desc")

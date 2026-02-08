@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { publicApi } from '../../services/api';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import ListingCard from '../../components/Listings/ListingCard';
@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const HomePage = () => {
+    const navigate = useNavigate();
     const [featuredListings, setFeaturedListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedStation, setSelectedStation] = useState(null);
@@ -32,15 +33,9 @@ const HomePage = () => {
         fetchFeaturedListings();
     }, []);
 
-    const handleStationClick = async (stationId, stationName) => {
-        setSelectedStation({ id: stationId, name: stationName });
-        try {
-            const response = await publicApi.getListingsByStation(stationId);
-            setStationListings(response.data.listings || []);
-        } catch (error) {
-            console.error('Failed to fetch station listings:', error);
-            setStationListings([]);
-        }
+    const handleStationClick = (stationId, stationName) => {
+        // Navigate to listings page with station filter
+        navigate(`/listings?station_id=${stationId}`);
     };
 
     const handleSearch = (e) => {
@@ -120,8 +115,8 @@ const HomePage = () => {
 
             {/* Transit Map Section */}
             <section className="py-16 lg:py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
+                <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12 px-4">
                         <div className="inline-flex items-center space-x-2 bg-primary-50 text-primary-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
                             <MapPinIcon className="w-4 h-4" />
                             <span>Interactive Map</span>
@@ -135,11 +130,14 @@ const HomePage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-gray-50 rounded-3xl p-4 lg:p-8 shadow-inner">
-                        <TransitMapFilter
-                            onStationClick={handleStationClick}
-                            selectedStation={selectedStation?.id}
-                        />
+                    <div className="bg-white rounded-none md:rounded-3xl shadow-none md:shadow-xl h-[500px] lg:h-[700px] overflow-hidden flex flex-col relative border-0 md:border border-gray-100">
+                        <div className="flex-1 flex flex-col min-h-0">
+                            <TransitMapFilter
+                                onStationClick={handleStationClick}
+                                selectedStation={selectedStation?.id}
+                                searchable={true}
+                            />
+                        </div>
                     </div>
 
                     {/* Station Results */}

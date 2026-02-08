@@ -350,6 +350,7 @@ func seedTransitStations(db *gorm.DB) {
 		{ID: "G1", NameEN: "Krung Thon Buri", NameTH: "กรุงธนบุรี", LineName: "Gold Line", LineColor: "#DAA520"},
 		{ID: "G2", NameEN: "Charoen Nakhon", NameTH: "เจริญนคร", LineName: "Gold Line", LineColor: "#DAA520"},
 		{ID: "G3", NameEN: "Khlong San", NameTH: "คลองสาน", LineName: "Gold Line", LineColor: "#DAA520"},
+		{ID: "RIVER", NameEN: "Riverside", NameTH: "ริมน้ำ", LineName: "Chao Phraya River", LineColor: "#B8E5FA"},
 	}
 
 	for _, station := range stations {

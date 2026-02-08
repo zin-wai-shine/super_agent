@@ -27,6 +27,7 @@ import {
 import { HeartIcon as HeartSolidIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
+import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
@@ -804,23 +805,16 @@ const ListingDetailPage = () => {
                                         {/* Map Content */}
                                         <div className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
                                             {activeMapTab === 'google' ? (
-                                                <iframe
-                                                    width="100%"
-                                                    height="100%"
-                                                    frameBorder="0"
-                                                    scrolling="no"
-                                                    marginHeight="0"
-                                                    marginWidth="0"
-                                                    src={(() => {
-                                                        if (listing.map_url) return `https://maps.google.com/maps?q=${encodeURIComponent(listing.map_url)}&hl=en&z=15&output=embed`;
-                                                        if (listing.latitude && listing.longitude) return `https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&hl=en&z=15&output=embed`;
-                                                        const addr = `${listing.address || ''} ${listing.district || ''} ${listing.province || ''}`.trim();
-                                                        if (addr) return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&hl=en&z=15&output=embed`;
-                                                        return '';
-                                                    })()}
-                                                    title="Property Location"
-                                                    className="w-full h-full"
-                                                ></iframe>
+                                                <GoogleMapComponent
+                                                    listings={[listing]}
+                                                    center={listing.latitude && listing.longitude ? {
+                                                        lat: parseFloat(listing.latitude),
+                                                        lng: parseFloat(listing.longitude)
+                                                    } : undefined}
+                                                    zoom={15}
+                                                    onMarkerClick={() => { }}
+                                                    mapStyle={{ width: '100%', height: '100%' }}
+                                                />
                                             ) : (
                                                 <div className="relative w-full h-full bg-slate-50 flex flex-col">
                                                     {/* Legend Overlay */}

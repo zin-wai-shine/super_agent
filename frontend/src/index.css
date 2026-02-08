@@ -25,7 +25,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary-600 rounded-full;
+    @apply bg-primary-600;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -53,7 +53,7 @@
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-thumb {
-    @apply bg-primary-600 rounded-full;
+    @apply bg-primary-600;
   }
 
   .custom-scrollbar-primary:hover::-webkit-scrollbar-thumb {

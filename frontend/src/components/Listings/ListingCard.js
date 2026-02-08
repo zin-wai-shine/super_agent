@@ -92,21 +92,19 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
         return (
             <Link
                 to={`/listings/${id}`}
-                className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-col md:flex-row group hover:shadow-md transition-all duration-300 md:h-[320px]"
+                className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row group hover:shadow-md transition-all duration-300 h-[130px] md:h-[320px]"
             >
-                {/* Image Section */}
-                {/* Image Section */}
-                {/* Image Section */}
-                <div className="md:w-[480px] min-h-[280px] md:min-h-0 md:h-full relative overflow-hidden flex-none group/slider">
+                {/* Image Section - Fixed width on mobile, wider on desktop */}
+                <div className="w-[130px] md:w-[480px] h-full relative overflow-hidden flex-none group/slider">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
                         className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     />
 
-                    {/* Navigation Buttons - Only show if multiple images */}
+                    {/* Navigation Buttons - Desktop Only */}
                     {listingImages.length > 1 && (
-                        <>
+                        <div className="hidden md:block">
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -139,72 +137,72 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                     />
                                 ))}
                             </div>
-                        </>
+                        </div>
                     )}
 
-                    {/* Listing type badge */}
-                    <div className={`absolute top-4 left-4 text-[11px] uppercase font-black px-2.5 py-1 rounded-[3px] shadow-sm tracking-wider z-10 ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                    {/* Listing type badge - Mobile: Small Top Left / Desktop: Standard */}
+                    <div className={`absolute top-2 left-2 md:top-4 md:left-4 text-[9px] md:text-[11px] uppercase font-black px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-[3px] shadow-sm tracking-wider z-10 ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}>
                         {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                     </div>
 
-                    {/* Featured badge */}
+                    {/* Featured badge - Desktop Only */}
                     {is_featured && (
-                        <div className="absolute top-4 right-4 bg-yellow-400 text-white text-[11px] uppercase font-black px-2.5 py-1 rounded-[3px] shadow-sm tracking-wider z-10">
+                        <div className="hidden md:block absolute top-4 right-4 bg-yellow-400 text-white text-[11px] uppercase font-black px-2.5 py-1 rounded-[3px] shadow-sm tracking-wider z-10">
                             Featured
                         </div>
                     )}
 
-                    {/* Date badge - Bottom Left overlay */}
-                    <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-2 py-1 rounded-[3px] shadow-sm tracking-wider flex items-center gap-1.5 z-10">
+                    {/* Date badge - Desktop Only */}
+                    <div className="hidden md:flex absolute bottom-4 left-4 bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-2 py-1 rounded-[3px] shadow-sm tracking-wider items-center gap-1.5 z-10">
                         <CalendarDaysIcon className="w-3.5 h-3.5 text-primary-500" />
                         Listed {formatRelativeTime(created_at)}
                     </div>
                 </div>
 
                 {/* Content Section */}
-                <div className="p-5 md:p-6 flex flex-col justify-between flex-1 min-w-0">
+                <div className="p-3 md:p-6 flex flex-col justify-center md:justify-between flex-1 min-w-0 relative">
                     <div>
-                        <div className="flex items-start justify-between mb-2">
-                            <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-[3px] text-[11px] font-bold uppercase tracking-wider">
+                        <div className="flex items-start justify-between mb-1 md:mb-2">
+                            <span className="hidden md:inline-block bg-gray-100 text-gray-600 px-2.5 py-1 rounded-[3px] text-[11px] font-bold uppercase tracking-wider">
                                 {property_type || 'Property'}
                             </span>
                             <div className="flex items-baseline gap-1 text-primary-600">
-                                <span className="text-3xl font-black tracking-tight">{formatPrice(price)}</span>
-                                <span className="text-sm font-bold text-gray-400 uppercase">{price_unit}</span>
-                                {listing_type === 'rent' && <span className="text-sm font-bold text-gray-400">/mo</span>}
+                                <span className="text-lg md:text-3xl font-black tracking-tight">{formatPrice(price)}</span>
+                                <span className="text-[10px] md:text-sm font-bold text-gray-400 uppercase">{price_unit}</span>
+                                {listing_type === 'rent' && <span className="text-[10px] md:text-sm font-bold text-gray-400">/mo</span>}
                             </div>
                         </div>
 
-                        <h3 className="text-2xl font-extrabold text-gray-900 mb-6 group-hover:text-primary-600 transition-colors line-clamp-2">
+                        <h3 className="text-sm md:text-2xl font-bold md:font-extrabold text-gray-900 mb-1 md:mb-6 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
                             {title}
                         </h3>
 
                         {/* Information Group */}
-                        <div className="space-y-4 mb-4">
+                        <div className="space-y-1 md:space-y-4 mb-0 md:mb-4">
                             {/* Location & Station */}
-                            <div className="space-y-3">
+                            <div className="space-y-1 md:space-y-3">
                                 <div className="flex items-center text-gray-500">
-                                    <MapPinIcon className="w-5 h-5 mr-2 flex-shrink-0 text-primary-600" />
-                                    <span className="text-base font-medium truncate">
+                                    <MapPinIcon className="w-3.5 h-3.5 md:w-5 md:h-5 mr-1 md:mr-2 flex-shrink-0 text-primary-600" />
+                                    <span className="text-xs md:text-base font-medium truncate">
                                         {road ? `${road}, ` : ''}{district || 'Bangkok'}
                                     </span>
                                 </div>
 
                                 {((station_name || station_id) || (station?.name_en || station?.id)) && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 md:gap-2">
                                         {/* Train Icon */}
-                                        <TbTrain className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                                        <TbTrain className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600 flex-shrink-0" />
 
-                                        <span className="text-sm text-primary-600 font-bold whitespace-nowrap">
+                                        <span className="text-[10px] md:text-sm text-primary-600 font-bold whitespace-nowrap hidden md:inline">
                                             {line_name || station?.line_name || 'BTS'}
                                         </span>
 
-                                        <span className="text-sm text-gray-900 font-semibold">
+                                        <span className="text-[10px] md:text-sm text-gray-900 font-semibold truncate">
                                             {station?.name_en?.split('(')[0] || station_name?.split('(')[0]}
                                         </span>
 
                                         <span
-                                            className="px-1.5 py-0.5 rounded-[3px] text-[10px] font-bold text-white tabular-nums"
+                                            className="px-1 py-0.5 md:px-1.5 md:py-0.5 rounded-[3px] text-[8px] md:text-[10px] font-bold text-white tabular-nums"
                                             style={{ backgroundColor: line_color || station?.line_color || '#3b82f6' }}
                                         >
                                             {station?.id || station_id}
@@ -213,18 +211,18 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                 )}
                             </div>
 
-                            {/* Features for List View */}
-                            <div className="flex items-center gap-6 pt-2">
-                                <div className="flex items-center gap-2 text-gray-600">
-                                    <LiaBedSolid className="w-5 h-5 text-primary-600" />
-                                    <span className="text-sm font-medium">{bedrooms} Beds</span>
+                            {/* Features for List View - Desktop Only / Simplified on Mobile */}
+                            <div className="flex items-center gap-3 md:gap-6 pt-1 md:pt-2">
+                                <div className="flex items-center gap-1 md:gap-2 text-gray-600">
+                                    <LiaBedSolid className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600" />
+                                    <span className="text-xs md:text-sm font-medium">{bedrooms} <span className="hidden md:inline">Beds</span></span>
                                 </div>
-                                <div className="flex items-center gap-2 text-gray-600">
-                                    <PiBathtub className="w-5 h-5 text-primary-600" />
-                                    <span className="text-sm font-medium">{bathrooms} Baths</span>
+                                <div className="flex items-center gap-1 md:gap-2 text-gray-600">
+                                    <PiBathtub className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600" />
+                                    <span className="text-xs md:text-sm font-medium">{bathrooms} <span className="hidden md:inline">Baths</span></span>
                                 </div>
                                 {area > 0 && (
-                                    <div className="flex items-center gap-2 text-gray-600">
+                                    <div className="hidden md:flex items-center gap-2 text-gray-600">
                                         <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                         </svg>
@@ -235,7 +233,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                    <div className="hidden md:flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                         <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest gap-2">
                             <span className="text-[10px]">ID: #{id.slice(0, 8)}</span>
                         </div>

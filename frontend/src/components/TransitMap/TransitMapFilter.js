@@ -1,75 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { publicApi } from '../../services/api';
 import { TransitMapSVG } from './transit_map.svg.js';
-import { XMarkIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
-const TransitMapFilter = ({ onStationClick, selectedStation }) => {
+const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false }) => {
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [markerPos, setMarkerPos] = useState(null);
-    const [zoom, setZoom] = useState(0.8); // Default zoom matched to visual
+    const [zoom, setZoom] = useState(0.8);
     const [pan, setPan] = useState({ x: -200, y: -200 });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showResults, setShowResults] = useState(false);
+    const searchRef = useRef(null);
+
     const svgContainerRef = useRef(null);
     const mapWrapperRef = useRef(null);
 
-    // Map dimensions (from SVG)
-    const MAP_WIDTH = 1368;
-    const MAP_HEIGHT = 1340;
-
-    const constrainPan = (newPan, currentZoom) => {
-        if (!mapWrapperRef.current) return newPan;
-
-        const containerWidth = mapWrapperRef.current.clientWidth;
-        const containerHeight = mapWrapperRef.current.clientHeight;
-
-        // Calculate boundaries
-        // If scaled map is larger than container, we can pan
-        // If smaller, we center it or lock to 0
-        const scaledWidth = MAP_WIDTH * currentZoom;
-        const scaledHeight = MAP_HEIGHT * currentZoom;
-
-        let minX, maxX, minY, maxY;
-
-        if (scaledWidth > containerWidth) {
-            minX = containerWidth - scaledWidth;
-            maxX = 0;
-        } else {
-            // Center horizontally if smaller
-            minX = (containerWidth - scaledWidth) / 2;
-            maxX = minX;
-        }
-
-        if (scaledHeight > containerHeight) {
-            minY = containerHeight - scaledHeight;
-            maxY = 0;
-        } else {
-            // Center vertically if smaller
-            minY = (containerHeight - scaledHeight) / 2;
-            maxY = minY;
-        }
-
-        return {
-            x: Math.min(Math.max(newPan.x, minX), maxX),
-            y: Math.min(Math.max(newPan.y, minY), maxY)
+    // Close search results on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowResults(false);
+            }
         };
-    };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-    const getMinZoom = () => {
-        if (!mapWrapperRef.current) return 0.2;
-        const containerWidth = mapWrapperRef.current.clientWidth;
-        const containerHeight = mapWrapperRef.current.clientHeight;
-        return Math.max(containerWidth / MAP_WIDTH, containerHeight / MAP_HEIGHT);
-    };
-
-    // Fetch stations data
+    // Fetch stations on mount
     useEffect(() => {
         const fetchStations = async () => {
             try {
                 const response = await publicApi.getStations();
                 setStations(response.data.stations || []);
-
-                // Initial centering based on common Bangkok stations (or just middle)
-                // setPan({ x: -450, y: -450 }); // Rough center for the 1368x1340 map - now set as initial state
             } catch (error) {
                 console.error('Failed to fetch stations:', error);
             } finally {
@@ -79,97 +42,198 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
         fetchStations();
     }, []);
 
-    // Load SVG and attach listeners
+    // Handle SVG Interactions (Click & Hover)
     useEffect(() => {
-        if (!loading && svgContainerRef.current) {
-            // Use the integrated SVG component directly
-            // This ensures the map is bundled with the code
+        const container = svgContainerRef.current;
+        if (!container) return;
 
-            // Add click listeners to stations
-            const stationsGroups = svgContainerRef.current.querySelectorAll('[data-name="station"], [data-name="transit-station"], [data-name="transit"]');
+        const handleMapClick = (e) => {
+            // Check if clicked element is part of a station group
+            const stationGroup = e.target.closest('[data-station-id]');
 
-            const attachListeners = (groups) => {
-                groups.forEach(group => {
-                    group.style.cursor = 'pointer';
-                    group.onclick = (e) => {
-                        const stationId = group.getAttribute('data-station-id');
-                        const labelEn = group.querySelector('[data-name="label-en"] text')?.textContent || stationId;
+            if (stationGroup) {
+                e.stopPropagation(); // Prevent map click from triggering other things
+                const stationId = stationGroup.getAttribute('data-station-id');
+                const stationName = stationGroup.querySelector('[data-name="label-en"] text')?.textContent || stationId;
 
-                        // Find circle or rect for position
-                        const shape = group.querySelector('circle, rect');
-                        if (shape) {
-                            const rect = shape.getBBox();
-                            const cx = shape.getAttribute('cx') || rect.x + rect.width / 2;
-                            const cy = shape.getAttribute('cy') || rect.y + rect.height / 2;
-                            setMarkerPos({ x: cx, y: cy });
-                        }
+                // Get station coordinates for the marker
+                // We use the circle element's cx/cy which are relative to the SVG coordinate system
+                const circle = stationGroup.querySelector('circle');
+                if (circle) {
+                    const cx = parseFloat(circle.getAttribute('cx'));
+                    const cy = parseFloat(circle.getAttribute('cy'));
+                    setMarkerPos({ x: cx, y: cy });
+                }
 
-                        if (onStationClick) {
-                            onStationClick(stationId, labelEn);
-                        }
-                    };
+                if (onStationClick) {
+                    onStationClick(stationId, stationName);
+                }
+            } else {
+                // Clicked on empty map space - clear selection if needed?
+                // For now, do nothing or let parent handle
+            }
+        };
 
-                    // Hover effects
-                    group.onmouseenter = () => {
-                        group.style.filter = 'brightness(1.2) drop-shadow(0 0 2px rgba(0,0,0,0.3))';
-                    };
-                    group.onmouseleave = () => {
-                        group.style.filter = 'none';
-                    };
-                });
-            };
+        // Add listener to the SVG container (delegation)
+        container.addEventListener('click', handleMapClick);
 
-            attachListeners(stationsGroups);
+        // Add cursor style
+        const style = document.createElement('style');
+        style.textContent = `
+            [data-station-id] { cursor: pointer; }
+            [data-station-id]:hover circle { stroke: #EF4444; stroke-width: 4px; transition: all 0.2s; }
+            [data-station-id]:hover text { fill: #EF4444; font-weight: bold; }
+        `;
+        container.appendChild(style);
 
-            // Initial marker position if a station is already selected
-            if (selectedStation) {
-                const selectedGroup = Array.from(stationsGroups).find(g => g.getAttribute('data-station-id') === selectedStation);
-                if (selectedGroup) {
-                    const shape = selectedGroup.querySelector('circle, rect');
-                    if (shape) {
-                        const rect = shape.getBBox();
-                        const cx = shape.getAttribute('cx') || rect.x + rect.width / 2;
-                        const cy = shape.getAttribute('cy') || rect.y + rect.height / 2;
-                        setMarkerPos({ x: cx, y: cy });
-                    }
+        return () => {
+            container.removeEventListener('click', handleMapClick);
+            if (style.parentNode) style.parentNode.removeChild(style);
+        };
+    }, [onStationClick]);
+
+    // Sync selectedStation prop with marker position
+    useEffect(() => {
+        if (!selectedStation || loading || stations.length === 0) return;
+
+        const container = svgContainerRef.current;
+        if (!container) return;
+
+        const stationGroup = container.querySelector(`[data-station-id="${selectedStation}"]`);
+        if (stationGroup) {
+            const circle = stationGroup.querySelector('circle');
+            if (circle) {
+                const cx = parseFloat(circle.getAttribute('cx'));
+                const cy = parseFloat(circle.getAttribute('cy'));
+                setMarkerPos({ x: cx, y: cy });
+
+                // Optional: Center map on selection
+                // valid zoom ranges roughly 0.2 to 2.0
+                // We'll keep current zoom if reasonable, or set default
+                const targetZoom = Math.max(zoom, 0.6);
+                const mapWidth = 1368;
+                const mapHeight = 1340;
+
+                // Calculate pan to center the point
+                // viewport center = (containerWidth/2, containerHeight/2)
+                // point in pixels = (cx * zoom + panX, cy * zoom + panY)
+                // We want point in pixels to be center
+
+                if (mapWrapperRef.current) {
+                    const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
+
+                    const newPanX = (wrapperWidth / 2) - (cx * targetZoom);
+                    const newPanY = (wrapperHeight / 2) - (cy * targetZoom);
+
+                    setPan({ x: newPanX, y: newPanY });
+                    if (targetZoom !== zoom) setZoom(targetZoom);
                 }
             }
         }
-    }, [loading, selectedStation, onStationClick]);
+    }, [selectedStation, loading, stations]);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
-    }
+    // Constrain Pan Logic
+    const constrainPan = (newPan, currentZoom) => {
+        // Simple constraints to prevent panning too far away
+        // Valid range depends on zoom level
+        const mapWidth = 1368;
+        const mapHeight = 1340;
+
+        // Just return newPan for now to allow free movement, or implement bounds if needed
+        return newPan;
+    };
+
+    const getMinZoom = () => {
+        if (!mapWrapperRef.current) return 0.2;
+        const { width, height } = mapWrapperRef.current.getBoundingClientRect();
+        return Math.max(width / 1368, height / 1340);
+    };
 
     return (
         <div className="relative h-full flex flex-col">
-            {/* Legend - Modern Pill Chips with 3px Radius & Padding */}
-            <div className="mb-6 flex flex-wrap gap-2 px-1 py-4 bg-gray-50/30 rounded-[3px] border border-gray-100/50">
-                {[
-                    { name: 'BTS Sukhumvit', color: '#7FBA00' },
-                    { name: 'BTS Silom', color: '#006633' },
-                    { name: 'CEN Siam', color: '#666666' },
-                    { name: 'MRT Blue', color: '#1E50A0' },
-                    { name: 'MRT Purple', color: '#800080' },
-                    { name: 'Yellow Line', color: '#FFD700' },
-                    { name: 'Pink Line', color: '#FF69B4' },
-                    { name: 'Gold Line', color: '#D4AF37' },
-                ].map((line) => (
-                    <div
-                        key={line.name}
-                        className="flex items-center gap-2 px-3 py-2 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
-                    >
-                        <div
-                            className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
-                            style={{ backgroundColor: line.color }}
+            {/* Search Bar (Optional) */}
+            {searchable && (
+                <div className="mb-4 relative z-50 px-4 pt-4" ref={searchRef}>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                        </div>
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setShowResults(true);
+                            }}
+                            onFocus={() => setShowResults(true)}
+                            placeholder="Search station..."
+                            className="block w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-[3px] text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-sm"
                         />
-                        <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
                     </div>
-                ))}
+
+                    {/* Search Results Dropdown */}
+                    {showResults && searchTerm && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-[3px] shadow-xl border border-gray-100 max-h-60 overflow-y-auto z-50 animate-fade-in custom-scrollbar">
+                            {stations
+                                .filter(s =>
+                                    s.name_en?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    s.id?.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map(station => (
+                                    <button
+                                        key={station.id}
+                                        onClick={() => {
+                                            // Trigger regular click logic
+                                            const group = svgContainerRef.current?.querySelector(`[data-station-id="${station.id}"]`);
+                                            if (group) group.click();
+
+                                            setSearchTerm('');
+                                            setShowResults(false);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center justify-between group/item transition-colors border-b border-gray-50 last:border-0"
+                                    >
+                                        <div>
+                                            <div className="font-medium text-gray-900">{station.name_en}</div>
+                                            <div className="text-xs text-gray-500">{station.id}</div>
+                                        </div>
+                                        <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-xs font-bold transition-opacity">Select</span>
+                                    </button>
+                                ))
+                            }
+                            {stations.filter(s => s.name_en?.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                                <div className="p-4 text-center text-sm text-gray-500">No stations found</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Legend - Modern Pill Chips with 3px Radius & Padding */}
+            <div className="px-4">
+                <div className="mb-2 md:mb-6 flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible gap-2 px-3 py-3 md:px-1 md:py-4 bg-gray-50/30 rounded-[3px] border-b md:border border-gray-100/50 custom-scrollbar shrink-0 w-full md:w-auto -mx-0 md:mx-0">
+                    {[
+                        { name: 'BTS Sukhumvit', color: '#7FBA00' },
+                        { name: 'BTS Silom', color: '#006633' },
+                        { name: 'CEN Siam', color: '#666666' },
+                        { name: 'MRT Blue', color: '#1E50A0' },
+                        { name: 'MRT Purple', color: '#800080' },
+                        { name: 'Yellow Line', color: '#FFD700' },
+                        { name: 'Pink Line', color: '#FF69B4' },
+                        { name: 'Gold Line', color: '#D4AF37' },
+                        { name: 'Chao Phraya River', color: '#B8E5FA' },
+                    ].map((line) => (
+                        <div
+                            key={line.name}
+                            className="flex items-center gap-2 px-3 py-2 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default whitespace-nowrap"
+                        >
+                            <div
+                                className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
+                                style={{ backgroundColor: line.color }}
+                            />
+                            <span className="text-[11px] text-gray-600 font-bold">{line.name}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Interactive Map Container - Full Bleed */}
@@ -221,7 +285,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
                 <div
                     ref={mapWrapperRef}
                     className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50"
-                    style={{ overflow: 'hidden' }}
+                    style={{ overflow: 'hidden', touchAction: 'none' }}
                     onMouseDown={(e) => {
                         const startX = e.pageX - pan.x;
                         const startY = e.pageY - pan.y;
@@ -241,6 +305,32 @@ const TransitMapFilter = ({ onStationClick, selectedStation }) => {
 
                         window.addEventListener('mousemove', handleMouseMove);
                         window.addEventListener('mouseup', handleMouseUp);
+                    }}
+                    onTouchStart={(e) => {
+                        if (e.touches.length !== 1) return;
+                        const touch = e.touches[0];
+                        // Calculate initial offset
+                        const startX = touch.pageX - pan.x;
+                        const startY = touch.pageY - pan.y;
+
+                        const handleTouchMove = (tm) => {
+                            if (tm.cancelable) tm.preventDefault(); // Prevent scrolling
+                            const t = tm.touches[0];
+                            const newPan = {
+                                x: t.pageX - startX,
+                                y: t.pageY - startY
+                            };
+                            setPan(constrainPan(newPan, zoom));
+                        };
+
+                        const handleTouchEnd = () => {
+                            window.removeEventListener('touchmove', handleTouchMove);
+                            window.removeEventListener('touchend', handleTouchEnd);
+                        };
+
+                        // Use passive: false to allow preventing default scroll
+                        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+                        window.addEventListener('touchend', handleTouchEnd);
                     }}
                     onWheel={(e) => {
                         e.preventDefault();

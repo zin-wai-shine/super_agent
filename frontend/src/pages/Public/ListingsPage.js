@@ -3,9 +3,11 @@ import { useSearchParams, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
+import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
 import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
+import axios from 'axios';
 
 import {
     FunnelIcon,
@@ -18,6 +20,7 @@ import {
     MagnifyingGlassIcon,
     GlobeAltIcon,
     SparklesIcon,
+    ArrowUpIcon,
     TagIcon,
 } from '@heroicons/react/24/outline';
 
@@ -28,22 +31,22 @@ import Logo from '../../components/Common/Logo';
 
 // Static Options moved outside to prevent recreation
 const propertyTypeOptions = [
-    { value: '', label: '🏘️ All Types' },
-    { value: 'condo', label: '🏢 Condo' },
-    { value: 'house', label: '🏠 House' },
-    { value: 'townhouse', label: '🏘️ Townhouse' },
-    { value: 'apartment', label: '🏬 Apartment' },
-    { value: 'land', label: '🌳 Land' },
+    { value: '', label: 'All Types' },
+    { value: 'condo', label: 'Condo' },
+    { value: 'house', label: 'House' },
+    { value: 'townhouse', label: 'Townhouse' },
+    { value: 'apartment', label: 'Apartment' },
+    { value: 'land', label: 'Land' },
 ];
 
 const listingTypeOptions = [
-    { value: '', label: '🔄 Sale & Rent' },
-    { value: 'sale', label: '💰 For Sale' },
-    { value: 'rent', label: '🔑 For Rent' },
+    { value: '', label: 'Sale & Rent' },
+    { value: 'sale', label: 'For Sale' },
+    { value: 'rent', label: 'For Rent' },
 ];
 
 const bedroomOptions = [
-    { value: '', label: '🛏️ Any Beds' },
+    { value: '', label: 'Any Beds' },
     { value: '1', label: '1+ Beds' },
     { value: '2', label: '2+ Beds' },
     { value: '3', label: '3+ Beds' },
@@ -124,7 +127,7 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
 
 const ListingsPage = () => {
     const { user } = useAuth();
-    const { navVisible } = useOutletContext() || { navVisible: true }; // Fallback for dev
+    const { navVisible } = useOutletContext() || { navVisible: true };
     const [searchParams, setSearchParams] = useSearchParams();
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -136,23 +139,20 @@ const ListingsPage = () => {
     // Modal States
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
+    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(false);
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
-    const [priceFormat, setPriceFormat] = useState('short'); // Default to short to match previous behavior
+    const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
 
     // Scroll listener for filter bar margin
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 0) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
+            setIsScrolled(window.scrollY > 0);
         };
-
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -164,39 +164,25 @@ const ListingsPage = () => {
 
     // Lock background scroll when modals are open
     useEffect(() => {
-        if (isFilterModalOpen || isTransitModalOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-
-        // Cleanup on unmount
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isFilterModalOpen, isTransitModalOpen]);
+        document.body.style.overflow = (isFilterModalOpen || isTransitModalOpen || isGoogleMapOpen) ? 'hidden' : 'unset';
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isFilterModalOpen, isTransitModalOpen, isGoogleMapOpen]);
 
     const [stations, setStations] = useState([]);
 
     useEffect(() => {
         const fetchAgentInfo = async () => {
             try {
-                // Prioritize agent_id from URL for development/testing
                 let urlAgentId = searchParams.get('agent_id') || searchParams.get('agent');
-
-                // If on localhost and no URL param, use logged-in agent (simulating domain)
                 if (!urlAgentId && window.location.hostname.includes('localhost') && user?.agent_id) {
                     urlAgentId = user.agent_id;
                 }
-
                 const response = await publicApi.getAgentInfo(urlAgentId ? { agent_id: urlAgentId } : {});
                 setPriceLimits({
                     min: parseFloat(response.data.min_price_limit) || 0,
                     max: parseFloat(response.data.max_price_limit) || 0
                 });
-                if (response.data.price_format) {
-                    setPriceFormat(response.data.price_format);
-                }
+                if (response.data.price_format) setPriceFormat(response.data.price_format);
                 setAgentId(urlAgentId || response.data.id);
             } catch (error) {
                 console.error('Failed to fetch agent info:', error);
@@ -214,7 +200,20 @@ const ListingsPage = () => {
 
         fetchAgentInfo();
         fetchStations();
-    }, [searchParams]);
+    }, [searchParams, user]);
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollTop(window.scrollY > 300);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     // Filter states
     const [filters, setFilters] = useState(() => {
@@ -233,7 +232,7 @@ const ListingsPage = () => {
     const [stationSearch, setStationSearch] = useState('');
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
-    // Sync URL with restored filters on mount if URL was empty
+    // Sync URL with restored filters on mount
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
         let updated = false;
@@ -243,67 +242,53 @@ const ListingsPage = () => {
                 updated = true;
             }
         });
-        if (updated) {
-            setSearchParams(params, { replace: true });
-        }
+        if (updated) setSearchParams(params, { replace: true });
     }, []);
 
-    // Debounce search input
+    // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchTerm !== filters.search) {
                 handleFilterChange('search', searchTerm);
             }
         }, 500);
-
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-
     useEffect(() => {
         const controller = new AbortController();
-
         const fetchListings = async () => {
-            // Only set initial loading if we don't have listings yet (first load or new search)
             if (listings.length === 0) setInitialLoading(true);
             setLoading(true);
             try {
-                // Determine layout mode based on filters
-                const params = {
-                    ...filters,
-                    page,
-                    limit: 6
-                };
-
-                // If on localhost, inject logged-in agent ID to simulate domain filtering
+                const params = { ...filters, page, limit: 6 };
+                // Add map bounds to params if available and map is open
+                if (mapBounds && isGoogleMapOpen) {
+                    params.min_lat = mapBounds.min_lat;
+                    params.max_lat = mapBounds.max_lat;
+                    params.min_lng = mapBounds.min_lng;
+                    params.max_lng = mapBounds.max_lng;
+                }
                 if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
                     params.agent_id = user.agent_id;
                 }
-
-                // Pass signal to axios
                 const response = await publicApi.getListings(params, { signal: controller.signal });
                 const data = response.data;
-
                 setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
                 setTotal(data.total || 0);
-
             } catch (error) {
-                // Ignore abort errors
-                if (axios.isCancel(error) || error.name === 'CanceledError') return;
+                if (axios.isCancel(error)) return;
                 console.error('Failed to fetch listings', error);
             } finally {
-                // Only update state if not aborted
                 if (!controller.signal.aborted) {
                     setLoading(false);
                     setInitialLoading(false);
                 }
             }
         };
-
         fetchListings();
-
         return () => controller.abort();
-    }, [filters, page, viewMode]); // Re-run when filters/page change
+    }, [filters, page, viewMode, user, mapBounds, isGoogleMapOpen]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -314,45 +299,28 @@ const ListingsPage = () => {
             },
             { threshold: 0.1 }
         );
-
-        if (observerTarget.current) {
-            observer.observe(observerTarget.current);
-        }
-
-        return () => {
-            if (observerTarget.current) {
-                observer.unobserve(observerTarget.current);
-            }
-        };
+        if (observerTarget.current) observer.observe(observerTarget.current);
+        return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
     }, [loading, listings.length, total]);
 
     const handleFilterChange = (key, value) => {
         const newFilters = { ...filters, [key]: value };
         setFilters(newFilters);
-
-        // Persist to localStorage
         localStorage.setItem('listing_filters', JSON.stringify(newFilters));
-
         setPage(1);
         const newParams = new URLSearchParams(searchParams);
-        if (value) {
-            newParams.set(key, value);
-        } else {
-            newParams.delete(key);
-        }
+        if (value) newParams.set(key, value);
+        else newParams.delete(key);
         setSearchParams(newParams);
     };
 
     const handleSelectChange = (key, option) => {
-        // StyledSelect now returns the value if s.value is used in onChange
-        // We handle both object and primitive cases for robustness
         const val = (option && typeof option === 'object') ? option.value : option;
         handleFilterChange(key, val || '');
     };
 
     const handleStationSelect = (stationId) => {
         handleFilterChange('station_id', stationId);
-        // Modal closes in the render logic or handler wrapper
     };
 
     const clearFilters = () => {
@@ -368,592 +336,426 @@ const ListingsPage = () => {
         localStorage.removeItem('listing_filters');
         setSearchTerm('');
         setSearchParams({});
-        setIsFilterModalOpen(false); // Close modal on reset
+        setIsFilterModalOpen(false);
     };
-
-
-    // --- Components ---
-
-
-
-
-
-
-
-
-
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header / Mobile Breadcrumb or Title */}
-            <div className="py-6 lg:hidden">
-                <div className="max-w-7xl mx-auto px-4">
-                    <h1 className="text-2xl font-bold text-gray-900">Properties</h1>
-                    <p className="text-sm text-gray-500 mt-1">{total} properties found</p>
+            {/* Header Mobile */}
+            <div className="pt-4 pb-2 px-4 lg:hidden">
+                <div className="flex items-baseline justify-between">
+                    <h1 className="text-xl font-bold text-gray-900">Properties</h1>
+                    <span className="text-sm font-medium text-gray-500">{total} results</span>
                 </div>
             </div>
 
-            {/* Render Control Bar Outside Main Container for Full Width */}
-            <div className={`w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'
-                } ${!isScrolled ? 'mt-6' : 'mt-0'}`}>
-                <div className={`transition-all duration-300 mx-auto ${!navVisible
-                    ? 'w-full px-0'
-                    : 'max-w-[1600px] px-4 sm:px-6 lg:px-8'
-                    }`}>
+            {/* Desktop Filter Bar */}
+            <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'} ${!isScrolled ? 'mt-2 lg:mt-6' : 'mt-0'}`}>
+                <div className={`transition-all duration-300 mx-auto ${!navVisible ? 'w-full px-0' : 'max-w-[1600px] px-4 sm:px-6 lg:px-8'}`}>
+                    <div className={`flex items-center relative transition-all duration-500 ${!navVisible
+                        ? 'bg-primary-600 border-b border-white/10 shadow-lg py-3 px-4'
+                        : 'bg-transparent lg:bg-white/95 lg:backdrop-blur-sm lg:rounded-[3px] lg:shadow-sm h-16 px-0 lg:px-4'}`}>
 
-                    <div className={`flex items-center relative h-16 transition-all duration-500 ${!navVisible
-                        ? 'bg-primary-600 rounded-none border-b border-white/10 px-4 sm:px-6 lg:px-8 shadow-lg'
-                        : 'bg-white/95 backdrop-blur-sm rounded-[3px] shadow-sm px-4'
-                        }`}>
-
-                        {/* 3-Column Layout: Logo (Left), Search/Filters (Center), Stats (Right) */}
-                        <div className={`flex items-center min-w-0 transition-all duration-500 ${!navVisible ? 'flex-1' : 'w-0 flex-none'}`}>
-                            {initialLoading ? (
-                                <div className="flex items-center gap-2 animate-pulse">
-                                    <div className="h-8 w-8 bg-gray-200 rounded-[3px]" />
-                                    <div className="h-6 w-32 bg-gray-200 rounded-[3px] hidden sm:block" />
-                                </div>
-                            ) : (
-                                <a href="/" className={`flex items-center gap-2 transition-all duration-500 origin-left shrink-0 ${!navVisible
-                                    ? 'w-auto opacity-100 scale-100 mr-4'
-                                    : 'w-0 opacity-0 scale-90 overflow-hidden'
-                                    }`}>
-                                    <Logo className="h-8 w-8 text-white" />
-                                    <span className="text-xl font-bold text-white tracking-tight whitespace-nowrap">
-                                        Super Real Estate
-                                    </span>
-                                </a>
-                            )}
+                        {/* Logo Left */}
+                        <div className={`hidden lg:flex items-center transition-all ${!navVisible ? 'flex-1' : 'w-0 overflow-hidden'}`}>
+                            <a href="/" className="flex items-center gap-2 mr-4 shrink-0">
+                                <Logo className="h-8 w-8 text-white" />
+                                <span className="text-xl font-bold text-white tracking-tight whitespace-nowrap">Super Real Estate</span>
+                            </a>
                         </div>
 
-                        <div className={`flex-[2] flex min-w-0 transition-all duration-500 ${!navVisible ? 'justify-center' : 'justify-start'}`}>
-                            {initialLoading ? (
-                                <div className={`flex items-center gap-3 animate-pulse w-full transition-all ${!navVisible ? 'justify-center max-w-fit' : 'justify-start max-w-full'}`}>
-                                    <div className="w-48 sm:w-72 h-10 bg-gray-200 rounded-[3px]" />
-                                    <div className="w-px h-8 bg-gray-200 hidden sm:block" />
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-24 h-10 bg-gray-200 rounded-[3px]" />
-                                        <div className="w-24 h-10 bg-gray-200 rounded-[3px]" />
-                                        <div className="w-16 h-10 bg-gray-200 rounded-[3px] hidden md:block" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={`flex items-center gap-3 w-full transition-all duration-500 ${!navVisible ? 'max-w-fit justify-center' : 'max-w-full justify-start'}`}>
-                                    <div className={`w-64 sm:w-96 flex items-center h-10 px-4 rounded-[3px] transition-all ${!navVisible
-                                        ? 'bg-white/10 border border-white/20 focus-within:bg-white/20 focus-within:border-white/40'
-                                        : 'bg-white border border-gray-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent'
-                                        }`}>
-                                        <MagnifyingGlassIcon className={`w-5 h-5 mr-3 shrink-0 ${!navVisible ? 'text-white/60' : 'text-gray-400'}`} />
-                                        <input
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Search..."
-                                            className={`bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-sm p-0 ${!navVisible
-                                                ? 'text-white placeholder-white/50'
-                                                : 'text-gray-900 placeholder-gray-500'
-                                                }`}
-                                        />
-                                    </div>
-
-                                    <div className={`w-px h-8 hidden sm:block ${!navVisible ? 'bg-white/20' : 'bg-gray-300/50'}`} />
-
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setIsFilterModalOpen(true)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold transition-all border shrink-0 ${hasActiveFilters
-                                                ? 'bg-white text-primary-600 border-primary-600 shadow-md'
-                                                : !navVisible
-                                                    ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
-                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            <FunnelIcon className="w-4 h-4" />
-                                            <span className="hidden sm:inline">Filters</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => setIsTransitModalOpen(true)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold transition-all border shrink-0 ${filters.station_id
-                                                ? 'bg-white text-primary-600 border-primary-600 shadow-md'
-                                                : !navVisible
-                                                    ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
-                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            <MapPinIcon className="w-4 h-4" />
-                                            <span className="hidden sm:inline">Transit</span>
-                                        </button>
-
-                                        <a
-                                            href="/listings?view=map"
-                                            className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-semibold border transition-all shrink-0 ${!navVisible
-                                                ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            <GlobeAltIcon className="w-4 h-4" />
-                                            <span>Map</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex-1 flex justify-end min-w-0">
-                            {initialLoading ? (
-                                <div className="flex items-center gap-4 animate-pulse">
-                                    <div className="hidden sm:flex flex-col items-end gap-1">
-                                        <div className="h-4 w-16 bg-gray-200 rounded-[3px]" />
-                                        <div className="h-3 w-10 bg-gray-100 rounded-[3px]" />
-                                    </div>
-                                    <div className="w-px h-6 bg-gray-200 hidden sm:block" />
-                                    <div className="flex items-center gap-1">
-                                        <div className="w-8 h-8 bg-gray-200 rounded-lg" />
-                                        <div className="w-8 h-8 bg-gray-200 rounded-lg" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={`flex items-center gap-4 rounded-lg p-1.5 pl-4 transition-all ${!navVisible ? 'bg-white/10 backdrop-blur-md' : 'bg-gray-50/50 backdrop-blur-sm'}`}>
-                                    <div className="hidden sm:flex items-baseline gap-2 text-right pr-2 lg:pr-4">
-                                        <span className={`text-base font-bold ${!navVisible ? 'text-white' : 'text-gray-900'}`}>Properties</span>
-                                        <span className={`text-sm font-medium ${!navVisible ? 'text-white/60' : 'text-gray-500'}`}>
-                                            {listings.length} results
-                                        </span>
-                                    </div>
-
-                                    <div className={`w-px h-6 hidden sm:block ${!navVisible ? 'bg-white/20' : 'bg-gray-200'}`} />
-
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            onClick={() => setViewMode('grid')}
-                                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
-                                                ? (!navVisible ? 'bg-white text-primary-600 shadow-lg' : 'bg-primary-600 text-white shadow-md shadow-primary-200')
-                                                : (!navVisible ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
-                                                }`}
-                                        >
-                                            <Squares2X2Icon className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => setViewMode('list')}
-                                            className={`p-2 rounded-lg transition-all ${viewMode === 'list'
-                                                ? (!navVisible ? 'bg-white text-primary-600 shadow-lg' : 'bg-primary-600 text-white shadow-md shadow-primary-200')
-                                                : (!navVisible ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
-                                                }`}
-                                        >
-                                            <ListBulletIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-0">
-                {/* Main Layout - 12 Columns */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* LEFT SIDEBAR: ACTIVE FILTERS (Span 4) */}
-                    <div className="lg:col-span-4 hidden lg:block order-1">
-                        <div className={`sticky space-y-6 ${navVisible ? 'top-40' : 'top-24'}`}>
-                            {/* Banners in Sidebar */}
-                            <div className="w-full">
-                                <ShowcaseBanners agentId={agentId} loading={initialLoading} />
-                            </div>
-
-                            {/* Active Filters Sidebar - Stable Container Wrapper */}
-                            <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 overflow-hidden">
-                                {initialLoading ? (
-                                    <div className="p-4 animate-pulse">
-                                        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                                            <div className="h-5 w-32 bg-gray-200 rounded" />
-                                            <div className="h-4 w-12 bg-gray-100 rounded" />
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="flex gap-3">
-                                                <div className="w-4 h-4 bg-gray-100 rounded" />
-                                                <div className="space-y-2 flex-1">
-                                                    <div className="h-3 w-12 bg-gray-50 rounded" />
-                                                    <div className="h-4 w-24 bg-gray-200 rounded" />
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-3">
-                                                <div className="w-4 h-4 bg-gray-100 rounded" />
-                                                <div className="space-y-2 flex-1">
-                                                    <div className="h-3 w-16 bg-gray-50 rounded" />
-                                                    <div className="h-4 w-32 bg-gray-200 rounded" />
-                                                </div>
-                                            </div>
-                                            <div className="mt-6 h-12 w-full bg-green-50/50 rounded-[3px] border border-green-50" />
-                                        </div>
-                                    </div>
-                                ) : !hasActiveFilters ? (
-                                    <div className="p-6">
-                                        <div className="text-center">
-                                            <div className="bg-primary-50 w-12 h-12 rounded-[3px] flex items-center justify-center mx-auto mb-4">
-                                                <SparklesIcon className="w-6 h-6 text-primary-600" />
-                                            </div>
-                                            <h3 className="text-gray-900 font-bold mb-2">Discover Your Home</h3>
-                                            <p className="text-sm text-gray-500 mb-6">
-                                                Use the filters above or select a station to find properties that match your lifestyle.
-                                            </p>
-                                            <div className="flex flex-wrap gap-2 justify-center">
-                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Apartments</span>
-                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Near BTS</span>
-                                                <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-[3px]">Luxury</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="p-4 animate-fade-in">
-                                        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                                            <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                                <FunnelIcon className="w-4 h-4 text-primary-600" />
-                                                Active Filters
-                                            </h3>
-                                            <button onClick={clearFilters} className="text-sm text-red-500 hover:text-red-700 font-medium">
-                                                Clear All
-                                            </button>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {filters.search && (
-                                                <div className="flex items-start gap-3 text-sm text-gray-700">
-                                                    <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 mt-0.5" />
-                                                    <div>
-                                                        <span className="text-xs text-gray-500 block">Search</span>
-                                                        <span className="font-medium">"{filters.search}"</span>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {filters.station_id && (
-                                                <div className="flex items-start gap-3 text-sm text-gray-700">
-                                                    <MapPinIcon className="w-4 h-4 text-primary-500 mt-0.5" />
-                                                    <div>
-                                                        <span className="text-sm text-gray-500 block">Station</span>
-                                                        <span className="font-medium text-primary-700">
-                                                            {stations.find(s => s.id === filters.station_id)?.name_en || filters.station_id}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {filters.type && (
-                                                <div className="flex items-start gap-3 text-sm text-gray-700">
-                                                    <BuildingOfficeIcon className="w-4 h-4 text-gray-400 mt-0.5" />
-                                                    <div>
-                                                        <span className="text-xs text-gray-500 block">Property Type</span>
-                                                        <span className="font-medium capitalize">{filters.type}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {filters.listing_type && (
-                                                <div className="flex items-start gap-3 text-sm text-gray-700">
-                                                    <TagIcon className="w-4 h-4 text-gray-400 mt-0.5" />
-                                                    <div>
-                                                        <span className="text-sm text-gray-500 block">Listing Type</span>
-                                                        <span className="font-medium capitalize">{filters.listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {(filters.min_price || filters.max_price) && (
-                                                <div className="flex items-start gap-3 text-sm text-gray-700">
-                                                    <span className="w-4 text-center font-bold text-gray-400">฿</span>
-                                                    <div>
-                                                        <span className="text-xs text-gray-500 block">Price Range</span>
-                                                        <span className="font-medium">
-                                                            {filters.min_price ? formatPrice(filters.min_price) : '0'}
-                                                            {' - '}
-                                                            {filters.max_price ? formatPrice(filters.max_price) : 'Any'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="mt-6 p-3 bg-green-50 rounded-[3px] flex items-center gap-3 border border-green-100">
-                                            <div className="flex items-center justify-center">
-                                                {loading ? (
-                                                    <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                                                ) : (
-                                                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                                                )}
-                                            </div>
-                                            <span className="text-sm text-green-800 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
-                                                {total} Properties Found
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* RIGHT COLUMN: LISTINGS (Span 8) */}
-                    <div className="lg:col-span-8 flex flex-col min-w-0 order-2">
-
-                        {/* Listings Content */}
-                        <div className="w-full">
-                            {initialLoading ? (
-                                <div className={`grid gap-6 ${viewMode === 'grid'
-                                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                                    : 'grid-cols-1'
-                                    }`}>
-                                    {[...Array(6)].map((_, i) => (
-                                        <ListingSkeleton key={i} viewMode={viewMode} />
-                                    ))}
-                                </div>
-                            ) : listings.length > 0 ? (
-                                <>
-                                    <div className={`grid gap-6 ${viewMode === 'grid'
-                                        ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                                        : 'grid-cols-1'
-                                        }`}>
-                                        {listings.map((listing) => (
-                                            <ListingCard key={listing.id} listing={listing} viewMode={viewMode} priceFormat={priceFormat} />
-                                        ))}
-
-                                        {/* Scroll Loading */}
-                                        {listings.length < total && loading && (
-                                            [...Array(3)].map((_, i) => (
-                                                <ListingSkeleton key={`skel-${i}`} viewMode={viewMode} />
-                                            ))
-                                        )}
-                                    </div>
-
-                                    <div ref={observerTarget} className="h-20 mt-8 flex items-center justify-center">
-                                        {loading && listings.length < total && (
-                                            <div className="flex gap-2">
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-center flex flex-col items-center justify-center min-h-[600px] bg-white rounded-3xl border border-gray-100 shadow-sm animate-fade-in p-12">
-                                    <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mb-6">
-                                        <SparklesIcon className="w-12 h-12 text-blue-600" />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Discover Your Home</h3>
-                                    <p className="text-gray-500 mb-8 max-w-md text-lg leading-relaxed">
-                                        Use the filters above or select a station to find properties that match your lifestyle.
-                                    </p>
-
-                                    <div className="flex flex-wrap justify-center gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setInitialLoading(true);
-                                                setFilters(prev => ({ ...prev, type: 'condo' }));
-                                            }}
-                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
-                                        >
-                                            Condos
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setInitialLoading(true);
-                                                setFilters(prev => ({ ...prev, search: 'BTS' }));
-                                            }}
-                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
-                                        >
-                                            Near BTS
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setInitialLoading(true);
-                                                setFilters(prev => ({ ...prev, min_price: '5000000', search: 'Luxury' }));
-                                            }}
-                                            className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
-                                        >
-                                            Luxury
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Render Modals Inlined */}
-                {isFilterModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" />
-                        <div className="bg-white rounded-[3px] shadow-2xl w-full max-w-lg overflow-hidden relative z-10 animate-scale-up">
-                            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-gray-900">Filter Properties</h3>
-                                <button onClick={() => setIsFilterModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-[3px] transition-colors">
-                                    <XMarkIcon className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
-
-                            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-900 mb-2">Property Type</label>
-                                        <StyledSelect
-                                            options={propertyTypeOptions}
-                                            value={getSelectedOption(propertyTypeOptions, filters.type)}
-                                            onChange={(opt) => handleSelectChange('type', opt)}
-                                            placeholder="Any Type"
-                                            isClearable={false}
-                                            isSearchable={false}
-                                            menuPortalTarget={document.body}
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-900 mb-2">Listing Type</label>
-                                        <StyledSelect
-                                            options={listingTypeOptions}
-                                            value={getSelectedOption(listingTypeOptions, filters.listing_type)}
-                                            onChange={(opt) => handleSelectChange('listing_type', opt)}
-                                            placeholder="Sale & Rent"
-                                            isClearable={false}
-                                            isSearchable={false}
-                                            menuPortalTarget={document.body}
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-900 mb-2">Bedrooms</label>
-                                        <StyledSelect
-                                            options={bedroomOptions}
-                                            value={getSelectedOption(bedroomOptions, filters.bedrooms)}
-                                            onChange={(opt) => handleSelectChange('bedrooms', opt)}
-                                            placeholder="Any"
-                                            isClearable={false}
-                                            isSearchable={false}
-                                            menuPortalTarget={document.body}
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-900 mb-2">Price Range</label>
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="number"
-                                                placeholder={priceLimits.min > 0 ? `Min (${priceLimits.min})` : "Min Price"}
-                                                min={0}
-                                                value={filters.min_price}
-                                                onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                                                className="w-full bg-gray-50 border border-gray-200 rounded-[3px] px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                                            />
-                                            <span className="text-gray-400 font-medium">-</span>
-                                            <input
-                                                type="number"
-                                                placeholder={priceLimits.max > 0 ? `Max (${priceLimits.max})` : "Max Price"}
-                                                min={0}
-                                                value={filters.max_price}
-                                                onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                                                className="w-full bg-gray-50 border border-gray-200 rounded-[3px] px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
-                                <button onClick={clearFilters} className="text-gray-500 font-medium hover:text-gray-900 px-4 text-sm">
-                                    Reset filters
-                                </button>
-                                <button onClick={() => setIsFilterModalOpen(false)} className="btn-primary flex-1 py-3 text-sm">
-                                    Show {total} Properties
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {isTransitModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity backdrop-saturate-150" />
-                        <div className="bg-white/95 backdrop-blur-xl rounded-[3px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] w-full max-w-5xl h-[85vh] overflow-hidden relative z-10 flex flex-col animate-scale-up border border-white/20">
-                            <div className="p-4 px-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md z-20 gap-4">
-                                <div className="shrink-0">
-                                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 tracking-tight">
-                                        <div className="p-1.5 bg-primary-100 rounded-[3px]">
-                                            <MapPinIcon className="w-5 h-5 text-primary-600" />
-                                        </div>
-                                        Select Transit Station
-                                    </h3>
-                                    <p className="text-sm font-medium text-gray-400 mt-0.5 ml-9">Click a station to filter properties nearby</p>
-                                </div>
-
-                                {/* Station Search Input */}
-                                <div className="flex-1 max-w-md relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-                                    </div>
+                        {/* Search Center */}
+                        <div className={`hidden lg:flex flex-[2] transition-all ${!navVisible ? 'justify-center' : 'justify-start'}`}>
+                            <div className="flex items-center gap-3 w-full max-w-4xl">
+                                <div className={`flex-1 flex items-center h-10 px-4 rounded-[3px] transition-all ${!navVisible
+                                    ? 'bg-white/10 border border-white/20'
+                                    : 'bg-white border border-gray-200'}`}>
+                                    <MagnifyingGlassIcon className={`w-5 h-5 mr-3 shrink-0 ${!navVisible ? 'text-white/60' : 'text-gray-400'}`} />
                                     <input
                                         type="text"
-                                        value={stationSearch}
-                                        onChange={(e) => setStationSearch(e.target.value)}
-                                        placeholder="Search station name or code (e.g. Asok, E4)..."
-                                        className="block w-full pl-10 pr-3 py-2 bg-white/50 border border-gray-200 rounded-[3px] text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Search..."
+                                        className={`bg-transparent border-none outline-none w-full text-sm ${!navVisible ? 'text-white placeholder-white/50' : 'text-gray-900 placeholder-gray-500'}`}
                                     />
-                                    {stationSearch && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-[3px] shadow-lg border border-gray-100 max-h-60 overflow-y-auto z-50 animate-fade-in custom-scrollbar">
-                                            {stations
-                                                .filter(s =>
-                                                    s.name_en?.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                                                    s.id?.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                                                    s.code?.toLowerCase().includes(stationSearch.toLowerCase())
-                                                )
-                                                .map(station => (
-                                                    <button
-                                                        key={station.id}
-                                                        onClick={() => {
-                                                            handleStationSelect(station.id);
-                                                            setIsTransitModalOpen(false);
-                                                            setStationSearch('');
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between group/item transition-colors"
-                                                    >
-                                                        <div>
-                                                            <div className="font-medium text-gray-900">{station.name_en}</div>
-                                                            <div className="text-xs text-gray-500">{station.id}</div>
-                                                        </div>
-                                                        <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-xs font-bold transition-opacity">Select</span>
-                                                    </button>
-                                                ))
-                                            }
-                                            {stations.filter(s =>
-                                                s.name_en?.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                                                s.id?.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                                                s.code?.toLowerCase().includes(stationSearch.toLowerCase())
-                                            ).length === 0 && (
-                                                    <div className="p-4 text-center text-sm text-gray-500">
-                                                        No stations found
-                                                    </div>
-                                                )}
+                                </div>
+                                <div className={`w-px h-8 ${!navVisible ? 'bg-white/20' : 'bg-gray-300/50'}`} />
+                                <div className="flex gap-2">
+                                    <button onClick={() => setIsFilterModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold border ${hasActiveFilters ? 'bg-white text-primary-600 border-primary-600 shadow-md' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
+                                        <FunnelIcon className="w-4 h-4" />
+                                        <span>Filters</span>
+                                    </button>
+                                    <button onClick={() => setIsTransitModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold border ${filters.station_id ? 'bg-white text-primary-600 border-primary-600 shadow-md' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
+                                        <MapPinIcon className="w-4 h-4" />
+                                        <span>Transit</span>
+                                    </button>
+                                    <button onClick={() => setIsGoogleMapOpen(!isGoogleMapOpen)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-black border transition-all duration-300 ${isGoogleMapOpen ? 'bg-primary-600 text-white border-primary-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
+                                        <GlobeAltIcon className="w-4 h-4" />
+                                        <span>Show Map</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Layout Select Right */}
+                        <div className="hidden lg:flex flex-1 justify-end">
+                            <div className={`flex items-center gap-1 rounded-lg p-1 ${!navVisible ? 'bg-white/10' : 'bg-gray-50'}`}>
+                                <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-400'}`}>
+                                    <Squares2X2Icon className="w-5 h-5" />
+                                </button>
+                                <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-400'}`}>
+                                    <ListBulletIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Sidebar */}
+                    {!isGoogleMapOpen && (
+                        <div className="lg:col-span-4 hidden lg:block transition-all duration-500">
+                            <div className={`sticky space-y-6 ${navVisible ? 'top-40' : 'top-24'}`}>
+                                <ShowcaseBanners agentId={agentId} loading={initialLoading} />
+
+                                <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
+                                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                            <FunnelIcon className="w-4 h-4" />
+                                            Active Filters
+                                        </h3>
+                                        <button onClick={clearFilters} className="text-sm text-red-500 font-medium">Clear All</button>
+                                    </div>
+                                    {!hasActiveFilters ? (
+                                        <div className="text-center py-6">
+                                            <div className="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <SparklesIcon className="w-6 h-6 text-primary-600" />
+                                            </div>
+                                            <p className="text-sm text-gray-500">Find your perfect home with filters</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {/* Simplified active filters display */}
+                                            <div className="bg-green-50 p-3 rounded-[3px] text-green-800 text-sm font-bold border border-green-100 flex items-center gap-2">
+                                                <CheckCircleIcon className="w-5 h-5" />
+                                                {total} Results Matches
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-
-                                <button onClick={() => setIsTransitModalOpen(false)} className="p-2 hover:bg-gray-100/50 rounded-[3px] transition-all hover:scale-110 active:scale-95 group shrink-0">
-                                    <XMarkIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                                </button>
                             </div>
-                            <div className="flex-1 overflow-hidden relative bg-white">
-                                <TransitMapFilter
-                                    onStationClick={(id) => {
-                                        handleStationSelect(id);
-                                        setIsTransitModalOpen(false);
-                                    }}
-                                    selectedStation={filters.station_id}
-                                />
+                        </div>
+                    )}
+
+                    {/* Listings Grid */}
+                    {/* Listings Grid + Map Split View */}
+                    <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-8'} transition-all duration-500`}>
+                        <div className={`flex flex-col lg:flex-row gap-8 min-h-[70vh]`}>
+                            {/* Left Side: Property List */}
+                            <div className={`transition-all duration-500 ${isGoogleMapOpen ? 'lg:w-1/2 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-4' : 'lg:w-full'}`}>
+                                {initialLoading ? (
+                                    <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 lg:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                        {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={isGoogleMapOpen ? 'grid' : viewMode} />)}
+                                    </div>
+                                ) : listings.length > 0 ? (
+                                    <>
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 lg:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={isGoogleMapOpen ? 'grid' : viewMode} priceFormat={priceFormat} />)}
+                                        </div>
+                                        <div ref={observerTarget} className="h-20 flex items-center justify-center">
+                                            {loading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-20 bg-white rounded-[3px] border border-gray-100">
+                                        <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                        <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
+                                        <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                    </div>
+                                )}
+
+                            </div>
+
+                            {/* Right Side: Google Map (Desktop Split) */}
+                            {isGoogleMapOpen && (
+                                <div className="hidden lg:block lg:w-1/2 sticky top-32 h-[calc(100vh-160px)] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white animate-fade-in group pointer-events-auto">
+                                    <GoogleMap
+                                        listings={listings}
+                                        onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
+                                        onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
+                                    />
+
+                                    {/* Stats Theme Card Overlays */}
+                                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
+                                        <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white flex items-center gap-3 animate-slide-up pointer-events-auto">
+                                            <div className="bg-primary-50 w-10 h-10 rounded-xl flex items-center justify-center">
+                                                <GlobeAltIcon className="w-6 h-6 text-primary-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Map Explorer</p>
+                                                <p className="text-sm font-black text-gray-900 leading-none">{total} Properties Found</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute top-4 right-4 z-10 pointer-events-auto">
+                                        <button
+                                            onClick={() => setIsGoogleMapOpen(false)}
+                                            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white flex items-center justify-center text-gray-400 hover:text-red-500 transition-all hover:scale-110 active:scale-95"
+                                        >
+                                            <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    {/* Legend Card */}
+                                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+                                        <div className="bg-white/95 backdrop-blur-md px-6 py-3 rounded-2xl shadow-2xl border border-white flex items-center gap-6 animate-slide-up">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
+                                                <span className="text-xs font-black uppercase tracking-widest text-gray-600">Rent</span>
+                                            </div>
+                                            <div className="w-px h-4 bg-gray-200" />
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.4)]" />
+                                                <span className="text-xs font-black uppercase tracking-widest text-gray-600">Sale</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals */}
+            {
+                isFilterModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center md:p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsFilterModalOpen(false)} />
+                        <div className="bg-white w-full h-[100dvh] md:h-auto md:max-h-[85vh] md:max-w-lg md:rounded-[3px] shadow-2xl overflow-hidden relative z-10 flex flex-col animate-scale-up">
+                            <div className="p-4 border-b flex justify-between items-center">
+                                <h3 className="font-bold text-lg">Filter Properties</h3>
+                                <button onClick={() => setIsFilterModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-32 md:pb-6">
+                                {/* Search */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold">Search</label>
+                                    <div className="relative">
+                                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
+                                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Type location, name..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border rounded-[3px]" />
+                                    </div>
+                                </div>
+                                {/* Selects */}
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold">Property Type</label>
+                                        <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold">Listing Type</label>
+                                        <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold">Bedrooms</label>
+                                        <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold">Price Range</label>
+                                        <div className="flex gap-2">
+                                            <input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
+                                            <input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Buttons */}
+                                <div className="space-y-4 border-t pt-6">
+                                    <button onClick={() => { setIsFilterModalOpen(false); setIsTransitModalOpen(true); }} className="w-full flex justify-between items-center p-4 bg-gray-50 border rounded-[3px] font-bold">
+                                        <span className="flex items-center gap-2"><MapPinIcon className="w-5 h-5" /> Open Transit Map</span>
+                                        <GlobeAltIcon className="w-5 h-5 text-gray-400" />
+                                    </button>
+                                    <div className="p-1 bg-gray-50 rounded-[3px] flex gap-1">
+                                        <button onClick={() => setViewMode('grid')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
+                                            <Squares2X2Icon className="w-5 h-5" /> Grid
+                                        </button>
+                                        <button onClick={() => setViewMode('list')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
+                                            <ListBulletIcon className="w-5 h-5" /> List
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-4 border-t bg-gray-50 flex gap-3 safe-area-bottom">
+                                <button onClick={clearFilters} className="px-6 py-3 bg-gray-200/50 rounded-[3px] font-bold text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-sm">Reset</button>
+                                <button onClick={() => setIsFilterModalOpen(false)} className="flex-1 bg-primary-600 text-white py-3 rounded-[3px] font-bold shadow-md hover:bg-primary-700 active:scale-95 transition-all">Show {total} Results</button>
                             </div>
                         </div>
                     </div>
-                )}
+                )
+            }
+
+            {
+                isTransitModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center md:p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsTransitModalOpen(false)} />
+                        <div className="bg-white w-full h-[100dvh] md:h-[85vh] md:max-w-5xl md:rounded-[3px] shadow-2xl relative z-10 flex flex-col overflow-hidden">
+                            <div className="p-4 border-b flex justify-between items-center bg-white/50 backdrop-blur-md">
+                                <h3 className="font-bold flex items-center gap-2"><MapPinIcon className="w-5 h-5 text-primary-600" /> Select Station</h3>
+                                <div className="flex-1 max-w-sm mx-4">
+                                    <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Search station..." className="w-full px-4 py-2 bg-gray-100 rounded-[3px] text-sm" />
+                                </div>
+                                <button onClick={() => setIsTransitModalOpen(false)} className="p-2"><XMarkIcon className="w-6 h-6" /></button>
+                            </div>
+                            <div className="flex-1 bg-white relative">
+                                <TransitMapFilter onStationClick={id => { handleStationSelect(id); setIsTransitModalOpen(false); }} selectedStation={filters.station_id} searchable={false} />
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Scroll to top */}
+            <button
+                onClick={scrollToTop}
+                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isFilterModalOpen && !isTransitModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+            >
+                <ArrowUpIcon className="w-6 h-6" />
+            </button>
+
+            {/* Mobile Bottom Bar - Premium Curved Design */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] safe-area-bottom pointer-events-none">
+                <div className="relative h-16 w-full pointer-events-auto">
+                    {/* The Curved Background SVG */}
+                    <svg
+                        viewBox="0 0 400 64"
+                        className="absolute inset-0 w-full h-full drop-shadow-[0_-8px_20px_rgba(0,0,0,0.06)]"
+                        preserveAspectRatio="none"
+                    >
+                        <path
+                            d="M0 0H140C160 0 170 38 200 38C230 38 240 0 260 0H400V64H0V0Z"
+                            fill="#2563eb"
+                        />
+                    </svg>
+
+                    {/* Navigation Items */}
+                    <div className="relative h-full flex items-center justify-between px-6 sm:px-10">
+                        {/* Google Map Button */}
+                        <button
+                            onClick={() => setIsGoogleMapOpen(true)}
+                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
+                        >
+                            <div className="w-8 h-8 flex items-center justify-center">
+                                <GlobeAltIcon className="w-6 h-6 stroke-[2.5]" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-tight">Map View</span>
+                        </button>
+
+                        {/* Transit Map Button */}
+                        <button
+                            onClick={() => setIsTransitModalOpen(true)}
+                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
+                        >
+                            <div className="w-8 h-8 flex items-center justify-center">
+                                <MapPinIcon className="w-6 h-6 stroke-[2.5]" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-tight">Stations</span>
+                        </button>
+
+                        {/* Bulging Filter Button - Submerged into the curve */}
+                        <div className="absolute left-1/2 -translate-x-1/2 -top-10 w-20 h-20 flex items-center justify-center">
+                            {/* Glow Effect */}
+                            <div className="absolute inset-0 bg-white/20 blur-2xl rounded-full animate-pulse" />
+                            <button
+                                onClick={() => setIsFilterModalOpen(true)}
+                                className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_8px_25px_-5px_rgba(0,0,0,0.2)] active:scale-95 transition-all z-10 border-4 border-primary-600"
+                            >
+                                <div className="relative">
+                                    <FunnelIcon className="w-7 h-7 text-primary-600 stroke-[2.5]" />
+                                    {hasActiveFilters && (
+                                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-white shadow-sm" />
+                                    )}
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* View Mode Button */}
+                        <button
+                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
+                        >
+                            <div className="w-8 h-8 flex items-center justify-center">
+                                {viewMode === 'grid' ? <ListBulletIcon className="w-6 h-6 stroke-[2.5]" /> : <Squares2X2Icon className="w-6 h-6 stroke-[2.5]" />}
+                            </div>
+                            <span className="text-[11px] font-black uppercase tracking-tight">{viewMode === 'grid' ? 'List' : 'Grid'}</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            {/* Google Maps Modal (Mobile Only) */}
+            {
+                isGoogleMapOpen && (
+                    <div className="fixed inset-0 z-[120] bg-white flex flex-col items-center lg:!hidden pointer-events-auto lg:pointer-events-none lg:opacity-0">
+                        <div className="w-full bg-white border-b px-4 py-4 flex items-center justify-between shadow-sm z-10 transition-all duration-300">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-primary-50 w-12 h-12 rounded-[20px] shadow-sm flex items-center justify-center">
+                                    <GlobeAltIcon className="w-6 h-6 text-primary-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black uppercase tracking-widest text-gray-900 leading-none">Map Explorer</h2>
+                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-tighter">Found {total} locations</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsGoogleMapOpen(false)}
+                                className="p-3 bg-gray-50 rounded-[20px] hover:bg-gray-100 text-gray-400 transition-all active:scale-90"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 w-full relative">
+                            <GoogleMap
+                                listings={listings}
+                                onMarkerClick={(property) => {
+                                    window.open(`/listings/${property.id}`, '_blank');
+                                }}
+                                onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
+                            />
+
+                            {/* Mobile Legend Overlay - Theme Card Style */}
+                            <div className="absolute top-4 left-4 right-4 z-10">
+                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Rent</span>
+                                    </div>
+                                    <div className="w-px h-4 bg-gray-200" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3.5 h-3.5 rounded-full bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.4)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Sale</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Action Footer */}
+                        <div className="w-full p-4 bg-white border-t flex flex-col gap-4 safe-area-bottom">
+                            <button
+                                onClick={() => setIsGoogleMapOpen(false)}
+                                className="w-full bg-primary-600 text-white py-4.5 rounded-[20px] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-200 active:scale-95 transition-all text-center flex items-center justify-center h-14"
+                            >
+                                Back to List
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
