@@ -164,7 +164,7 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = (isFilterModalOpen || isTransitModalOpen || isGoogleMapOpen) ? 'hidden' : 'unset';
+        document.body.style.overflow = (isFilterModalOpen || isTransitModalOpen) ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
     }, [isFilterModalOpen, isTransitModalOpen, isGoogleMapOpen]);
 
