@@ -83,6 +83,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
         house: 'bg-green-100 text-green-800',
         land: 'bg-yellow-100 text-yellow-800',
         townhouse: 'bg-purple-100 text-purple-800',
+        townhome: 'bg-purple-100 text-purple-800',
         apartment: 'bg-pink-100 text-pink-800',
     };
 
@@ -163,7 +164,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 <div className="p-3 md:p-6 flex flex-col justify-center md:justify-between flex-1 min-w-0 relative">
                     <div>
                         <div className="flex items-start justify-between mb-1 md:mb-2">
-                            <span className="hidden md:inline-block bg-gray-100 text-gray-600 px-2.5 py-1 rounded-[3px] text-[11px] font-bold uppercase tracking-wider">
+                            <span className={`hidden md:inline-block px-2.5 py-1 rounded-[3px] text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
                                 {property_type || 'Property'}
                             </span>
                             <div className="flex items-baseline gap-1 text-primary-600">
@@ -184,7 +185,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                 <div className="flex items-center text-gray-500">
                                     <MapPinIcon className="w-3.5 h-3.5 md:w-5 md:h-5 mr-1 md:mr-2 flex-shrink-0 text-primary-600" />
                                     <span className="text-xs md:text-base font-medium truncate">
-                                        {road ? `${road}, ` : ''}{district || 'Bangkok'}
+                                        {road || district || 'Bangkok'}
                                     </span>
                                 </div>
 
@@ -226,7 +227,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                         <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                         </svg>
-                                        <span className="text-sm font-medium">{area} sqm</span>
+                                        <span className="text-sm font-medium">{area}m²</span>
                                     </div>
                                 )}
                             </div>
@@ -295,7 +296,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
             <div className="p-4">
                 {/* Property type & ID */}
                 <div className="flex items-center justify-between mb-1.5">
-                    <span className={`px-1.5 py-0.5 rounded-[3px] text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase()] || 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`px-1.5 py-0.5 rounded-[3px] text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
                         {property_type || 'Property'}
                     </span>
                     <span className="text-[12px] text-gray-400 font-medium tabular-nums">#{id.slice(0, 5)}</span>

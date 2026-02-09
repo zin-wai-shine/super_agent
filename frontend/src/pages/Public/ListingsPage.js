@@ -463,12 +463,12 @@ const ListingsPage = () => {
                             <div className={`transition-all duration-500 ${isGoogleMapOpen ? 'lg:w-1/2 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-4' : 'lg:w-full'}`}>
                                 {initialLoading ? (
                                     <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 lg:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                        {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={isGoogleMapOpen ? 'grid' : viewMode} />)}
+                                        {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
                                     </div>
                                 ) : listings.length > 0 ? (
                                     <>
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 lg:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={isGoogleMapOpen ? 'grid' : viewMode} priceFormat={priceFormat} />)}
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? (viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2') : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
                                         </div>
                                         <div ref={observerTarget} className="h-20 flex items-center justify-center">
                                             {loading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />}
