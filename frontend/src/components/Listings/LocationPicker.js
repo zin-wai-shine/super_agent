@@ -11,11 +11,11 @@ const defaultCenter = {
     lng: 100.5018
 };
 
-const DraggableMarker = ({ map, position, onDragEnd }) => {
+const DraggableMarker = React.memo(({ map, position, onDragEnd }) => {
     const markerRef = React.useRef(null);
 
     React.useEffect(() => {
-        if (!map || !position) return;
+        if (!map || !position || markerRef.current) return;
 
         const marker = new window.google.maps.marker.AdvancedMarkerElement({
             map,
@@ -38,6 +38,7 @@ const DraggableMarker = ({ map, position, onDragEnd }) => {
         return () => {
             if (markerRef.current) {
                 markerRef.current.map = null;
+                markerRef.current = null;
             }
             if (listener) listener.remove();
         };
@@ -47,19 +48,22 @@ const DraggableMarker = ({ map, position, onDragEnd }) => {
     // However, if the address search updates the position, we need to sync it.
     React.useEffect(() => {
         if (markerRef.current && position) {
-            markerRef.current.position = position;
+            const currentPos = markerRef.current.position;
+            if (currentPos.lat !== position.lat || currentPos.lng !== position.lng) {
+                markerRef.current.position = position;
+            }
         }
     }, [position]);
 
     return null;
-};
+});
 
 const LocationPicker = ({ value, onChange, address }) => {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
         libraries: ['places', 'marker'],
-        version: 'beta'
+        version: 'weekly'
     });
 
     const [map, setMap] = useState(null);

@@ -65,34 +65,19 @@ const options = {
     ]
 };
 
-const PropertyMarker = ({ map, property, onClick }) => {
+const PropertyMarker = React.memo(({ map, property, onClick }) => {
     const markerRef = React.useRef(null);
+    const contentRef = React.useRef(null);
+    const lastContentRef = React.useRef('');
 
+    // Initial Marker Creation
     React.useEffect(() => {
-        if (!map || !property.latitude || !property.longitude) return;
+        if (!map || !property.latitude || !property.longitude || markerRef.current) return;
 
-        // Create the marker content element
         const content = document.createElement('div');
         content.className = 'group cursor-pointer transition-transform hover:scale-110 active:scale-95';
+        contentRef.current = content;
 
-        const priceFormatted = new Intl.NumberFormat('th-TH', {
-            style: 'currency',
-            currency: 'THB',
-            maximumFractionDigits: 0,
-        }).format(property.price);
-
-        const innerHTML = `
-            <div class="px-4 py-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white text-white font-black text-xs whitespace-nowrap flex items-center gap-2 transform transition-all duration-300 group-hover:shadow-2xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}">
-                <span class="tracking-tight">${priceFormatted}</span>
-                <div class="w-px h-3 bg-white/30"></div>
-                <span class="uppercase text-[9px] tracking-widest font-black opacity-80">${property.listing_type}</span>
-            </div>
-            <div class="w-4 h-4 rotate-45 mx-auto -mt-2 border-r-2 border-b-2 border-white shadow-xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}"></div>
-        `;
-
-        content.innerHTML = innerHTML;
-
-        // Create the AdvancedMarkerElement
         const marker = new window.google.maps.marker.AdvancedMarkerElement({
             map,
             position: {
@@ -103,8 +88,7 @@ const PropertyMarker = ({ map, property, onClick }) => {
             title: property.title || 'Property',
         });
 
-        // Add click listener
-        marker.addListener('click', () => {
+        const listener = marker.addListener('click', () => {
             onClick(property);
         });
 
@@ -113,19 +97,69 @@ const PropertyMarker = ({ map, property, onClick }) => {
         return () => {
             if (markerRef.current) {
                 markerRef.current.map = null;
+                markerRef.current = null;
+            }
+            if (listener) {
+                listener.remove();
             }
         };
-    }, [map, property, onClick]);
+    }, [map]); // Only run once when map is ready
+
+    // Sync Data (Price/Position)
+    React.useEffect(() => {
+        if (!markerRef.current || !contentRef.current) return;
+
+        const priceFormatted = new Intl.NumberFormat('th-TH', {
+            style: 'currency',
+            currency: 'THB',
+            maximumFractionDigits: 0,
+        }).format(property.price);
+
+        const newInnerHTML = `
+            <div class="px-4 py-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white text-white font-black text-xs whitespace-nowrap flex items-center gap-2 transform transition-all duration-300 group-hover:shadow-2xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}">
+                <span class="tracking-tight">${priceFormatted}</span>
+                <div class="w-px h-3 bg-white/30"></div>
+                <span class="uppercase text-[9px] tracking-widest font-black opacity-80">${property.listing_type}</span>
+            </div>
+            <div class="w-4 h-4 rotate-45 mx-auto -mt-2 border-r-2 border-b-2 border-white shadow-xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}"></div>
+        `;
+
+        // Only update DOM if content actually changed
+        if (lastContentRef.current !== newInnerHTML) {
+            contentRef.current.innerHTML = newInnerHTML;
+            lastContentRef.current = newInnerHTML;
+        }
+
+        // Update position if it changed
+        const newPos = {
+            lat: parseFloat(property.latitude),
+            lng: parseFloat(property.longitude),
+        };
+
+        if (markerRef.current.position.lat !== newPos.lat || markerRef.current.position.lng !== newPos.lng) {
+            markerRef.current.position = newPos;
+        }
+    }, [property.price, property.listing_type, property.latitude, property.longitude]);
 
     return null;
-};
+}, (prevProps, nextProps) => {
+    // Custom comparison to avoid re-renders if core data hasn't changed
+    return (
+        prevProps.map === nextProps.map &&
+        prevProps.property.id === nextProps.property.id &&
+        prevProps.property.price === nextProps.property.price &&
+        prevProps.property.latitude === nextProps.property.latitude &&
+        prevProps.property.longitude === nextProps.property.longitude &&
+        prevProps.property.listing_type === nextProps.property.listing_type
+    );
+});
 
 const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, mapStyle = mapContainerStyle }) => {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
         libraries: ['places', 'marker'],
-        version: 'beta'
+        version: 'weekly'
     });
 
     const [map, setMap] = useState(null);

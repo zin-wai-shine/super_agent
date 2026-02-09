@@ -88,7 +88,8 @@ const BannerManagement = () => {
             title: '',
             description: '',
             target_role: 'public',
-            days_active: 30
+            days_active: 30,
+            is_active: true
         }
     });
 
@@ -248,7 +249,7 @@ const BannerManagement = () => {
                 title: finalTitle,
                 image_url: imageUrl,
                 days_active: parseInt(data.days_active, 10),
-                is_active: true
+                is_active: data.is_active
             };
 
             if (viewMode === 'edit' && selectedBanner) {
@@ -289,6 +290,7 @@ const BannerManagement = () => {
         setValue('description', banner.description || '');
         setValue('target_role', banner.target_role);
         setValue('days_active', banner.days_active || 30);
+        setValue('is_active', banner.is_active);
 
         const fullImageUrl = getMediaUrl(banner.image_url);
         setPreviewUrl(fullImageUrl);
@@ -303,6 +305,7 @@ const BannerManagement = () => {
         setValue('description', banner.description || '');
         setValue('target_role', banner.target_role);
         setValue('days_active', banner.days_active || 30);
+        setValue('is_active', banner.is_active);
 
         const fullImageUrl = getMediaUrl(banner.image_url);
         setPreviewUrl(fullImageUrl);
@@ -317,7 +320,8 @@ const BannerManagement = () => {
             title: '',
             description: '',
             target_role: 'public',
-            days_active: 30
+            days_active: 30,
+            is_active: true
         });
         setBannerFile(null);
         setPreviewUrl(null);
@@ -830,6 +834,33 @@ const BannerManagement = () => {
                                                                     )}
                                                                 />
                                                             )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {isSuperAdmin && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                                        <div className="space-y-3">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Campaign Status</label>
+                                                            <div className="flex items-center gap-3">
+                                                                <Controller
+                                                                    name="is_active"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={viewMode === 'view'}
+                                                                            onClick={() => field.onChange(!field.value)}
+                                                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${field.value ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'} ${viewMode === 'view' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                        >
+                                                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${field.value ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                                        </button>
+                                                                    )}
+                                                                />
+                                                                <span className={`text-xs font-bold uppercase tracking-widest ${watch('is_active') ? 'text-green-600' : 'text-gray-400'}`}>
+                                                                    {watch('is_active') ? 'Active' : 'Inactive'}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )}

@@ -213,7 +213,6 @@ func (bc *BannerController) UpdateBanner(c *gin.Context) {
 	banner.LinkURL = req.LinkURL
 	banner.TargetRole = req.TargetRole
 	banner.IsActive = req.IsActive
-	banner.IsActive = req.IsActive
 	// DaysActive is not stored in DB, only used to calculate EndDate
 
 	if err := bc.db.Save(&banner).Error; err != nil {
@@ -227,8 +226,31 @@ func (bc *BannerController) UpdateBanner(c *gin.Context) {
 // DeleteBanner
 func (bc *BannerController) DeleteBanner(c *gin.Context) {
 	id := c.Param("id")
-	// TODO: Check ownership before delete for Agent
-	if err := bc.db.Delete(&models.Banner{}, "id = ?", id).Error; err != nil {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	ownerID := userID.(uuid.UUID)
+
+	var user models.User
+	bc.db.First(&user, "id = ?", ownerID)
+
+	var banner models.Banner
+	if err := bc.db.First(&banner, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Banner not found"})
+		return
+	}
+
+	// Check ownership
+	if user.Role != models.RoleSuperAdmin {
+		if banner.OwnerID != ownerID && (banner.AgentID == nil || user.AgentID == nil || *banner.AgentID != *user.AgentID) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
+			return
+		}
+	}
+
+	if err := bc.db.Delete(&banner).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete"})
 		return
 	}

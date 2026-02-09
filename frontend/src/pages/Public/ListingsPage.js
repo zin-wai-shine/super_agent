@@ -139,7 +139,7 @@ const ListingsPage = () => {
     // Modal States
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
-    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(false);
+    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => localStorage.getItem('show_google_map') === 'true');
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
@@ -162,8 +162,8 @@ const ListingsPage = () => {
         localStorage.setItem('listings_view_mode', viewMode);
     }, [viewMode]);
 
-    // Lock background scroll when modals are open
     useEffect(() => {
+        localStorage.setItem('show_google_map', isGoogleMapOpen);
         document.body.style.overflow = (isFilterModalOpen || isTransitModalOpen || isGoogleMapOpen) ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
     }, [isFilterModalOpen, isTransitModalOpen, isGoogleMapOpen]);
@@ -389,10 +389,15 @@ const ListingsPage = () => {
                                         <MapPinIcon className="w-4 h-4" />
                                         <span>Transit</span>
                                     </button>
-                                    <button onClick={() => setIsGoogleMapOpen(!isGoogleMapOpen)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-black border transition-all duration-300 ${isGoogleMapOpen ? 'bg-primary-600 text-white border-primary-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
-                                        <GlobeAltIcon className="w-4 h-4" />
-                                        <span>Show Map</span>
-                                    </button>
+                                    <div className="flex items-center gap-3 pl-2">
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${isGoogleMapOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
+                                        <button
+                                            onClick={() => setIsGoogleMapOpen(!isGoogleMapOpen)}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isGoogleMapOpen ? 'bg-primary-600' : (!navVisible ? 'bg-white/20' : 'bg-gray-200')}`}
+                                        >
+                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isGoogleMapOpen ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -502,14 +507,6 @@ const ListingsPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="absolute top-4 right-4 z-10 pointer-events-auto">
-                                        <button
-                                            onClick={() => setIsGoogleMapOpen(false)}
-                                            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white flex items-center justify-center text-gray-400 hover:text-red-500 transition-all hover:scale-110 active:scale-95"
-                                        >
-                                            <XMarkIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
 
                                     {/* Legend Card */}
                                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
