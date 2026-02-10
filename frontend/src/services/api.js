@@ -171,3 +171,17 @@ export const bannerApi = {
     updateBanner: (id, data) => api.put(`/banners/${id}`, data),
     deleteBanner: (id) => api.delete(`/banners/${id}`),
 };
+
+// Appointment API
+export const appointmentApi = {
+    // Public (no auth required)
+    createAppointment: (data) => api.post('/public/appointments', data),
+    // Agent
+    getAppointments: (params) => api.get('/agent/appointments', { params }),
+    getAppointment: (id) => api.get(`/agent/appointments/${id}`),
+    updateAppointment: (id, data) => api.put(`/agent/appointments/${id}`, data),
+    deleteAppointment: (id) => api.delete(`/agent/appointments/${id}`),
+    // Admin
+    getAllAppointments: (params) => api.get('/admin/appointments', { params }),
+    getAppointmentStats: () => api.get('/admin/appointment-stats'),
+};

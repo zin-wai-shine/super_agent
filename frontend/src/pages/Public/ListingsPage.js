@@ -65,33 +65,29 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
 
     if (isListView) {
         return (
-            <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-full animate-pulse">
-                <div className="md:w-[480px] h-64 md:h-auto bg-gray-200 relative flex-none">
-                    <div className="absolute top-4 right-4 w-20 h-6 bg-gray-300 rounded-[3px]" />
-                    <div className="absolute top-4 left-4 w-16 h-5 bg-gray-300 rounded-[3px]" />
+            <div className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row animate-pulse h-[130px] md:h-[220px]">
+                {/* Image Section Skeleton */}
+                <div className="w-[130px] md:w-[40%] h-full bg-gray-200 flex-none relative">
+                    {/* Type Badge Skeleton */}
+                    <div className="absolute top-2 left-2 md:top-4 md:left-4 h-4 md:h-6 w-12 md:w-20 bg-gray-300 rounded-[3px]" />
                 </div>
-                <div className="p-8 flex-1 flex flex-col justify-between">
+
+                {/* Content Section Skeleton */}
+                <div className="p-3 md:p-4 flex flex-col justify-between flex-1 min-w-0">
                     <div>
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="h-7 w-20 bg-gray-100 rounded-[3px]" />
-                            <div className="h-10 w-40 bg-gray-200 rounded-[3px]" />
+                        <div className="flex items-start justify-between mb-1">
+                            <div className="h-4 w-16 bg-gray-100 rounded-[3px]" />
+                            <div className="h-6 md:h-8 w-24 md:w-32 bg-gray-200 rounded-[3px]" />
                         </div>
-                        <div className="space-y-3 mb-6">
-                            <div className="h-8 w-3/4 bg-primary-50 rounded-[3px]" />
-                        </div>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="h-5 w-48 bg-gray-100 rounded-[3px]" />
-                            <div className="h-6 w-24 bg-blue-100 rounded-[3px]" />
+                        <div className="h-5 md:h-7 w-3/4 bg-gray-200 rounded-[3px] mb-2" />
+                        <div className="space-y-2">
+                            <div className="h-4 w-1/2 bg-gray-100 rounded-[3px]" />
+                            <div className="h-4 w-1/3 bg-gray-100 rounded-[3px]" />
                         </div>
                     </div>
-                    <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
-                        <div className="flex gap-4">
-                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
-                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
-                            <div className="h-8 w-24 bg-gray-50 rounded-[3px]" />
-                        </div>
-                        <div className="ml-4 h-5 w-20 bg-gray-50 rounded-[3px]" />
-                        <div className="h-10 w-32 bg-gray-200 rounded-[3px]" />
+                    <div className="flex items-center gap-3 md:gap-4 pt-2">
+                        <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
+                        <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
                     </div>
                 </div>
             </div>
@@ -99,26 +95,35 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
     }
 
     return (
-        <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full animate-pulse">
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+            {/* Image Skeleton */}
             <div className="aspect-[16/10] bg-gray-200 w-full relative">
-                <div className="absolute top-3 left-3 w-12 h-4 bg-gray-300 rounded-[3px]" />
-                <div className="absolute top-3 right-3 w-12 h-4 bg-gray-300 rounded-[3px]" />
-                <div className="absolute bottom-3 left-3 w-24 h-8 bg-white/50 rounded-[3px]" />
-            </div>
-            <div className="p-4 flex-1 flex flex-col space-y-3">
-                <div className="flex justify-between items-center">
-                    <div className="h-4 w-16 bg-gray-200 rounded-[3px]" />
-                    <div className="h-3 w-10 bg-gray-100 rounded-[3px]" />
+                {/* Badge Top Left */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                    <div className="h-4 w-16 bg-gray-300 rounded-[3px]" />
+                    <div className="h-4 w-20 bg-gray-300 rounded-[3px]" />
                 </div>
-                <div className="h-5 w-full bg-gray-200 rounded-[3px]" />
-                <div className="h-3 w-3/4 bg-gray-100 rounded-[3px]" />
-                <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center">
-                    <div className="flex gap-2">
-                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
-                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
-                        <div className="h-4 w-6 bg-gray-100 rounded-[3px]" />
-                    </div>
-                    <div className="h-7 w-7 bg-gray-100 rounded-[3px]" />
+                {/* Badge Top Right */}
+                <div className="absolute top-3 right-3 h-5 w-16 bg-gray-300 rounded-[3px]" />
+                {/* Price Overlay */}
+                <div className="absolute bottom-3 left-3 h-8 w-32 bg-white/60 backdrop-blur-md rounded-[3px]" />
+            </div>
+
+            {/* Content Skeleton */}
+            <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                    <div className="h-4 w-16 bg-gray-100 rounded-[3px]" />
+                    <div className="h-3 w-10 bg-gray-50 rounded-[3px]" />
+                </div>
+                <div className="h-6 w-full bg-gray-200 rounded-[3px]" />
+                <div className="space-y-3 mt-4">
+                    <div className="h-4 w-2/3 bg-gray-100 rounded-[3px]" />
+                    <div className="h-4 w-1/2 bg-gray-100 rounded-[3px]" />
+                    <div className="h-4 w-1/3 bg-gray-100 rounded-[3px]" />
+                </div>
+                <div className="pt-3 border-t border-gray-100 flex justify-between items-center mt-2">
+                    <div className="h-4 w-20 bg-gray-100 rounded-[3px]" />
+                    <div className="h-5 w-8 bg-gray-100 rounded-[3px]" />
                 </div>
             </div>
         </div>
@@ -137,9 +142,9 @@ const ListingsPage = () => {
     const observerTarget = useRef(null);
 
     // Modal States
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
-    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => localStorage.getItem('show_google_map') === 'true');
+    const isGoogleMapOpen = searchParams.get('view') === 'map';
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
@@ -147,6 +152,24 @@ const ListingsPage = () => {
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
+
+    // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
+    const lastBoundsRef = useRef(null);
+
+    const handleMapBoundsChanged = React.useCallback((bounds) => {
+        // Simple comparison to prevent identical bounds from triggering a reload
+        const isSame = lastBoundsRef.current &&
+            lastBoundsRef.current.min_lat === bounds.min_lat &&
+            lastBoundsRef.current.max_lat === bounds.max_lat &&
+            lastBoundsRef.current.min_lng === bounds.min_lng &&
+            lastBoundsRef.current.max_lng === bounds.max_lng;
+
+        if (!isSame) {
+            lastBoundsRef.current = bounds;
+            setMapBounds(bounds);
+            setPage(1);
+        }
+    }, []);
 
     // Scroll listener for filter bar margin
     useEffect(() => {
@@ -164,9 +187,16 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = (isFilterModalOpen || isTransitModalOpen) ? 'hidden' : 'unset';
+        document.body.style.overflow = (isTransitModalOpen || isGoogleMapOpen) ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isFilterModalOpen, isTransitModalOpen, isGoogleMapOpen]);
+    }, [isTransitModalOpen, isGoogleMapOpen]);
+
+    const toggleMapView = (isOpen) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (isOpen) newParams.set('view', 'map');
+        else newParams.delete('view');
+        setSearchParams(newParams);
+    };
 
     const [stations, setStations] = useState([]);
 
@@ -258,10 +288,21 @@ const ListingsPage = () => {
     useEffect(() => {
         const controller = new AbortController();
         const fetchListings = async () => {
-            if (listings.length === 0) setInitialLoading(true);
+            // Only show initial skeletons if we are on page 1
+            if (page === 1) {
+                // Avoid "flash" in map view. If map is open and we have results, 
+                // we don't clear them or show skeletons while updating for new bounds.
+                const isMapBoundsUpdate = isGoogleMapOpen && listings.length > 0;
+
+                if (!isMapBoundsUpdate) {
+                    setInitialLoading(true);
+                    setListings([]); // Clear listings for fresh fetch on page 1
+                }
+            }
             setLoading(true);
+
             try {
-                const params = { ...filters, page, limit: 6 };
+                const params = { ...filters, page, limit: 12 };
                 // Add map bounds to params if available and map is open
                 if (mapBounds && isGoogleMapOpen) {
                     params.min_lat = mapBounds.min_lat;
@@ -273,6 +314,7 @@ const ListingsPage = () => {
                     params.agent_id = user.agent_id;
                 }
                 const response = await publicApi.getListings(params, { signal: controller.signal });
+
                 const data = response.data;
                 setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
                 setTotal(data.total || 0);
@@ -288,7 +330,7 @@ const ListingsPage = () => {
         };
         fetchListings();
         return () => controller.abort();
-    }, [filters, page, viewMode, user, mapBounds, isGoogleMapOpen]);
+    }, [filters, page, user, mapBounds, isGoogleMapOpen]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -308,6 +350,7 @@ const ListingsPage = () => {
         setFilters(newFilters);
         localStorage.setItem('listing_filters', JSON.stringify(newFilters));
         setPage(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to prevent jump
         const newParams = new URLSearchParams(searchParams);
         if (value) newParams.set(key, value);
         else newParams.delete(key);
@@ -333,95 +376,397 @@ const ListingsPage = () => {
             station_id: '',
             search: '',
         });
+
         localStorage.removeItem('listing_filters');
         setSearchTerm('');
+        setPage(1); // Reset page
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
         setSearchParams({});
         setIsFilterModalOpen(false);
     };
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header Mobile */}
-            <div className="pt-4 pb-2 px-4 lg:hidden">
-                <div className="flex items-baseline justify-between">
-                    <h1 className="text-xl font-bold text-gray-900">Properties</h1>
-                    <span className="text-sm font-medium text-gray-500">{total} results</span>
+    // Generate active filters list (memoized or simple var)
+    const activeFiltersList = [];
+    if (filters.search) activeFiltersList.push({ label: `"${filters.search}"`, key: 'search' });
+    if (filters.type) {
+        const opt = propertyTypeOptions.find(o => o.value === filters.type);
+        if (opt) activeFiltersList.push({ label: opt.label, key: 'type' });
+    }
+    if (filters.listing_type) {
+        const opt = listingTypeOptions.find(o => o.value === filters.listing_type);
+        if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type' });
+    }
+    if (filters.bedrooms) {
+        const opt = bedroomOptions.find(o => o.value === filters.bedrooms);
+        if (opt) activeFiltersList.push({ label: opt.label, key: 'bedrooms' });
+    }
+    if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
+    if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
+    if (filters.station_id) {
+        const station = stations.find(s => s.id === parseInt(filters.station_id));
+        if (station) activeFiltersList.push({ label: `Station: ${station.name_en}`, key: 'station_id' });
+    }
+
+    // --- Render Helper: Compact Filter Content (Reusable for Sidebar/Modal) ---
+    const renderFilterContent = () => {
+        return (
+            <div className="space-y-6">
+                {/* Active Filters Section */}
+                <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                            <FunnelIcon className="w-4 h-4" />
+                            Active Filters
+                        </h3>
+                        {hasActiveFilters && (
+                            <button onClick={clearFilters} className="text-sm text-red-500 font-medium hover:text-red-700">Clear All</button>
+                        )}
+                    </div>
+                    {hasActiveFilters ? (
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap gap-2">
+                                {activeFiltersList.map((filter) => (
+                                    <span key={filter.key} className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100">
+                                        {filter.label}
+                                        <button onClick={() => handleFilterChange(filter.key, '')} className="hover:text-primary-900">
+                                            <XMarkIcon className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-6">
+                            <div className="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <SparklesIcon className="w-6 h-6 text-primary-600" />
+                            </div>
+                            <p className="text-sm text-gray-500">Find your perfect home with filters</p>
+                        </div>
+                    )}
+
+                    <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
+                        <CheckCircleIcon className="w-4 h-4" />
+                        {total} {total === 1 ? 'Property' : 'Properties'} Found
+                    </div>
+                </div>
+
+                {/* Search */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold">Search</label>
+                    <div className="relative">
+                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
+                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Type location, name..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border rounded-[3px]" />
+                    </div>
+                </div>
+                {/* Selects */}
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold">Property Type</label>
+                        <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold">Listing Type</label>
+                        <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold">Bedrooms</label>
+                        <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold">Price Range</label>
+                        <div className="flex gap-2">
+                            <input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
+                            <input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
+                        </div>
+                    </div>
+                </div>
+                {/* Buttons */}
+                <div className="space-y-4 border-t pt-6">
+                    <button onClick={() => { setIsFilterModalOpen(false); setIsTransitModalOpen(true); }} className="w-full flex justify-between items-center p-4 bg-gray-50 border rounded-[3px] font-bold">
+                        <span className="flex items-center gap-2"><MapPinIcon className="w-5 h-5" /> Open Transit Map</span>
+                        <GlobeAltIcon className="w-5 h-5 text-gray-400" />
+                    </button>
+                    <div className="p-1 bg-gray-50 rounded-[3px] flex gap-1">
+                        <button onClick={() => setViewMode('grid')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
+                            <Squares2X2Icon className="w-5 h-5" /> Grid
+                        </button>
+                        <button onClick={() => setViewMode('list')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
+                            <ListBulletIcon className="w-5 h-5" /> List
+                        </button>
+                    </div>
                 </div>
             </div>
+        );
+    };
 
-            {/* Desktop Filter Bar */}
-            <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'} ${!isScrolled ? 'mt-2 lg:mt-6' : 'mt-0'}`}>
-                <div className={`transition-all duration-300 mx-auto ${!navVisible ? 'w-full px-0' : 'max-w-[1600px] px-4 sm:px-6 lg:px-8'}`}>
-                    <div className={`flex items-center relative transition-all duration-500 ${!navVisible
-                        ? 'bg-primary-600 border-b border-white/10 shadow-lg py-3 px-4'
-                        : 'bg-transparent lg:bg-white/95 lg:backdrop-blur-sm lg:rounded-[3px] lg:shadow-sm h-16 px-0 lg:px-4'}`}>
+    return (
+        <div className="min-h-screen bg-gray-50 relative">
+            {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
+            {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
+            <div className={`fixed inset-0 z-[60] bg-white transform transition-transform duration-500 ease-in-out ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full shadow-2xl'}`}>
+                <div className="flex h-screen overflow-hidden relative">
+                    {/* Sidebar Area */}
+                    <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                        <div className="h-full flex flex-col">
+                            {/* Sidebar Header */}
+                            <div className="p-4 border-b flex items-center justify-between bg-primary-600 text-white">
+                                <span className="font-bold text-lg">Filters & Menu</span>
+                                <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+                                    <XMarkIcon className="w-6 h-6" />
+                                </button>
+                            </div>
 
-                        {/* Logo Left */}
-                        <div className={`hidden lg:flex items-center transition-all ${!navVisible ? 'flex-1' : 'w-0 overflow-hidden'}`}>
-                            <a href="/" className="flex items-center gap-2 mr-4 shrink-0">
-                                <Logo className="h-8 w-8 text-white" />
-                                <span className="text-xl font-bold text-white tracking-tight whitespace-nowrap">Super Real Estate</span>
-                            </a>
-                        </div>
+                            {/* Sidebar Content (Filters) */}
+                            <div className="flex-1 overflow-y-auto p-4">
+                                {renderFilterContent()}
+                            </div>
 
-                        {/* Search Center */}
-                        <div className={`hidden lg:flex flex-[2] transition-all ${!navVisible ? 'justify-center' : 'justify-start'}`}>
-                            <div className="flex items-center gap-3 w-full max-w-4xl">
-                                <div className={`flex-1 flex items-center h-10 px-4 rounded-[3px] transition-all ${!navVisible
-                                    ? 'bg-white/10 border border-white/20'
-                                    : 'bg-white border border-gray-200'}`}>
-                                    <MagnifyingGlassIcon className={`w-5 h-5 mr-3 shrink-0 ${!navVisible ? 'text-white/60' : 'text-gray-400'}`} />
-                                    <input
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search..."
-                                        className={`bg-transparent border-none outline-none w-full text-sm ${!navVisible ? 'text-white placeholder-white/50' : 'text-gray-900 placeholder-gray-500'}`}
-                                    />
-                                </div>
-                                <div className={`w-px h-8 ${!navVisible ? 'bg-white/20' : 'bg-gray-300/50'}`} />
-                                <div className="flex gap-2">
-                                    <button onClick={() => setIsFilterModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold border ${hasActiveFilters ? 'bg-white text-primary-600 border-primary-600 shadow-md' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
-                                        <FunnelIcon className="w-4 h-4" />
-                                        <span>Filters</span>
+                            {/* Sidebar Footer */}
+                            <div className="p-4 border-t bg-gray-50">
+                                <div className="flex gap-3">
+                                    <button onClick={clearFilters} className="px-4 py-2 bg-gray-200 rounded-[3px] font-bold text-gray-600 text-sm">Reset</button>
+                                    <button onClick={() => toggleMapView(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-[3px] font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                                        <Squares2X2Icon className="w-4 h-4" />
+                                        Back to Grid
                                     </button>
-                                    <button onClick={() => setIsTransitModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-[3px] text-sm font-bold border ${filters.station_id ? 'bg-white text-primary-600 border-primary-600 shadow-md' : (!navVisible ? 'bg-white/10 text-white border-white/20' : 'bg-white text-gray-700 border-gray-200')}`}>
-                                        <MapPinIcon className="w-4 h-4" />
-                                        <span>Transit</span>
-                                    </button>
-                                    <div className="flex items-center gap-3 pl-2">
-                                        <span className={`text-[11px] font-black uppercase tracking-widest ${isGoogleMapOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
-                                        <button
-                                            onClick={() => setIsGoogleMapOpen(!isGoogleMapOpen)}
-                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isGoogleMapOpen ? 'bg-primary-600' : (!navVisible ? 'bg-white/20' : 'bg-gray-200')}`}
-                                        >
-                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isGoogleMapOpen ? 'translate-x-5' : 'translate-x-0'}`} />
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Layout Select Right */}
-                        <div className="hidden lg:flex flex-1 justify-end">
-                            <div className={`flex items-center gap-1 rounded-lg p-1 ${!navVisible ? 'bg-white/10' : 'bg-gray-50'}`}>
-                                <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-400'}`}>
-                                    <Squares2X2Icon className="w-5 h-5" />
-                                </button>
-                                <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-400'}`}>
-                                    <ListBulletIcon className="w-5 h-5" />
-                                </button>
+                    {/* Overlay for Sidebar */}
+                    {isSidebarOpen && (
+                        <div className="fixed inset-0 bg-black/30 z-40 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
+                    )}
+
+                    {/* Menu Toggle Button (Floating) */}
+
+
+                    {/* Main Content Area (Split: List + Map) - Full Height */}
+                    <div className="flex-1 flex overflow-hidden">
+                        {/* List Section */}
+                        <div className="w-full lg:w-[45%] h-full flex flex-col bg-white border-r relative z-10 transition-all duration-300">
+                            {/* List View Header (Sticky) */}
+                            <div className="px-5 py-3 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-primary-600 to-primary-700 z-20 sticky top-0 shadow-lg backdrop-blur-sm bg-opacity-95 h-16">
+                                {/* Left: Logo & Short Name */}
+                                <div className="flex items-center gap-3 select-none">
+                                    <div className="bg-white/20 p-1 rounded-xl backdrop-blur-md shadow-inner transition-transform hover:scale-105 border border-white/20">
+                                        <Logo className="w-8 h-8 text-white drop-shadow-md" />
+                                    </div>
+                                    <div className="flex flex-col justify-center">
+                                        <span className="text-xl font-black tracking-tighter text-white leading-none drop-shadow-sm">SUPER</span>
+                                        <span className="text-[10px] font-bold tracking-[0.2em] text-white/90 uppercase leading-none mt-0.5 ml-0.5 drop-shadow-sm">Real Estate</span>
+                                    </div>
+                                </div>
+
+                                {/* Right: Controls Group */}
+                                <div className="flex items-center gap-4">
+                                    {/* Filter Button */}
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/20 shadow-sm backdrop-blur-md transition-all group active:scale-95"
+                                    >
+                                        <div className="relative">
+                                            <FunnelIcon className={`w-4 h-4 text-white group-hover:scale-110 transition-transform`} />
+                                            {hasActiveFilters && (
+                                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full border border-white" />
+                                            )}
+                                        </div>
+                                        <span className="text-xs font-bold tracking-wide uppercase">Filters</span>
+                                    </button>
+
+                                    {/* Mobile Filter Icon Only */}
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="md:hidden p-2 bg-white/10 text-white rounded-full border border-white/20 active:scale-90 transition-transform"
+                                    >
+                                        <div className="relative">
+                                            <FunnelIcon className="w-5 h-5" />
+                                            {hasActiveFilters && (
+                                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+                                            )}
+                                        </div>
+                                    </button>
+
+                                    {/* Divider */}
+                                    <div className="w-px h-8 bg-white/10" />
+
+                                    {/* Results Count */}
+                                    <h2 className="hidden sm:block font-bold text-white text-xs tracking-wide bg-white/10 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">{total} Results</h2>
+
+                                    {/* Desktop Map Toggle Switch */}
+                                    <div className="hidden lg:flex items-center gap-3">
+                                        <span className="text-white/80 font-bold text-[10px] uppercase tracking-wider text-shadow-sm">Map View</span>
+                                        <button
+                                            onClick={() => toggleMapView(false)}
+                                            className="w-12 h-7 bg-primary-500/50 hover:bg-primary-500/70 rounded-full relative transition-colors shadow-inner border border-white/20 flex items-center px-1"
+                                        >
+                                            <div className="w-5 h-5 bg-white rounded-full shadow-md absolute right-1 transition-transform" />
+                                        </button>
+                                    </div>
+
+                                    <button onClick={() => toggleMapView(false)} className="lg:hidden text-white/90 font-bold text-sm hover:text-white">Close</button>
+                                </div>
+                            </div>
+
+
+
+                            {/* Scrollable List */}
+                            <div className="flex-1 overflow-y-auto p-4 content-visibility-auto">
+                                {initialLoading ? (
+                                    <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+                                        {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
+                                    </div>
+                                ) : listings.length > 0 ? (
+                                    <>
+                                        <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                                            {loading && !initialLoading && (
+                                                <div className="contents">
+                                                    {[...Array(viewMode === 'list' ? 3 : 4)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div ref={observerTarget} className="h-20" />
+                                    </>
+                                ) : (
+                                    <div className="text-center py-20">
+                                        <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                        <button onClick={clearFilters} className="mt-4 text-primary-600 font-bold underline">Clear filters</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Map Section */}
+                        <div className="hidden lg:block flex-1 h-full relative z-0">
+                            <GoogleMap
+                                listings={listings}
+                                onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
+                                onBoundsChanged={handleMapBoundsChanged}
+                            />
+
+                            {/* Map Overlays */}
+                            <div className="absolute top-4 right-4 z-10 hidden lg:block pointer-events-none">
+                                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
+                                    <div className="bg-primary-50 p-2 rounded-lg">
+                                        <GlobeAltIcon className="w-5 h-5 text-primary-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
+                                        <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Sidebar */}
-                    {!isGoogleMapOpen && (
+            {/* --- STANDARD GRID LAYOUT --- */}
+            <div className={`transform transition-transform duration-500 ease-in-out bg-gray-50 min-h-screen ${isGoogleMapOpen ? 'translate-x-full h-screen overflow-hidden fixed inset-0' : 'translate-x-0 relative'}`}>
+                {/* Header Mobile */}
+                <div className="pt-4 pb-2 px-4 lg:hidden">
+                    <div className="flex items-baseline justify-between">
+                        <h1 className="text-xl font-bold text-gray-900">Properties</h1>
+                        <span className="text-sm font-medium text-gray-500">{total} results</span>
+                    </div>
+                </div>
+
+                {/* Desktop Filter Bar - Clean Redesign */}
+                <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'} ${!isScrolled ? 'mt-0' : 'mt-0'}`}>
+                    <div className={`transition-all duration-300 mx-auto w-full px-0`}>
+                        <div className="bg-white border-b border-gray-200 shadow-sm py-4 px-4 sm:px-6 lg:px-8">
+                            <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+
+                                {/* Left: Search & Filters */}
+                                <div className="flex items-center gap-4 flex-1">
+                                    {/* Search Input */}
+                                    <div className="relative group w-full max-w-md">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Search location, name..."
+                                            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-[3px] leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-shadow shadow-sm hover:shadow-md"
+                                        />
+                                    </div>
+
+                                    <div className="h-8 w-px bg-gray-200 mx-2" />
+
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
+                                        <span className="text-sm font-bold text-gray-900">{total} Results</span>
+                                    </div>
+
+                                    <div className="h-8 w-px bg-gray-200 mx-2" />
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => setIsSidebarOpen(true)} // Opens Sidebar now
+                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${hasActiveFilters ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'}`}
+                                        >
+                                            <FunnelIcon className="w-4 h-4" />
+                                            <span>Filters</span>
+                                            {hasActiveFilters && (
+                                                <span className="ml-1 flex h-2 w-2 relative">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => setIsTransitModalOpen(true)}
+                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${filters.station_id ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'}`}
+                                        >
+                                            <MapPinIcon className="w-4 h-4" />
+                                            <span>Transit</span>
+                                        </button>
+
+                                        {/* Map Toggle */}
+                                        <div className="flex items-center gap-3 pl-4 border-l border-gray-200 ml-2">
+                                            <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Map View</span>
+                                            <button
+                                                onClick={() => toggleMapView(true)}
+                                                className="relative inline-flex items-center h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-gray-200 hover:bg-gray-300"
+                                            >
+                                                <span className="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right: View Toggles */}
+                                <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200">
+                                    <button
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-2 rounded-[4px] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        <Squares2X2Icon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`p-2 rounded-[4px] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        <ListBulletIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Sidebar */}
                         <div className="lg:col-span-4 hidden lg:block transition-all duration-500">
                             <div className={`sticky space-y-6 ${navVisible ? 'top-40' : 'top-24'}`}>
                                 <ShowcaseBanners agentId={agentId} loading={initialLoading} />
@@ -434,166 +779,76 @@ const ListingsPage = () => {
                                         </h3>
                                         <button onClick={clearFilters} className="text-sm text-red-500 font-medium">Clear All</button>
                                     </div>
-                                    {!hasActiveFilters ? (
+                                    {hasActiveFilters ? (
+                                        <div className="space-y-3">
+                                            <div className="flex flex-wrap gap-2">
+                                                {activeFiltersList.map((filter) => (
+                                                    <span key={filter.key} className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100">
+                                                        {filter.label}
+                                                        <button onClick={() => handleFilterChange(filter.key, '')} className="hover:text-primary-900">
+                                                            <XMarkIcon className="w-3 h-3" />
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
                                         <div className="text-center py-6">
                                             <div className="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                                                 <SparklesIcon className="w-6 h-6 text-primary-600" />
                                             </div>
                                             <p className="text-sm text-gray-500">Find your perfect home with filters</p>
                                         </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {/* Simplified active filters display */}
-                                            <div className="bg-green-50 p-3 rounded-[3px] text-green-800 text-sm font-bold border border-green-100 flex items-center gap-2">
-                                                <CheckCircleIcon className="w-5 h-5" />
-                                                {total} Results Matches
-                                            </div>
-                                        </div>
                                     )}
+
+                                    <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
+                                        <CheckCircleIcon className="w-4 h-4" />
+                                        {total} {total === 1 ? 'Property' : 'Properties'} Found
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    )}
 
-                    {/* Listings Grid */}
-                    {/* Listings Grid + Map Split View */}
-                    <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-8'} transition-all duration-500`}>
-                        <div className={`flex flex-col lg:flex-row gap-8 min-h-[70vh]`}>
-                            {/* Left Side: Property List */}
-                            <div className={`transition-all duration-500 ${isGoogleMapOpen ? 'lg:w-1/2 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-4' : 'lg:w-full'}`}>
-                                {initialLoading ? (
-                                    <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 lg:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                        {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
-                                    </div>
-                                ) : listings.length > 0 ? (
-                                    <>
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? (viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2') : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                        {/* Listings Grid */}
+                        <div className="lg:col-span-8 transition-all duration-500">
+                            <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
+                                {/* Left Side: Property List */}
+                                <div className="w-full">
+                                    {initialLoading ? (
+                                        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                                            {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
                                         </div>
-                                        <div ref={observerTarget} className="h-20 flex items-center justify-center">
-                                            {loading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />}
+                                    ) : listings.length > 0 ? (
+                                        <>
+                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                                                {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                                                {loading && !initialLoading && (
+                                                    <div className="contents">
+                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div ref={observerTarget} className="h-20" />
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-20 bg-white rounded-[3px] border border-gray-100">
+                                            <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                                            <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                            <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
+                                            <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className="text-center py-20 bg-white rounded-[3px] border border-gray-100">
-                                        <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
-                                        <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                        <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
-                                    </div>
-                                )}
+                                    )}
 
-                            </div>
-
-                            {/* Right Side: Google Map (Desktop Split) */}
-                            {isGoogleMapOpen && (
-                                <div className="hidden lg:block lg:w-1/2 sticky top-32 h-[calc(100vh-160px)] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white animate-fade-in group pointer-events-auto">
-                                    <GoogleMap
-                                        listings={listings}
-                                        onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
-                                        onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
-                                    />
-
-                                    {/* Stats Theme Card Overlays */}
-                                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                                        <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white flex items-center gap-3 animate-slide-up pointer-events-auto">
-                                            <div className="bg-primary-50 w-10 h-10 rounded-xl flex items-center justify-center">
-                                                <GlobeAltIcon className="w-6 h-6 text-primary-600" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Map Explorer</p>
-                                                <p className="text-sm font-black text-gray-900 leading-none">{total} Properties Found</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                    {/* Legend Card */}
-                                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-                                        <div className="bg-white/95 backdrop-blur-md px-6 py-3 rounded-2xl shadow-2xl border border-white flex items-center gap-6 animate-slide-up">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
-                                                <span className="text-xs font-black uppercase tracking-widest text-gray-600">Rent</span>
-                                            </div>
-                                            <div className="w-px h-4 bg-gray-200" />
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.4)]" />
-                                                <span className="text-xs font-black uppercase tracking-widest text-gray-600">Sale</span>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+
             {/* Modals */}
-            {
-                isFilterModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center md:p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsFilterModalOpen(false)} />
-                        <div className="bg-white w-full h-[100dvh] md:h-auto md:max-h-[85vh] md:max-w-lg md:rounded-[3px] shadow-2xl overflow-hidden relative z-10 flex flex-col animate-scale-up">
-                            <div className="p-4 border-b flex justify-between items-center">
-                                <h3 className="font-bold text-lg">Filter Properties</h3>
-                                <button onClick={() => setIsFilterModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-32 md:pb-6">
-                                {/* Search */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold">Search</label>
-                                    <div className="relative">
-                                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
-                                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Type location, name..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border rounded-[3px]" />
-                                    </div>
-                                </div>
-                                {/* Selects */}
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold">Property Type</label>
-                                        <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold">Listing Type</label>
-                                        <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold">Bedrooms</label>
-                                        <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold">Price Range</label>
-                                        <div className="flex gap-2">
-                                            <input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
-                                            <input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Buttons */}
-                                <div className="space-y-4 border-t pt-6">
-                                    <button onClick={() => { setIsFilterModalOpen(false); setIsTransitModalOpen(true); }} className="w-full flex justify-between items-center p-4 bg-gray-50 border rounded-[3px] font-bold">
-                                        <span className="flex items-center gap-2"><MapPinIcon className="w-5 h-5" /> Open Transit Map</span>
-                                        <GlobeAltIcon className="w-5 h-5 text-gray-400" />
-                                    </button>
-                                    <div className="p-1 bg-gray-50 rounded-[3px] flex gap-1">
-                                        <button onClick={() => setViewMode('grid')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
-                                            <Squares2X2Icon className="w-5 h-5" /> Grid
-                                        </button>
-                                        <button onClick={() => setViewMode('list')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
-                                            <ListBulletIcon className="w-5 h-5" /> List
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 border-t bg-gray-50 flex gap-3 safe-area-bottom">
-                                <button onClick={clearFilters} className="px-6 py-3 bg-gray-200/50 rounded-[3px] font-bold text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-sm">Reset</button>
-                                <button onClick={() => setIsFilterModalOpen(false)} className="flex-1 bg-primary-600 text-white py-3 rounded-[3px] font-bold shadow-md hover:bg-primary-700 active:scale-95 transition-all">Show {total} Results</button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+
 
             {
                 isTransitModalOpen && (
@@ -618,7 +873,7 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isFilterModalOpen && !isTransitModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isTransitModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
@@ -642,7 +897,7 @@ const ListingsPage = () => {
                     <div className="relative h-full flex items-center justify-between px-6 sm:px-10">
                         {/* Google Map Button */}
                         <button
-                            onClick={() => setIsGoogleMapOpen(true)}
+                            onClick={() => toggleMapView(true)}
                             className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
                         >
                             <div className="w-8 h-8 flex items-center justify-center">
@@ -667,7 +922,7 @@ const ListingsPage = () => {
                             {/* Glow Effect */}
                             <div className="absolute inset-0 bg-white/20 blur-2xl rounded-full animate-pulse" />
                             <button
-                                onClick={() => setIsFilterModalOpen(true)}
+                                onClick={() => setIsSidebarOpen(true)}
                                 className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_8px_25px_-5px_rgba(0,0,0,0.2)] active:scale-95 transition-all z-10 border-4 border-primary-600"
                             >
                                 <div className="relative">
@@ -708,7 +963,7 @@ const ListingsPage = () => {
                                 </div>
                             </div>
                             <button
-                                onClick={() => setIsGoogleMapOpen(false)}
+                                onClick={() => toggleMapView(false)}
                                 className="p-3 bg-gray-50 rounded-[20px] hover:bg-gray-100 text-gray-400 transition-all active:scale-90"
                             >
                                 <XMarkIcon className="w-6 h-6" />
@@ -743,7 +998,7 @@ const ListingsPage = () => {
                         {/* Quick Action Footer */}
                         <div className="w-full p-4 bg-white border-t flex flex-col gap-4 safe-area-bottom">
                             <button
-                                onClick={() => setIsGoogleMapOpen(false)}
+                                onClick={() => toggleMapView(false)}
                                 className="w-full bg-primary-600 text-white py-4.5 rounded-[20px] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-200 active:scale-95 transition-all text-center flex items-center justify-center h-14"
                             >
                                 Back to List

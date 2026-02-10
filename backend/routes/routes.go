@@ -18,6 +18,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	agentController := controllers.NewAgentController(db, cfg)
 	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
+	appointmentController := controllers.NewAppointmentController(db)
 
 	// Apply tenant middleware globally
 	router.Use(middleware.TenantMiddleware(db))
@@ -46,6 +47,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/stations", publicController.GetStations)
 			public.GET("/listings/by-station/:stationId", publicController.GetListingsByStation)
 			public.GET("/agent/info", publicController.GetAgentInfo)
+			public.POST("/appointments", appointmentController.CreateAppointment)
 		}
 
 		// Protected routes
@@ -86,6 +88,10 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 
 				// Dashboard stats
 				superAdmin.GET("/stats", superAdminController.GetDashboardStats)
+
+				// Appointment management (admin)
+				superAdmin.GET("/appointments", appointmentController.GetAllAppointments)
+				superAdmin.GET("/appointment-stats", appointmentController.GetAppointmentStats)
 			}
 
 			// Agent routes
@@ -117,6 +123,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 
 				// Dashboard
 				agent.GET("/dashboard", agentController.GetDashboard)
+
+				// Appointment management (agent)
+				agent.GET("/appointments", appointmentController.GetAppointments)
+				agent.GET("/appointments/:id", appointmentController.GetAppointment)
+				agent.PUT("/appointments/:id", appointmentController.UpdateAppointmentStatus)
+				agent.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
 			}
 
 			// Upload routes

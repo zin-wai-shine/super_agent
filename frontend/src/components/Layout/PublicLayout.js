@@ -17,6 +17,8 @@ const PublicLayout = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const isMapView = searchParams.get('view') === 'map';
 
     const navigation = [
         { name: 'Home', href: '/', icon: HomeIcon },
@@ -65,26 +67,28 @@ const PublicLayout = () => {
     return (
         <div className="min-h-screen flex flex-col" style={{ fontFamily: theme.fontFamily }}>
             {/* Mobile Header (Hamburger + Logo) */}
-            <div className={`md:hidden bg-primary-600 border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-                <div className="px-4 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
-                        {theme.logoUrl ? (
-                            <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
-                        ) : (
-                            <Logo className="w-8 h-8 text-white" />
-                        )}
-                        <span className="text-lg font-bold text-white">
-                            {theme.headerText || 'Super Real Estate'}
-                        </span>
-                    </Link>
-                    <button
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="text-white p-1 -mr-1 hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                        <Bars3Icon className="w-6 h-6" />
-                    </button>
+            {!isMapView && (
+                <div className={`md:hidden bg-primary-600 border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                    <div className="px-4 h-16 flex items-center justify-between">
+                        <Link to="/" className="flex items-center gap-2">
+                            {theme.logoUrl ? (
+                                <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
+                            ) : (
+                                <Logo className="w-8 h-8 text-white" />
+                            )}
+                            <span className="text-lg font-bold text-white">
+                                {theme.headerText || 'Super Real Estate'}
+                            </span>
+                        </Link>
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="text-white p-1 -mr-1 hover:bg-white/10 rounded-lg transition-colors"
+                        >
+                            <Bars3Icon className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Navigation Drawer (Mobile) */}
             {mobileMenuOpen && (
@@ -193,142 +197,146 @@ const PublicLayout = () => {
             )}
 
             {/* Desktop Navigation */}
-            <nav className={`hidden md:block bg-primary-600 border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-                <div className="w-full px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        {isNavLoading ? (
-                            <div className="flex items-center justify-between w-full animate-pulse">
-                                {/* Logo Skeleton */}
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-white/20 rounded" />
-                                    <div className="w-32 h-6 bg-white/20 rounded" />
+            {!isMapView && (
+                <nav className={`hidden md:block bg-primary-600 border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                    <div className="w-full px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-16">
+                            {isNavLoading ? (
+                                <div className="flex items-center justify-between w-full animate-pulse">
+                                    {/* Logo Skeleton */}
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-8 h-8 bg-white/20 rounded" />
+                                        <div className="w-32 h-6 bg-white/20 rounded" />
+                                    </div>
+                                    {/* Nav Links Skeleton */}
+                                    <div className="flex items-center space-x-1">
+                                        <div className="w-16 h-8 bg-white/10 rounded-lg mx-1" />
+                                        <div className="w-24 h-8 bg-white/10 rounded-lg mx-1" />
+                                    </div>
+                                    {/* Auth Skeleton */}
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-20 h-4 bg-white/10 rounded" />
+                                        <div className="w-8 h-8 bg-white/20 rounded-full" />
+                                        <div className="w-16 h-4 bg-white/10 rounded" />
+                                    </div>
                                 </div>
-                                {/* Nav Links Skeleton */}
-                                <div className="flex items-center space-x-1">
-                                    <div className="w-16 h-8 bg-white/10 rounded-lg mx-1" />
-                                    <div className="w-24 h-8 bg-white/10 rounded-lg mx-1" />
-                                </div>
-                                {/* Auth Skeleton */}
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-20 h-4 bg-white/10 rounded" />
-                                    <div className="w-8 h-8 bg-white/20 rounded-full" />
-                                    <div className="w-16 h-4 bg-white/10 rounded" />
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                {/* Logo */}
-                                <Link to="/" className="flex items-center space-x-2 group">
-                                    {theme.logoUrl ? (
-                                        <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
-                                    ) : (
-                                        <Logo className="w-8 h-8 text-white" />
-                                    )}
-                                    <span className="text-xl font-bold text-white group-hover:text-white/90 transition-colors">
-                                        {theme.headerText || 'Super Real Estate'}
-                                    </span>
-                                </Link>
+                            ) : (
+                                <>
+                                    {/* Logo */}
+                                    <Link to="/" className="flex items-center space-x-2 group">
+                                        {theme.logoUrl ? (
+                                            <img src={theme.logoUrl} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
+                                        ) : (
+                                            <Logo className="w-8 h-8 text-white" />
+                                        )}
+                                        <span className="text-xl font-bold text-white group-hover:text-white/90 transition-colors">
+                                            {theme.headerText || 'Super Real Estate'}
+                                        </span>
+                                    </Link>
 
-                                {/* Desktop Navigation Links */}
-                                <div className="flex items-center space-x-1">
-                                    {navigation.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            to={item.href}
-                                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive(item.href)
-                                                ? 'bg-white/15 text-white shadow-sm'
-                                                : 'text-white/80 hover:bg-white/10 hover:text-white'
-                                                }`}
-                                        >
-                                            {item.name}
-                                        </Link>
-                                    ))}
-                                </div>
-
-                                {/* Auth Buttons */}
-                                <div className="flex items-center space-x-4">
-                                    {isAuthenticated ? (
-                                        <div className="flex items-center space-x-4">
+                                    {/* Desktop Navigation Links */}
+                                    <div className="flex items-center space-x-1">
+                                        {navigation.map((item) => (
                                             <Link
-                                                to={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                                                className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                                                key={item.name}
+                                                to={item.href}
+                                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive(item.href)
+                                                    ? 'bg-white/15 text-white shadow-sm'
+                                                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                                    }`}
                                             >
-                                                Dashboard
+                                                {item.name}
                                             </Link>
-                                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/10">
-                                                <UserCircleIcon className="w-5 h-5 text-white/70" />
-                                                <span className="text-sm font-semibold text-white">
-                                                    {user?.first_name}
-                                                </span>
+                                        ))}
+                                    </div>
+
+                                    {/* Auth Buttons */}
+                                    <div className="flex items-center space-x-4">
+                                        {isAuthenticated ? (
+                                            <div className="flex items-center space-x-4">
+                                                <Link
+                                                    to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                                                    className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                                                >
+                                                    Dashboard
+                                                </Link>
+                                                <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/10">
+                                                    <UserCircleIcon className="w-5 h-5 text-white/70" />
+                                                    <span className="text-sm font-semibold text-white">
+                                                        {user?.first_name}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={logout}
+                                                    className="text-sm font-semibold text-white/60 hover:text-white transition-colors"
+                                                >
+                                                    Logout
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={logout}
-                                                className="text-sm font-semibold text-white/60 hover:text-white transition-colors"
-                                            >
-                                                Logout
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <Link
-                                                to="/login"
-                                                className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
-                                            >
-                                                Sign in
-                                            </Link>
-                                            <Link to="/register" className="bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-black/5 hover:bg-gray-50 active:scale-95 transition-all">
-                                                Get Started
-                                            </Link>
-                                        </>
-                                    )}
-                                </div>
-                            </>
-                        )}
+                                        ) : (
+                                            <>
+                                                <Link
+                                                    to="/login"
+                                                    className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                                                >
+                                                    Sign in
+                                                </Link>
+                                                <Link to="/register" className="bg-white text-primary-600 px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-black/5 hover:bg-gray-50 active:scale-95 transition-all">
+                                                    Get Started
+                                                </Link>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </nav>
+                </nav>
+            )}
 
             {/* Main Content */}
             <main className="flex-1">
                 <Outlet context={{ navVisible: isVisible }} />
             </main>
 
-            {/* Mobile Bottom Navigation Removed */}\n
+            {/* Mobile Bottom Navigation Removed */}
             {/* Footer */}
-            <footer className="bg-gray-900 text-gray-400">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div className="col-span-1 md:col-span-2">
-                            <div className="flex items-center space-x-3 mb-4">
-                                <Logo className="w-8 h-8 text-white" />
-                                <span className="text-xl font-bold text-white">Super</span>
+            {!isMapView && (
+                <footer className="bg-gray-900 text-gray-400">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div className="col-span-1 md:col-span-2">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <Logo className="w-8 h-8 text-white" />
+                                    <span className="text-xl font-bold text-white">Super</span>
+                                </div>
+                                <p className="text-sm max-w-md">
+                                    Find your dream property near Bangkok's transit stations.
+                                    We make property search easy with our interactive transit map.
+                                </p>
                             </div>
-                            <p className="text-sm max-w-md">
-                                Find your dream property near Bangkok's transit stations.
-                                We make property search easy with our interactive transit map.
-                            </p>
+                            <div>
+                                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link to="/listings" className="hover:text-white">Browse Properties</Link></li>
+                                    <li><Link to="/listings?view=map" className="hover:text-white">Map Search</Link></li>
+                                    <li><Link to="/register" className="hover:text-white">List Your Property</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-white font-semibold mb-4">For Agents</h4>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link to="/register" className="hover:text-white">Become an Agent</Link></li>
+                                    <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
+                                </ul>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to="/listings" className="hover:text-white">Browse Properties</Link></li>
-                                <li><Link to="/listings?view=map" className="hover:text-white">Map Search</Link></li>
-                                <li><Link to="/register" className="hover:text-white">List Your Property</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">For Agents</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to="/register" className="hover:text-white">Become an Agent</Link></li>
-                                <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
-                            </ul>
+                        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+                            <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
                         </div>
                     </div>
-                    <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-                        <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            )}
         </div >
     );
 };

@@ -93,10 +93,10 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
         return (
             <Link
                 to={`/listings/${id}`}
-                className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row group hover:shadow-md transition-all duration-300 h-[130px] md:h-[320px]"
+                className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row group hover:shadow-md transition-all duration-300 h-[130px] md:h-[220px] animate-fade-in-scale"
             >
-                {/* Image Section - Fixed width on mobile, wider on desktop */}
-                <div className="w-[130px] md:w-[480px] h-full relative overflow-hidden flex-none group/slider">
+                {/* Image Section - Fixed width on mobile, percentage on desktop */}
+                <div className="w-[130px] md:w-[40%] h-full relative overflow-hidden flex-none group/slider">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
@@ -161,49 +161,50 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 </div>
 
                 {/* Content Section */}
-                <div className="p-3 md:p-6 flex flex-col justify-center md:justify-between flex-1 min-w-0 relative">
+                <div className="p-3 md:p-4 flex flex-col justify-between flex-1 min-w-0 relative">
                     <div>
-                        <div className="flex items-start justify-between mb-1 md:mb-2">
-                            <span className={`hidden md:inline-block px-2.5 py-1 rounded-[3px] text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
+                        <div className="flex items-start justify-between mb-1">
+                            <span className={`hidden md:inline-block px-2 py-0.5 rounded-[3px] text-[10px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
                                 {property_type || 'Property'}
                             </span>
                             <div className="flex items-baseline gap-1 text-primary-600">
-                                <span className="text-lg md:text-3xl font-black tracking-tight">{formatPrice(price)}</span>
-                                <span className="text-[10px] md:text-sm font-bold text-gray-400 uppercase">{price_unit}</span>
-                                {listing_type === 'rent' && <span className="text-[10px] md:text-sm font-bold text-gray-400">/mo</span>}
+                                <span className="text-lg md:text-2xl font-black tracking-tight">{formatPrice(price)}</span>
+                                <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase">{price_unit}</span>
+                                {listing_type === 'rent' && <span className="text-[10px] md:text-xs font-bold text-gray-400">/mo</span>}
                             </div>
                         </div>
 
-                        <h3 className="text-sm md:text-2xl font-bold md:font-extrabold text-gray-900 mb-1 md:mb-6 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
+                        <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
                             {title}
                         </h3>
 
                         {/* Information Group */}
-                        <div className="space-y-1 md:space-y-4 mb-0 md:mb-4">
+                        <div className="space-y-1 md:space-y-2 mb-0">
                             {/* Location & Station */}
-                            <div className="space-y-1 md:space-y-3">
+                            <div className="space-y-1">
                                 <div className="flex items-center text-gray-500">
-                                    <MapPinIcon className="w-3.5 h-3.5 md:w-5 md:h-5 mr-1 md:mr-2 flex-shrink-0 text-primary-600" />
-                                    <span className="text-xs md:text-base font-medium truncate">
+                                    <MapPinIcon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 flex-shrink-0 text-primary-600" />
+                                    <span className="text-xs md:text-sm font-medium truncate">
                                         {road || district || 'Bangkok'}
                                     </span>
                                 </div>
 
-                                {((station_name || station_id) || (station?.name_en || station?.id)) && (
-                                    <div className="flex items-center gap-1 md:gap-2">
-                                        {/* Train Icon */}
-                                        <TbTrain className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600 flex-shrink-0" />
 
-                                        <span className="text-[10px] md:text-sm text-primary-600 font-bold whitespace-nowrap hidden md:inline">
+                                {((station_name || station_id) || (station?.name_en || station?.id)) && (
+                                    <div className="flex items-center gap-1.5">
+                                        {/* Train Icon */}
+                                        <TbTrain className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600 flex-shrink-0" />
+
+                                        <span className="text-[10px] md:text-xs text-primary-600 font-bold whitespace-nowrap hidden md:inline">
                                             {line_name || station?.line_name || 'BTS'}
                                         </span>
 
-                                        <span className="text-[10px] md:text-sm text-gray-900 font-semibold truncate">
+                                        <span className="text-[10px] md:text-xs text-gray-900 font-semibold truncate">
                                             {station?.name_en?.split('(')[0] || station_name?.split('(')[0]}
                                         </span>
 
                                         <span
-                                            className="px-1 py-0.5 md:px-1.5 md:py-0.5 rounded-[3px] text-[8px] md:text-[10px] font-bold text-white tabular-nums"
+                                            className="px-1 py-0.5 rounded-[3px] text-[8px] md:text-[9px] font-bold text-white tabular-nums"
                                             style={{ backgroundColor: line_color || station?.line_color || '#3b82f6' }}
                                         >
                                             {station?.id || station_id}
@@ -213,18 +214,18 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                             </div>
 
                             {/* Features for List View - Desktop Only / Simplified on Mobile */}
-                            <div className="flex items-center gap-3 md:gap-6 pt-1 md:pt-2">
-                                <div className="flex items-center gap-1 md:gap-2 text-gray-600">
-                                    <LiaBedSolid className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600" />
+                            <div className="flex items-center gap-3 md:gap-4 pt-1 md:pt-2">
+                                <div className="flex items-center gap-1 text-gray-600">
+                                    <LiaBedSolid className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600" />
                                     <span className="text-xs md:text-sm font-medium">{bedrooms} <span className="hidden md:inline">Beds</span></span>
                                 </div>
-                                <div className="flex items-center gap-1 md:gap-2 text-gray-600">
-                                    <PiBathtub className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary-600" />
+                                <div className="flex items-center gap-1 text-gray-600">
+                                    <PiBathtub className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600" />
                                     <span className="text-xs md:text-sm font-medium">{bathrooms} <span className="hidden md:inline">Baths</span></span>
                                 </div>
                                 {area > 0 && (
-                                    <div className="hidden md:flex items-center gap-2 text-gray-600">
-                                        <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <div className="hidden md:flex items-center gap-1 text-gray-600">
+                                        <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                         </svg>
                                         <span className="text-sm font-medium">{area}m²</span>
@@ -234,12 +235,12 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                         </div>
                     </div>
 
-                    <div className="hidden md:flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                    <div className="hidden md:flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
                         <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest gap-2">
                             <span className="text-[10px]">ID: #{id.slice(0, 8)}</span>
                         </div>
                         <div>
-                            <button className="bg-primary-600 text-white text-sm font-bold px-6 py-2.5 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm">
+                            <button className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm">
                                 View Details
                             </button>
                         </div>
@@ -252,7 +253,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     return (
         <Link
             to={`/listings/${id}`}
-            className="listing-card group block bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            className="listing-card group block bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-scale"
         >
             {/* Image */}
             <div className="relative aspect-[16/10] overflow-hidden">

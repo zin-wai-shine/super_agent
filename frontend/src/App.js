@@ -16,6 +16,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import BannerDetail from './pages/Public/BannerDetail';
 import UserProfile from './pages/Public/UserProfile';
+import BookAppointment from './pages/Public/BookAppointment';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -25,6 +26,7 @@ import EditListing from './pages/Agent/EditListing';
 import SubAgents from './pages/Agent/SubAgents';
 import ThemeSettings from './pages/Agent/ThemeSettings';
 import AgentSettings from './pages/Agent/AgentSettings';
+import AppointmentManagement from './pages/Agent/AppointmentManagement';
 
 // Super Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -65,6 +67,7 @@ function App() {
                     <Route index element={<HomePage />} />
                     <Route path="listings" element={<ListingsPage />} />
                     <Route path="listings/:id" element={<ListingDetailPage />} />
+                    <Route path="listings/:id/book" element={<BookAppointment />} />
                     <Route path="banners/:id" element={<BannerDetail />} />
                     <Route path="search" element={<MobileSearchPage />} />
                     <Route
@@ -95,6 +98,7 @@ function App() {
                     <Route path="listings" element={<AgentListings />} />
                     <Route path="listings/new" element={<CreateListing />} />
                     <Route path="listings/:id/edit" element={<EditListing />} />
+                    <Route path="appointments" element={<AppointmentManagement />} />
                     <Route path="sub-agents" element={<SubAgents />} />
                     <Route path="theme" element={<ThemeSettings />} />
                     <Route path="settings" element={<AgentSettings />} />

@@ -201,3 +201,32 @@ type Banner struct {
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+// Appointment status constants
+const (
+	AppointmentPending   = "pending"
+	AppointmentConfirmed = "confirmed"
+	AppointmentCompleted = "completed"
+	AppointmentCancelled = "cancelled"
+)
+
+// Appointment represents a property viewing appointment
+type Appointment struct {
+	ID            uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ListingID     uuid.UUID      `gorm:"type:uuid;not null" json:"listing_id"`
+	Listing       *Listing       `gorm:"foreignKey:ListingID" json:"listing,omitempty"`
+	AgentID       uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
+	Agent         *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	FullName      string         `gorm:"size:200;not null" json:"full_name"`
+	Email         string         `gorm:"size:255;not null" json:"email"`
+	Phone         string         `gorm:"size:50;not null" json:"phone"`
+	PreferredDate time.Time      `gorm:"type:date;not null" json:"preferred_date"`
+	PreferredTime string         `gorm:"size:10;not null" json:"preferred_time"` // e.g. "10:00", "14:30"
+	Purpose       string         `gorm:"size:20;not null" json:"purpose"`        // rent, buy
+	Message       string         `gorm:"type:text" json:"message,omitempty"`
+	Status        string         `gorm:"size:20;not null;default:'pending'" json:"status"`
+	AgentNotes    string         `gorm:"type:text" json:"agent_notes,omitempty"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+}

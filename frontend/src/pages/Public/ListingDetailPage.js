@@ -23,6 +23,7 @@ import {
     DevicePhoneMobileIcon,
     ChevronDownIcon,
     ChevronUpIcon,
+    CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
@@ -374,12 +375,19 @@ const ListingDetailPage = () => {
                                 )}
                             </div>
 
-                            {/* Confirmed Button */}
-                            <div className="">
+                            {/* Confirmed Button & Book a Viewing */}
+                            <div className="flex flex-wrap gap-3">
                                 <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide">
                                     <CheckBadgeIcon className="w-5 h-5 mr-2" />
                                     Confirmed Available Today
                                 </button>
+                                <Link
+                                    to={`/listings/${listing.id}/book`}
+                                    className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
+                                >
+                                    <CalendarDaysIcon className="w-5 h-5 mr-2" />
+                                    Book a Viewing
+                                </Link>
                             </div>
                         </div>
 
@@ -814,6 +822,8 @@ const ListingDetailPage = () => {
                                                     zoom={15}
                                                     onMarkerClick={() => { }}
                                                     mapStyle={{ width: '100%', height: '100%' }}
+                                                    options={{ gestureHandling: 'cooperative' }}
+                                                    useDefaultMarkers={true}
                                                 />
                                             ) : (
                                                 <div className="relative w-full h-full bg-slate-50 flex flex-col">

@@ -23,6 +23,7 @@ import {
     ChevronRightIcon,
     SunIcon,
     MoonIcon,
+    CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardLayout = () => {
@@ -47,6 +48,7 @@ const DashboardLayout = () => {
     const agentNavigation = [
         { name: 'Dashboard', href: '/agent', icon: HomeIcon },
         { name: 'Listings', href: '/agent/listings', icon: BuildingOfficeIcon },
+        { name: 'Appointments', href: '/agent/appointments', icon: CalendarDaysIcon },
         { name: 'Sub-Agents', href: '/agent/sub-agents', icon: UsersIcon },
         { name: 'Theme', href: '/agent/theme', icon: SwatchIcon },
         { name: 'Notifications', href: '/agent/notifications', icon: BellIcon },

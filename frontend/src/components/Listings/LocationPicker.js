@@ -143,7 +143,7 @@ const LocationPicker = ({ value, onChange, address }) => {
                     mapTypeControl: false,
                     streetViewControl: false,
                     fullscreenControl: false,
-                    gestureHandling: 'greedy', // Allow direct scroll zoom without Cmd key
+                    gestureHandling: 'cooperative', // Require Cmd key + scroll to zoom to prevent page scroll hijacking
                     mapId: 'DEMO_MAP_ID'
                 }}
             >

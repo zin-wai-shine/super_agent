@@ -16,8 +16,8 @@
 
   /* Custom scrollbar - Global */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 3px;
+    height: 3px;
   }
 
   ::-webkit-scrollbar-track {
@@ -44,8 +44,8 @@
 
   /* Specific Scrollbar - Primary Blue */
   .custom-scrollbar-primary::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 3px;
+    height: 3px;
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-track {
@@ -195,10 +195,6 @@
     }
   }
 
-  .animate-slide-down {
-    animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
   @keyframes slide-down {
     from {
       transform: translateY(-20px);
@@ -207,6 +203,22 @@
 
     to {
       transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in-scale {
+    animation: fade-in-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fade-in-scale {
+    from {
+      transform: scale(0.98) translateY(10px);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1) translateY(0);
       opacity: 1;
     }
   }
