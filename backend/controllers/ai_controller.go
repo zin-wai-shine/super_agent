@@ -544,7 +544,7 @@ func (ac *AIController) EnhanceImage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load credits"})
 		return
 	}
-	allowed, inGrace := ac.canSpend(c, balance, creditCostImageEnhance)
+	allowed, _ := ac.canSpend(c, balance, creditCostImageEnhance)
 	if !allowed {
 		c.JSON(http.StatusPaymentRequired, gin.H{"error": "AI credits exhausted", "code": "credits_exhausted"})
 		return

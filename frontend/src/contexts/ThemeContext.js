@@ -5,7 +5,7 @@ const ThemeContext = createContext(null);
 
 const defaultTheme = {
     backgroundColor: '#f5f5f5',
-    primaryColor: '#3b82f6',
+    primaryColor: '#1E4ED8',
     secondaryColor: '#34a853',
     textColor: '#202124',
     fontFamily: 'Inter, sans-serif',

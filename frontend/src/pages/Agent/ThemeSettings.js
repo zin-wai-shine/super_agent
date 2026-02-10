@@ -39,7 +39,7 @@ const ThemeSettings = () => {
 
     const DEFAULT_THEME = {
         background_color: '#f5f5f5',
-        primary_color: '#3b82f6',
+        primary_color: '#1E4ED8',
         secondary_color: '#34a853',
         text_color: '#202124',
         logo_url: '',

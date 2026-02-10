@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { adminApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import StyledSelect from '../../components/Form/StyledSelect';
@@ -60,6 +60,7 @@ const AgentManagement = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [shownDate, setShownDate] = useState(new Date());
     const [sorting, setSorting] = useState([]);
+    const [plans, setPlans] = useState([]);
     const datePickerRef = useRef(null);
 
     // Close datepicker when clicking outside
@@ -75,7 +76,7 @@ const AgentManagement = () => {
         };
     }, []);
 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { register, handleSubmit, reset, watch, control, formState: { errors } } = useForm();
 
     const fetchAgents = async () => {
         setLoading(true);
@@ -95,6 +96,18 @@ const AgentManagement = () => {
     useEffect(() => {
         fetchAgents();
     }, []);
+
+    const fetchPlans = async () => {
+        try {
+            const r = await adminApi.getPlans();
+            setPlans(Array.isArray(r.data) ? r.data : []);
+        } catch (_) {
+            setPlans([]);
+        }
+    };
+    useEffect(() => {
+        if (showModal) fetchPlans();
+    }, [showModal]);
 
     const handleDatePresetChange = (preset) => {
         setDatePreset(preset);
@@ -185,25 +198,30 @@ const AgentManagement = () => {
     const openModal = (agent = null) => {
         setEditingAgent(agent);
         if (agent) {
+            const subId = agent.subscription_id || agent.subscription?.id || '';
             reset({
                 name: agent.name,
                 email: agent.owner_email,
                 subdomain: agent.subdomain,
                 domain_type: agent.domain_type || 'subdomain',
-                custom_domain: agent.custom_domain,
+                custom_domain: agent.custom_domain || '',
+                subscription_id: subId,
             });
         } else {
-            reset({ name: '', email: '', password: '', subdomain: '', domain_type: 'subdomain', custom_domain: '' });
+            reset({ name: '', email: '', password: '', subdomain: '', domain_type: 'subdomain', custom_domain: '', subscription_id: '' });
         }
         setShowModal(true);
     };
 
     const onSubmit = async (data) => {
         try {
+            const subscriptionId = (data.subscription_id?.value ?? data.subscription_id ?? '').toString().trim();
             const payload = {
                 ...data,
                 domain_type: data.domain_type || 'subdomain',
+                subscription_id: subscriptionId || undefined,
             };
+            if (!payload.subscription_id) delete payload.subscription_id;
 
             if (editingAgent) {
                 await adminApi.updateAgent(editingAgent.id, payload);
@@ -885,27 +903,26 @@ const AgentManagement = () => {
                                     </div>
                                 )}
 
-                                {/* Domain Type Selection */}
+                                {/* Domain Type — plan is auto-assigned by backend; no plan selection required */}
                                 <div>
                                     <label className="input-label">Domain Type *</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
+                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${(watch('domain_type') || editingAgent?.domain_type || 'subdomain') === 'subdomain'
                                             ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
                                             <input
                                                 type="radio"
                                                 value="subdomain"
-                                                defaultChecked
                                                 {...register('domain_type')}
                                                 className="sr-only"
                                             />
                                             <span className="text-2xl mb-2">🌐</span>
                                             <span className="font-medium text-sm text-gray-900 dark:text-white">Subdomain</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Free Plan</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">e.g. agent.super.app</span>
                                         </label>
-                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${editingAgent?.domain_type === 'custom'
-                                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${(watch('domain_type') || editingAgent?.domain_type) === 'custom'
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
                                             <input
@@ -916,9 +933,39 @@ const AgentManagement = () => {
                                             />
                                             <span className="text-2xl mb-2">🔗</span>
                                             <span className="font-medium text-sm text-gray-900 dark:text-white">Custom Domain</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Premium Plan</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">e.g. www.yourcompany.com</span>
                                         </label>
                                     </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optionally pick a plan below, or leave &quot;Auto&quot; to assign by domain type.</p>
+                                </div>
+
+                                <div>
+                                    <label className="input-label">Plan</label>
+                                    <Controller
+                                        name="subscription_id"
+                                        control={control}
+                                        defaultValue=""
+                                        render={({ field }) => {
+                                            const planOptions = [
+                                                { value: '', label: 'Auto (by domain type)' },
+                                                ...(plans || []).map((p) => ({
+                                                    value: (p.id != null && typeof p.id === 'string') ? p.id : String(p.id || ''),
+                                                    label: `${p.plan_name || 'Plan'} • ${p.domain_type || 'subdomain'} • ฿${p.price != null ? Number(p.price) : 0}/mo`,
+                                                })),
+                                            ];
+                                            const v = (field.value?.value ?? field.value ?? '').toString();
+                                            const selected = planOptions.find((o) => o.value === v) || planOptions[0];
+                                            return (
+                                                <StyledSelect
+                                                    options={planOptions}
+                                                    value={selected}
+                                                    onChange={(sel) => field.onChange(sel?.value ?? sel ?? '')}
+                                                    placeholder="Select plan"
+                                                />
+                                            );
+                                        }}
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Use a plan you created in Subscription Plans. &quot;Auto&quot; picks the first matching plan for the chosen domain type.</p>
                                 </div>
 
                                 <div>
@@ -938,7 +985,7 @@ const AgentManagement = () => {
                                 </div>
 
                                 <div>
-                                    <label className="input-label">Custom Domain (for Premium)</label>
+                                    <label className="input-label">Custom Domain</label>
                                     <input
                                         type="text"
                                         className="input-field"
@@ -946,7 +993,7 @@ const AgentManagement = () => {
                                         {...register('custom_domain')}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Required if selecting Custom Domain type
+                                        Required only if you chose Custom Domain above; otherwise leave blank.
                                     </p>
                                 </div>
 

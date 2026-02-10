@@ -44,6 +44,8 @@ const SubscriptionPlans = () => {
     const openModal = (plan = null) => {
         setEditingPlan(plan);
         if (plan) {
+            const aiTier = (plan.ai_tier || 'none').toString().toLowerCase();
+            const validTier = ['none', 'basic', 'pro', 'millionaire'].includes(aiTier) ? aiTier : 'none';
             reset({
                 name: plan.plan_name || plan.name,
                 domain_type: plan.domain_type || 'subdomain',
@@ -51,8 +53,8 @@ const SubscriptionPlans = () => {
                 max_listings: plan.max_listings,
                 max_sub_agents: plan.max_sub_agents,
                 allow_custom_domain: plan.allow_custom_domain || false,
-                features: typeof plan.features === 'string' ? plan.features : (plan.features?.join ? plan.features.join(', ') : ''),
-                ai_tier: plan.ai_tier || 'none',
+                features: typeof plan.features === 'string' ? plan.features : (Array.isArray(plan.features) ? plan.features.join(', ') : (plan.features?.join ? plan.features.join(', ') : '')),
+                ai_tier: validTier,
                 monthly_ai_credits: plan.monthly_ai_credits ?? 0,
             });
         } else {
@@ -81,9 +83,10 @@ const SubscriptionPlans = () => {
                 max_sub_agents: parseInt(data.max_sub_agents, 10),
                 allow_custom_domain: data.allow_custom_domain || false,
                 features: data.features ? data.features.split(',').map((f) => f.trim()).filter(Boolean).join(',') : '',
-                ai_tier: data.ai_tier?.value ?? data.ai_tier ?? 'none',
+                ai_tier: (data.ai_tier?.value ?? data.ai_tier ?? 'none').toString().toLowerCase(),
                 monthly_ai_credits: parseInt(data.monthly_ai_credits, 10) || 0,
             };
+            if (!['none', 'basic', 'pro', 'millionaire'].includes(payload.ai_tier)) payload.ai_tier = 'none';
 
             if (editingPlan) {
                 await adminApi.updatePlan(editingPlan.id, payload);
@@ -318,14 +321,15 @@ const SubscriptionPlans = () => {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Modal - wider, scrollable, centered */}
             {showModal && (
-                <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-dashboard-card rounded-2xl w-full max-w-md p-6 animate-scale-in border dark:border-gray-700">
-                        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
+                <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-dashboard-card rounded-2xl w-full max-w-2xl my-8 p-6 animate-scale-in border dark:border-gray-700 shadow-xl max-h-[90vh] flex flex-col">
+                        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white shrink-0">
                             {editingPlan ? 'Edit Plan' : 'Create Plan'}
                         </h2>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+                            <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
                             <div>
                                 <label className="input-label">Plan Name</label>
                                 <input type="text" className="input-field" {...register('name', { required: true })} />
@@ -374,18 +378,22 @@ const SubscriptionPlans = () => {
                                             control={control}
                                             defaultValue="none"
                                             render={({ field }) => {
-                                                const v = field.value?.value ?? field.value ?? 'none';
+                                                const v = (typeof field.value === 'string' ? field.value : field.value?.value) ?? 'none';
                                                 const labels = { none: 'None (no AI)', basic: 'Basic', pro: 'Pro', millionaire: 'Millionaire' };
+                                                const aiTierOptions = [
+                                                    { value: 'none', label: 'None (no AI)' },
+                                                    { value: 'basic', label: 'Basic' },
+                                                    { value: 'pro', label: 'Pro' },
+                                                    { value: 'millionaire', label: 'Millionaire' },
+                                                ];
                                                 return (
                                                     <StyledSelect
-                                                        value={{ value: v, label: labels[v] || v }}
-                                                        onChange={(opt) => field.onChange(opt?.value ?? 'none')}
-                                                        options={[
-                                                            { value: 'none', label: 'None (no AI)' },
-                                                            { value: 'basic', label: 'Basic' },
-                                                            { value: 'pro', label: 'Pro' },
-                                                            { value: 'millionaire', label: 'Millionaire' },
-                                                        ]}
+                                                        options={aiTierOptions}
+                                                        value={v ? { value: v, label: labels[v] || v } : aiTierOptions[0]}
+                                                        onChange={(selected) => {
+                                                            const val = selected && typeof selected === 'object' && 'value' in selected ? selected.value : selected;
+                                                            field.onChange(val ?? 'none');
+                                                        }}
                                                     />
                                                 );
                                             }}
@@ -412,11 +420,14 @@ const SubscriptionPlans = () => {
                                 <label className="input-label">Features (comma-separated)</label>
                                 <textarea
                                     className="input-field"
-                                    placeholder="Custom domain, Priority support, Analytics"
+                                    placeholder="e.g. Custom domain, Priority support, Analytics"
+                                    rows={3}
                                     {...register('features')}
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Add plan features as comma-separated text. Shown on plan cards.</p>
                             </div>
-                            <div className="flex justify-end space-x-3 pt-4">
+                            </div>
+                            <div className="flex justify-end space-x-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 shrink-0">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">
                                     Cancel
                                 </button>

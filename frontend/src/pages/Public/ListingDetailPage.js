@@ -146,11 +146,9 @@ const ListingDetailPage = () => {
     const transitWrapperRef = useRef(null);
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
-    const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
-
     // Lock background scroll when modals are open
     useEffect(() => {
-        if (isGalleryOpen || isContactOverlayOpen) {
+        if (isGalleryOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -158,7 +156,7 @@ const ListingDetailPage = () => {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isGalleryOpen, isContactOverlayOpen]);
+    }, [isGalleryOpen]);
 
     // Map Constants
     const MAP_WIDTH = 1368;
@@ -1069,98 +1067,6 @@ const ListingDetailPage = () => {
                     </div>
                 )
             }
-            {isContactOverlayOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
-                    {/* Backdrop with extreme dark blur */}
-                    <div
-                        className="absolute inset-0 bg-black/70 backdrop-blur-2xl"
-                        onClick={() => setIsContactOverlayOpen(false)}
-                    />
-
-                    {/* Absolute Viewport Close Button (X) */}
-                    <button
-                        onClick={() => setIsContactOverlayOpen(false)}
-                        className="fixed top-8 right-8 p-4 text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-full z-[120] active:scale-95 group shadow-2xl"
-                    >
-                        <XMarkIcon className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
-                    </button>
-
-                    {/* Content Container - No background, just centered content */}
-                    <div className="relative w-full max-w-lg p-8 pb-12 sm:pb-8 flex flex-col items-center text-center animate-in slide-in-from-bottom-20 duration-500 ease-out">
-                        {/* Pull Bar for mobile feel */}
-                        <div className="w-12 h-1.5 bg-white/20 rounded-full mb-8 sm:hidden" />
-
-                        <div className="mb-8">
-                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
-                                <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-3xl font-black text-white tracking-tight mb-2">Interested?</h3>
-                            <p className="text-white/80 font-bold px-4 leading-relaxed">Select your preferred contact method to schedule a viewing.</p>
-                        </div>
-
-                        <div className="w-full grid grid-cols-1 gap-4">
-                            <a
-                                href="https://line.me/ti/p/~kiki33467"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#06C755' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <ChatBubbleOvalLeftEllipsisIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Line</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="tel:0951953607"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-gray-900 hover:bg-black shadow-lg active:shadow-inner"
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <PhoneIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Call Agent</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="viber://chat?number=%2B66951953607"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#7360f2' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <ChatBubbleLeftRightIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Viber</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="https://wa.me/66951953607"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#25D366' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <DevicePhoneMobileIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">WhatsApp</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Floating Contact FAB - Modern Circular Design (Visible on all devices) */}
-            <div className={`fixed bottom-24 md:bottom-10 right-6 md:right-10 z-[45] transition-all duration-500 ${isContactOverlayOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
-                <button
-                    onClick={() => setIsContactOverlayOpen(true)}
-                    className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-primary-600 text-white rounded-full shadow-[0_20px_40px_rgba(37,99,235,0.35)] hover:bg-primary-700 hover:scale-110 transition-all active:scale-90 group overflow-hidden"
-                >
-                    {/* Ripple/Pulse Effect */}
-                    <div className="absolute inset-0 bg-white/20 animate-ping rounded-full opacity-20" />
-                    <ChatBubbleLeftRightIcon className="w-7 h-7 md:w-9 md:h-9 relative z-10" />
-                </button>
-            </div>
         </div >
     );
 };

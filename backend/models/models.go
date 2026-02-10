@@ -43,6 +43,7 @@ type Agent struct {
 	Description    string         `gorm:"type:text" json:"description,omitempty"`
 	Phone          string         `gorm:"size:50" json:"phone,omitempty"`
 	Email          string         `gorm:"size:255" json:"email,omitempty"`
+	LineURL        string         `gorm:"size:500" json:"line_url,omitempty"` // e.g. https://line.me/ti/p/~id
 	Address        string         `gorm:"type:text" json:"address,omitempty"`
 	MinPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"min_price_limit"`
 	MaxPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"max_price_limit"`

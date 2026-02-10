@@ -235,6 +235,7 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"description":     agent.Description,
 		"phone":           agent.Phone,
 		"email":           agent.Email,
+		"line_url":        agent.LineURL,
 		"address":         agent.Address,
 		"theme":           agent.Theme,
 		"min_price_limit": agent.MinPriceLimit,

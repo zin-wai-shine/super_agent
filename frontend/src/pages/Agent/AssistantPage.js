@@ -65,10 +65,12 @@ const AssistantPage = () => {
                     Credits this month
                 </h2>
                 {!aiEnabled ? (
-                    <p className="text-gray-600 dark:text-gray-400">AI is not available on your current plan. Upgrade to use descriptions, translation, price suggestions, and more.</p>
-                    <Link to="/agent/settings" className="inline-block mt-4 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-                        View plan
-                    </Link>
+                    <>
+                        <p className="text-gray-600 dark:text-gray-400">AI is not available on your current plan. Upgrade to use descriptions, translation, price suggestions, and more.</p>
+                        <Link to="/agent/settings" className="inline-block mt-4 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+                            View plan
+                        </Link>
+                    </>
                 ) : (
                     <>
                         <div className="flex flex-wrap items-baseline gap-4">
