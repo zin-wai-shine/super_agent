@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"super_real_estate/config"
 	"super_real_estate/middleware"
@@ -16,6 +17,16 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+// secureFilename returns a cryptographically random filename with the given extension.
+// Example: a1b2c3d4e5f6...32hexchars.jpg — unguessable, no user/original name exposed.
+func secureFilename(ext string) string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return uuid.New().String() + ext
+	}
+	return hex.EncodeToString(b) + ext
+}
 
 type UploadController struct {
 	db  *gorm.DB
@@ -88,8 +99,8 @@ func (uc *UploadController) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	// Secure random filename (no original name, no predictable pattern)
+	filename := secureFilename(ext)
 	filePath := filepath.Join(uploadDir, filename)
 
 	// Save file
@@ -167,8 +178,8 @@ func (uc *UploadController) UploadVideo(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	// Secure random filename
+	filename := secureFilename(ext)
 	filePath := filepath.Join(uploadDir, filename)
 
 	// Save file
@@ -268,8 +279,8 @@ func (uc *UploadController) UploadLogo(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("logo_%s%s", uuid.New().String()[:8], ext)
+	// Secure random filename (no "logo_" prefix — unguessable)
+	filename := secureFilename(ext)
 	filePath := filepath.Join(uploadDir, filename)
 
 	// Save file
@@ -321,8 +332,8 @@ func (uc *UploadController) UploadBanner(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("banner_%s%s", uuid.New().String()[:8], ext)
+	// Secure random filename (no "banner_" prefix — unguessable)
+	filename := secureFilename(ext)
 	filePath := filepath.Join(uploadDir, filename)
 
 	// Save file

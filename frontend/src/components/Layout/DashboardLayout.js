@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import NotificationBell from '../Common/NotificationBell';
-
+import AICreditsBadge from '../Common/AICreditsBadge';
 import Logo from '../Common/Logo';
 import {
     HomeIcon,
@@ -102,6 +102,7 @@ const DashboardLayout = () => {
 
                 {/* Right Side Actions */}
                 <div className="flex items-center space-x-4">
+                    {isAgent && <AICreditsBadge />}
                     <Link
                         to="/"
                         className="text-sm text-gray-500 hover:text-primary-600 transition-colors hidden sm:block"

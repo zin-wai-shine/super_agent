@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi, uploadApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi, aiApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
@@ -38,6 +38,9 @@ const CreateListing = () => {
     const [shownDate, setShownDate] = useState(new Date());
     const datePickerRef = useRef(null);
     const [lightboxIndex, setLightboxIndex] = useState(null);
+    const [aiDescriptionLoading, setAiDescriptionLoading] = useState(false);
+    const [aiTranslateLoading, setAiTranslateLoading] = useState(false);
+    const [aiPriceLoading, setAiPriceLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -379,7 +382,86 @@ const CreateListing = () => {
                         </div>
 
                         <div>
-                            <label className="input-label">Description</label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="input-label">Description</label>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            setAiDescriptionLoading(true);
+                                            try {
+                                                const pt = fieldValues.property_type?.value ?? fieldValues.property_type;
+                                                const lt = fieldValues.listing_type?.value ?? fieldValues.listing_type;
+                                                const res = await aiApi.generateDescription({
+                                                    title: fieldValues.title || 'Property',
+                                                    property_type: pt || 'condo',
+                                                    listing_type: lt || 'rent',
+                                                    bedrooms: parseInt(fieldValues.bedrooms, 10) || 0,
+                                                    bathrooms: parseInt(fieldValues.bathrooms, 10) || 0,
+                                                    area: parseFloat(fieldValues.area) || 0,
+                                                    address: fieldValues.address || '',
+                                                    district: fieldValues.district || '',
+                                                    province: fieldValues.province || '',
+                                                    price: parseFloat(fieldValues.price) || 0,
+                                                });
+                                                setValue('description', res.data.description || '');
+                                                toast.success('Description generated');
+                                            } catch (e) {
+                                                if (e.response?.status === 403 || e.response?.data?.code === 'ai_locked') {
+                                                    toast.error('Upgrade your plan to use AI');
+                                                } else if (e.response?.status === 402 || e.response?.data?.code === 'credits_exhausted') {
+                                                    toast.error(e.response?.data?.upgrade_message || 'AI credits used up this month');
+                                                } else {
+                                                    toast.error(e.response?.data?.error || 'AI request failed');
+                                                }
+                                            } finally {
+                                                setAiDescriptionLoading(false);
+                                            }
+                                        }}
+                                        disabled={aiDescriptionLoading}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 text-sm font-medium hover:bg-primary-500/20 disabled:opacity-50"
+                                    >
+                                        <SparklesIcon className="w-4 h-4" />
+                                        {aiDescriptionLoading ? 'Generating...' : 'Generate with AI'}
+                                    </button>
+                                    {fieldValues.description && (
+                                        <>
+                                            {['en', 'th', 'my'].map((lang) => (
+                                                <button
+                                                    key={lang}
+                                                    type="button"
+                                                    disabled={aiTranslateLoading}
+                                                    onClick={async () => {
+                                                        const raw = fieldValues.description || '';
+                                                        const text = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || raw;
+                                                        if (!text) return;
+                                                        setAiTranslateLoading(true);
+                                                        try {
+                                                            const res = await aiApi.translate(text, lang);
+                                                            const translated = res.data.translated_text || '';
+                                                            setValue('description', `<p>${translated.replace(/\n/g, '</p><p>')}</p>`);
+                                                            toast.success(`Translated to ${lang === 'en' ? 'English' : lang === 'th' ? 'Thai' : 'Myanmar'}`);
+                                                        } catch (e) {
+                                                            if (e.response?.status === 403 || e.response?.data?.code === 'ai_locked') {
+                                                                toast.error('Upgrade your plan to use AI');
+                                                            } else if (e.response?.status === 402) {
+                                                                toast.error('AI credits used up');
+                                                            } else {
+                                                                toast.error(e.response?.data?.error || 'Translation failed');
+                                                            }
+                                                        } finally {
+                                                            setAiTranslateLoading(false);
+                                                        }
+                                                    }}
+                                                    className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
+                                                >
+                                                    {lang === 'en' ? 'EN' : lang === 'th' ? 'TH' : 'MM'}
+                                                </button>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                             <Controller
                                 name="description"
                                 control={control}
@@ -413,21 +495,64 @@ const CreateListing = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="input-label">Price (THB) *</label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
-                                <input
-                                    type="number"
-                                    className={`input-field pl-8 ${errors.price ? 'border-red-300' : ''}`}
-                                    placeholder="0"
-                                    {...register('price', { required: 'Price is required', min: 0 })}
-                                />
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
+                                    <input
+                                        type="number"
+                                        className={`input-field pl-8 ${errors.price ? 'border-red-300' : ''}`}
+                                        placeholder="0"
+                                        {...register('price', { required: 'Price is required', min: 0 })}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        setAiPriceLoading(true);
+                                        try {
+                                            const pt = fieldValues.property_type?.value ?? fieldValues.property_type;
+                                            const lt = fieldValues.listing_type?.value ?? fieldValues.listing_type;
+                                            const res = await aiApi.suggestPrice({
+                                                property_type: pt || 'condo',
+                                                listing_type: lt || 'rent',
+                                                bedrooms: parseInt(fieldValues.bedrooms, 10) || 0,
+                                                bathrooms: parseInt(fieldValues.bathrooms, 10) || 0,
+                                                area: parseFloat(fieldValues.area) || 0,
+                                                district: fieldValues.district || '',
+                                                province: fieldValues.province || '',
+                                            });
+                                            const price = res.data.suggested_price;
+                                            if (price > 0) {
+                                                setValue('price', Math.round(price));
+                                                toast.success(res.data.note || `Suggested: ฿${Math.round(price).toLocaleString()}`);
+                                            } else {
+                                                toast.error(res.data.note || 'Could not suggest price');
+                                            }
+                                        } catch (e) {
+                                            if (e.response?.status === 403 || e.response?.data?.code === 'ai_locked') {
+                                                toast.error('Upgrade your plan to use AI');
+                                            } else if (e.response?.status === 402) {
+                                                toast.error('AI credits used up');
+                                            } else {
+                                                toast.error(e.response?.data?.error || 'AI request failed');
+                                            }
+                                        } finally {
+                                            setAiPriceLoading(false);
+                                        }
+                                    }}
+                                    disabled={aiPriceLoading}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 text-sm font-medium hover:bg-primary-500/20 disabled:opacity-50 shrink-0"
+                                >
+                                    <SparklesIcon className="w-4 h-4" />
+                                    {aiPriceLoading ? '...' : 'Suggest'}
+                                </button>
                             </div>
                             {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price.message}</p>}
                         </div>
                         <div className="flex items-center">
                             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-[3px]">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                                    💡 Enter monthly rent for rentals, or total price for sales.
+                                    💡 Enter monthly rent for rentals, or total price for sales. Use Suggest for AI estimate.
                                 </p>
                             </div>
                         </div>

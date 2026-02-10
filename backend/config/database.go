@@ -19,6 +19,9 @@ type Config struct {
 	DBName     string
 	JWTSecret  string
 	UploadPath string
+	// AI (OpenAI-compatible API)
+	AIAPIURL string
+	AIAPIKey string
 }
 
 func LoadConfig() *Config {
@@ -30,6 +33,8 @@ func LoadConfig() *Config {
 		DBName:     getEnv("DB_NAME", "super_real_estate"),
 		JWTSecret:  getEnv("JWT_SECRET", "default_jwt_secret"),
 		UploadPath: getEnv("UPLOAD_PATH", "./uploads"),
+		AIAPIURL:   getEnv("AI_API_URL", ""),
+		AIAPIKey:   getEnv("AI_API_KEY", ""),
 	}
 }
 

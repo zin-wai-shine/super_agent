@@ -96,7 +96,6 @@ export const agentApi = {
     deleteSubAgent: (id) => api.delete(`/agent/sub-agents/${id}`),
     getTheme: () => api.get('/agent/theme'),
     updateTheme: (data) => api.put('/agent/theme', data),
-    updateTheme: (data) => api.put('/agent/theme', data),
     getSettings: () => api.get('/agent/settings'),
     updateSettings: (data) => api.put('/agent/settings', data),
     uploadLogo: (file) => {
@@ -113,6 +112,14 @@ export const agentApi = {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
+};
+
+// AI API (Millionaire features: credits, description, translate, suggest price)
+export const aiApi = {
+    getCredits: () => api.get('/agent/ai/credits'),
+    generateDescription: (data) => api.post('/agent/ai/description', data),
+    translate: (text, target) => api.post('/agent/ai/translate', { text, target }),
+    suggestPrice: (data) => api.post('/agent/ai/suggest-price', data),
 };
 
 // Super Admin API

@@ -16,6 +16,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	authController := controllers.NewAuthController(db)
 	superAdminController := controllers.NewSuperAdminController(db)
 	agentController := controllers.NewAgentController(db, cfg)
+	aiController := controllers.NewAIController(db, cfg)
 	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
 	appointmentController := controllers.NewAppointmentController(db)
@@ -124,6 +125,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 
 				// Dashboard
 				agent.GET("/dashboard", agentController.GetDashboard)
+
+				// AI (Millionaire features: description, translate, suggest price)
+				agent.GET("/ai/credits", aiController.GetCredits)
+				agent.POST("/ai/description", aiController.GenerateDescription)
+				agent.POST("/ai/translate", aiController.Translate)
+				agent.POST("/ai/suggest-price", aiController.SuggestPrice)
 
 				// Appointment management (agent)
 				agent.GET("/appointments", appointmentController.GetAppointments)

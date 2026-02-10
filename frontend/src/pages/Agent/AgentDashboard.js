@@ -10,6 +10,7 @@ import {
     PlusIcon,
     ArrowTrendingUpIcon,
     EllipsisHorizontalIcon,
+    SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { getMediaUrl } from '../../utils/media';
@@ -75,8 +76,27 @@ const AgentDashboard = () => {
 
     return (
         <div className="space-y-8">
-            {/* Header */}
-
+            {/* AI quick action */}
+            <div className="bg-gradient-to-r from-primary-500/10 to-purple-500/10 dark:from-primary-500/20 dark:to-purple-500/20 rounded-2xl p-5 border border-primary-200/50 dark:border-primary-500/20">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-lg bg-primary-500/20 text-primary-600 dark:text-primary-400">
+                            <SparklesIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-white">AI Listing Assistant</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Generate descriptions, translate to EN/TH/MM, and get price suggestions in one click.</p>
+                        </div>
+                    </div>
+                    <Link
+                        to="/agent/listings/new"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        Create listing with AI
+                    </Link>
+                </div>
+            </div>
 
             {/* Stats Grid - Modern */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
