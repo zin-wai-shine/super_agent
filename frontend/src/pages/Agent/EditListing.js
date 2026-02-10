@@ -46,6 +46,7 @@ const EditListing = () => {
     const [aiDescriptionLoading, setAiDescriptionLoading] = useState(false);
     const [aiTranslateLoading, setAiTranslateLoading] = useState(false);
     const [aiPriceLoading, setAiPriceLoading] = useState(false);
+    const [enhancingMediaId, setEnhancingMediaId] = useState(null);
 
     const WALKING_SPEED_MPM = 80; // Meters per minute
 
@@ -298,6 +299,52 @@ const EditListing = () => {
         setLightboxIndex((prev) => (prev - 1 + media.length) % media.length);
     };
 
+    const handleEnhanceImage = async (item) => {
+        if (enhancingMediaId !== null) return;
+        setEnhancingMediaId(item.id);
+        try {
+            const imgUrl = getMediaUrl(item.url);
+            const resp = await fetch(imgUrl);
+            const blob = await resp.blob();
+            const file = new File([blob], 'image.jpg', { type: blob.type || 'image/jpeg' });
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await aiApi.enhanceImage(formData);
+            if (res.data?.image_url) {
+                const blob2 = await fetch(res.data.image_url).then(r => r.blob());
+                const newFile = new File([blob2], 'enhanced.jpg', { type: blob2.type });
+                await uploadApi.uploadImage(id, newFile);
+                const newMedia = { id: `new-${Date.now()}`, url: res.data.image_url, type: 'image' };
+                setMedia(prev => [...prev, newMedia]);
+                toast.success('Image enhanced and added');
+            } else if (res.data?.image_base64) {
+                const base64 = res.data.image_base64;
+                const byteChars = atob(base64);
+                const byteNumbers = new Array(byteChars.length).fill(0).map((_, i) => byteChars.charCodeAt(i));
+                const blob2 = new Blob([new Uint8Array(byteNumbers)], { type: 'image/jpeg' });
+                const newFile = new File([blob2], 'enhanced.jpg', { type: 'image/jpeg' });
+                await uploadApi.uploadImage(id, newFile);
+                toast.success('Image enhanced and added');
+                const listRes = await agentApi.getListing(id);
+                if (listRes.data?.media) setMedia(listRes.data.media);
+            } else {
+                toast.success('Enhance requested');
+            }
+        } catch (err) {
+            if (err.response?.status === 503) {
+                toast.error('Image enhancement is not configured.');
+            } else if (err.response?.status === 402 || err.response?.data?.code === 'credits_exhausted') {
+                toast.error('AI credits exhausted.');
+            } else if (err.response?.status === 403) {
+                toast.error('AI not available on your plan.');
+            } else {
+                toast.error(err.response?.data?.error || 'Enhance failed');
+            }
+        } finally {
+            setEnhancingMediaId(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -378,6 +425,19 @@ const EditListing = () => {
                                     className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                 >
                                     <TrashIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); handleEnhanceImage(item); }}
+                                    disabled={enhancingMediaId !== null}
+                                    className="absolute top-4 left-4 p-2 bg-primary-600 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-primary-700 disabled:opacity-50 z-10"
+                                    title="Enhance with AI"
+                                >
+                                    {enhancingMediaId === item.id ? (
+                                        <span className="text-xs">...</span>
+                                    ) : (
+                                        <SparklesIcon className="w-4 h-4" />
+                                    )}
                                 </button>
                                 <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                                     Click to view

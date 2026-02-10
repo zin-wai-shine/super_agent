@@ -44,7 +44,10 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 		public := api.Group("/public")
 		{
 			public.GET("/listings", publicController.GetListings)
+			public.GET("/listings/smart-search", aiController.SmartSearch)
+			public.POST("/listings/smart-search", aiController.SmartSearch)
 			public.GET("/listings/:id", publicController.GetListing)
+			public.POST("/chat", aiController.PublicChat)
 			public.GET("/stations", publicController.GetStations)
 			public.GET("/listings/by-station/:stationId", publicController.GetListingsByStation)
 			public.GET("/agent/info", publicController.GetAgentInfo)
@@ -131,6 +134,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.POST("/ai/description", aiController.GenerateDescription)
 				agent.POST("/ai/translate", aiController.Translate)
 				agent.POST("/ai/suggest-price", aiController.SuggestPrice)
+				agent.POST("/ai/enhance-image", aiController.EnhanceImage)
 
 				// Appointment management (agent)
 				agent.GET("/appointments", appointmentController.GetAppointments)

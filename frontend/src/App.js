@@ -24,6 +24,7 @@ import AgentDashboard from './pages/Agent/AgentDashboard';
 import AgentListings from './pages/Agent/AgentListings';
 import CreateListing from './pages/Agent/CreateListing';
 import EditListing from './pages/Agent/EditListing';
+import AssistantPage from './pages/Agent/AssistantPage';
 import SubAgents from './pages/Agent/SubAgents';
 import ThemeSettings from './pages/Agent/ThemeSettings';
 import AgentSettings from './pages/Agent/AgentSettings';
@@ -115,6 +116,7 @@ function App() {
                     <Route path="listings" element={<AgentListings />} />
                     <Route path="listings/new" element={<CreateListing />} />
                     <Route path="listings/:id/edit" element={<EditListing />} />
+                    <Route path="assistant" element={<AssistantPage />} />
                     <Route path="appointments" element={<AppointmentManagement />} />
                     <Route path="sub-agents" element={<SubAgents />} />
                     <Route path="theme" element={<ThemeSettings />} />

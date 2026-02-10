@@ -18,10 +18,13 @@ import (
 )
 
 const (
-	creditCostDescription = 5
-	creditCostTranslation = 3
-	creditCostPrice       = 2
-	graceDailyLimit       = 5
+	creditCostDescription  = 5
+	creditCostTranslation  = 3
+	creditCostPrice        = 2
+	creditCostChat         = 1
+	creditCostSmartSearch  = 2
+	creditCostImageEnhance = 10
+	graceDailyLimit        = 5
 )
 
 type AIController struct {
@@ -367,4 +370,185 @@ func extractJSON(s string) string {
 	re := regexp.MustCompile(`\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}`)
 	m := re.FindString(s)
 	return m
+}
+
+// getAgentFromTenant gets agent and plan from tenant context (for public routes, no auth)
+func (ac *AIController) getAgentFromTenant(c *gin.Context) (agentID uuid.UUID, plan *models.Subscription, ok bool) {
+	agentID, ok = middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent not found"})
+		return
+	}
+	var agent models.Agent
+	if err := ac.db.Preload("Subscription").Where("id = ?", agentID).First(&agent).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return agentID, nil, false
+	}
+	if agent.SubscriptionID == nil {
+		c.JSON(http.StatusOK, gin.H{"reply": "Sorry, the agent's AI assistant is not available right now."})
+		return agentID, nil, false
+	}
+	plan = agent.Subscription
+	if plan == nil {
+		var sub models.Subscription
+		if err := ac.db.Where("id = ?", *agent.SubscriptionID).First(&sub).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"reply": "Sorry, the agent's AI assistant is not available."})
+			return agentID, nil, false
+		}
+		plan = &sub
+	}
+	if plan.AITier == models.AITierNone || plan.MonthlyAICredits <= 0 {
+		c.JSON(http.StatusOK, gin.H{"reply": "The agent's assistant is not enabled. Please contact the agent directly."})
+		return agentID, nil, false
+	}
+	return agentID, plan, true
+}
+
+// PublicChat handles website chatbot messages (public, no auth; tenant from context)
+func (ac *AIController) PublicChat(c *gin.Context) {
+	agentID, plan, ok := ac.getAgentFromTenant(c)
+	if !ok {
+		return
+	}
+	balance, _, _ := ac.getOrCreateBalance(agentID, plan)
+	if balance == nil {
+		c.JSON(http.StatusOK, gin.H{"reply": "Sorry, something went wrong. Please try again later."})
+		return
+	}
+	allowed, inGrace := ac.canSpend(c, balance, creditCostChat)
+	if !allowed {
+		c.JSON(http.StatusOK, gin.H{"reply": "The agent's assistant has reached its limit for this month. Please email or call the agent directly."})
+		return
+	}
+	if ac.ai == nil {
+		c.JSON(http.StatusOK, gin.H{"reply": "The assistant is temporarily unavailable. Please contact the agent directly."})
+		return
+	}
+	var req struct {
+		Message string `json:"message" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Message required"})
+		return
+	}
+	var agent models.Agent
+	ac.db.Where("id = ?", agentID).First(&agent)
+	systemPrompt := "You are the friendly assistant for " + agent.Name + ", a real estate agent. Answer briefly and professionally. Help with property inquiries, viewing requests, and general questions. If you don't know something, suggest the visitor contact the agent. Keep replies to 1-3 short sentences."
+	reply, err := ac.ai.Complete(systemPrompt, req.Message, 300)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"reply": "Sorry, I couldn't process that. Please try again or contact the agent directly."})
+		return
+	}
+	ac.deduct(c, balance, creditCostChat, inGrace)
+	c.JSON(http.StatusOK, gin.H{"reply": reply})
+}
+
+// SmartSearch parses natural language and returns listings (public, tenant from context)
+func (ac *AIController) SmartSearch(c *gin.Context) {
+	agentID, plan, ok := ac.getAgentFromTenant(c)
+	if !ok {
+		return
+	}
+	balance, _, _ := ac.getOrCreateBalance(agentID, plan)
+	if balance == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load credits"})
+		return
+	}
+	allowed, inGrace := ac.canSpend(c, balance, creditCostSmartSearch)
+	if !allowed {
+		c.JSON(http.StatusPaymentRequired, gin.H{"error": "AI search limit reached", "code": "credits_exhausted"})
+		return
+	}
+	if ac.ai == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Smart search not available"})
+		return
+	}
+	q := c.Query("q")
+	if q == "" {
+		q = c.PostForm("q")
+	}
+	if q == "" {
+		var body struct {
+			Q string `json:"q"`
+		}
+		_ = c.ShouldBindJSON(&body)
+		q = body.Q
+	}
+	if q == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query required"})
+		return
+	}
+	systemPrompt := `You are a real estate search parser. Given a natural language query about property search in Thailand, output ONLY a JSON object with these keys (use null or omit if not specified): property_type (condo|house|townhouse|apartment|land), listing_type (sale|rent), min_price (number), max_price (number), bedrooms (number, minimum), search (string for text search). Example: "3 bed condo under 50k" -> {"property_type":"condo","bedrooms":3,"max_price":50000,"listing_type":"rent"}. Output only valid JSON, no other text.`
+	text, err := ac.ai.Complete(systemPrompt, "Query: "+q, 200)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Search failed"})
+		return
+	}
+	raw := text
+	if s := extractJSON(raw); s != "" {
+		raw = s
+	}
+	var filters struct {
+		PropertyType string   `json:"property_type"`
+		ListingType  string   `json:"listing_type"`
+		MinPrice     *float64 `json:"min_price"`
+		MaxPrice     *float64 `json:"max_price"`
+		Bedrooms     *int     `json:"bedrooms"`
+		Search       string   `json:"search"`
+	}
+	_ = json.Unmarshal([]byte(raw), &filters)
+	query := ac.db.Model(&models.Listing{}).Preload("Media").Preload("Agent").Preload("Station").
+		Where("agent_id = ? AND is_published = ?", agentID, true)
+	if filters.PropertyType != "" {
+		query = query.Where("property_type = ?", filters.PropertyType)
+	}
+	if filters.ListingType != "" {
+		query = query.Where("listing_type = ?", filters.ListingType)
+	}
+	if filters.MinPrice != nil && *filters.MinPrice > 0 {
+		query = query.Where("price >= ?", *filters.MinPrice)
+	}
+	if filters.MaxPrice != nil && *filters.MaxPrice > 0 {
+		query = query.Where("price <= ?", *filters.MaxPrice)
+	}
+	if filters.Bedrooms != nil && *filters.Bedrooms > 0 {
+		query = query.Where("bedrooms >= ?", *filters.Bedrooms)
+	}
+	if filters.Search != "" {
+		query = query.Where("title ILIKE ? OR description ILIKE ? OR address ILIKE ?",
+			"%"+filters.Search+"%", "%"+filters.Search+"%", "%"+filters.Search+"%")
+	}
+	query = query.Order("created_at DESC").Limit(24)
+	var listings []models.Listing
+	if err := query.Find(&listings).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch listings"})
+		return
+	}
+	ac.deduct(c, balance, creditCostSmartSearch, inGrace)
+	c.JSON(http.StatusOK, gin.H{"listings": listings, "filters_applied": filters})
+}
+
+// EnhanceImage accepts an image and returns enhanced version (stub: not configured returns 503)
+func (ac *AIController) EnhanceImage(c *gin.Context) {
+	_, plan, ok := ac.getAgentAndPlan(c)
+	if !ok {
+		return
+	}
+	if plan.AITier == models.AITierNone {
+		c.JSON(http.StatusForbidden, gin.H{"error": "AI not available on your plan", "code": "ai_locked"})
+		return
+	}
+	agentID, _ := middleware.GetAgentID(c)
+	balance, _, _ := ac.getOrCreateBalance(agentID, plan)
+	if balance == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load credits"})
+		return
+	}
+	allowed, inGrace := ac.canSpend(c, balance, creditCostImageEnhance)
+	if !allowed {
+		c.JSON(http.StatusPaymentRequired, gin.H{"error": "AI credits exhausted", "code": "credits_exhausted"})
+		return
+	}
+	// Image enhance API not implemented; return 503 so UI can show "not configured"
+	c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Image enhancement is not configured. Use description and price AI for now."})
 }

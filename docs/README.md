@@ -2,15 +2,24 @@
 
 This folder holds business and product strategy documentation (no code).
 
-## Millionaire Plan (AI Monetization)
+## AI Integration (Primary — No New Plans)
 
 | File | Description |
 |------|-------------|
-| **Millionaire-Plan-Strategy.md** | Full strategy: AI positioning, plan + credit logic, Millionaire Plan definition, credit economy, daily money loop, upsell, risk control, downgrade, wealth logic, execution. |
-| **Millionaire-Features-Product-Design.md** | Product integration: where AI features live, feature definitions (process only), plan/permission logic, credits, Millionaire experience, upgrade/downgrade, daily habit, data dependency, risk control, rollout. No code. |
-| **Millionaire-Plan-Docs-Index.md** | Documentation index and how to use the strategy and product design (product, growth, engineering). |
+| **AI-Integration-Strategy.md** | **Primary AI logic & process.** Where and when AI appears, feature definitions, existing plan & permission interaction, usage control (no new plans, no renamed plans), daily habit, upgrade/downgrade, data dependency, risk control, rollout. |
 
-Start with **Millionaire-Plan-Strategy.md** for business strategy; use **Millionaire-Features-Product-Design.md** for feature placement, flows, and rollout; use **Millionaire-Plan-Docs-Index.md** to find sections and decision flows.
+Use this for: product logic, process, system behavior, and user interaction flow. No new pricing plans; AI is integrated into existing plans with usage-based limits.
+
+## Legacy / Reference
+
+| File | Description |
+|------|-------------|
+| **Millionaire-Plan-Strategy.md** | Earlier strategy (includes Millionaire Plan concept). Superseded by AI-Integration-Strategy.md for “no new plans” approach. |
+| **Millionaire-Features-Product-Design.md** | Product integration details (feature placement, flows). Still useful for where/when; align with AI-Integration-Strategy.md for plan logic. |
+| **Millionaire-Plan-Docs-Index.md** | Index and how to use the strategy docs. |
+| **Millionaire-Plan-Implementation.md** | Implementation summary (code-level). |
+
+Start with **AI-Integration-Strategy.md** for the current logic and process. Use the Millionaire docs only for reference or if you later introduce a named premium tier.
 
 ---
 

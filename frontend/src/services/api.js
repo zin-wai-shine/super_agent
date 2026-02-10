@@ -75,6 +75,8 @@ export const publicApi = {
     getListing: (id, params) => api.get(`/public/listings/${id}`, { params }),
     getStations: (params) => api.get('/public/stations', { params }),
     getListingsByStation: (stationId) => api.get(`/public/listings/by-station/${stationId}`),
+    getListingsSmartSearch: (q) => api.get('/public/listings/smart-search', { params: { q } }),
+    postChat: (message) => api.post('/public/chat', { message }),
     getAgentInfo: (params) => api.get('/public/agent/info', { params }),
     getPublicBanners: (params) => api.get('/public/banners', { params }),
     getPublicBanner: (id) => api.get(`/public/banners/${id}`),
@@ -120,6 +122,7 @@ export const aiApi = {
     generateDescription: (data) => api.post('/agent/ai/description', data),
     translate: (text, target) => api.post('/agent/ai/translate', { text, target }),
     suggestPrice: (data) => api.post('/agent/ai/suggest-price', data),
+    enhanceImage: (formData) => api.post('/agent/ai/enhance-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 // Super Admin API

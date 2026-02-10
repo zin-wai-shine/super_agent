@@ -41,6 +41,7 @@ const CreateListing = () => {
     const [aiDescriptionLoading, setAiDescriptionLoading] = useState(false);
     const [aiTranslateLoading, setAiTranslateLoading] = useState(false);
     const [aiPriceLoading, setAiPriceLoading] = useState(false);
+    const [enhancingIndex, setEnhancingIndex] = useState(null);
 
     const navigate = useNavigate();
 
@@ -188,6 +189,45 @@ const CreateListing = () => {
         setLightboxIndex((prev) => (prev - 1 + selectedImages.length) % selectedImages.length);
     };
 
+    const handleEnhanceImage = async (index) => {
+        const file = selectedImages[index];
+        if (!file || enhancingIndex !== null) return;
+        setEnhancingIndex(index);
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await aiApi.enhanceImage(formData);
+            if (res.data?.image_url) {
+                const blob = await fetch(res.data.image_url).then(r => r.blob());
+                const newFile = new File([blob], file.name.replace(/\.[^.]+$/, '_enhanced.jpg'), { type: blob.type });
+                setSelectedImages(prev => prev.map((f, i) => (i === index ? newFile : f)));
+                toast.success('Image enhanced');
+            } else if (res.data?.image_base64) {
+                const base64 = res.data.image_base64;
+                const byteChars = atob(base64);
+                const byteNumbers = new Array(byteChars.length).fill(0).map((_, i) => byteChars.charCodeAt(i));
+                const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'image/jpeg' });
+                const newFile = new File([blob], file.name.replace(/\.[^.]+$/, '_enhanced.jpg'), { type: 'image/jpeg' });
+                setSelectedImages(prev => prev.map((f, i) => (i === index ? newFile : f)));
+                toast.success('Image enhanced');
+            } else {
+                toast.success('Enhance requested');
+            }
+        } catch (err) {
+            if (err.response?.status === 503) {
+                toast.error('Image enhancement is not configured.');
+            } else if (err.response?.status === 402 || err.response?.data?.code === 'credits_exhausted') {
+                toast.error('AI credits exhausted.');
+            } else if (err.response?.status === 403) {
+                toast.error('AI not available on your plan.');
+            } else {
+                toast.error(err.response?.data?.error || 'Enhance failed');
+            }
+        } finally {
+            setEnhancingIndex(null);
+        }
+    };
+
     // Dropdown options
 
 
@@ -289,6 +329,19 @@ const CreateListing = () => {
                                     className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                 >
                                     <TrashIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); handleEnhanceImage(index); }}
+                                    disabled={enhancingIndex !== null}
+                                    className="absolute top-4 left-4 p-2 bg-primary-600 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-primary-700 disabled:opacity-50 z-10 flex items-center gap-1"
+                                    title="Enhance with AI"
+                                >
+                                    {enhancingIndex === index ? (
+                                        <span className="text-xs">...</span>
+                                    ) : (
+                                        <SparklesIcon className="w-4 h-4" />
+                                    )}
                                 </button>
                                 <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                                     {file.name}

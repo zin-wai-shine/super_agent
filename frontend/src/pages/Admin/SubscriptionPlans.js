@@ -51,7 +51,9 @@ const SubscriptionPlans = () => {
                 max_listings: plan.max_listings,
                 max_sub_agents: plan.max_sub_agents,
                 allow_custom_domain: plan.allow_custom_domain || false,
-                features: plan.features?.join ? plan.features.join(', ') : (plan.features || ''),
+                features: typeof plan.features === 'string' ? plan.features : (plan.features?.join ? plan.features.join(', ') : ''),
+                ai_tier: plan.ai_tier || 'none',
+                monthly_ai_credits: plan.monthly_ai_credits ?? 0,
             });
         } else {
             reset({
@@ -61,7 +63,9 @@ const SubscriptionPlans = () => {
                 max_listings: 10,
                 max_sub_agents: 1,
                 allow_custom_domain: false,
-                features: ''
+                features: '',
+                ai_tier: 'none',
+                monthly_ai_credits: 0,
             });
         }
         setShowModal(true);
@@ -73,10 +77,12 @@ const SubscriptionPlans = () => {
                 plan_name: data.name,
                 domain_type: data.domain_type,
                 price: parseFloat(data.price),
-                max_listings: parseInt(data.max_listings),
-                max_sub_agents: parseInt(data.max_sub_agents),
+                max_listings: parseInt(data.max_listings, 10),
+                max_sub_agents: parseInt(data.max_sub_agents, 10),
                 allow_custom_domain: data.allow_custom_domain || false,
                 features: data.features ? data.features.split(',').map((f) => f.trim()).filter(Boolean).join(',') : '',
+                ai_tier: data.ai_tier?.value ?? data.ai_tier ?? 'none',
+                monthly_ai_credits: parseInt(data.monthly_ai_credits, 10) || 0,
             };
 
             if (editingPlan) {
@@ -149,14 +155,46 @@ const SubscriptionPlans = () => {
                 accessorKey: 'max_listings',
                 header: 'Max Listings',
                 cell: ({ row }) => (
-                    <span className="text-gray-600 dark:text-gray-300">{row.original.max_listings}</span>
+                    <span className="text-gray-600 dark:text-gray-300">
+                        {row.original.max_listings === -1 ? 'Unlimited' : row.original.max_listings}
+                    </span>
                 ),
             },
             {
                 accessorKey: 'max_sub_agents',
                 header: 'Max Sub-Agents',
                 cell: ({ row }) => (
-                    <span className="text-gray-600 dark:text-gray-300">{row.original.max_sub_agents}</span>
+                    <span className="text-gray-600 dark:text-gray-300">
+                        {row.original.max_sub_agents === -1 ? 'Unlimited' : row.original.max_sub_agents}
+                    </span>
+                ),
+            },
+            {
+                accessorKey: 'ai_tier',
+                header: 'AI Tier',
+                cell: ({ row }) => {
+                    const tier = row.original.ai_tier || 'none';
+                    const labels = { none: 'None', basic: 'Basic', pro: 'Pro', millionaire: 'Millionaire' };
+                    const styles = {
+                        none: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                        basic: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                        pro: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                        millionaire: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                    };
+                    return (
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${styles[tier] || styles.none}`}>
+                            {labels[tier] || tier}
+                        </span>
+                    );
+                },
+            },
+            {
+                accessorKey: 'monthly_ai_credits',
+                header: 'AI Credits/mo',
+                cell: ({ row }) => (
+                    <span className="text-gray-600 dark:text-gray-300">
+                        {(row.original.monthly_ai_credits ?? 0) === 0 ? '—' : row.original.monthly_ai_credits.toLocaleString()}
+                    </span>
                 ),
             },
             {
@@ -319,11 +357,46 @@ const SubscriptionPlans = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="input-label">Max Listings</label>
-                                    <input type="number" className="input-field" {...register('max_listings', { required: true })} />
+                                    <input type="number" className="input-field" placeholder="-1 = unlimited" {...register('max_listings', { required: true })} />
                                 </div>
                                 <div>
                                     <label className="input-label">Max Sub-Agents</label>
-                                    <input type="number" className="input-field" {...register('max_sub_agents', { required: true })} />
+                                    <input type="number" className="input-field" placeholder="-1 = unlimited" {...register('max_sub_agents', { required: true })} />
+                                </div>
+                            </div>
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">AI Assistant (Agent Assistant)</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="input-label">AI Tier</label>
+                                        <Controller
+                                            name="ai_tier"
+                                            control={control}
+                                            defaultValue="none"
+                                            render={({ field }) => {
+                                                const v = field.value?.value ?? field.value ?? 'none';
+                                                const labels = { none: 'None (no AI)', basic: 'Basic', pro: 'Pro', millionaire: 'Millionaire' };
+                                                return (
+                                                    <StyledSelect
+                                                        value={{ value: v, label: labels[v] || v }}
+                                                        onChange={(opt) => field.onChange(opt?.value ?? 'none')}
+                                                        options={[
+                                                            { value: 'none', label: 'None (no AI)' },
+                                                            { value: 'basic', label: 'Basic' },
+                                                            { value: 'pro', label: 'Pro' },
+                                                            { value: 'millionaire', label: 'Millionaire' },
+                                                        ]}
+                                                    />
+                                                );
+                                            }}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Determines which AI features agents on this plan can use.</p>
+                                    </div>
+                                    <div>
+                                        <label className="input-label">Monthly AI Credits</label>
+                                        <input type="number" min={0} className="input-field" {...register('monthly_ai_credits', { min: 0 })} />
+                                        <p className="text-xs text-gray-500 mt-1">Credits reset each billing cycle. 0 = no AI.</p>
+                                    </div>
                                 </div>
                             </div>
                             <div>

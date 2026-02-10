@@ -260,7 +260,13 @@ const ListingsPage = () => {
     });
     const [searchTerm, setSearchTerm] = useState(filters.search);
     const [stationSearch, setStationSearch] = useState('');
+    const [smartSearchListings, setSmartSearchListings] = useState(null);
+    const [smartSearchLoading, setSmartSearchLoading] = useState(false);
+    const [smartSearchQuery, setSmartSearchQuery] = useState('');
+    const [smartSearchInput, setSmartSearchInput] = useState('');
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
+    const displayListings = smartSearchListings !== null ? smartSearchListings : listings;
+    const displayTotal = smartSearchListings !== null ? smartSearchListings.length : total;
 
     // Sync URL with restored filters on mount
     useEffect(() => {
@@ -335,7 +341,7 @@ const ListingsPage = () => {
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
-                if (entries[0].isIntersecting && !loading && listings.length < total) {
+                if (entries[0].isIntersecting && !loading && smartSearchListings === null && listings.length < total) {
                     setPage(prev => prev + 1);
                 }
             },
@@ -343,7 +349,7 @@ const ListingsPage = () => {
         );
         if (observerTarget.current) observer.observe(observerTarget.current);
         return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-    }, [loading, listings.length, total]);
+    }, [loading, listings.length, total, smartSearchListings]);
 
     const handleFilterChange = (key, value) => {
         const newFilters = { ...filters, [key]: value };
@@ -385,6 +391,35 @@ const ListingsPage = () => {
         setIsFilterModalOpen(false);
     };
 
+    const runSmartSearch = async () => {
+        const q = smartSearchInput.trim();
+        if (!q || smartSearchLoading) return;
+        setSmartSearchLoading(true);
+        setSmartSearchListings(null);
+        setSmartSearchQuery(q);
+        try {
+            const res = await publicApi.getListingsSmartSearch(q);
+            const list = res.data?.listings || [];
+            setSmartSearchListings(list);
+        } catch (err) {
+            if (err.response?.status === 402 || err.response?.data?.code === 'credits_exhausted') {
+                setSmartSearchListings([]);
+                setSmartSearchQuery(q);
+            } else {
+                setSmartSearchListings([]);
+                setSmartSearchQuery(q);
+            }
+        } finally {
+            setSmartSearchLoading(false);
+        }
+    };
+
+    const clearSmartSearch = () => {
+        setSmartSearchListings(null);
+        setSmartSearchQuery('');
+        setSmartSearchInput('');
+    };
+
     // Generate active filters list (memoized or simple var)
     const activeFiltersList = [];
     if (filters.search) activeFiltersList.push({ label: `"${filters.search}"`, key: 'search' });
@@ -411,6 +446,35 @@ const ListingsPage = () => {
     const renderFilterContent = () => {
         return (
             <div className="space-y-6">
+                {/* Smart search */}
+                <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
+                    <label className="text-sm font-bold text-gray-900 block mb-2">Smart search</label>
+                    <p className="text-xs text-gray-500 mb-2">e.g. 3 bed condo near BTS under 50k</p>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={smartSearchInput}
+                            onChange={(e) => setSmartSearchInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && runSmartSearch()}
+                            placeholder="Describe what you want..."
+                            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-[3px] text-sm"
+                            disabled={smartSearchLoading}
+                        />
+                        <button
+                            type="button"
+                            onClick={runSmartSearch}
+                            disabled={smartSearchLoading || !smartSearchInput.trim()}
+                            className="px-4 py-2 bg-primary-600 text-white font-bold rounded-[3px] text-sm hover:bg-primary-700 disabled:opacity-50"
+                        >
+                            {smartSearchLoading ? '...' : 'Search'}
+                        </button>
+                    </div>
+                    {smartSearchListings !== null && (
+                        <button type="button" onClick={clearSmartSearch} className="mt-2 text-xs text-primary-600 font-medium hover:underline">
+                            Clear smart search
+                        </button>
+                    )}
+                </div>
                 {/* Active Filters Section */}
                 <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
@@ -446,7 +510,7 @@ const ListingsPage = () => {
 
                     <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
                         <CheckCircleIcon className="w-4 h-4" />
-                        {total} {total === 1 ? 'Property' : 'Properties'} Found
+                        {displayTotal} {displayTotal === 1 ? 'Property' : 'Properties'} Found
                     </div>
                 </div>
 
@@ -606,7 +670,7 @@ const ListingsPage = () => {
                                     <div className="w-px h-8 bg-white/10" />
 
                                     {/* Results Count */}
-                                    <h2 className="hidden sm:block font-bold text-white text-xs tracking-wide bg-white/10 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">{total} Results</h2>
+                                    <h2 className="hidden sm:block font-bold text-white text-xs tracking-wide bg-white/10 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">{displayTotal} Results</h2>
 
                                     {/* Desktop Map Toggle Switch */}
                                     <div className="hidden lg:flex items-center gap-3">
@@ -627,21 +691,31 @@ const ListingsPage = () => {
 
                             {/* Scrollable List */}
                             <div className="flex-1 overflow-y-auto p-4 content-visibility-auto">
-                                {initialLoading ? (
+                                {smartSearchListings !== null && (
+                                    <div className="mb-4 p-3 bg-primary-50 border border-primary-100 rounded-[3px] flex items-center justify-between flex-wrap gap-2">
+                                        <span className="text-sm font-bold text-primary-800">Smart search: &quot;{smartSearchQuery}&quot;</span>
+                                        <button type="button" onClick={clearSmartSearch} className="text-xs font-medium text-primary-600 hover:underline">Clear</button>
+                                    </div>
+                                )}
+                                {initialLoading && smartSearchListings === null ? (
                                     <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                                         {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
                                     </div>
-                                ) : listings.length > 0 ? (
+                                ) : smartSearchLoading ? (
+                                    <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+                                        {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
+                                    </div>
+                                ) : displayListings.length > 0 ? (
                                     <>
                                         <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
-                                            {loading && !initialLoading && (
+                                            {displayListings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                                            {loading && !initialLoading && smartSearchListings === null && (
                                                 <div className="contents">
                                                     {[...Array(viewMode === 'list' ? 3 : 4)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
                                                 </div>
                                             )}
                                         </div>
-                                        <div ref={observerTarget} className="h-20" />
+                                        {smartSearchListings === null && <div ref={observerTarget} className="h-20" />}
                                     </>
                                 ) : (
                                     <div className="text-center py-20">
@@ -656,7 +730,7 @@ const ListingsPage = () => {
                         {/* Map Section */}
                         <div className="hidden lg:block flex-1 h-full relative z-0">
                             <GoogleMap
-                                listings={listings}
+                                listings={displayListings}
                                 onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
                                 onBoundsChanged={handleMapBoundsChanged}
                             />
@@ -669,7 +743,7 @@ const ListingsPage = () => {
                                     </div>
                                     <div>
                                         <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
-                                        <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                        <p className="text-sm font-bold text-gray-900">{displayTotal} Properties</p>
                                     </div>
                                 </div>
                             </div>
@@ -684,7 +758,7 @@ const ListingsPage = () => {
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
                         <h1 className="text-xl font-bold text-gray-900">Properties</h1>
-                        <span className="text-sm font-medium text-gray-500">{total} results</span>
+                        <span className="text-sm font-medium text-gray-500">{displayTotal} results</span>
                     </div>
                 </div>
 
@@ -709,7 +783,7 @@ const ListingsPage = () => {
                                 {/* Inventory Count */}
                                 <div className="flex flex-col items-end mr-4 px-4 border-r border-gray-200">
                                     <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
-                                    <span className="text-sm font-bold text-gray-900">{total} Results</span>
+                                    <span className="text-sm font-bold text-gray-900">{displayTotal} Results</span>
                                 </div>
 
                                 {/* Filters Button */}
@@ -809,7 +883,7 @@ const ListingsPage = () => {
 
                                     <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
                                         <CheckCircleIcon className="w-4 h-4" />
-                                        {total} {total === 1 ? 'Property' : 'Properties'} Found
+                                        {displayTotal} {displayTotal === 1 ? 'Property' : 'Properties'} Found
                                     </div>
                                 </div>
                             </div>
@@ -820,21 +894,31 @@ const ListingsPage = () => {
                             <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
                                 {/* Left Side: Property List */}
                                 <div className="w-full">
-                                    {initialLoading ? (
+                                    {smartSearchListings !== null && (
+                                        <div className="mb-4 p-3 bg-primary-50 border border-primary-100 rounded-[3px] flex items-center justify-between flex-wrap gap-2">
+                                            <span className="text-sm font-bold text-primary-800">Smart search: &quot;{smartSearchQuery}&quot;</span>
+                                            <button type="button" onClick={clearSmartSearch} className="text-xs font-medium text-primary-600 hover:underline">Clear</button>
+                                        </div>
+                                    )}
+                                    {initialLoading && smartSearchListings === null ? (
                                         <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
                                             {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
                                         </div>
-                                    ) : listings.length > 0 ? (
+                                    ) : smartSearchLoading ? (
+                                        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                                            {[...Array(6)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
+                                        </div>
+                                    ) : displayListings.length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                                {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
-                                                {loading && !initialLoading && (
+                                                {displayListings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                                                {loading && !initialLoading && smartSearchListings === null && (
                                                     <div className="contents">
                                                         {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div ref={observerTarget} className="h-20" />
+                                            {smartSearchListings === null && <div ref={observerTarget} className="h-20" />}
                                         </>
                                     ) : (
                                         <div className="text-center py-20 bg-white rounded-[3px] border border-gray-100">
@@ -965,7 +1049,7 @@ const ListingsPage = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-sm font-black uppercase tracking-widest text-gray-900 leading-none">Map Explorer</h2>
-                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-tighter">Found {total} locations</p>
+                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-tighter">Found {displayTotal} locations</p>
                                 </div>
                             </div>
                             <button

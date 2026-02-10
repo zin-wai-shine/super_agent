@@ -15,6 +15,7 @@ import {
     CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../Common/Logo';
+import ChatWidget from '../Common/ChatWidget';
 
 const PublicLayout = () => {
     const { theme } = useTheme();
@@ -414,6 +415,7 @@ const PublicLayout = () => {
                     </div>
                 </footer>
             )}
+            {!isMapView && <ChatWidget theme={theme} />}
         </div >
     );
 };
