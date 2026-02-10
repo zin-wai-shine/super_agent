@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { BuildingOfficeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -10,6 +10,9 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || null;
 
     const {
         register,
@@ -25,7 +28,9 @@ const LoginPage = () => {
         if (result.success) {
             toast.success('Welcome back!');
             // Redirect based on role
-            if (result.user.role === 'super_admin') {
+            if (from) {
+                navigate(from, { replace: true });
+            } else if (result.user.role === 'super_admin') {
                 navigate('/admin');
             } else if (result.user.role === 'agent' || result.user.role === 'sub_agent') {
                 navigate('/agent');

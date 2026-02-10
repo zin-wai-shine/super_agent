@@ -187,9 +187,9 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = (isTransitModalOpen || isGoogleMapOpen) ? 'hidden' : 'unset';
+        document.body.style.overflow = (isTransitModalOpen || isGoogleMapOpen || isSidebarOpen) ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isTransitModalOpen, isGoogleMapOpen]);
+    }, [isTransitModalOpen, isGoogleMapOpen, isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
         const newParams = new URLSearchParams(searchParams);
@@ -502,42 +502,56 @@ const ListingsPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 relative">
             {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
-            {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
-            <div className={`fixed inset-0 z-[60] bg-white transform transition-transform duration-500 ease-in-out ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full shadow-2xl'}`}>
-                <div className="flex h-screen overflow-hidden relative">
-                    {/* Sidebar Area */}
-                    <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                        <div className="h-full flex flex-col">
-                            {/* Sidebar Header */}
-                            <div className="p-4 border-b flex items-center justify-between bg-primary-600 text-white">
-                                <span className="font-bold text-lg">Filters & Menu</span>
-                                <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
-                                    <XMarkIcon className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            {/* Sidebar Content (Filters) */}
-                            <div className="flex-1 overflow-y-auto p-4">
-                                {renderFilterContent()}
-                            </div>
-
-                            {/* Sidebar Footer */}
-                            <div className="p-4 border-t bg-gray-50">
-                                <div className="flex gap-3">
-                                    <button onClick={clearFilters} className="px-4 py-2 bg-gray-200 rounded-[3px] font-bold text-gray-600 text-sm">Reset</button>
-                                    <button onClick={() => toggleMapView(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-[3px] font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                                        <Squares2X2Icon className="w-4 h-4" />
-                                        Back to Grid
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            {/* --- SIDEBAR FILTER MENU (SHARED) --- */}
+            <div className={`fixed inset-y-0 left-0 z-[70] w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="h-full flex flex-col">
+                    {/* Sidebar Header */}
+                    <div className="p-4 border-b flex items-center justify-between bg-primary-600 text-white">
+                        <span className="font-bold text-lg">Filters & Menu</span>
+                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+                            <XMarkIcon className="w-6 h-6" />
+                        </button>
                     </div>
 
-                    {/* Overlay for Sidebar */}
-                    {isSidebarOpen && (
-                        <div className="fixed inset-0 bg-black/30 z-40 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
-                    )}
+                    {/* Sidebar Content (Filters) */}
+                    <div className="flex-1 overflow-y-auto p-4">
+                        {renderFilterContent()}
+                    </div>
+
+                    {/* Sidebar Footer */}
+                    <div className="p-4 border-t bg-gray-50">
+                        <div className="flex gap-3">
+                            <button onClick={clearFilters} className="px-4 py-2 bg-gray-200 rounded-[3px] font-bold text-gray-600 text-sm">Reset</button>
+                            <button
+                                onClick={() => {
+                                    setIsSidebarOpen(false);
+                                    if (isGoogleMapOpen) toggleMapView(false);
+                                }}
+                                className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-[3px] font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {isGoogleMapOpen ? (
+                                    <>
+                                        <Squares2X2Icon className="w-4 h-4" />
+                                        Back to Grid
+                                    </>
+                                ) : (
+                                    "View Results"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Overlay for Sidebar */}
+            {isSidebarOpen && (
+                <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
+            )}
+
+            {/* --- MAP VIEW LAYOUT (FULL SCREEN) --- */}
+            <div className={`fixed inset-0 z-[60] bg-white transform transition-transform duration-500 ease-in-out ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full shadow-2xl'}`}>
+                <div className="flex h-screen overflow-hidden relative">
+
 
                     {/* Menu Toggle Button (Floating) */}
 
@@ -674,90 +688,82 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Desktop Filter Bar - Clean Redesign */}
-                <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 ${isScrolled ? 'mb-4' : 'mb-8'} ${navVisible ? 'top-16' : 'top-0'} ${!isScrolled ? 'mt-0' : 'mt-0'}`}>
-                    <div className={`transition-all duration-300 mx-auto w-full px-0`}>
-                        <div className="bg-white border-b border-gray-200 shadow-sm py-4 px-4 sm:px-6 lg:px-8">
-                            <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+                {/* Desktop Filter Bar - Full Width Clean Design */}
+                <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 bg-white border-b border-gray-200 shadow-sm ${navVisible ? 'top-16' : 'top-0'} ${isScrolled ? 'mb-4 shadow-md' : 'mb-8'}`}>
+                    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                        <div className="flex items-center justify-between gap-4">
 
-                                {/* Left: Search & Filters */}
-                                <div className="flex items-center gap-4 flex-1">
-                                    {/* Search Input */}
-                                    <div className="relative group w-full max-w-md">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            placeholder="Search location, name..."
-                                            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-[3px] leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-shadow shadow-sm hover:shadow-md"
-                                        />
-                                    </div>
+                            {/* Search Section */}
+                            <div className="flex-1 max-w-2xl flex items-center bg-gray-100/80 hover:bg-gray-100 rounded-[3px] px-4 py-2.5 transition-colors group focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-500 border border-transparent">
+                                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors mr-3" />
+                                <input
+                                    className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-sm font-medium text-gray-900 placeholder-gray-500 p-0 shadow-none focus:border-none"
+                                    placeholder="Search location, name..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
 
-                                    <div className="h-8 w-px bg-gray-200 mx-2" />
-
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
-                                        <span className="text-sm font-bold text-gray-900">{total} Results</span>
-                                    </div>
-
-                                    <div className="h-8 w-px bg-gray-200 mx-2" />
-
-                                    {/* Action Buttons */}
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setIsSidebarOpen(true)} // Opens Sidebar now
-                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${hasActiveFilters ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'}`}
-                                        >
-                                            <FunnelIcon className="w-4 h-4" />
-                                            <span>Filters</span>
-                                            {hasActiveFilters && (
-                                                <span className="ml-1 flex h-2 w-2 relative">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
-                                                </span>
-                                            )}
-                                        </button>
-
-                                        <button
-                                            onClick={() => setIsTransitModalOpen(true)}
-                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${filters.station_id ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'}`}
-                                        >
-                                            <MapPinIcon className="w-4 h-4" />
-                                            <span>Transit</span>
-                                        </button>
-
-                                        {/* Map Toggle */}
-                                        <div className="flex items-center gap-3 pl-4 border-l border-gray-200 ml-2">
-                                            <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Map View</span>
-                                            <button
-                                                onClick={() => toggleMapView(true)}
-                                                className="relative inline-flex items-center h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-gray-200 hover:bg-gray-300"
-                                            >
-                                                <span className="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out" />
-                                            </button>
-                                        </div>
-                                    </div>
+                            {/* Right Side Actions */}
+                            <div className="flex items-center gap-3">
+                                {/* Inventory Count */}
+                                <div className="flex flex-col items-end mr-4 px-4 border-r border-gray-200">
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
+                                    <span className="text-sm font-bold text-gray-900">{total} Results</span>
                                 </div>
 
-                                {/* Right: View Toggles */}
-                                <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200">
+                                {/* Filters Button */}
+                                <button
+                                    onClick={() => setIsSidebarOpen(true)}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${hasActiveFilters ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700'}`}
+                                >
+                                    <div className="relative">
+                                        <FunnelIcon className="w-4 h-4" />
+                                        {hasActiveFilters && (
+                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span>Filters</span>
+                                </button>
+
+                                {/* Transit Button */}
+                                <button
+                                    onClick={() => setIsTransitModalOpen(true)}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${filters.station_id ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700'}`}
+                                >
+                                    <MapPinIcon className="w-4 h-4" />
+                                    <span>Transit</span>
+                                </button>
+
+                                {/* View Toggles (Grid/List) */}
+                                <div className="flex items-center bg-gray-100 p-1 rounded-[3px] border border-gray-200 ml-2">
                                     <button
                                         onClick={() => setViewMode('grid')}
-                                        className={`p-2 rounded-[4px] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1.5 rounded-[2px] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                                     >
-                                        <Squares2X2Icon className="w-5 h-5" />
+                                        <Squares2X2Icon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => setViewMode('list')}
-                                        className={`p-2 rounded-[4px] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1.5 rounded-[2px] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                                     >
-                                        <ListBulletIcon className="w-5 h-5" />
+                                        <ListBulletIcon className="w-4 h-4" />
                                     </button>
                                 </div>
 
+                                {/* Map View Switch */}
+                                <div className="flex items-center gap-3 ml-2 pl-4 border-l border-gray-200">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isGoogleMapOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
+                                    <button
+                                        onClick={() => toggleMapView(!isGoogleMapOpen)}
+                                        className={`w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out focus:outline-none pointer-events-auto ${isGoogleMapOpen ? 'bg-primary-600' : 'bg-gray-200'}`}
+                                    >
+                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-200 ease-in-out shadow-sm ${isGoogleMapOpen ? 'left-6' : 'left-1'}`} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

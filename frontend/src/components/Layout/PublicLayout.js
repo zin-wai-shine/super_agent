@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -9,6 +9,10 @@ import {
     BuildingOfficeIcon,
     MapPinIcon,
     UserCircleIcon,
+    ChevronDownIcon,
+    ArrowRightOnRectangleIcon,
+    ChartBarIcon,
+    CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../Common/Logo';
 
@@ -29,6 +33,22 @@ const PublicLayout = () => {
         if (path === '/') return location.pathname === '/';
         return location.pathname.startsWith(path);
     };
+
+    // Dropdown Logic
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const userMenuRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+                setUserMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // Auto-hide navbar logic
     const [isVisible, setIsVisible] = useState(true);
@@ -254,24 +274,81 @@ const PublicLayout = () => {
                                     <div className="flex items-center space-x-4">
                                         {isAuthenticated ? (
                                             <div className="flex items-center space-x-4">
-                                                <Link
-                                                    to={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                                                    className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
-                                                >
-                                                    Dashboard
-                                                </Link>
-                                                <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/10">
-                                                    <UserCircleIcon className="w-5 h-5 text-white/70" />
-                                                    <span className="text-sm font-semibold text-white">
-                                                        {user?.first_name}
-                                                    </span>
+                                                <div className="relative" ref={userMenuRef}>
+                                                    <button
+                                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                                        className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full border transition-all duration-200 ${userMenuOpen
+                                                            ? 'bg-white text-primary-600 border-white ring-2 ring-white/20'
+                                                            : 'bg-black/20 text-white border-white/10 hover:bg-black/30'
+                                                            }`}
+                                                    >
+                                                        <div className="w-8 h-8 rounded-full bg-white text-primary-600 flex items-center justify-center font-bold text-sm shadow-sm">
+                                                            {user?.first_name?.[0]?.toUpperCase() || <UserCircleIcon className="w-6 h-6" />}
+                                                        </div>
+                                                        <div className="flex flex-col items-start mr-1">
+                                                            <span className="text-xs font-bold leading-none mb-0.5 opacity-90">Hello,</span>
+                                                            <span className="text-sm font-bold leading-none max-w-[80px] truncate">
+                                                                {user?.first_name}
+                                                            </span>
+                                                        </div>
+                                                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''} opacity-70`} />
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {userMenuOpen && (
+                                                        <div className="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl shadow-blue-900/10 py-2 ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden">
+                                                            {/* User Header */}
+                                                            <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                                                                <p className="text-sm font-bold text-gray-900 truncate">
+                                                                    {user?.first_name} {user?.last_name}
+                                                                </p>
+                                                                <p className="text-xs text-gray-500 truncate font-medium mt-0.5">
+                                                                    {user?.email}
+                                                                </p>
+                                                            </div>
+
+                                                            <div className="py-2 px-2 space-y-0.5">
+                                                                {(user?.role === 'agent' || user?.role === 'super_admin') && (
+                                                                    <Link
+                                                                        to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                                                                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
+                                                                        onClick={() => setUserMenuOpen(false)}
+                                                                    >
+                                                                        <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
+                                                                            <ChartBarIcon className="w-5 h-5 text-gray-500 group-hover:text-primary-600" />
+                                                                        </div>
+                                                                        Dashboard
+                                                                    </Link>
+                                                                )}
+                                                                <Link
+                                                                    to="/my-bookings"
+                                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
+                                                                    onClick={() => setUserMenuOpen(false)}
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
+                                                                        <CalendarDaysIcon className="w-5 h-5 text-gray-500 group-hover:text-primary-600" />
+                                                                    </div>
+                                                                    My Bookings
+                                                                </Link>
+                                                            </div>
+
+                                                            <div className="py-2 px-2 border-t border-gray-50 mt-1">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        logout();
+                                                                        setUserMenuOpen(false);
+                                                                    }}
+                                                                    className="flex w-full items-center gap-3 px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 font-bold rounded-xl transition-colors group"
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-lg bg-rose-50 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
+                                                                        <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                                                                    </div>
+                                                                    Sign out
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <button
-                                                    onClick={logout}
-                                                    className="text-sm font-semibold text-white/60 hover:text-white transition-colors"
-                                                >
-                                                    Logout
-                                                </button>
                                             </div>
                                         ) : (
                                             <>

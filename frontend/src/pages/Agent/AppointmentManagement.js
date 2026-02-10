@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { appointmentApi } from '../../services/api';
+import StyledSelect from '../../components/Form/StyledSelect';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import {
     CalendarDaysIcon,
@@ -18,7 +19,15 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     ExclamationTriangleIcon,
+    ArrowPathIcon,
+    ChevronDoubleLeftIcon,
+    ChevronDoubleRightIcon,
+    PlusIcon, // If needed for new appointments
 } from '@heroicons/react/24/outline';
+import { format, startOfDay, endOfDay, subDays, startOfMonth, subMonths, addMonths, getMonth, getYear, setMonth, setYear } from 'date-fns';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 const STATUS_CONFIG = {
     pending: { label: 'Pending', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' },
@@ -27,13 +36,21 @@ const STATUS_CONFIG = {
     cancelled: { label: 'Cancelled', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', dot: 'bg-red-500' },
 };
 
+const statusOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
+];
+
 const AppointmentManagement = () => {
     const { isDarkMode } = useDashboardTheme();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
+    const [limit, setLimit] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [statusFilter, setStatusFilter] = useState('');
     const [search, setSearch] = useState('');
@@ -43,27 +60,114 @@ const AppointmentManagement = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const [agentNotes, setAgentNotes] = useState('');
     const [updating, setUpdating] = useState(false);
+    const [stats, setStats] = useState({ pending: 0, confirmed: 0, completed: 0, cancelled: 0, total: 0 });
 
+    // Date Filter State
+    const [dateRange, setDateRange] = useState([
+        {
+            startDate: startOfDay(new Date()),
+            endDate: endOfDay(new Date()),
+            key: 'selection'
+        }
+    ]);
+    const [datePreset, setDatePreset] = useState('today');
+    const [isDateFiltered, setIsDateFiltered] = useState(false); // Default false, or 'today' if we want it active
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [shownDate, setShownDate] = useState(new Date());
+    const datePickerRef = React.useRef(null);
+
+    // Fetch Appointments
     const fetchAppointments = useCallback(async () => {
         setLoading(true);
         try {
             const params = { page, limit };
             if (statusFilter) params.status = statusFilter;
             if (search) params.search = search;
+
+            if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
+                params.date_from = format(dateRange[0].startDate, 'yyyy-MM-dd');
+                params.date_to = format(dateRange[0].endDate, 'yyyy-MM-dd');
+            }
+
             const response = await appointmentApi.getAppointments(params);
             setAppointments(response.data.appointments || []);
             setTotal(response.data.total || 0);
             setTotalPages(response.data.pages || 0);
+            if (response.data.stats) setStats(response.data.stats);
         } catch (error) {
             console.error('Failed to fetch appointments:', error);
         } finally {
             setLoading(false);
         }
-    }, [page, limit, statusFilter, search]);
+    }, [page, limit, statusFilter, search, isDateFiltered, dateRange]);
 
     useEffect(() => {
         fetchAppointments();
     }, [fetchAppointments]);
+
+    // Close datepicker when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setShowDatePicker(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleDatePresetChange = (preset) => {
+        setDatePreset(preset);
+        setShowDatePicker(false);
+        const today = new Date();
+
+        switch (preset) {
+            case 'today':
+                setDateRange([{
+                    startDate: startOfDay(today),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'yesterday':
+                const yesterday = subDays(today, 1);
+                setDateRange([{
+                    startDate: startOfDay(yesterday),
+                    endDate: endOfDay(yesterday),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'last7days':
+                setDateRange([{
+                    startDate: startOfDay(subDays(today, 6)),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'thismonth':
+                setDateRange([{
+                    startDate: startOfMonth(today),
+                    endDate: endOfDay(today),
+                    key: 'selection'
+                }]);
+                setIsDateFiltered(true);
+                break;
+            case 'alltime':
+                setIsDateFiltered(false);
+                break;
+            case 'custom':
+                setShowDatePicker(true);
+                break;
+            default:
+                break;
+        }
+        setPage(1);
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -191,69 +295,229 @@ const AppointmentManagement = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Stats Cards (Global Summary) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
-                    const count = appointments.filter(a => a.status === key).length;
+                    const count = stats[key] || 0;
+                    // Use soft background colors matching the status badge themes
+                    const softBg = key === 'pending' ? 'bg-amber-50/50 dark:bg-amber-900/10'
+                        : key === 'confirmed' ? 'bg-blue-50/50 dark:bg-blue-900/10'
+                            : key === 'completed' ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
+                                : 'bg-red-50/50 dark:bg-red-900/10';
+                    const borderColor = key === 'pending' ? 'border-amber-100 dark:border-amber-900/30'
+                        : key === 'confirmed' ? 'border-blue-100 dark:border-blue-900/30'
+                            : key === 'completed' ? 'border-emerald-100 dark:border-emerald-900/30'
+                                : 'border-red-100 dark:border-red-900/30';
+
                     return (
-                        <button
+                        <div
                             key={key}
-                            onClick={() => { setStatusFilter(statusFilter === key ? '' : key); setPage(1); }}
-                            className={`relative p-4 rounded-2xl border transition-all hover:shadow-sm ${statusFilter === key
-                                ? 'border-primary-300 bg-primary-50/50 dark:border-primary-700 dark:bg-primary-900/20 shadow-sm'
-                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-dashboard-card hover:border-gray-300'
-                                }`}
+                            className={`p-5 rounded-[3px] border transition-all ${softBg} ${borderColor} shadow-sm flex flex-col items-center justify-center text-center`}
                         >
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-2">
                                 <span className={`w-2 h-2 rounded-full ${config.dot}`}></span>
-                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{config.label}</span>
+                                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">{config.label}</span>
                             </div>
-                            <div className="text-2xl font-extrabold text-gray-900 dark:text-white">{count}</div>
-                        </button>
+                            <div className="text-3xl font-extrabold text-gray-900 dark:text-white">{count}</div>
+                        </div>
                     );
                 })}
             </div>
 
-            {/* Search & Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <form onSubmit={handleSearch} className="flex-1 relative">
-                    <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        placeholder="Search by visitor name or email..."
-                        className="w-full pl-11 pr-4 py-2.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
-                    />
-                </form>
-                <div className="relative">
-                    <FunnelIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                        className="pl-10 pr-8 py-2.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white appearance-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
-                    >
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
+            {/* Search & Filters (Standardized Toolbar) */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+
+                {/* LEFT: Page Size */}
+                <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
+                    <div className="w-16">
+                        <StyledSelect
+                            options={[
+                                { value: 5, label: '5' },
+                                { value: 10, label: '10' },
+                                { value: 20, label: '20' },
+                                { value: 50, label: '50' },
+                            ]}
+                            value={{ value: limit, label: `${limit}` }}
+                            onChange={(val) => { setLimit(val); setPage(1); }}
+                            isSearchable={false}
+                            components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                            }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    minHeight: '34px',
+                                    height: '34px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    borderRadius: '3px'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* CENTER: Core Filters */}
+                <div className="flex flex-wrap items-center lg:justify-center gap-3 flex-1 w-full">
+                    {/* Status Filter */}
+                    <div className="w-full sm:w-40">
+                        <StyledSelect
+                            options={statusOptions}
+                            value={statusFilter}
+                            onChange={(val) => { setStatusFilter(val || ''); setPage(1); }}
+                            placeholder="All Status"
+                            isSearchable={false}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    minHeight: '34px',
+                                    height: '34px',
+                                    fontSize: '12px',
+                                    borderRadius: '3px'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    padding: '0 8px'
+                                })
+                            }}
+                        />
+                    </div>
+
+                    {/* Date Filters */}
+                    <div className="relative flex items-center gap-2" ref={datePickerRef}>
+                        <div className="w-full sm:w-56">
+                            <StyledSelect
+                                options={[
+                                    { value: 'today', label: 'Today' },
+                                    { value: 'yesterday', label: 'Yesterday' },
+                                    { value: 'last7days', label: 'Last 7 Days' },
+                                    { value: 'thismonth', label: 'This Month' },
+                                    { value: 'alltime', label: 'All Time' },
+                                    { value: 'custom', label: 'Custom Range...' },
+                                ]}
+                                value={datePreset}
+                                onChange={(val) => handleDatePresetChange(val)}
+                                isSearchable={false}
+                                placeholder="Date Range"
+                                formatOptionLabel={(option) => (
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>
+                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]
+                                                ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
+                                                : option.label}
+                                        </span>
+                                    </div>
+                                )}
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        minHeight: '34px',
+                                        height: '34px',
+                                        fontSize: '12px',
+                                        borderRadius: '3px'
+                                    }),
+                                    valueContainer: (base) => ({
+                                        ...base,
+                                        padding: '0 8px'
+                                    })
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => handleDatePresetChange('alltime')}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-[3px] transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            title="Reset Filters"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                        </button>
+
+                        {showDatePicker && (
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-[3px] overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                                    <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-32">
+                                            <StyledSelect
+                                                value={{ value: getMonth(shownDate || new Date()), label: format(shownDate || new Date(), 'MMMM') }}
+                                                onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
+                                                options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
+                                                isSearchable={false}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                            />
+                                        </div>
+                                        <div className="w-24">
+                                            <StyledSelect
+                                                value={{ value: getYear(shownDate || new Date()), label: getYear(shownDate || new Date()).toString() }}
+                                                onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
+                                                options={Array.from({ length: 10 }, (_, i) => { const y = new Date().getFullYear() - 5 + i; return { value: y, label: y.toString() }; })}
+                                                isSearchable={false}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setShownDate(addMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 rounded-full"><ChevronRightIcon className="w-5 h-5" /></button>
+                                </div>
+                                <DateRange
+                                    editableDateInputs={false}
+                                    onChange={item => {
+                                        setDateRange([item.selection]);
+                                        setIsDateFiltered(true);
+                                        setDatePreset('custom');
+                                        setPage(1);
+                                    }}
+                                    moveRangeOnFirstSelection={false}
+                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
+                                    shownDate={shownDate || new Date()}
+                                    showMonthAndYearPickers={false}
+                                    rangeColors={['#3b82f6']}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* RIGHT: Search */}
+                <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <form onSubmit={handleSearch} className="relative w-full sm:w-56 h-[34px]">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                            type="text"
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            placeholder="Search visitor..."
+                            className="w-full pl-9 pr-4 h-[34px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-[3px] text-[12px] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
+                        />
+                    </form>
                 </div>
             </div>
 
             {/* Appointments Table */}
-            <div className="bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-dashboard-card border border-gray-100 dark:border-gray-700 rounded-[3px] overflow-hidden shadow-sm">
                 {loading ? (
-                    <div className="p-12 flex justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                    <div className="flex items-center justify-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                     </div>
                 ) : appointments.length === 0 ? (
                     <div className="p-12 text-center">
                         <CalendarDaysIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No appointments found</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {statusFilter || search ? 'Try adjusting your filters.' : 'Appointments will appear here when visitors book viewings.'}
+                            {statusFilter || search || isDateFiltered ? 'Try adjusting your filters.' : 'Appointments will appear here when visitors book viewings.'}
                         </p>
                     </div>
                 ) : (
@@ -261,59 +525,63 @@ const AppointmentManagement = () => {
                         {/* Desktop Table */}
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-800/50">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
                                     <tr>
-                                        <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Visitor</th>
-                                        <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Listing</th>
-                                        <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Date & Time</th>
-                                        <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Purpose</th>
-                                        <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                                        <th className="text-right px-5 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visitor</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Listing</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Booking Date</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Preferred Time</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Decision</th>
+                                        <th className="text-right px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {appointments.map(appointment => (
-                                        <tr key={appointment.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                                            <td className="px-5 py-4">
-                                                <div className="font-semibold text-sm text-gray-900 dark:text-white">{appointment.full_name}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">{appointment.email}</div>
+                                        <tr key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="font-semibold text-gray-900 dark:text-white text-sm">{appointment.full_name}</div>
+                                                <div className="text-xs text-gray-400 font-medium">{appointment.email}</div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <div className="text-sm text-gray-900 dark:text-white font-medium truncate max-w-[200px]">
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 max-w-[200px]">
                                                     {appointment.listing?.title || 'N/A'}
                                                 </div>
-                                            </td>
-                                            <td className="px-5 py-4">
-                                                <div className="text-sm text-gray-900 dark:text-white font-medium">{formatDate(appointment.preferred_date)}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                    <ClockIcon className="w-3 h-3" /> {appointment.preferred_time}
+                                                <div className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                                                    {appointment.purpose === 'buy' ? 'Purchase' : 'Rental'}
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${appointment.purpose === 'buy'
-                                                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                                                    : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300'
-                                                    }`}>
-                                                    {appointment.purpose}
-                                                </span>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{format(new Date(appointment.created_at), 'MMM dd, yyyy')}</div>
+                                                <div className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">{format(new Date(appointment.created_at), 'hh:mm a')}</div>
                                             </td>
-                                            <td className="px-5 py-4"><StatusBadge status={appointment.status} /></td>
-                                            <td className="px-5 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-1.5">
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(appointment.preferred_date)}</div>
+                                                <div className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 font-bold mt-0.5">
+                                                    <ClockIcon className="w-3.5 h-3.5" /> {appointment.preferred_time}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <StatusBadge status={appointment.status} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <StatusActions appointment={appointment} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => openDetailModal(appointment)}
-                                                        className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
+                                                        className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all"
                                                         title="View Details"
                                                     >
-                                                        <EyeIcon className="w-4 h-4" />
+                                                        <EyeIcon className="w-5 h-5" />
                                                     </button>
-                                                    <StatusActions appointment={appointment} compact />
                                                     <button
                                                         onClick={() => setShowDeleteConfirm(appointment.id)}
-                                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                                                        className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all"
                                                         title="Delete"
                                                     >
-                                                        <TrashIcon className="w-4 h-4" />
+                                                        <TrashIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -323,90 +591,57 @@ const AppointmentManagement = () => {
                             </table>
                         </div>
 
-                        {/* Mobile Cards */}
-                        <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700/50">
-                            {appointments.map(appointment => (
-                                <div key={appointment.id} className="p-4">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div>
-                                            <div className="font-semibold text-sm text-gray-900 dark:text-white">{appointment.full_name}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">{appointment.email}</div>
-                                        </div>
-                                        <StatusBadge status={appointment.status} />
-                                    </div>
-                                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">{appointment.listing?.title}</div>
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                        <span className="flex items-center gap-1">
-                                            <CalendarDaysIcon className="w-3.5 h-3.5" />
-                                            {formatDate(appointment.preferred_date)}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <ClockIcon className="w-3.5 h-3.5" />
-                                            {appointment.preferred_time}
-                                        </span>
-                                        <span className={`font-bold uppercase ${appointment.purpose === 'buy' ? 'text-primary-600 dark:text-primary-400' : 'text-secondary-600 dark:text-secondary-400'
-                                            }`}>
-                                            {appointment.purpose}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <StatusActions appointment={appointment} />
-                                        <div className="flex items-center gap-1.5">
-                                            <button onClick={() => openDetailModal(appointment)} className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
-                                                <EyeIcon className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => setShowDeleteConfirm(appointment.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-700/50">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page <= 1}
-                                        className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        <ChevronLeftIcon className="w-4 h-4" />
-                                    </button>
-                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                        let pageNum;
-                                        if (totalPages <= 5) pageNum = i + 1;
-                                        else if (page <= 3) pageNum = i + 1;
-                                        else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                                        else pageNum = page - 2 + i;
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setPage(pageNum)}
-                                                className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${page === pageNum
-                                                    ? 'bg-primary-600 text-white shadow-sm'
-                                                    : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                                                    }`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    })}
-                                    <button
-                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={page >= totalPages}
-                                        className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        <ChevronRightIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                            <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                Showing <span className="text-gray-900 dark:text-white">{(page - 1) * limit + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(page * limit, total)}</span> of <span className="text-gray-900 dark:text-white">{total}</span>
                             </div>
-                        )}
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setPage(1)}
+                                    disabled={page === 1}
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                >
+                                    <ChevronDoubleLeftIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                >
+                                    <ChevronLeftIcon className="w-4 h-4" />
+                                </button>
+                                <div className="flex items-center space-x-1.5">
+                                    <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Page</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={totalPages}
+                                        value={page}
+                                        onChange={(e) => {
+                                            const p = e.target.value ? Number(e.target.value) : 1;
+                                            setPage(Math.min(Math.max(1, p), totalPages));
+                                        }}
+                                        className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-xs font-bold bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
+                                    />
+                                    <span className="text-xs text-gray-500 font-bold uppercase">of {totalPages}</span>
+                                </div>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                >
+                                    <ChevronRightIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setPage(totalPages)}
+                                    disabled={page === totalPages}
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                >
+                                    <ChevronDoubleRightIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
                     </>
                 )}
             </div>

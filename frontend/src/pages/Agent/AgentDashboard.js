@@ -83,7 +83,7 @@ const AgentDashboard = () => {
                 {statCards.map((stat) => (
                     <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-3">
-                            <div className={`p-2.5 rounded-xl ${stat.iconBg}`}>
+                            <div className={`p-2.5 rounded-[3px] ${stat.iconBg}`}>
                                 <stat.icon className="w-5 h-5" />
                             </div>
                             <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-500/10 px-2 py-1 rounded-full">
@@ -100,7 +100,7 @@ const AgentDashboard = () => {
 
             {/* Charts Grid - Double Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-[3px] p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-base font-bold text-gray-900 dark:text-white">Performance</h2>
@@ -113,7 +113,7 @@ const AgentDashboard = () => {
                     <RevenueChart />
                 </div>
 
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-[3px] p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-base font-bold text-gray-900 dark:text-white">Views Activity</h2>
@@ -129,7 +129,7 @@ const AgentDashboard = () => {
 
 
             {/* Recent Listings */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <h2 className="text-base font-bold text-gray-900 dark:text-white">Recent Listings</h2>
                     <Link to="/agent/listings" className="text-primary-600 text-sm font-medium hover:text-primary-700 hover:underline">
@@ -153,7 +153,7 @@ const AgentDashboard = () => {
                                     <tr key={listing.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <Link to={`/agent/listings/${listing.id}/edit`} className="flex items-center">
-                                                <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
+                                                <div className="w-12 h-12 bg-gray-200 rounded-[3px] overflow-hidden flex-shrink-0 relative">
                                                     <img src={getMediaUrl(listing.media?.[0]?.url)} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                                 </div>
                                                 <div className="ml-3">

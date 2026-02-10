@@ -58,6 +58,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			protected.GET("/me", authController.GetProfile)
 			protected.PUT("/me", authController.UpdateProfile)
 			protected.PUT("/me/password", authController.ChangePassword)
+			protected.GET("/appointments/my", appointmentController.GetMyAppointments)
 
 			// WebSocket Route
 			protected.GET("/ws", func(c *gin.Context) {

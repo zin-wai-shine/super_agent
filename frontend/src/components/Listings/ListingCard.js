@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MapPinIcon, HomeIcon, ArrowRightIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
@@ -37,6 +38,22 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     if (listingImages.length === 0) listingImages.push(featuredImage);
 
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { isAuthenticated } = useAuth();
+
+    const handleBookClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const bookingUrl = `/listings/${id}/book`;
+
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: { pathname: bookingUrl } } });
+        } else {
+            navigate(bookingUrl);
+        }
+    };
 
     // Format price
     const formatPrice = (price) => {
@@ -239,9 +256,21 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                         <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest gap-2">
                             <span className="text-[10px]">ID: #{id.slice(0, 8)}</span>
                         </div>
-                        <div>
-                            <button className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/listings/${id}`);
+                                }}
+                                className="px-4 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-[3px] transition-all"
+                            >
                                 View Details
+                            </button>
+                            <button
+                                onClick={handleBookClick}
+                                className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm"
+                            >
+                                Book Viewing
                             </button>
                         </div>
                     </div>
@@ -368,13 +397,23 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 </div>
 
                 {/* Card Footer */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <span className="text-[11px] font-bold text-primary-600 uppercase tracking-widest">
+                <div className="pt-3 border-t border-gray-100 mt-auto flex gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/listings/${id}`);
+                        }}
+                        className="flex-1 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-[3px] transition-all"
+                    >
                         View Details
-                    </span>
-                    <div className="p-1.5 bg-gray-50 text-gray-400 rounded-[3px] group-hover:bg-primary-600 group-hover:text-white transition-all duration-300">
-                        <ArrowRightIcon className="w-3.5 h-3.5" />
-                    </div>
+                    </button>
+                    <button
+                        onClick={handleBookClick}
+                        className="flex-1 py-2 bg-primary-600 text-white text-xs font-bold rounded-[3px] hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
+                    >
+                        <span>Book Viewing</span>
+                        <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                    </button>
                 </div>
             </div>
         </Link>

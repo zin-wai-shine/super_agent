@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"super_real_estate/middleware"
@@ -142,7 +143,7 @@ func (ac *AppointmentController) GetAppointments(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	offset := (page - 1) * limit
 
-	// Get total count
+	// Get total count (for filtered results)
 	var total int64
 	query.Count(&total)
 
@@ -153,12 +154,28 @@ func (ac *AppointmentController) GetAppointments(c *gin.Context) {
 		return
 	}
 
+	// Calculate global stats for this agent (not affected by current filters)
+	type GlobalStats struct {
+		Pending   int64 `json:"pending"`
+		Confirmed int64 `json:"confirmed"`
+		Completed int64 `json:"completed"`
+		Cancelled int64 `json:"cancelled"`
+		Total     int64 `json:"total"`
+	}
+	var stats GlobalStats
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ?", agentID).Count(&stats.Total)
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND status = ?", agentID, models.AppointmentPending).Count(&stats.Pending)
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND status = ?", agentID, models.AppointmentConfirmed).Count(&stats.Confirmed)
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND status = ?", agentID, models.AppointmentCompleted).Count(&stats.Completed)
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND status = ?", agentID, models.AppointmentCancelled).Count(&stats.Cancelled)
+
 	c.JSON(http.StatusOK, gin.H{
 		"appointments": appointments,
 		"total":        total,
 		"page":         page,
 		"limit":        limit,
 		"pages":        (total + int64(limit) - 1) / int64(limit),
+		"stats":        stats,
 	})
 }
 
@@ -348,5 +365,30 @@ func (ac *AppointmentController) GetAppointmentStats(c *gin.Context) {
 		"today":     todayCount,
 		"this_week": weekCount,
 		"by_status": statusCounts,
+	})
+}
+
+// GetMyAppointments returns appointments for the logged-in user (based on email)
+func (ac *AppointmentController) GetMyAppointments(c *gin.Context) {
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User email not found in context"})
+		return
+	}
+
+	userEmail := strings.TrimSpace(strings.ToLower(email.(string)))
+
+	var appointments []models.Appointment
+	if err := ac.db.Model(&models.Appointment{}).
+		Preload("Listing").Preload("Listing.Media").
+		Where("TRIM(LOWER(email)) = ?", userEmail).
+		Order("created_at desc").
+		Find(&appointments).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch appointments"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"appointments": appointments,
 	})
 }

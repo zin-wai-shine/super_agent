@@ -176,6 +176,8 @@ export const bannerApi = {
 export const appointmentApi = {
     // Public (no auth required)
     createAppointment: (data) => api.post('/public/appointments', data),
+    // Protected (User)
+    getMyAppointments: () => api.get('/appointments/my'),
     // Agent
     getAppointments: (params) => api.get('/agent/appointments', { params }),
     getAppointment: (id) => api.get(`/agent/appointments/${id}`),

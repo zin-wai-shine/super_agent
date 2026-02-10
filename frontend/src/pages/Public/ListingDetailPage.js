@@ -128,7 +128,7 @@ const TrainIconCool = (props) => (
 
 const ListingDetailPage = () => {
     const { id } = useParams();
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -382,7 +382,8 @@ const ListingDetailPage = () => {
                                     Confirmed Available Today
                                 </button>
                                 <Link
-                                    to={`/listings/${listing.id}/book`}
+                                    to={isAuthenticated ? `/listings/${listing.id}/book` : `/login`}
+                                    state={!isAuthenticated ? { from: { pathname: `/listings/${listing.id}/book` } } : undefined}
                                     className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
                                 >
                                     <CalendarDaysIcon className="w-5 h-5 mr-2" />
@@ -821,9 +822,7 @@ const ListingDetailPage = () => {
                                                     } : undefined}
                                                     zoom={15}
                                                     onMarkerClick={() => { }}
-                                                    mapStyle={{ width: '100%', height: '100%' }}
                                                     options={{ gestureHandling: 'cooperative' }}
-                                                    useDefaultMarkers={true}
                                                 />
                                             ) : (
                                                 <div className="relative w-full h-full bg-slate-50 flex flex-col">

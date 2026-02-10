@@ -14,7 +14,8 @@ const getCustomStyles = (isDarkMode) => ({
             borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
         },
         transition: 'all 0.2s ease',
-        fontSize: '12px',
+        fontSize: '13px',
+        fontWeight: '500',
     }),
     valueContainer: (base) => ({
         ...base,
@@ -23,50 +24,72 @@ const getCustomStyles = (isDarkMode) => ({
     placeholder: (base) => ({
         ...base,
         color: isDarkMode ? '#9ca3af' : '#9ca3af',
-        fontSize: '12px',
+        fontSize: '13px',
     }),
     singleValue: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '12px',
+        fontSize: '13px',
     }),
     input: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '12px',
+        fontSize: '13px',
     }),
     menu: (base) => ({
         ...base,
-        borderRadius: '8px',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-        border: isDarkMode ? '1px solid #272E3B' : '1px solid #e5e7eb',
-        backgroundColor: isDarkMode ? '#191D24' : '#ffffff',
+        borderRadius: '3px',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
+        border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
         overflow: 'hidden',
-        zIndex: 50,
-        animation: 'slideIn 0.15s ease-out',
+        zIndex: 100,
+        padding: '8px',
+        animation: 'slideIn 0.2s ease-out',
     }),
     menuList: (base) => ({
         ...base,
-        padding: '8px',
-        backgroundColor: isDarkMode ? '#191D24' : '#ffffff',
+        padding: '0',
+        backgroundColor: 'transparent',
     }),
-    option: (base, state) => ({
-        ...base,
-        backgroundColor: state.isSelected
-            ? '#3b82f6'
-            : state.isFocused
-                ? (isDarkMode ? '#272E3B' : '#eff6ff')
-                : 'transparent',
-        color: state.isSelected ? '#ffffff' : (isDarkMode ? '#A6ADBB' : '#374151'),
-        borderRadius: '4px',
-        padding: '10px 12px',
-        fontSize: '13px',
-        cursor: 'pointer',
-        marginBottom: '2px',
-        '&:active': {
-            backgroundColor: state.isSelected ? '#2563eb' : (isDarkMode ? '#444444' : '#dbeafe'),
-        },
-    }),
+    option: (base, state) => {
+        const { data } = state;
+        let activeColor = '#3b82f6'; // Default Blue
+
+        if (data.value === 'pending') activeColor = '#f59e0b'; // Amber/Yellow
+        if (data.value === 'confirmed') activeColor = '#3b82f6'; // Blue
+        if (data.value === 'completed') activeColor = '#10b981'; // Green
+        if (data.value === 'cancelled') activeColor = '#ef4444'; // Red
+
+        return {
+            ...base,
+            backgroundColor: state.isSelected
+                ? (isDarkMode ? '#2563eb' : '#3b82f6')
+                : state.isFocused
+                    ? (activeColor + (isDarkMode ? '40' : '20')) // Add transparency
+                    : 'transparent',
+            color: state.isSelected
+                ? '#ffffff'
+                : state.isFocused
+                    ? (isDarkMode ? '#ffffff' : activeColor)
+                    : (isDarkMode ? '#9ca3af' : '#4b5563'),
+            borderRadius: '3px',
+            padding: '10px 14px',
+            fontSize: '12px',
+            fontWeight: '700',
+            textTransform: 'none',
+            cursor: 'pointer',
+            marginBottom: '4px',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            '&:active': {
+                backgroundColor: activeColor,
+                color: '#ffffff',
+            },
+        };
+    },
     indicatorSeparator: () => ({
         display: 'none',
     }),
@@ -173,8 +196,7 @@ const StyledSelect = ({
     error = false,
     ...props
 }) => {
-    // Force light mode for public interface
-    let isDarkMode = false;
+    const { isDarkMode } = useDashboardTheme();
 
     const currentStyles = getCustomStyles(isDarkMode);
 
@@ -265,6 +287,18 @@ const StyledSelect = ({
             theme={customTheme}
             className={className}
             classNamePrefix="react-select"
+            formatOptionLabel={(option, { context }) => (
+                <div className="flex items-center justify-between w-full">
+                    <span>{option.label}</span>
+                    {context === 'menu' && selectValue && (
+                        Array.isArray(selectValue)
+                            ? selectValue.some(sv => sv.value === option.value)
+                            : selectValue.value === option.value
+                    ) && (
+                            <span className="ml-2 text-white">✓</span>
+                        )}
+                </div>
+            )}
             {...restProps}
         />
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
 
@@ -17,6 +17,7 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import BannerDetail from './pages/Public/BannerDetail';
 import UserProfile from './pages/Public/UserProfile';
 import BookAppointment from './pages/Public/BookAppointment';
+import MyBookings from './pages/Public/MyBookings';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -38,6 +39,7 @@ import BannerManagement from './pages/Admin/BannerManagement';
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { isAuthenticated, user, loading } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -48,7 +50,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
@@ -67,7 +69,14 @@ function App() {
                     <Route index element={<HomePage />} />
                     <Route path="listings" element={<ListingsPage />} />
                     <Route path="listings/:id" element={<ListingDetailPage />} />
-                    <Route path="listings/:id/book" element={<BookAppointment />} />
+                    <Route
+                        path="listings/:id/book"
+                        element={
+                            <ProtectedRoute>
+                                <BookAppointment />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route path="banners/:id" element={<BannerDetail />} />
                     <Route path="search" element={<MobileSearchPage />} />
                     <Route
@@ -75,6 +84,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <UserProfile />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="my-bookings"
+                        element={
+                            <ProtectedRoute>
+                                <MyBookings />
                             </ProtectedRoute>
                         }
                     />

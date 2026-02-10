@@ -428,25 +428,26 @@ const AgentListings = () => {
                                     { value: 'alltime', label: 'All Time' },
                                     { value: 'custom', label: 'Custom Range...' },
                                 ]}
-                                value={{
-                                    value: datePreset,
-                                    label: datePreset === 'custom'
-                                        ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
-                                        : datePreset === 'today' ? 'Today'
-                                            : datePreset === 'yesterday' ? 'Yesterday'
-                                                : datePreset === 'last7days' ? 'Last 7 Days'
-                                                    : datePreset === 'thismonth' ? 'This Month'
-                                                        : 'All Time'
-                                }}
+                                value={datePreset}
                                 onChange={(val) => handleDatePresetChange(val)}
                                 isSearchable={false}
                                 placeholder="Date Range"
+                                formatOptionLabel={(option) => (
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>
+                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]
+                                                ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
+                                                : option.label}
+                                        </span>
+                                    </div>
+                                )}
                                 styles={{
                                     control: (base) => ({
                                         ...base,
                                         minHeight: '34px',
                                         height: '34px',
-                                        fontSize: '12px'
+                                        fontSize: '12px',
+                                        borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
                                         ...base,
@@ -459,14 +460,14 @@ const AgentListings = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-[3px] transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-md overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-[3px] overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
                                 {/* Custom Header */}
                                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                     <button
@@ -480,10 +481,10 @@ const AgentListings = () => {
                                         <div className="w-32">
                                             <StyledSelect
                                                 value={{
-                                                    value: getMonth(shownDate),
-                                                    label: format(shownDate, 'MMMM')
+                                                    value: getMonth(shownDate || new Date()),
+                                                    label: format(shownDate || new Date(), 'MMMM')
                                                 }}
-                                                onChange={(option) => setShownDate(setMonth(shownDate, option.value))}
+                                                onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({
                                                     value: i,
                                                     label: format(new Date(2000, i, 1), 'MMMM')
@@ -494,7 +495,8 @@ const AgentListings = () => {
                                                         ...base,
                                                         minHeight: '30px',
                                                         height: '30px',
-                                                        fontSize: '0.875rem'
+                                                        fontSize: '12px',
+                                                        borderRadius: '3px'
                                                     }),
                                                     dropdownIndicator: (base) => ({
                                                         ...base,
@@ -506,10 +508,10 @@ const AgentListings = () => {
                                         <div className="w-28">
                                             <StyledSelect
                                                 value={{
-                                                    value: getYear(shownDate),
-                                                    label: getYear(shownDate).toString()
+                                                    value: getYear(shownDate || new Date()),
+                                                    label: getYear(shownDate || new Date()).toString()
                                                 }}
-                                                onChange={(option) => setShownDate(setYear(shownDate, option.value))}
+                                                onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 10 }, (_, i) => {
                                                     const year = new Date().getFullYear() - 5 + i;
                                                     return { value: year, label: year.toString() };
@@ -520,7 +522,8 @@ const AgentListings = () => {
                                                         ...base,
                                                         minHeight: '30px',
                                                         height: '30px',
-                                                        fontSize: '0.875rem'
+                                                        fontSize: '12px',
+                                                        borderRadius: '3px'
                                                     }),
                                                     dropdownIndicator: (base) => ({
                                                         ...base,
@@ -581,7 +584,7 @@ const AgentListings = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -676,14 +679,14 @@ const AgentListings = () => {
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
@@ -699,7 +702,7 @@ const AgentListings = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-14 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
+                                        className="w-14 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-sm bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
                                     />
                                     <span className="text-sm text-gray-600 dark:text-gray-400">of {table.getPageCount()}</span>
                                 </div>
@@ -707,14 +710,14 @@ const AgentListings = () => {
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminApi } from '../../services/api';
+import { adminApi, appointmentApi } from '../../services/api';
 import ActivityChart from '../../components/Common/ActivityChart';
 import RevenueChart from '../../components/Common/RevenueChart';
 import {
@@ -10,17 +10,23 @@ import {
     ChartBarIcon,
     ArrowTrendingUpIcon,
     EllipsisHorizontalIcon,
+    CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
+    const [appointmentStats, setAppointmentStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await adminApi.getStats();
-                setStats(response.data);
+                const [adminRes, appRes] = await Promise.all([
+                    adminApi.getStats(),
+                    appointmentApi.getAppointmentStats()
+                ]);
+                setStats(adminRes.data);
+                setAppointmentStats(appRes.data);
             } catch (error) {
                 console.error('Failed to fetch stats:', error);
             } finally {
@@ -67,6 +73,13 @@ const AdminDashboard = () => {
             change: '+8%',
             iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
         },
+        {
+            name: 'Total Appointments',
+            value: appointmentStats?.total || 0,
+            icon: CalendarDaysIcon,
+            change: `${appointmentStats?.this_week || 0} this week`,
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+        },
     ];
 
     return (
@@ -74,7 +87,7 @@ const AdminDashboard = () => {
 
 
             {/* Stats Grid - Modern Look */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {statCards.map((stat) => (
                     <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-3">
