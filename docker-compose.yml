@@ -65,16 +65,16 @@ services:
       - super_network
 
   # Documentation App
-  docs:
-    build:
-      context: ./docs-app
-      dockerfile: Dockerfile
-    container_name: super_docs
-    restart: unless-stopped
-    ports:
-      - "3443:3443"
-    networks:
-      - super_network
+  # docs:
+  #   build:
+  #     context: ./docs-app
+  #     dockerfile: Dockerfile
+  #   container_name: super_docs
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3443:3443"
+  #   networks:
+  #     - super_network
 
   # Nginx Reverse Proxy
   nginx:

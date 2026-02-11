@@ -242,3 +242,13 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"price_format":    agent.PriceFormat,
 	})
 }
+
+// GetPlans returns active subscription plans for the public sales page
+func (pc *PublicController) GetPlans(c *gin.Context) {
+	var plans []models.Subscription
+	if err := pc.db.Where("is_active = ?", true).Order("price ASC").Find(&plans).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch plans"})
+		return
+	}
+	c.JSON(http.StatusOK, plans)
+}

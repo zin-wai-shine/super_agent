@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
 	"super_real_estate/config"
 	"super_real_estate/middleware"
@@ -393,11 +394,14 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 	}
 
 	var stats struct {
-		TotalListings     int64 `json:"total_listings"`
-		PublishedListings int64 `json:"published_listings"`
-		DraftListings     int64 `json:"draft_listings"`
-		TotalSubAgents    int64 `json:"total_sub_agents"`
-		TotalViews        int64 `json:"total_views"`
+		TotalListings        int64 `json:"total_listings"`
+		PublishedListings    int64 `json:"published_listings"`
+		DraftListings        int64 `json:"draft_listings"`
+		TotalSubAgents       int64 `json:"total_sub_agents"`
+		TotalViews           int64 `json:"total_views"`
+		TotalAppointments    int64 `json:"total_appointments"`
+		PendingAppointments  int64 `json:"pending_appointments"`
+		AppointmentsThisWeek int64 `json:"appointments_this_week"`
 	}
 
 	ac.db.Model(&models.Listing{}).Where("agent_id = ?", agentID).Count(&stats.TotalListings)
@@ -409,6 +413,15 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 	var viewSum struct{ Total int64 }
 	ac.db.Model(&models.Listing{}).Select("COALESCE(SUM(view_count), 0) as total").Where("agent_id = ?", agentID).Scan(&viewSum)
 	stats.TotalViews = viewSum.Total
+
+	// Appointment stats
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ?", agentID).Count(&stats.TotalAppointments)
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND status = ?", agentID, models.AppointmentPending).Count(&stats.PendingAppointments)
+
+	// This week's appointments
+	now := time.Now()
+	weekStart := now.AddDate(0, 0, -int(now.Weekday()))
+	ac.db.Model(&models.Appointment{}).Where("agent_id = ? AND preferred_date >= ?", agentID, weekStart).Count(&stats.AppointmentsThisWeek)
 
 	// Get recent listings
 	var recentListings []models.Listing

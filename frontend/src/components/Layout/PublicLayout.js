@@ -25,8 +25,8 @@ const PublicLayout = () => {
     const isMapView = searchParams.get('view') === 'map';
 
     const navigation = [
-        { name: 'Home', href: '/', icon: HomeIcon },
-        { name: 'Properties', href: '/listings', icon: BuildingOfficeIcon },
+        { name: 'Features', href: '/#features', icon: BuildingOfficeIcon },
+        { name: 'Plans', href: '/#plans', icon: ChartBarIcon },
     ];
 
     const isActive = (path) => {
@@ -152,14 +152,6 @@ const PublicLayout = () => {
                                         {item.name}
                                     </Link>
                                 ))}
-                                <Link
-                                    to="/listings?view=map"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                                >
-                                    <MapPinIcon className="w-5 h-5" />
-                                    Map Search
-                                </Link>
                             </div>
 
                             {/* Drawer Footer (Auth) */}
@@ -388,23 +380,23 @@ const PublicLayout = () => {
                                     <span className="text-xl font-bold text-white">Super</span>
                                 </div>
                                 <p className="text-sm max-w-md">
-                                    Find your dream property near Bangkok's transit stations.
-                                    We make property search easy with our interactive transit map.
+                                    Empowering real estate agents with premium digital tools.
+                                    Create your own branded property portal in minutes.
                                 </p>
                             </div>
                             <div>
-                                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+                                <h4 className="text-white font-semibold mb-4">Platform</h4>
                                 <ul className="space-y-2 text-sm">
-                                    <li><Link to="/listings" className="hover:text-white">Browse Properties</Link></li>
-                                    <li><Link to="/listings?view=map" className="hover:text-white">Map Search</Link></li>
-                                    <li><Link to="/register" className="hover:text-white">List Your Property</Link></li>
+                                    <li><Link to="/#features" className="hover:text-white">Features</Link></li>
+                                    <li><Link to="/#plans" className="hover:text-white">Pricing Plans</Link></li>
+                                    <li><Link to="/register" className="hover:text-white">Get Started</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="text-white font-semibold mb-4">For Agents</h4>
+                                <h4 className="text-white font-semibold mb-4">Support</h4>
                                 <ul className="space-y-2 text-sm">
-                                    <li><Link to="/register" className="hover:text-white">Become an Agent</Link></li>
                                     <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
+                                    <li><Link to="/register" className="hover:text-white">Create Account</Link></li>
                                 </ul>
                             </div>
                         </div>

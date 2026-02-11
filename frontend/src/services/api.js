@@ -78,6 +78,7 @@ export const publicApi = {
     getAgentInfo: (params) => api.get('/public/agent/info', { params }),
     getPublicBanners: (params) => api.get('/public/banners', { params }),
     getPublicBanner: (id) => api.get(`/public/banners/${id}`),
+    getPlans: () => api.get('/public/plans'),
 };
 
 // Agent API

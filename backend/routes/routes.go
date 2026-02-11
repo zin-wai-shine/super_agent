@@ -47,6 +47,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/stations", publicController.GetStations)
 			public.GET("/listings/by-station/:stationId", publicController.GetListingsByStation)
 			public.GET("/agent/info", publicController.GetAgentInfo)
+			public.GET("/plans", publicController.GetPlans)
 			public.POST("/appointments", appointmentController.CreateAppointment)
 		}
 

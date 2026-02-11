@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminApi, appointmentApi } from '../../services/api';
+import { adminApi } from '../../services/api';
 import ActivityChart from '../../components/Common/ActivityChart';
 import RevenueChart from '../../components/Common/RevenueChart';
 import {
@@ -15,18 +15,12 @@ import {
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
-    const [appointmentStats, setAppointmentStats] = useState(null);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [adminRes, appRes] = await Promise.all([
-                    adminApi.getStats(),
-                    appointmentApi.getAppointmentStats()
-                ]);
+                const adminRes = await adminApi.getStats();
                 setStats(adminRes.data);
-                setAppointmentStats(appRes.data);
             } catch (error) {
                 console.error('Failed to fetch stats:', error);
             } finally {
@@ -72,13 +66,6 @@ const AdminDashboard = () => {
             icon: ChartBarIcon,
             change: '+8%',
             iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-        },
-        {
-            name: 'Total Appointments',
-            value: appointmentStats?.total || 0,
-            icon: CalendarDaysIcon,
-            change: `${appointmentStats?.this_week || 0} this week`,
-            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
         },
     ];
 
@@ -144,9 +131,9 @@ const AdminDashboard = () => {
                             <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl ring-1 ring-blue-100 dark:ring-blue-900/30">
                                 <UsersIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Agent Management</h2>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Platform Management</h2>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm font-medium">View registered agents, manage approvals, and monitor platform activity.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm font-medium">Oversee all registered agents, manage approvals, and monitor system-wide activity.</p>
                         <Link
                             to="/admin/agents"
                             className="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:bg-blue-700 hover:shadow-blue-500/20 transition-all duration-200"

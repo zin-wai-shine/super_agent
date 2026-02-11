@@ -10,6 +10,7 @@ import {
     PlusIcon,
     ArrowTrendingUpIcon,
     EllipsisHorizontalIcon,
+    CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { getMediaUrl } from '../../utils/media';
@@ -70,6 +71,13 @@ const AgentDashboard = () => {
             icon: UsersIcon,
             iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
             trend: 'Team'
+        },
+        {
+            name: 'Total Appointments',
+            value: stats?.total_appointments || 0,
+            icon: CalendarDaysIcon,
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+            trend: `${stats?.appointments_this_week || 0} this week`
         },
     ];
 
