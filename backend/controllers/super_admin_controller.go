@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"super_real_estate/config"
 	"super_real_estate/models"
 	"super_real_estate/utils"
 
@@ -12,11 +13,12 @@ import (
 )
 
 type SuperAdminController struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewSuperAdminController(db *gorm.DB) *SuperAdminController {
-	return &SuperAdminController{db: db}
+func NewSuperAdminController(db *gorm.DB, cfg *config.Config) *SuperAdminController {
+	return &SuperAdminController{db: db, cfg: cfg}
 }
 
 // GetAgents returns all agents
@@ -124,7 +126,7 @@ func (sac *SuperAdminController) CreateAgent(c *gin.Context) {
 	if req.DomainType == models.DomainTypeCustom && req.CustomDomain != "" {
 		agent.Domain = req.CustomDomain
 	} else {
-		agent.Domain = req.Subdomain + ".super.app"
+		agent.Domain = req.Subdomain + "." + sac.cfg.MainDomain
 	}
 
 	// Set subscription if provided, otherwise auto-assign based on domain type
@@ -226,7 +228,9 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 	var req struct {
 		Name           string `json:"name"`
 		Email          string `json:"email"` // Owner email
-		Domain         string `json:"domain"`
+		Subdomain      string `json:"subdomain"`
+		DomainType     string `json:"domain_type"`
+		CustomDomain   string `json:"custom_domain"`
 		Phone          string `json:"phone"`
 		Description    string `json:"description"`
 		SubscriptionID string `json:"subscription_id"`
@@ -239,9 +243,6 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 	updates := map[string]interface{}{}
 	if req.Name != "" {
 		updates["name"] = req.Name
-	}
-	if req.Domain != "" {
-		updates["domain"] = req.Domain
 	}
 	if req.Phone != "" {
 		updates["phone"] = req.Phone
@@ -256,11 +257,58 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 		}
 	}
 
+	// Handle Domain/Subdomain updates
+	domainChanged := false
+	newDomainType := agent.DomainType
+	newSubdomain := agent.Subdomain
+	newCustomDomain := agent.CustomDomain
+
+	if req.DomainType != "" && req.DomainType != agent.DomainType {
+		updates["domain_type"] = req.DomainType
+		newDomainType = req.DomainType
+		domainChanged = true
+	}
+
+	if req.Subdomain != "" && req.Subdomain != agent.Subdomain {
+		// Check uniqueness
+		var existing models.Agent
+		if err := sac.db.Where("subdomain = ? AND id != ?", req.Subdomain, agent.ID).First(&existing).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Subdomain already taken"})
+			return
+		}
+		updates["subdomain"] = req.Subdomain
+		newSubdomain = req.Subdomain
+		domainChanged = true
+	}
+
+	if req.CustomDomain != "" && req.CustomDomain != agent.CustomDomain {
+		// Check uniqueness if provided
+		var existing models.Agent
+		if err := sac.db.Where("custom_domain = ? AND id != ?", req.CustomDomain, agent.ID).First(&existing).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Custom domain already registered"})
+			return
+		}
+		updates["custom_domain"] = req.CustomDomain
+		newCustomDomain = req.CustomDomain
+		domainChanged = true
+	}
+
+	// Re-calculate the full domain if anything changed
+	if domainChanged {
+		if newDomainType == models.DomainTypeCustom && newCustomDomain != "" {
+			updates["domain"] = newCustomDomain
+		} else {
+			updates["domain"] = newSubdomain + "." + sac.cfg.MainDomain
+		}
+	}
+
 	// Handle email update
 	if req.Email != "" && req.Email != agent.Email {
 		// Check if email is taken by another user
 		var existingUser models.User
-		if err := sac.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+		if err := sac.db.Where("email = ? AND id != ?", req.Email, agent.Users[0].ID).First(&existingUser).Error; err == nil {
+			// Note: This logic assumes only one owner user per agent.
+			// In models, it's a many-to-one, so we should be careful.
 			c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
 			return
 		}
@@ -268,7 +316,6 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 		updates["email"] = req.Email
 
 		// Update associated owner user
-		// Find the user with role 'agent' for this agent
 		if err := sac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agent.ID, models.RoleAgent).
 			Update("email", req.Email).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update owner email"})

@@ -445,6 +445,14 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 		MinPriceLimit float64 `json:"min_price_limit"`
 		MaxPriceLimit float64 `json:"max_price_limit"`
 		PriceFormat   string  `json:"price_format"`
+		Description   string  `json:"description"`
+		Vision        string  `json:"vision"`
+		Mission       string  `json:"mission"`
+		Facebook      string  `json:"facebook"`
+		Instagram     string  `json:"instagram"`
+		LinkedIn      string  `json:"linkedin"`
+		Line          string  `json:"line"`
+		Phone         string  `json:"phone"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -466,6 +474,15 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 	if req.PriceFormat != "" {
 		updates["price_format"] = req.PriceFormat
 	}
+
+	updates["description"] = req.Description
+	updates["vision"] = req.Vision
+	updates["mission"] = req.Mission
+	updates["facebook"] = req.Facebook
+	updates["instagram"] = req.Instagram
+	updates["linkedin"] = req.LinkedIn
+	updates["line"] = req.Line
+	updates["phone"] = req.Phone
 
 	if err := ac.db.Model(&models.Agent{}).Where("id = ?", agentID).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
@@ -493,5 +510,13 @@ func (ac *AgentController) GetSettings(c *gin.Context) {
 		"min_price_limit": agent.MinPriceLimit,
 		"max_price_limit": agent.MaxPriceLimit,
 		"price_format":    agent.PriceFormat,
+		"description":     agent.Description,
+		"vision":          agent.Vision,
+		"mission":         agent.Mission,
+		"facebook":        agent.Facebook,
+		"instagram":       agent.Instagram,
+		"linkedin":        agent.LinkedIn,
+		"line":            agent.Line,
+		"phone":           agent.Phone,
 	})
 }

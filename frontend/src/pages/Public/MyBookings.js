@@ -11,8 +11,7 @@ import {
     CheckCircleIcon,
     XCircleIcon,
     ArrowRightIcon,
-    FunnelIcon,
-    MagnifyingGlassIcon
+    FunnelIcon
 } from '@heroicons/react/24/outline';
 
 const MyBookings = () => {
@@ -39,24 +38,6 @@ const MyBookings = () => {
         }
     };
 
-    const getStatusStyle = (status) => {
-        switch (status) {
-            case 'confirmed': return 'bg-emerald-50 text-emerald-700 border-emerald-100 ring-emerald-500/10';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-100 ring-amber-500/10';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-100 ring-rose-500/10';
-            case 'completed': return 'bg-blue-50 text-blue-700 border-blue-100 ring-blue-500/10';
-            default: return 'bg-gray-50 text-gray-700 border-gray-100 ring-gray-500/10';
-        }
-    };
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'confirmed': return <CheckCircleIcon className="w-3.5 h-3.5 stroke-[2.5]" />;
-            case 'cancelled': return <XCircleIcon className="w-3.5 h-3.5 stroke-[2.5]" />;
-            default: return <ClockIcon className="w-3.5 h-3.5 stroke-[2.5]" />;
-        }
-    };
-
     const filteredAppointments = appointments.filter(app => {
         if (filter === 'all') return true;
         return app.status === filter;
@@ -64,164 +45,175 @@ const MyBookings = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-                <div className="animate-pulse space-y-6">
-                    <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="h-48 bg-gray-100 rounded-xl"></div>
-                    ))}
+            <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="animate-pulse space-y-10">
+                    <div className="flex flex-col gap-4">
+                        <div className="h-10 bg-gray-200 rounded-[3px] w-48"></div>
+                        <div className="h-4 bg-gray-200 rounded-[3px] w-64"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div key={i} className="h-[420px] bg-gray-100 rounded-[3px] border border-gray-200/50"></div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
-            <div className="max-w-5xl mx-auto">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Access Bookings</h1>
-                        <p className="text-gray-500 mt-2 font-medium">Manage your upcoming property viewings</p>
+        <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 bg-[#f8fafc]">
+            <div className="max-w-7xl mx-auto">
+                {/* Modern Header Section */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+                    <div className="relative">
+                        <div className="absolute -left-4 top-0 w-1 h-12 bg-primary-600 rounded-full hidden lg:block"></div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                            My <span className="text-primary-600">Bookings</span>
+                        </h1>
+                        <p className="text-slate-500 mt-2 font-semibold text-lg max-w-md">
+                            Your journey to finding the perfect home starts here.
+                        </p>
                     </div>
 
-                    {/* Filter Tabs */}
-                    <div className="flex bg-white p-1 rounded-lg border border-gray-200 shadow-sm self-start md:self-auto overflow-x-auto max-w-full">
-                        {['all', 'pending', 'confirmed', 'cancelled'].map((tab) => (
+                    {/* Filter Tabs - Premium Pill (Now Sharp per Site Radius) */}
+                    <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-[3px] border border-slate-200/60 shadow-sm self-start lg:self-auto overflow-x-auto max-w-full no-scrollbar">
+                        {[
+                            { id: 'all', label: 'All', icon: FunnelIcon },
+                            { id: 'pending', label: 'Pending', icon: ClockIcon },
+                            { id: 'confirmed', label: 'Confirmed', icon: CheckCircleIcon },
+                            { id: 'cancelled', label: 'Cancelled', icon: XCircleIcon }
+                        ].map((tab) => (
                             <button
-                                key={tab}
-                                onClick={() => setFilter(tab)}
-                                className={`px-4 py-1.5 rounded-[4px] text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${filter === tab
-                                    ? 'bg-primary-600 text-white shadow-sm'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                key={tab.id}
+                                onClick={() => setFilter(tab.id)}
+                                className={`flex items-center gap-2.5 px-6 py-2.5 rounded-[2px] text-sm font-black transition-all duration-500 whitespace-nowrap ${filter === tab.id
+                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20 scale-[1.02]'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/50'
                                     }`}
                             >
-                                {tab}
+                                <tab.icon className={`w-4 h-4 ${filter === tab.id ? 'text-white' : 'text-slate-400'}`} />
+                                {tab.label}
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {error && (
-                    <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-                        <XCircleIcon className="w-5 h-5" /> {error}
+                    <div className="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-[3px] mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
+                        <XCircleIcon className="w-6 h-6 shrink-0" />
+                        <span className="font-bold">{error}</span>
                     </div>
                 )}
 
                 {filteredAppointments.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100/50">
-                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-gray-50/50">
-                            <CalendarIcon className="w-10 h-10 text-gray-400" />
+                    <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[3px] border border-slate-200/60 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-50 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
+
+                        <div className="w-24 h-24 bg-primary-50 rounded-[3px] flex items-center justify-center mb-8 relative z-10 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                            <CalendarIcon className="w-12 h-12 text-primary-600" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No bookings found</h3>
-                        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                        <h3 className="text-2xl font-black text-slate-900 mb-3 relative z-10">No bookings yet</h3>
+                        <p className="text-slate-500 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10">
                             {filter === 'all'
-                                ? "You haven't scheduled any property viewings yet. Browse our listings to find your dream home."
-                                : `You don't have any ${filter} bookings.`}
+                                ? "Excited to find your new home? Your scheduled viewings will appear right here."
+                                : `You don't have any ${filter} bookings at the moment.`}
                         </p>
                         <Link
                             to="/listings"
-                            className="inline-flex items-center justify-center px-8 py-3 bg-primary-600 text-white font-bold rounded-[3px] shadow-lg shadow-primary-200/50 hover:bg-primary-700 hover:-translate-y-0.5 transition-all duration-200"
+                            className="inline-flex items-center justify-center px-10 py-4 bg-slate-900 text-white font-bold rounded-[3px] shadow-xl shadow-slate-900/10 hover:bg-slate-800 hover:-translate-y-1 active:scale-95 transition-all duration-300 relative z-10"
                         >
-                            Find a Property <ArrowRightIcon className="w-4 h-4 ml-2" />
+                            Explore Listings <ArrowRightIcon className="w-5 h-5 ml-2.5" />
                         </Link>
                     </div>
                 ) : (
-                    <div className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredAppointments.map((appointment) => {
-                            const date = new Date(appointment.preferred_date);
+                            const date = new Date(appointment.appointment_date);
                             const isPast = date < new Date();
+                            const propertyImage = appointment.listing?.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
 
                             return (
                                 <div
                                     key={appointment.id}
-                                    className={`group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover:border-primary-100 transition-all duration-300 relative ${isPast ? 'opacity-75 grayscale-[0.5]' : ''}`}
+                                    className={`group bg-white rounded-[3px] border border-slate-200/60 shadow-sm hover:shadow-2xl hover:shadow-primary-600/5 hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col ${isPast ? 'opacity-90' : ''}`}
                                 >
-                                    <div className="flex flex-col md:flex-row">
-                                        {/* Date Section - Left Side Accent */}
-                                        <div className="md:w-32 bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-row md:flex-col items-center justify-center md:justify-center gap-3 text-center shrink-0">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-black text-primary-600 uppercase tracking-widest leading-none mb-1">
-                                                    {date.toLocaleDateString('en-US', { month: 'short' })}
-                                                </span>
-                                                <span className="text-4xl font-black text-gray-900 leading-none tracking-tight">
-                                                    {date.getDate()}
-                                                </span>
-                                                <span className="text-xs font-medium text-gray-400 mt-1">
-                                                    {date.getFullYear()}
-                                                </span>
-                                            </div>
-                                            <div className="visible md:hidden w-px h-8 bg-gray-200 mx-2"></div>
-                                            <div className="bg-white px-3 py-1 rounded-[3px] border border-gray-200 text-sm font-bold text-gray-700 shadow-sm md:mt-2">
-                                                {appointment.preferred_time}
+                                    {/* Image & Status Area */}
+                                    <div className="relative h-48 sm:h-56 shrink-0 overflow-hidden">
+                                        <img
+                                            src={propertyImage}
+                                            alt={appointment.listing?.title}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                        {/* Glassmorphic Status Badge */}
+                                        <div className="absolute top-4 left-4">
+                                            <div className={`backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/20 text-[11px] font-black uppercase tracking-wider flex items-center gap-2 shadow-sm ${appointment.status === 'confirmed' ? 'bg-emerald-500/80 text-white' :
+                                                    appointment.status === 'cancelled' ? 'bg-rose-500/80 text-white' :
+                                                        'bg-amber-500/80 text-white'
+                                                }`}>
+                                                <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                                                {appointment.status}
                                             </div>
                                         </div>
 
-                                        {/* Main Content */}
-                                        <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
-                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                                        {/* Date Tag */}
+                                        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-[3px] p-2.5 flex items-center gap-3 border border-white/20 shadow-lg">
+                                            <div className="bg-primary-50 w-10 h-10 rounded-[3px] flex flex-col items-center justify-center shrink-0">
+                                                <span className="text-[10px] font-black text-primary-600 leading-none mb-0.5 uppercase">
+                                                    {date.toLocaleDateString('en-US', { month: 'short' })}
+                                                </span>
+                                                <span className="text-base font-black text-slate-900 leading-none">
+                                                    {date.getDate()}
+                                                </span>
+                                            </div>
+                                            <div className="pr-2">
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Time Slots</div>
+                                                <div className="text-sm font-black text-slate-800 leading-none">{appointment.preferred_time}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Content Area */}
+                                    <div className="p-7 flex flex-col flex-1">
+                                        <div className="mb-6 flex-1">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className="w-1.5 h-4 bg-primary-600 rounded-full"></div>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Booking ID: #{appointment.id.slice(0, 8).toUpperCase()}</span>
+                                            </div>
+
+                                            <Link to={`/listings/${appointment.listing_id}`} className="block">
+                                                <h3 className="text-xl font-black text-slate-900 mb-2 leading-snug hover:text-primary-600 transition-colors line-clamp-2">
+                                                    {appointment.listing?.title || 'Unknown Property'}
+                                                </h3>
+                                            </Link>
+
+                                            <div className="flex items-center text-slate-500 font-bold text-sm">
+                                                <MapPinIcon className="w-4 h-4 mr-2 text-primary-500/70" />
+                                                <span className="truncate">{appointment.listing?.district || 'Location unavailable'}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Area */}
+                                        <div className="pt-6 border-t border-slate-100 mt-auto flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-[3px] bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                                    {appointment.purpose === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
+                                                </div>
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10px] font-black uppercase tracking-wider border ring-1 ring-inset ${getStatusStyle(appointment.status)}`}>
-                                                            {getStatusIcon(appointment.status)}
-                                                            {appointment.status}
-                                                        </span>
-                                                        <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
-                                                            #{appointment.id.slice(0, 6)}
-                                                        </span>
-                                                    </div>
-
-                                                    <Link to={`/listings/${appointment.listing_id}`} className="group-hover:text-primary-600 transition-colors block">
-                                                        <h3 className="text-xl font-bold text-gray-900 mb-1 leading-tight">
-                                                            {appointment.listing?.title || 'Unknown Property'}
-                                                        </h3>
-                                                    </Link>
-
-                                                    <div className="flex items-center text-gray-500 font-medium">
-                                                        <MapPinIcon className="w-4 h-4 mr-1.5 text-gray-400 shrink-0" />
-                                                        <span className="truncate">{appointment.listing?.district || 'Location unavailable'}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex md:flex-col gap-3 shrink-0">
-                                                    <Link
-                                                        to={`/listings/${appointment.listing_id}`}
-                                                        className="px-5 py-2.5 bg-white text-gray-700 text-xs font-bold uppercase tracking-wide border border-gray-200 rounded-[3px] hover:bg-gray-50 hover:text-primary-600 hover:border-primary-200 transition-all shadow-sm text-center min-w-[120px]"
-                                                    >
-                                                        View Listing
-                                                    </Link>
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Booking Type</div>
+                                                    <div className="text-xs font-black text-slate-700 capitalize">{appointment.purpose}</div>
                                                 </div>
                                             </div>
 
-                                            {/* Footer Details */}
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-5 border-t border-gray-100/50 mt-auto">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
-                                                        {appointment.purpose === 'rent'
-                                                            ? <HomeIcon className="w-4 h-4 text-indigo-600" />
-                                                            : <BuildingOfficeIcon className="w-4 h-4 text-indigo-600" />
-                                                        }
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Type</div>
-                                                        <div className="text-sm font-bold text-gray-700 capitalize">
-                                                            {appointment.purpose}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start gap-3 col-span-2 sm:col-span-1">
-                                                    <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                                                        <ClockIcon className="w-4 h-4 text-emerald-600" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Created</div>
-                                                        <div className="text-sm font-bold text-gray-700">
-                                                            {new Date(appointment.created_at).toLocaleDateString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <Link
+                                                to={`/listings/${appointment.listing_id}`}
+                                                className="w-12 h-12 bg-slate-900 text-white rounded-[3px] flex items-center justify-center shadow-lg shadow-slate-900/10 hover:bg-primary-600 hover:shadow-primary-600/20 active:scale-90 transition-all duration-300"
+                                            >
+                                                <ArrowRightIcon className="w-5 h-5" />
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>

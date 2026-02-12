@@ -233,6 +233,8 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"name":            agent.Name,
 		"logo":            agent.Logo,
 		"description":     agent.Description,
+		"vision":          agent.Vision,
+		"mission":         agent.Mission,
 		"phone":           agent.Phone,
 		"email":           agent.Email,
 		"address":         agent.Address,
@@ -240,6 +242,10 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"min_price_limit": agent.MinPriceLimit,
 		"max_price_limit": agent.MaxPriceLimit,
 		"price_format":    agent.PriceFormat,
+		"facebook":        agent.Facebook,
+		"instagram":       agent.Instagram,
+		"linkedin":        agent.LinkedIn,
+		"line":            agent.Line,
 	})
 }
 
@@ -260,6 +266,8 @@ func (pc *PublicController) GetTenantConfig(c *gin.Context) {
 				"name":            agent.Name,
 				"logo":            agent.Logo,
 				"description":     agent.Description,
+				"vision":          agent.Vision,
+				"mission":         agent.Mission,
 				"phone":           agent.Phone,
 				"email":           agent.Email,
 				"address":         agent.Address,
@@ -267,6 +275,10 @@ func (pc *PublicController) GetTenantConfig(c *gin.Context) {
 				"min_price_limit": agent.MinPriceLimit,
 				"max_price_limit": agent.MaxPriceLimit,
 				"price_format":    agent.PriceFormat,
+				"facebook":        agent.Facebook,
+				"instagram":       agent.Instagram,
+				"linkedin":        agent.LinkedIn,
+				"line":            agent.Line,
 			}
 		}
 	}

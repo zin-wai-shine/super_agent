@@ -196,7 +196,15 @@ const StyledSelect = ({
     error = false,
     ...props
 }) => {
-    const { isDarkMode } = useDashboardTheme();
+    // Try to get theme context, but don't throw if missing
+    let isDarkMode = false;
+    try {
+        const context = useDashboardTheme();
+        isDarkMode = context?.isDarkMode || false;
+    } catch (e) {
+        // Fallback to light mode if context is missing
+        isDarkMode = false;
+    }
 
     const currentStyles = getCustomStyles(isDarkMode);
 

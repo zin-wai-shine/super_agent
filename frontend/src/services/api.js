@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+const currentHostname = window.location.hostname;
+const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1';
+
+const API_URL = (isProbablySubdomain || !process.env.REACT_APP_API_URL)
+    ? `${window.location.protocol}//${currentHostname}:8080/api`
+    : process.env.REACT_APP_API_URL;
 
 const api = axios.create({
     baseURL: API_URL,
@@ -96,7 +102,6 @@ export const agentApi = {
     updateSubAgent: (id, data) => api.put(`/agent/sub-agents/${id}`, data),
     deleteSubAgent: (id) => api.delete(`/agent/sub-agents/${id}`),
     getTheme: () => api.get('/agent/theme'),
-    updateTheme: (data) => api.put('/agent/theme', data),
     updateTheme: (data) => api.put('/agent/theme', data),
     getSettings: () => api.get('/agent/settings'),
     updateSettings: (data) => api.put('/agent/settings', data),

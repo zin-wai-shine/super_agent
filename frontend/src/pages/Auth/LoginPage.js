@@ -33,7 +33,20 @@ const LoginPage = () => {
             } else if (result.user.role === 'super_admin') {
                 navigate('/admin');
             } else if (result.user.role === 'agent' || result.user.role === 'sub_agent') {
-                navigate('/agent');
+                const agent = result.user.agent;
+                if (agent && agent.subdomain) {
+                    const currentHost = window.location.hostname;
+                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+                    const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
+
+                    if (currentHost !== agentHost) {
+                        const protocol = window.location.protocol;
+                        const port = window.location.port ? `:${window.location.port}` : '';
+                        window.location.href = `${protocol}//${agentHost}${port}/dashboard`;
+                        return;
+                    }
+                }
+                navigate('/dashboard');
             } else {
                 navigate('/');
             }

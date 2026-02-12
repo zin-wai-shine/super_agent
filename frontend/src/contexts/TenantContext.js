@@ -18,17 +18,33 @@ export const TenantProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchTenantConfig = async () => {
-            console.log('Fetching tenant config from:', process.env.REACT_APP_API_URL || 'http://localhost:8080/api');
             try {
-                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+                // Use dynamic API URL based on current host to support multi-tenant resolution
+                // If we are on a subdomain (not localhost or main domain), we MUST use the current hostname
+                // to ensure the backend receives the correct Host header for tenant resolution.
+                const currentHost = window.location.hostname;
+                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+                const isSubdomain = currentHost !== mainDomain && currentHost !== 'localhost' && currentHost !== '127.0.0.1';
+
+                const apiUrl = (isSubdomain || !process.env.REACT_APP_API_URL)
+                    ? `${window.location.protocol}//${currentHost}:8080/api`
+                    : process.env.REACT_APP_API_URL;
+
+                console.log('Fetching tenant config from:', apiUrl);
                 const response = await axios.get(`${apiUrl}/public/tenant/config`, { timeout: 5000 });
                 console.log('Tenant config received:', response.data);
                 setTenantConfig(response.data);
             } catch (err) {
                 console.error('Failed to fetch tenant configuration:', err);
                 setError(err);
-                // Fallback to main domain defaults if API is down
-                setTenantConfig({ is_main_domain: true, agent: null });
+
+                // Smart fallback: guess if main domain based on hostname
+                const hostname = window.location.hostname;
+                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+                const isProbablyMain = hostname === mainDomain || hostname === 'localhost' || hostname === '127.0.0.1';
+
+                console.log('API failed, guessing tenant config from hostname:', { hostname, isProbablyMain });
+                setTenantConfig({ is_main_domain: isProbablyMain, agent: null });
             } finally {
                 setLoading(false);
             }
@@ -38,7 +54,11 @@ export const TenantProvider = ({ children }) => {
     }, []);
 
     const value = {
-        isMainDomain: tenantConfig?.is_main_domain ?? true,
+        isMainDomain: tenantConfig?.is_main_domain ?? (
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test')
+        ),
         agent: tenantConfig?.agent ?? null,
         loading,
         error

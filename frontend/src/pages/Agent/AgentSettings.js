@@ -68,7 +68,15 @@ const AgentSettings = () => {
             await agentApi.updateSettings({
                 min_price_limit: parseFloat(data.min_price_limit),
                 max_price_limit: parseFloat(data.max_price_limit),
-                price_format: data.price_format
+                price_format: data.price_format,
+                description: data.description,
+                vision: data.vision,
+                mission: data.mission,
+                facebook: data.facebook,
+                instagram: data.instagram,
+                linkedin: data.linkedin,
+                line: data.line,
+                phone: data.phone
             });
             toast.success('Settings updated successfully!');
         } catch (error) {
@@ -114,37 +122,149 @@ const AgentSettings = () => {
                         Leave as 0 for no limit.
                     </p>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="input-label">Minimum Search Price</label>
-                                <div className="relative mt-1 rounded-md shadow-sm">
-                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span className="text-gray-500 sm:text-sm">฿</span>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                        {/* Site Content Section */}
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white border-l-4 border-primary-500 pl-3">
+                                Profile & About
+                            </h3>
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="input-label">Bio / Description</label>
+                                    <textarea
+                                        rows={4}
+                                        className="input-field mt-1"
+                                        placeholder="Enter a brief bio or description of your agency..."
+                                        {...register('description')}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="input-label">Our Vision</label>
+                                        <textarea
+                                            rows={3}
+                                            className="input-field mt-1 italic"
+                                            placeholder="What is your long-term goal?"
+                                            {...register('vision')}
+                                        />
                                     </div>
+                                    <div>
+                                        <label className="input-label">Our Mission</label>
+                                        <textarea
+                                            rows={3}
+                                            className="input-field mt-1"
+                                            placeholder="How do you help your clients?"
+                                            {...register('mission')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Contact Information Section */}
+                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white border-l-4 border-primary-500 pl-3 mb-6">
+                                Contact Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="input-label">Phone Number</label>
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        className="input-field pl-7"
-                                        placeholder="0.00"
-                                        {...register('min_price_limit', { min: 0 })}
+                                        type="tel"
+                                        className="input-field mt-1"
+                                        placeholder="+66 81 234 5678"
+                                        {...register('phone')}
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="input-label">Maximum Search Price</label>
-                                <div className="relative mt-1 rounded-md shadow-sm">
-                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span className="text-gray-500 sm:text-sm">฿</span>
-                                    </div>
+                        {/* Social Media Section */}
+                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white border-l-4 border-primary-500 pl-3 mb-6">
+                                Social Media Links
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="input-label">Facebook URL</label>
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        className="input-field pl-7"
-                                        placeholder="0.00"
-                                        {...register('max_price_limit', { min: 0 })}
+                                        type="url"
+                                        className="input-field mt-1"
+                                        placeholder="https://facebook.com/..."
+                                        {...register('facebook')}
                                     />
+                                </div>
+                                <div>
+                                    <label className="input-label">Instagram URL</label>
+                                    <input
+                                        type="url"
+                                        className="input-field mt-1"
+                                        placeholder="https://instagram.com/..."
+                                        {...register('instagram')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">LinkedIn URL</label>
+                                    <input
+                                        type="url"
+                                        className="input-field mt-1"
+                                        placeholder="https://linkedin.com/in/..."
+                                        {...register('linkedin')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">Line ID / Link</label>
+                                    <input
+                                        type="text"
+                                        className="input-field mt-1"
+                                        placeholder="Line ID or link"
+                                        {...register('line')}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white border-l-4 border-primary-500 pl-3 mb-6">
+                                Search Configuration
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Min Price Limit */}
+                                <div>
+                                    <label htmlFor="min_price_limit" className="input-label">
+                                        Minimum Price Limit
+                                    </label>
+                                    <div className="relative mt-1 rounded-md shadow-sm">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span className="text-gray-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            id="min_price_limit"
+                                            className="input-field pl-7"
+                                            placeholder="0"
+                                            {...register('min_price_limit', { valueAsNumber: true })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Max Price Limit */}
+                                <div>
+                                    <label htmlFor="max_price_limit" className="input-label">
+                                        Maximum Price Limit
+                                    </label>
+                                    <div className="relative mt-1 rounded-md shadow-sm">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span className="text-gray-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            id="max_price_limit"
+                                            className="input-field pl-7"
+                                            placeholder="0"
+                                            {...register('max_price_limit', { valueAsNumber: true })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

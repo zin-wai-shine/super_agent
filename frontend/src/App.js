@@ -60,12 +60,32 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
         return <Navigate to="/" replace />;
     }
 
-    // Domain-based access
-    if (location.pathname.startsWith('/admin') && !isMainDomain) {
+    // Domain-based access (only if we're sure)
+    if (location.pathname.startsWith('/admin') && !isMainDomain && isMainDomain !== undefined) {
         return <Navigate to="/" replace />;
     }
 
-    if (location.pathname.startsWith('/dashboard') && isMainDomain) {
+    if (location.pathname.startsWith('/dashboard') && isMainDomain && user?.role === 'super_admin') {
+        // Super admin on main domain can access dashboard routes if needed, 
+        // or we can keep it restricted. For now, let's allow it if it exists.
+    }
+
+    return children;
+};
+
+// Guest Route Component (prevent logged in users from visiting login/register)
+const GuestRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+        );
+    }
+
+    if (isAuthenticated) {
         return <Navigate to="/" replace />;
     }
 
@@ -81,7 +101,8 @@ function App() {
 }
 
 const AppRoutes = () => {
-    const { isMainDomain } = useTenant();
+    const { isMainDomain, agent } = useTenant();
+    console.log('AppRoutes State:', { isMainDomain, agent });
 
     return (
         <Routes>
@@ -92,11 +113,7 @@ const AppRoutes = () => {
                 <Route path="listings/:id" element={<ListingDetailPage />} />
                 <Route
                     path="listings/:id/book"
-                    element={
-                        <ProtectedRoute allowedRoles={['user']}>
-                            <BookAppointment />
-                        </ProtectedRoute>
-                    }
+                    element={<BookAppointment />}
                 />
                 <Route path="banners/:id" element={<BannerDetail />} />
                 <Route path="search" element={<MobileSearchPage />} />
@@ -119,49 +136,59 @@ const AppRoutes = () => {
             </Route>
 
             {/* Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route
+                path="/login"
+                element={
+                    <GuestRoute>
+                        <LoginPage />
+                    </GuestRoute>
+                }
+            />
+            <Route
+                path="/register"
+                element={
+                    <GuestRoute>
+                        <RegisterPage />
+                    </GuestRoute>
+                }
+            />
 
-            {/* Agent Dashboard Routes (Only on Agent domains or subdomain) */}
-            {!isMainDomain && (
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute allowedRoles={['agent', 'sub_agent']}>
-                            <DashboardLayout />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route index element={<AgentDashboard />} />
-                    <Route path="listings" element={<AgentListings />} />
-                    <Route path="listings/new" element={<CreateListing />} />
-                    <Route path="listings/:id/edit" element={<EditListing />} />
-                    <Route path="appointments" element={<AppointmentManagement />} />
-                    <Route path="sub-agents" element={<SubAgents />} />
-                    <Route path="theme" element={<ThemeSettings />} />
-                    <Route path="settings" element={<AgentSettings />} />
-                    <Route path="notifications" element={<NotificationCenter />} />
-                    <Route path="banners" element={<BannerManagement />} />
-                </Route>
-            )}
+            {/* Agent Dashboard Routes */}
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={['agent', 'sub_agent']}>
+                        <DashboardLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<AgentDashboard />} />
+                <Route path="listings" element={<AgentListings />} />
+                <Route path="listings/new" element={<CreateListing />} />
+                <Route path="listings/:id/edit" element={<EditListing />} />
+                <Route path="appointments" element={<AppointmentManagement />} />
+                <Route path="sub-agents" element={<SubAgents />} />
+                <Route path="theme" element={<ThemeSettings />} />
+                <Route path="settings" element={<AgentSettings />} />
+                <Route path="notifications" element={<NotificationCenter />} />
+                <Route path="banners" element={<BannerManagement />} />
+            </Route>
 
-            {/* Super Admin Routes (Only on Main domain) */}
-            {isMainDomain && (
-                <Route
-                    path="/admin"
-                    element={
-                        <ProtectedRoute allowedRoles={['super_admin']}>
-                            <DashboardLayout />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="agents" element={<AgentManagement />} />
-                    <Route path="plans" element={<SubscriptionPlans />} />
-                    <Route path="notifications" element={<NotificationCenter />} />
-                    <Route path="banners" element={<BannerManagement />} />
-                </Route>
-            )}
+            {/* Super Admin Routes */}
+            <Route
+                path="/admin"
+                element={
+                    <ProtectedRoute allowedRoles={['super_admin']}>
+                        <DashboardLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<AdminDashboard />} />
+                <Route path="agents" element={<AgentManagement />} />
+                <Route path="plans" element={<SubscriptionPlans />} />
+                <Route path="notifications" element={<NotificationCenter />} />
+                <Route path="banners" element={<BannerManagement />} />
+            </Route>
 
             {/* Legacy redirect and fallback */}
             <Route path="/agent/*" element={<Navigate to="/dashboard" replace />} />

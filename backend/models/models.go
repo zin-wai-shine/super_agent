@@ -41,9 +41,15 @@ type Agent struct {
 	Domain         string         `gorm:"size:255" json:"domain,omitempty"`               // Computed full domain
 	Logo           string         `gorm:"size:500" json:"logo,omitempty"`
 	Description    string         `gorm:"type:text" json:"description,omitempty"`
+	Vision         string         `gorm:"type:text" json:"vision,omitempty"`
+	Mission        string         `gorm:"type:text" json:"mission,omitempty"`
 	Phone          string         `gorm:"size:50" json:"phone,omitempty"`
 	Email          string         `gorm:"size:255" json:"email,omitempty"`
 	Address        string         `gorm:"type:text" json:"address,omitempty"`
+	Facebook       string         `gorm:"size:255;column:facebook" json:"facebook,omitempty"`
+	Instagram      string         `gorm:"size:255;column:instagram" json:"instagram,omitempty"`
+	LinkedIn       string         `gorm:"size:255;column:linkedin" json:"linkedin,omitempty"`
+	Line           string         `gorm:"size:255;column:line" json:"line,omitempty"`
 	MinPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"min_price_limit"`
 	MaxPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"max_price_limit"`
 	PriceFormat    string         `gorm:"size:20;default:'full'" json:"price_format"` // full (e.g. 3,000) or short (e.g. 3K)

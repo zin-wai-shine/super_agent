@@ -106,21 +106,20 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		hostPort := strings.Split(host, ":")
 		domain := hostPort[0]
 
-		isMainDomain := domain == cfg.MainDomain || domain == "localhost"
+		isMainDomain := domain == cfg.MainDomain || domain == "localhost" || domain == "127.0.0.1"
 
 		var tenantID uuid.UUID
 		var tenant *models.Agent
 		foundTenant := false
 
-		// 1. Check if it's the main domain
-		if isMainDomain {
-			c.Set("is_main_domain", true)
-		} else {
-			c.Set("is_main_domain", false)
+		// Explicitly set is_main_domain based on calculation
+		c.Set("is_main_domain", isMainDomain)
 
-			// 2. Try to resolve as a subdomain of main domain
-			if strings.HasSuffix(domain, "."+cfg.MainDomain) {
-				subdomain := strings.TrimSuffix(domain, "."+cfg.MainDomain)
+		if !isMainDomain {
+			// 1. Try to resolve as a subdomain of main domain
+			mainDomainWithDot := "." + cfg.MainDomain
+			if strings.HasSuffix(domain, mainDomainWithDot) {
+				subdomain := strings.TrimSuffix(domain, mainDomainWithDot)
 				if subdomain != "" && subdomain != "www" && subdomain != "api" {
 					var agent models.Agent
 					if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
@@ -131,7 +130,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 				}
 			}
 
-			// 3. Try to resolve as a custom domain
+			// 2. Try to resolve as a custom domain
 			if !foundTenant {
 				var agent models.Agent
 				if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", domain, true, false).First(&agent).Error; err == nil {

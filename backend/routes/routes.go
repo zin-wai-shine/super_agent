@@ -14,7 +14,7 @@ import (
 func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager *utils.WebSocketManager) {
 	// Initialize controllers
 	authController := controllers.NewAuthController(db)
-	superAdminController := controllers.NewSuperAdminController(db)
+	superAdminController := controllers.NewSuperAdminController(db, cfg)
 	agentController := controllers.NewAgentController(db, cfg)
 	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
