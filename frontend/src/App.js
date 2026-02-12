@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
+import { TenantProvider, useTenant } from './contexts/TenantContext';
 
 // Layouts
 import PublicLayout from './components/Layout/PublicLayout';
@@ -39,6 +40,7 @@ import BannerManagement from './pages/Admin/BannerManagement';
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { isAuthenticated, user, loading } = useAuth();
+    const { isMainDomain } = useTenant();
     const location = useLocation();
 
     if (loading) {
@@ -53,7 +55,17 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
+    // Role-based access
     if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+        return <Navigate to="/" replace />;
+    }
+
+    // Domain-based access
+    if (location.pathname.startsWith('/admin') && !isMainDomain) {
+        return <Navigate to="/" replace />;
+    }
+
+    if (location.pathname.startsWith('/dashboard') && isMainDomain) {
         return <Navigate to="/" replace />;
     }
 
@@ -63,48 +75,57 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 function App() {
     return (
         <WebSocketProvider>
-            <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<PublicLayout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="listings" element={<ListingsPage />} />
-                    <Route path="listings/:id" element={<ListingDetailPage />} />
-                    <Route
-                        path="listings/:id/book"
-                        element={
-                            <ProtectedRoute>
-                                <BookAppointment />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="banners/:id" element={<BannerDetail />} />
-                    <Route path="search" element={<MobileSearchPage />} />
-                    <Route
-                        path="profile"
-                        element={
-                            <ProtectedRoute>
-                                <UserProfile />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="my-bookings"
-                        element={
-                            <ProtectedRoute>
-                                <MyBookings />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Route>
+            <AppRoutes />
+        </WebSocketProvider>
+    );
+}
 
-                {/* Auth Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+const AppRoutes = () => {
+    const { isMainDomain } = useTenant();
 
-
-                {/* Agent Dashboard Routes */}
+    return (
+        <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="listings" element={<ListingsPage />} />
+                <Route path="listings/:id" element={<ListingDetailPage />} />
                 <Route
-                    path="/agent"
+                    path="listings/:id/book"
+                    element={
+                        <ProtectedRoute allowedRoles={['user']}>
+                            <BookAppointment />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="banners/:id" element={<BannerDetail />} />
+                <Route path="search" element={<MobileSearchPage />} />
+                <Route
+                    path="profile"
+                    element={
+                        <ProtectedRoute>
+                            <UserProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="my-bookings"
+                    element={
+                        <ProtectedRoute>
+                            <MyBookings />
+                        </ProtectedRoute>
+                    }
+                />
+            </Route>
+
+            {/* Auth Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* Agent Dashboard Routes (Only on Agent domains or subdomain) */}
+            {!isMainDomain && (
+                <Route
+                    path="/dashboard"
                     element={
                         <ProtectedRoute allowedRoles={['agent', 'sub_agent']}>
                             <DashboardLayout />
@@ -122,8 +143,10 @@ function App() {
                     <Route path="notifications" element={<NotificationCenter />} />
                     <Route path="banners" element={<BannerManagement />} />
                 </Route>
+            )}
 
-                {/* Super Admin Routes */}
+            {/* Super Admin Routes (Only on Main domain) */}
+            {isMainDomain && (
                 <Route
                     path="/admin"
                     element={
@@ -138,12 +161,13 @@ function App() {
                     <Route path="notifications" element={<NotificationCenter />} />
                     <Route path="banners" element={<BannerManagement />} />
                 </Route>
+            )}
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </WebSocketProvider>
+            {/* Legacy redirect and fallback */}
+            <Route path="/agent/*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
     );
-}
+};
 
 export default App;

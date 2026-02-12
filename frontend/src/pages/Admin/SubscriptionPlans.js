@@ -51,6 +51,11 @@ const SubscriptionPlans = () => {
                 max_listings: plan.max_listings,
                 max_sub_agents: plan.max_sub_agents,
                 allow_custom_domain: plan.allow_custom_domain || false,
+                allow_appointments: plan.allow_appointments ?? true,
+                allow_theme: plan.allow_theme ?? true,
+                allow_sub_agents: plan.allow_sub_agents ?? true,
+                allow_notifications: plan.allow_notifications ?? true,
+                allow_banners: plan.allow_banners ?? true,
                 features: plan.features?.join ? plan.features.join(', ') : (plan.features || ''),
             });
         } else {
@@ -61,6 +66,11 @@ const SubscriptionPlans = () => {
                 max_listings: 10,
                 max_sub_agents: 1,
                 allow_custom_domain: false,
+                allow_appointments: true,
+                allow_theme: true,
+                allow_sub_agents: true,
+                allow_notifications: true,
+                allow_banners: true,
                 features: ''
             });
         }
@@ -76,6 +86,11 @@ const SubscriptionPlans = () => {
                 max_listings: parseInt(data.max_listings),
                 max_sub_agents: parseInt(data.max_sub_agents),
                 allow_custom_domain: data.allow_custom_domain || false,
+                allow_appointments: data.allow_appointments,
+                allow_theme: data.allow_theme,
+                allow_sub_agents: data.allow_sub_agents,
+                allow_notifications: data.allow_notifications,
+                allow_banners: data.allow_banners,
                 features: data.features ? data.features.split(',').map((f) => f.trim()).filter(Boolean).join(',') : '',
             };
 
@@ -161,21 +176,26 @@ const SubscriptionPlans = () => {
             },
             {
                 accessorKey: 'features',
-                header: 'Features',
+                header: 'Plan Features',
                 cell: ({ row }) => {
-                    const features = Array.isArray(row.original.features)
-                        ? row.original.features
-                        : (row.original.features?.split ? row.original.features.split(',') : []);
+                    const plan = row.original;
+                    const features = [
+                        { name: 'Appointments', enabled: plan.allow_appointments },
+                        { name: 'Theme', enabled: plan.allow_theme },
+                        { name: 'Sub-Agents', enabled: plan.allow_sub_agents },
+                        { name: 'Notifications', enabled: plan.allow_notifications },
+                        { name: 'Banners', enabled: plan.allow_banners },
+                    ];
                     return (
-                        <div className="flex flex-wrap gap-1">
-                            {features.slice(0, 2).map((f, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] rounded-md">
-                                    {f.trim()}
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {features.map((f, i) => (
+                                <span key={i} className={`px-2 py-0.5 text-[10px] rounded-md border ${f.enabled
+                                    ? 'bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                                    : 'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700 opacity-50'
+                                    }`}>
+                                    {f.name}
                                 </span>
                             ))}
-                            {features.length > 2 && (
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">+{features.length - 2} more</span>
-                            )}
                         </div>
                     );
                 },
@@ -326,14 +346,31 @@ const SubscriptionPlans = () => {
                                     <input type="number" className="input-field" {...register('max_sub_agents', { required: true })} />
                                 </div>
                             </div>
-                            <div>
-                                <label className="input-label flex items-center space-x-2">
-                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                                    <span>Allow Custom Domain</span>
+                            <div className="grid grid-cols-2 gap-y-2 py-2 border-y border-gray-100 dark:border-gray-700">
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_appointments')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Appointments</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Enable to allow agents to upgrade to custom domains later
-                                </p>
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_theme')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Theme Customization</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_sub_agents')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Sub-Agents</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_notifications')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Notifications</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_banners')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Banners</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm">
+                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span>Custom Domain</span>
+                                </label>
                             </div>
                             <div>
                                 <label className="input-label">Features (comma-separated)</label>

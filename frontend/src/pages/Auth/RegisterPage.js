@@ -39,7 +39,7 @@ const RegisterPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 px-4 py-12">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <Link to="/" className="flex items-center justify-center space-x-3 mb-8">
@@ -50,7 +50,7 @@ const RegisterPage = () => {
                 </Link>
 
                 {/* Card */}
-                <div className="glass-card p-8">
+                <div className="p-8">
                     <div className="text-center mb-8">
                         <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
                         <p className="text-gray-500">Start exploring properties today</p>

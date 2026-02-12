@@ -162,7 +162,6 @@ const BannerManagement = () => {
 
     const handleDatePresetChange = (preset) => {
         setDatePreset(preset);
-        setShowDatePicker(false);
         const today = new Date();
 
         switch (preset) {
@@ -173,6 +172,7 @@ const BannerManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'yesterday':
                 const yesterday = subDays(today, 1);
@@ -182,6 +182,7 @@ const BannerManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'last7days':
                 setDateRange([{
@@ -190,6 +191,7 @@ const BannerManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'thismonth':
                 setDateRange([{
@@ -198,9 +200,11 @@ const BannerManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'alltime':
                 setIsDateFiltered(false);
+                setShowDatePicker(false);
                 break;
             case 'custom':
                 setShowDatePicker(true);
@@ -539,7 +543,7 @@ const BannerManagement = () => {
                                 ]}
                                 value={{
                                     value: datePreset,
-                                    label: datePreset === 'custom'
+                                    label: datePreset === 'custom' && dateRange[0]?.startDate && dateRange[0]?.endDate
                                         ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
                                         : datePreset === 'alltime' ? 'All Time' : datePreset.charAt(0).toUpperCase() + datePreset.slice(1).replace('7', ' 7 ')
                                 }}
@@ -565,7 +569,7 @@ const BannerManagement = () => {
                                         <div className="w-32">
                                             <StyledSelect
                                                 value={{ value: getMonth(shownDate), label: format(shownDate, 'MMMM') }}
-                                                onChange={(opt) => setShownDate(setMonth(shownDate, opt.value))}
+                                                onChange={(val) => setShownDate(setMonth(shownDate, val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
                                                 isSearchable={false}
                                                 styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
@@ -574,7 +578,7 @@ const BannerManagement = () => {
                                         <div className="w-24">
                                             <StyledSelect
                                                 value={{ value: getYear(shownDate), label: getYear(shownDate).toString() }}
-                                                onChange={(opt) => setShownDate(setYear(shownDate, opt.value))}
+                                                onChange={(val) => setShownDate(setYear(shownDate, val))}
                                                 options={Array.from({ length: 5 }, (_, i) => ({ value: getYear(new Date()) - 2 + i, label: (getYear(new Date()) - 2 + i).toString() }))}
                                                 isSearchable={false}
                                                 styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
@@ -591,7 +595,7 @@ const BannerManagement = () => {
                                         setDatePreset('custom');
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange}
+                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
                                     shownDate={shownDate}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']}

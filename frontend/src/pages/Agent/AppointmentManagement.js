@@ -120,7 +120,6 @@ const AppointmentManagement = () => {
 
     const handleDatePresetChange = (preset) => {
         setDatePreset(preset);
-        setShowDatePicker(false);
         const today = new Date();
 
         switch (preset) {
@@ -131,6 +130,7 @@ const AppointmentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'yesterday':
                 const yesterday = subDays(today, 1);
@@ -140,6 +140,7 @@ const AppointmentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'last7days':
                 setDateRange([{
@@ -148,6 +149,7 @@ const AppointmentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'thismonth':
                 setDateRange([{
@@ -156,9 +158,11 @@ const AppointmentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'alltime':
                 setIsDateFiltered(false);
+                setShowDatePicker(false);
                 break;
             case 'custom':
                 setShowDatePicker(true);
@@ -416,7 +420,7 @@ const AppointmentManagement = () => {
                                 formatOptionLabel={(option) => (
                                     <div className="flex items-center justify-between w-full">
                                         <span>
-                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]
+                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate
                                                 ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
                                                 : option.label}
                                         </span>

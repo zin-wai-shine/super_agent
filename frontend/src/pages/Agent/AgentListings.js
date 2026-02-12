@@ -126,7 +126,6 @@ const AgentListings = () => {
 
     const handleDatePresetChange = (preset) => {
         setDatePreset(preset);
-        setShowDatePicker(false);
         const today = new Date();
 
         switch (preset) {
@@ -137,6 +136,7 @@ const AgentListings = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'yesterday':
                 const yesterday = subDays(today, 1);
@@ -146,6 +146,7 @@ const AgentListings = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'last7days':
                 setDateRange([{
@@ -154,6 +155,7 @@ const AgentListings = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'thismonth':
                 setDateRange([{
@@ -162,9 +164,11 @@ const AgentListings = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'alltime':
                 setIsDateFiltered(false);
+                setShowDatePicker(false);
                 break;
             case 'custom':
                 setShowDatePicker(true);
@@ -303,7 +307,7 @@ const AgentListings = () => {
                             )}
                         </button>
                         <Link
-                            to={`/agent/listings/${listing.id}/edit`}
+                            to={`/dashboard/listings/${listing.id}/edit`}
                             className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all duration-200"
                             title="Edit"
                         >
@@ -435,7 +439,7 @@ const AgentListings = () => {
                                 formatOptionLabel={(option) => (
                                     <div className="flex items-center justify-between w-full">
                                         <span>
-                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]
+                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate
                                                 ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
                                                 : option.label}
                                         </span>
@@ -550,7 +554,7 @@ const AgentListings = () => {
                                         setDatePreset('custom');
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange}
+                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
                                     shownDate={shownDate}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']} // primary-500
@@ -574,7 +578,7 @@ const AgentListings = () => {
                     </div>
 
                     <Link
-                        to="/agent/listings/new"
+                        to="/dashboard/listings/new"
                         className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-3 h-[34px] text-[12px] shadow-sm"
                     >
                         <PlusIcon className="w-4 h-4" />
@@ -730,7 +734,7 @@ const AgentListings = () => {
                         title="No listings yet"
                         description="Get started by creating your first property listing."
                         action={
-                            <Link to="/agent/listings/new" className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[38px] text-sm shadow-sm">
+                            <Link to="/dashboard/listings/new" className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[38px] text-sm shadow-sm">
                                 <PlusIcon className="w-5 h-5" />
                                 <span>Create Listing</span>
                             </Link>

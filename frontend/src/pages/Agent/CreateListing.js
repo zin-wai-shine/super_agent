@@ -151,7 +151,7 @@ const CreateListing = () => {
                 toast.success('Listing created successfully!');
             }
 
-            navigate(`/agent/listings/${listingId}/edit`);
+            navigate(`/dashboard/listings/${listingId}/edit`);
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to create listing');
         } finally {

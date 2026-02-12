@@ -40,7 +40,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
 
     const handleBookClick = (e) => {
         e.preventDefault();
@@ -266,12 +266,14 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                             >
                                 View Details
                             </button>
-                            <button
-                                onClick={handleBookClick}
-                                className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm"
-                            >
-                                Book Viewing
-                            </button>
+                            {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
+                                <button
+                                    onClick={handleBookClick}
+                                    className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm"
+                                >
+                                    Book Viewing
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -397,7 +399,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 </div>
 
                 {/* Card Footer */}
-                <div className="pt-3 border-t border-gray-100 mt-auto flex gap-2">
+                <div className="flex-1 flex gap-2">
                     <button
                         onClick={(e) => {
                             e.preventDefault();
@@ -407,13 +409,15 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                     >
                         View Details
                     </button>
-                    <button
-                        onClick={handleBookClick}
-                        className="flex-1 py-2 bg-primary-600 text-white text-xs font-bold rounded-[3px] hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
-                    >
-                        <span>Book Viewing</span>
-                        <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
+                    {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
+                        <button
+                            onClick={handleBookClick}
+                            className="flex-1 py-2 bg-primary-600 text-white text-xs font-bold rounded-[3px] hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
+                        >
+                            <span>Book Viewing</span>
+                            <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                        </button>
+                    )}
                 </div>
             </div>
         </Link>

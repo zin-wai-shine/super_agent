@@ -7,7 +7,6 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Cell
 } from 'recharts';
 
 const ActivityChart = ({ data }) => {
@@ -23,44 +22,48 @@ const ActivityChart = ({ data }) => {
     ];
 
     return (
-        <div className="h-[220px] w-full">
+        <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={chartData}
                     margin={{
-                        top: 10,
-                        right: 10,
-                        left: 0,
-                        bottom: 0,
+                        top: 20,
+                        right: 20,
+                        left: -10,
+                        bottom: 5,
                     }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                     <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#9ca3af', fontSize: 12 }}
-                        dy={10}
+                        tick={{ fill: '#9ca3af', fontSize: 11 }}
+                        dy={8}
                     />
                     <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                        tick={{ fill: '#9ca3af', fontSize: 11 }}
+                        dx={-5}
                     />
                     <Tooltip
                         cursor={{ fill: '#f9fafb' }}
                         contentStyle={{
                             backgroundColor: '#fff',
-                            borderRadius: '12px',
-                            border: 'none',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                            fontSize: '12px',
+                            padding: '8px 12px'
                         }}
                     />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={12}>
-                        {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#93c5fd'} />
-                        ))}
-                    </Bar>
+                    <Bar
+                        dataKey="value"
+                        fill="#3b82f6"
+                        radius={[4, 4, 0, 0]}
+                        barSize={20}
+                    />
                 </BarChart>
             </ResponsiveContainer>
         </div>

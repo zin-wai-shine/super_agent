@@ -365,6 +365,7 @@ func (sac *SuperAdminController) UpdatePlan(c *gin.Context) {
 		return
 	}
 
+	// Use Save instead of Updates to ensure all fields (including booleans) are updated
 	if err := sac.db.Save(&plan).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update plan"})
 		return

@@ -143,13 +143,14 @@ const TechStack = () => (
 
         <div className="card">
             <div className="card-title">🏗️ Architecture Pattern</div>
-            <div className="card-subtitle">Multi-tenant SaaS with subdomain routing</div>
+            <div className="card-subtitle">Multi-tenant SaaS with domain-based resolution</div>
             <div className="info-box info">
                 <span className="info-box-icon">📐</span>
                 <div>
-                    The platform uses a <strong>multi-tenant architecture</strong> where each agent (tenant) gets their own subdomain
-                    (e.g. <code>agent-name.super.app</code>) or custom domain. The <strong>TenantMiddleware</strong> resolves the
-                    agent from the request host header and injects it into the context for all downstream handlers.
+                    The platform uses a <strong>multi-tenant architecture</strong> where each agent (tenant) is identified via the
+                    HTTP <code>Host</code> header. The <strong>TenantMiddleware</strong> automatically distinguishes between the
+                    Main Domain (platform sales & admin) and Agent Domains (subdomains like <code>agent.super.app</code> or
+                    custom domains like <code>agent.com</code>).
                 </div>
             </div>
 
@@ -268,7 +269,7 @@ const RolesGuide = () => (
                 <div className="step-number">2</div>
                 <div className="step-content">
                     <h4>Frontend stores token and redirects by role</h4>
-                    <p><code>super_admin</code> → <code>/admin/dashboard</code> | <code>agent/sub_agent</code> → <code>/agent/dashboard</code> | <code>public</code> → <code>/</code></p>
+                    <p><code>super_admin</code> → <code>/admin</code> (Main Domain) | <code>agent/sub_agent</code> → <code>/dashboard</code> (Agent Domain) | <code>public</code> → <code>/</code></p>
                 </div>
             </div>
             <div className="workflow-step">
@@ -281,8 +282,8 @@ const RolesGuide = () => (
             <div className="workflow-step">
                 <div className="step-number">4</div>
                 <div className="step-content">
-                    <h4>TenantMiddleware resolves agent scope</h4>
-                    <p>For agent/sub-agent requests, the middleware ensures they can only access their own agent's data</p>
+                    <h4>TenantContext resolves tenant metadata</h4>
+                    <p>The frontend <code>TenantProvider</code> fetches configuration (theme, agent info) from the <code>/api/public/tenant/config</code> endpoint on app load.</p>
                 </div>
             </div>
         </div>
@@ -327,6 +328,11 @@ const FeatureMatrix = () => (
                         <tr><td>View Booking History</td><td className="cross">—</td><td className="cross">—</td><td className="cross">—</td><td className="check">✓</td></tr>
                         <tr><td>Transit Map Filter</td><td className="cross">—</td><td className="cross">—</td><td className="cross">—</td><td className="check">✓</td></tr>
                         <tr><td>User Profile</td><td className="check">✓</td><td className="check">✓</td><td className="check">✓</td><td className="check">✓</td></tr>
+                        <tr style={{ backgroundColor: 'rgba(59,130,246,0.05)' }}>
+                            <td colSpan="5" style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', padding: '8px' }}>
+                                <i>* Agent and Sub-Agent feature access depends on the assigned <strong>Subscription Plan</strong>.</i>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -401,49 +407,49 @@ const AllPages = () => (
                     <tr>
                         <td><strong>Dashboard</strong></td>
                         <td><code>AgentDashboard.js</code></td>
-                        <td><code>/agent/dashboard</code></td>
+                        <td><code>/dashboard</code></td>
                         <td>Agent-specific stats: total listings, published count, view count, appointments.</td>
                     </tr>
                     <tr>
                         <td><strong>Listings</strong></td>
                         <td><code>AgentListings.js</code></td>
-                        <td><code>/agent/listings</code></td>
+                        <td><code>/dashboard/listings</code></td>
                         <td>Table of all listings with search, date filter, status filter. Publish/unpublish toggle. Actions (edit, delete, view).</td>
                     </tr>
                     <tr>
                         <td><strong>Create Listing</strong></td>
                         <td><code>CreateListing.js</code></td>
-                        <td><code>/agent/listings/new</code></td>
+                        <td><code>/dashboard/listings/new</code></td>
                         <td>Multi-section form: basic info, location (map + address), features, media upload, transit station selection.</td>
                     </tr>
                     <tr>
                         <td><strong>Edit Listing</strong></td>
                         <td><code>EditListing.js</code></td>
-                        <td><code>/agent/listings/:id/edit</code></td>
+                        <td><code>/dashboard/listings/:id/edit</code></td>
                         <td>Same form as create, pre-populated with existing data. Supports media reordering and deletion.</td>
                     </tr>
                     <tr>
                         <td><strong>Appointments</strong></td>
                         <td><code>AppointmentManagement.js</code></td>
-                        <td><code>/agent/appointments</code></td>
+                        <td><code>/dashboard/appointments</code></td>
                         <td>Manage incoming bookings. Status update (pending → confirmed → completed/cancelled). Date filters, notes.</td>
                     </tr>
                     <tr>
                         <td><strong>Sub-Agents</strong></td>
                         <td><code>SubAgents.js</code></td>
-                        <td><code>/agent/sub-agents</code></td>
+                        <td><code>/dashboard/sub-agents</code></td>
                         <td>Manage team members. Create sub-agent accounts, set permissions, activate/deactivate.</td>
                     </tr>
                     <tr>
                         <td><strong>Theme Settings</strong></td>
                         <td><code>ThemeSettings.js</code></td>
-                        <td><code>/agent/theme</code></td>
+                        <td><code>/dashboard/theme</code></td>
                         <td>Customize public site: colors, fonts, logo, header/footer text, custom CSS. Real-time preview.</td>
                     </tr>
                     <tr>
                         <td><strong>Settings</strong></td>
                         <td><code>AgentSettings.js</code></td>
-                        <td><code>/agent/settings</code></td>
+                        <td><code>/dashboard/settings</code></td>
                         <td>Agent profile: name, contact info, price limits, price format.</td>
                     </tr>
                 </tbody>

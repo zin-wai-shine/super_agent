@@ -103,7 +103,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 
 	// Find user
 	var user models.User
-	if err := ac.db.Preload("Agent").Where("email = ?", req.Email).First(&user).Error; err != nil {
+	if err := ac.db.Preload("Agent.Subscription").Where("email = ?", req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
@@ -165,7 +165,7 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 
 	// Get user
 	var user models.User
-	if err := ac.db.Preload("Agent").First(&user, "id = ?", claims.UserID).Error; err != nil {
+	if err := ac.db.Preload("Agent.Subscription").First(&user, "id = ?", claims.UserID).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
@@ -187,7 +187,7 @@ func (ac *AuthController) GetProfile(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
 	var user models.User
-	if err := ac.db.Preload("Agent").First(&user, "id = ?", userID).Error; err != nil {
+	if err := ac.db.Preload("Agent.Subscription").First(&user, "id = ?", userID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}

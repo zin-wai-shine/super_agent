@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { adminApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import StyledSelect from '../../components/Form/StyledSelect';
@@ -43,6 +43,7 @@ const AgentManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
+    const [plans, setPlans] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
 
     // New Filters
@@ -75,7 +76,7 @@ const AgentManagement = () => {
         };
     }, []);
 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { register, handleSubmit, reset, control, formState: { errors } } = useForm();
 
     const fetchAgents = async () => {
         setLoading(true);
@@ -83,6 +84,10 @@ const AgentManagement = () => {
             const response = await adminApi.getAgents({});
             const agentData = Array.isArray(response.data) ? response.data : (response.data.agents || []);
             setAgents(agentData);
+
+            // Fetch plans for the select field
+            const plansRes = await adminApi.getPlans();
+            setPlans(plansRes.data || []);
         } catch (error) {
             console.error('Failed to fetch agents:', error);
             toast.error('Failed to fetch agents');
@@ -98,7 +103,6 @@ const AgentManagement = () => {
 
     const handleDatePresetChange = (preset) => {
         setDatePreset(preset);
-        setShowDatePicker(false);
         const today = new Date();
 
         switch (preset) {
@@ -109,6 +113,7 @@ const AgentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'yesterday':
                 const yesterday = subDays(today, 1);
@@ -118,6 +123,7 @@ const AgentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'last7days':
                 setDateRange([{
@@ -126,6 +132,7 @@ const AgentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'thismonth':
                 setDateRange([{
@@ -134,9 +141,11 @@ const AgentManagement = () => {
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
+                setShowDatePicker(false);
                 break;
             case 'alltime':
                 setIsDateFiltered(false);
+                setShowDatePicker(false);
                 break;
             case 'custom':
                 setShowDatePicker(true);
@@ -187,13 +196,14 @@ const AgentManagement = () => {
         if (agent) {
             reset({
                 name: agent.name,
-                email: agent.owner_email,
+                email: agent.email,
                 subdomain: agent.subdomain,
                 domain_type: agent.domain_type || 'subdomain',
                 custom_domain: agent.custom_domain,
+                subscription_id: agent.subscription_id || agent.SubscriptionID,
             });
         } else {
-            reset({ name: '', email: '', password: '', subdomain: '', domain_type: 'subdomain', custom_domain: '' });
+            reset({ name: '', email: '', password: '', subdomain: '', domain_type: 'subdomain', custom_domain: '', subscription_id: '' });
         }
         setShowModal(true);
     };
@@ -272,7 +282,7 @@ const AgentManagement = () => {
                                     <ClipboardDocumentIcon className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{row.original.owner_email}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{row.original.email}</div>
                         </div>
                     </div>
                 ),
@@ -280,19 +290,31 @@ const AgentManagement = () => {
             {
                 accessorKey: 'subdomain',
                 header: 'Domain',
-                cell: ({ row }) => (
-                    <div>
-                        <div className="text-sm text-gray-900 dark:text-white">
-                            {row.original.custom_domain || row.original.domain || `${row.original.subdomain}.super.app`}
+                cell: ({ row }) => {
+                    const agent = row.original;
+                    const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.superealestate.test` : '');
+                    const url = domain ? `http://${domain}:3000` : '#'; // Using port 3000 for local dev
+
+                    return (
+                        <div>
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline flex items-center gap-1"
+                            >
+                                {agent.custom_domain || agent.subdomain || 'No Domain'}
+                                <LinkIcon className="w-3 h-3" />
+                            </a>
+                            <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${agent.domain_type === 'custom'
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                }`}>
+                                {agent.domain_type === 'custom' ? '🔗 Custom' : '🌐 Subdomain'}
+                            </span>
                         </div>
-                        <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${row.original.domain_type === 'custom'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            }`}>
-                            {row.original.domain_type === 'custom' ? '🔗 Custom' : '🌐 Subdomain'}
-                        </span>
-                    </div>
-                ),
+                    );
+                },
             },
             {
                 accessorKey: 'subscription',
@@ -523,7 +545,7 @@ const AgentManagement = () => {
                                 ]}
                                 value={{
                                     value: datePreset,
-                                    label: datePreset === 'custom'
+                                    label: datePreset === 'custom' && dateRange[0]?.startDate && dateRange[0]?.endDate
                                         ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
                                         : datePreset === 'today' ? 'Today'
                                             : datePreset === 'yesterday' ? 'Yesterday'
@@ -577,7 +599,7 @@ const AgentManagement = () => {
                                                     value: getMonth(shownDate),
                                                     label: format(shownDate, 'MMMM')
                                                 }}
-                                                onChange={(option) => setShownDate(setMonth(shownDate, option.value))}
+                                                onChange={(val) => setShownDate(setMonth(shownDate, val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({
                                                     value: i,
                                                     label: format(new Date(2000, i, 1), 'MMMM')
@@ -603,7 +625,7 @@ const AgentManagement = () => {
                                                     value: getYear(shownDate),
                                                     label: getYear(shownDate).toString()
                                                 }}
-                                                onChange={(option) => setShownDate(setYear(shownDate, option.value))}
+                                                onChange={(val) => setShownDate(setYear(shownDate, val))}
                                                 options={Array.from({ length: 10 }, (_, i) => {
                                                     const year = new Date().getFullYear() - 5 + i;
                                                     return { value: year, label: year.toString() };
@@ -641,7 +663,7 @@ const AgentManagement = () => {
                                         setDatePreset('custom');
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange}
+                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
                                     shownDate={shownDate}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']} // primary-500
@@ -845,7 +867,7 @@ const AgentManagement = () => {
                     <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
                         <div className="bg-white dark:bg-dashboard-card border dark:border-gray-700 rounded-2xl w-full max-w-lg p-6 animate-scale-in">
                             <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-                                {editingAgent ? 'Edit Agent' : 'Create Agent'}
+                                {editingAgent?.id || editingAgent?.ID ? 'Edit Agent' : 'Create Agent'}
                             </h2>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div>
@@ -870,6 +892,8 @@ const AgentManagement = () => {
                                     {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
                                 </div>
 
+
+
                                 {!editingAgent && (
                                     <div>
                                         <label className="input-label">Password *</label>
@@ -884,6 +908,30 @@ const AgentManagement = () => {
                                         {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
                                     </div>
                                 )}
+
+                                <div>
+                                    <label className="input-label">Subscription Plan</label>
+                                    <Controller
+                                        name="subscription_id"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <StyledSelect
+                                                {...field}
+                                                options={[
+                                                    { value: '', label: 'Auto-assign by Domain Type' },
+                                                    ...plans.map(plan => ({
+                                                        value: plan.id,
+                                                        label: `${plan.plan_name || plan.name} (${plan.price} THB/mo)`
+                                                    }))
+                                                ]}
+                                                placeholder="Select a plan..."
+                                            />
+                                        )}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Select a specific plan or let the system choose based on domain type
+                                    </p>
+                                </div>
 
                                 {/* Domain Type Selection */}
                                 <div>
@@ -949,6 +997,8 @@ const AgentManagement = () => {
                                         Required if selecting Custom Domain type
                                     </p>
                                 </div>
+
+
 
                                 <div className="flex justify-end space-x-3 pt-4">
                                     <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">

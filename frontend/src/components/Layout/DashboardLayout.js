@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
+import { useTenant } from '../../contexts/TenantContext';
 import NotificationBell from '../Common/NotificationBell';
 
 import Logo from '../Common/Logo';
@@ -19,7 +20,6 @@ import {
     BellIcon,
     MegaphoneIcon,
     ChevronLeftIcon,
-
     ChevronRightIcon,
     SunIcon,
     MoonIcon,
@@ -28,33 +28,17 @@ import {
 
 const DashboardLayout = () => {
     const { isDarkMode, toggleTheme } = useDashboardTheme();
-    const [leftSidebarOpen, setLeftSidebarOpen] = useState(false); // Mobile toggle
-    const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
-
-    // Separate mobile open state from logic to avoid naming conflicts with previous code if any
-    const sidebarOpen = leftSidebarOpen;
-    const setSidebarOpen = setLeftSidebarOpen;
-
+    const { isMainDomain, agent } = useTenant();
     const { user, logout, isSuperAdmin, isAgent } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/');
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
     };
-
-    // Navigation items based on role
-    const agentNavigation = [
-        { name: 'Dashboard', href: '/agent', icon: HomeIcon },
-        { name: 'Listings', href: '/agent/listings', icon: BuildingOfficeIcon },
-        { name: 'Appointments', href: '/agent/appointments', icon: CalendarDaysIcon },
-        { name: 'Sub-Agents', href: '/agent/sub-agents', icon: UsersIcon },
-        { name: 'Theme', href: '/agent/theme', icon: SwatchIcon },
-        { name: 'Notifications', href: '/agent/notifications', icon: BellIcon },
-        { name: 'Banners', href: '/agent/banners', icon: MegaphoneIcon },
-        { name: 'Settings', href: '/agent/settings', icon: CogIcon },
-    ];
 
     const adminNavigation = [
         { name: 'Dashboard', href: '/admin', icon: ChartBarIcon },
@@ -64,10 +48,34 @@ const DashboardLayout = () => {
         { name: 'Banners', href: '/admin/banners', icon: MegaphoneIcon },
     ];
 
-    const navigation = isSuperAdmin ? adminNavigation : agentNavigation;
+    const agentNavigation = [
+        { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+        { name: 'Listings', href: '/dashboard/listings', icon: BuildingOfficeIcon },
+        { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarDaysIcon },
+        { name: 'Sub-Agents', href: '/dashboard/sub-agents', icon: UsersIcon },
+        { name: 'Theme', href: '/dashboard/theme', icon: SwatchIcon },
+        { name: 'Notifications', href: '/dashboard/notifications', icon: BellIcon },
+        { name: 'Banners', href: '/dashboard/banners', icon: MegaphoneIcon },
+        { name: 'Settings', href: '/dashboard/settings', icon: CogIcon },
+    ];
+
+    // Safe navigation filter
+    const navigation = isSuperAdmin ? adminNavigation : agentNavigation.filter(item => {
+        const sub = user?.agent?.subscription || user?.agent?.Subscription;
+        if (!sub) return true; // Default to show if no plan info
+
+        switch (item.name) {
+            case 'Appointments': return sub.allow_appointments ?? sub.AllowAppointments;
+            case 'Sub-Agents': return sub.allow_sub_agents ?? sub.AllowSubAgents;
+            case 'Theme': return sub.allow_theme ?? sub.AllowTheme;
+            case 'Notifications': return sub.allow_notifications ?? sub.AllowNotifications;
+            case 'Banners': return sub.allow_banners ?? sub.AllowBanners;
+            default: return true;
+        }
+    });
 
     const isActive = (path) => {
-        if (path === '/agent' || path === '/admin') {
+        if (path === '/dashboard' || path === '/admin') {
             return location.pathname === path;
         }
         return location.pathname.startsWith(path);
@@ -102,12 +110,14 @@ const DashboardLayout = () => {
 
                 {/* Right Side Actions */}
                 <div className="flex items-center space-x-4">
-                    <Link
-                        to="/"
-                        className="text-sm text-gray-500 hover:text-primary-600 transition-colors hidden sm:block"
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-semibold text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors hidden sm:block"
                     >
                         View Site
-                    </Link>
+                    </a>
 
                     {/* Dark Mode Toggle */}
                     <button
@@ -210,12 +220,10 @@ const DashboardLayout = () => {
 
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dashboard-dark p-4 sm:p-6 lg:p-8 relative w-full transition-colors duration-200">
-
                     <Outlet />
                 </main>
             </div>
         </div>
     );
-
 };
 export default DashboardLayout;

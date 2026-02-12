@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTenant } from '../../contexts/TenantContext';
 import {
     Bars3Icon,
     XMarkIcon,
@@ -18,15 +19,20 @@ import Logo from '../Common/Logo';
 
 const PublicLayout = () => {
     const { theme } = useTheme();
+    const { isMainDomain, agent, loading: tenantLoading } = useTenant();
+    console.log('PublicLayout State:', { isMainDomain, agent, tenantLoading });
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const isMapView = searchParams.get('view') === 'map';
 
-    const navigation = [
+    const navigation = isMainDomain ? [
         { name: 'Features', href: '/#features', icon: BuildingOfficeIcon },
         { name: 'Plans', href: '/#plans', icon: ChartBarIcon },
+    ] : [
+        { name: 'Listings', href: '/listings', icon: BuildingOfficeIcon },
+        { name: 'Search', href: '/search', icon: MapPinIcon },
     ];
 
     const isActive = (path) => {
@@ -168,7 +174,7 @@ const PublicLayout = () => {
                                             </div>
                                         </div>
                                         <Link
-                                            to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                                            to={user?.role === 'super_admin' ? '/admin' : '/dashboard'}
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="block w-full text-center py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 transition-all"
                                         >
@@ -300,9 +306,9 @@ const PublicLayout = () => {
                                                             </div>
 
                                                             <div className="py-2 px-2 space-y-0.5">
-                                                                {(user?.role === 'agent' || user?.role === 'super_admin') && (
+                                                                {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
                                                                     <Link
-                                                                        to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                                                                        to={user?.role === 'super_admin' ? '/admin' : '/dashboard'}
                                                                         className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
                                                                         onClick={() => setUserMenuOpen(false)}
                                                                     >

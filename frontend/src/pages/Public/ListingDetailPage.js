@@ -381,14 +381,16 @@ const ListingDetailPage = () => {
                                     <CheckBadgeIcon className="w-5 h-5 mr-2" />
                                     Confirmed Available Today
                                 </button>
-                                <Link
-                                    to={isAuthenticated ? `/listings/${listing.id}/book` : `/login`}
-                                    state={!isAuthenticated ? { from: { pathname: `/listings/${listing.id}/book` } } : undefined}
-                                    className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
-                                >
-                                    <CalendarDaysIcon className="w-5 h-5 mr-2" />
-                                    Book a Viewing
-                                </Link>
+                                {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
+                                    <Link
+                                        to={isAuthenticated ? `/listings/${listing.id}/book` : `/login`}
+                                        state={!isAuthenticated ? { from: { pathname: `/listings/${listing.id}/book` } } : undefined}
+                                        className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
+                                    >
+                                        <CalendarDaysIcon className="w-5 h-5 mr-2" />
+                                        Book a Viewing
+                                    </Link>
+                                )}
                             </div>
                         </div>
 

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"super_real_estate/config"
 	"super_real_estate/models"
 	"super_real_estate/utils"
 
@@ -98,45 +99,67 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 }
 
 // TenantMiddleware handles multi-tenant isolation
-func TenantMiddleware(db *gorm.DB) gin.HandlerFunc {
+func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get tenant from header (set by Nginx based on subdomain)
-		tenant := c.GetHeader("X-Tenant")
+		host := c.Request.Host
+		// Remove port if present (e.g. localhost:8080)
+		hostPort := strings.Split(host, ":")
+		domain := hostPort[0]
 
-		// Also check subdomain from host
-		if tenant == "" {
-			host := c.Request.Host
-			parts := strings.Split(host, ".")
-			// Support subdomain.localhost:3000 or subdomain.example.com
-			if len(parts) >= 2 && !strings.Contains(parts[0], "localhost") {
-				tenant = parts[0]
-			}
-		}
+		isMainDomain := domain == cfg.MainDomain || domain == "localhost"
 
-		if tenant != "" && tenant != "www" && tenant != "api" {
-			// Look up agent by subdomain
-			var agent models.Agent
-			if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", tenant, true, false).First(&agent).Error; err == nil {
-				c.Set("tenant_id", agent.ID)
-				c.Set("tenant", &agent)
-			}
-		} else if strings.Contains(c.Request.Host, "localhost") {
-			// DEV FALLBACK: If on localhost and no subdomain, pick the first active agent
-			// Or check for agent_id query param for easier testing
-			devAgentID := c.Query("agent_id")
-			var agent models.Agent
-			if devAgentID != "" {
-				if err := db.Where("id = ? AND is_active = ? AND is_suspended = ?", devAgentID, true, false).First(&agent).Error; err == nil {
-					c.Set("tenant_id", agent.ID)
-					c.Set("tenant", &agent)
-					c.Next()
-					return
+		var tenantID uuid.UUID
+		var tenant *models.Agent
+		foundTenant := false
+
+		// 1. Check if it's the main domain
+		if isMainDomain {
+			c.Set("is_main_domain", true)
+		} else {
+			c.Set("is_main_domain", false)
+
+			// 2. Try to resolve as a subdomain of main domain
+			if strings.HasSuffix(domain, "."+cfg.MainDomain) {
+				subdomain := strings.TrimSuffix(domain, "."+cfg.MainDomain)
+				if subdomain != "" && subdomain != "www" && subdomain != "api" {
+					var agent models.Agent
+					if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+						tenantID = agent.ID
+						tenant = &agent
+						foundTenant = true
+					}
 				}
 			}
 
-			if err := db.Where("is_active = ? AND is_suspended = ?", true, false).First(&agent).Error; err == nil {
-				c.Set("tenant_id", agent.ID)
-				c.Set("tenant", &agent)
+			// 3. Try to resolve as a custom domain
+			if !foundTenant {
+				var agent models.Agent
+				if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", domain, true, false).First(&agent).Error; err == nil {
+					tenantID = agent.ID
+					tenant = &agent
+					foundTenant = true
+				}
+			}
+		}
+
+		if foundTenant {
+			c.Set("tenant_id", tenantID)
+			c.Set("tenant", tenant)
+		} else if !isMainDomain && domain != "localhost" {
+			// If not main domain and no tenant found, might be an invalid domain
+			// For now, we just proceed, but we could abort with error
+		}
+
+		// DEV FALLBACK: If on localhost and no tenant resolved yet, check for agent_id query param
+		if domain == "localhost" && !foundTenant {
+			devAgentID := c.Query("agent_id")
+			if devAgentID != "" {
+				var agent models.Agent
+				if err := db.Where("id = ? AND is_active = ? AND is_suspended = ?", devAgentID, true, false).First(&agent).Error; err == nil {
+					c.Set("tenant_id", agent.ID)
+					c.Set("tenant", &agent)
+					c.Set("is_main_domain", false)
+				}
 			}
 		}
 
@@ -196,6 +219,61 @@ func RateLimitMiddleware() gin.HandlerFunc {
 
 		if !allowed {
 			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Rate limit exceeded"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// FeatureMiddleware checks if the agent's plan allows a specific feature
+func FeatureMiddleware(db *gorm.DB, feature string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get("role")
+		if role.(string) == models.RoleSuperAdmin {
+			c.Next()
+			return
+		}
+
+		agentID, ok := GetAgentID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Agent context required"})
+			c.Abort()
+			return
+		}
+
+		var agent models.Agent
+		if err := db.Preload("Subscription").First(&agent, "id = ?", agentID).Error; err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Agent plan not found"})
+			c.Abort()
+			return
+		}
+
+		if agent.Subscription == nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "No active subscription plan"})
+			c.Abort()
+			return
+		}
+
+		allowed := false
+		switch feature {
+		case "appointments":
+			allowed = agent.Subscription.AllowAppointments
+		case "theme":
+			allowed = agent.Subscription.AllowTheme
+		case "sub_agents":
+			allowed = agent.Subscription.AllowSubAgents
+		case "notifications":
+			allowed = agent.Subscription.AllowNotifications
+		case "banners":
+			allowed = agent.Subscription.AllowBanners
+		default:
+			allowed = true
+		}
+
+		if !allowed {
+			c.JSON(http.StatusForbidden, gin.H{"error": "This feature is not included in your plan. Please upgrade to access."})
 			c.Abort()
 			return
 		}

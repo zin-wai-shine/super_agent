@@ -21,7 +21,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	appointmentController := controllers.NewAppointmentController(db)
 
 	// Apply tenant middleware globally
-	router.Use(middleware.TenantMiddleware(db))
+	router.Use(middleware.TenantMiddleware(db, cfg))
 
 	// API routes group
 	api := router.Group("/api")
@@ -47,6 +47,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/stations", publicController.GetStations)
 			public.GET("/listings/by-station/:stationId", publicController.GetListingsByStation)
 			public.GET("/agent/info", publicController.GetAgentInfo)
+			public.GET("/tenant/config", publicController.GetTenantConfig)
 			public.GET("/plans", publicController.GetPlans)
 			public.POST("/appointments", appointmentController.CreateAppointment)
 		}
@@ -110,14 +111,22 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.POST("/listings/:id/unpublish", agentController.UnpublishListing)
 
 				// Sub-agent management (Agent only)
-				agent.GET("/sub-agents", middleware.RoleMiddleware(models.RoleAgent), agentController.GetSubAgents)
-				agent.POST("/sub-agents", middleware.RoleMiddleware(models.RoleAgent), agentController.CreateSubAgent)
-				agent.PUT("/sub-agents/:id", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateSubAgent)
-				agent.DELETE("/sub-agents/:id", middleware.RoleMiddleware(models.RoleAgent), agentController.DeleteSubAgent)
+				subAgents := agent.Group("/sub-agents")
+				subAgents.Use(middleware.RoleMiddleware(models.RoleAgent), middleware.FeatureMiddleware(db, "sub_agents"))
+				{
+					subAgents.GET("", agentController.GetSubAgents)
+					subAgents.POST("", agentController.CreateSubAgent)
+					subAgents.PUT("/:id", agentController.UpdateSubAgent)
+					subAgents.DELETE("/:id", agentController.DeleteSubAgent)
+				}
 
 				// Theme management
-				agent.GET("/theme", agentController.GetTheme)
-				agent.PUT("/theme", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateTheme)
+				theme := agent.Group("/theme")
+				theme.Use(middleware.FeatureMiddleware(db, "theme"))
+				{
+					theme.GET("", agentController.GetTheme)
+					theme.PUT("", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateTheme)
+				}
 
 				// Settings management
 				agent.GET("/settings", agentController.GetSettings)
@@ -127,10 +136,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.GET("/dashboard", agentController.GetDashboard)
 
 				// Appointment management (agent)
-				agent.GET("/appointments", appointmentController.GetAppointments)
-				agent.GET("/appointments/:id", appointmentController.GetAppointment)
-				agent.PUT("/appointments/:id", appointmentController.UpdateAppointmentStatus)
-				agent.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
+				appointments := agent.Group("/appointments")
+				appointments.Use(middleware.FeatureMiddleware(db, "appointments"))
+				{
+					appointments.GET("", appointmentController.GetAppointments)
+					appointments.GET("/:id", appointmentController.GetAppointment)
+					appointments.PUT("/:id", appointmentController.UpdateAppointmentStatus)
+					appointments.DELETE("/:id", appointmentController.DeleteAppointment)
+				}
 			}
 
 			// Upload routes
@@ -149,13 +162,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			{
 				notifications.GET("", notificationController.GetMyNotifications)
 				notifications.GET("/sent", notificationController.GetSentNotifications)
-				notifications.POST("", notificationController.CreateNotification)
+				notifications.POST("", middleware.FeatureMiddleware(db, "notifications"), notificationController.CreateNotification)
 				notifications.POST("/:id/read", notificationController.MarkRead)
 			}
 
 			// Banner routes
 			bannerController := controllers.NewBannerController(db)
 			banners := protected.Group("/banners")
+			banners.Use(middleware.FeatureMiddleware(db, "banners"))
 			{
 				banners.GET("", bannerController.GetBanners)
 				banners.GET("/:id", bannerController.GetBanner)

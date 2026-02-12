@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import { useTenant } from './TenantContext';
 
 const ThemeContext = createContext(null);
 
@@ -23,35 +23,28 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
+    const { agent, loading: tenantLoading } = useTenant();
     const [theme, setTheme] = useState(defaultTheme);
-    const [loading, setLoading] = useState(true);
 
-    // Check if running on agent subdomain and fetch their theme
     useEffect(() => {
-        const fetchAgentTheme = async () => {
-            try {
-                // Try to get agent info from subdomain
-                const response = await api.get('/public/agent/info');
-                if (response.data?.theme) {
-                    const t = response.data.theme;
-                    setTheme({
-                        backgroundColor: t.background_color || defaultTheme.backgroundColor,
-                        primaryColor: t.primary_color || defaultTheme.primaryColor,
-                        secondaryColor: t.secondary_color || defaultTheme.secondaryColor,
-                        textColor: t.text_color || defaultTheme.textColor,
-                        fontFamily: t.font_family || defaultTheme.fontFamily,
-                        logoUrl: t.logo_url || '',
-                        headerText: t.header_text || '',
-                        footerText: t.footer_text || '',
-                    });
-                }
-            } catch (err) {
-                // Not on agent subdomain or no theme set, use default
+        if (!tenantLoading) {
+            if (agent?.theme) {
+                const t = agent.theme;
+                setTheme({
+                    backgroundColor: t.background_color || defaultTheme.backgroundColor,
+                    primaryColor: t.primary_color || defaultTheme.primaryColor,
+                    secondaryColor: t.secondary_color || defaultTheme.secondaryColor,
+                    textColor: t.text_color || defaultTheme.textColor,
+                    fontFamily: t.font_family || defaultTheme.fontFamily,
+                    logoUrl: t.logo_url || '',
+                    headerText: t.header_text || '',
+                    footerText: t.footer_text || '',
+                });
+            } else {
+                setTheme(defaultTheme);
             }
-            setLoading(false);
-        };
-        fetchAgentTheme();
-    }, []);
+        }
+    }, [agent, tenantLoading]);
 
     // Apply theme to CSS variables
     useEffect(() => {
@@ -72,7 +65,7 @@ export const ThemeProvider = ({ children }) => {
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, loading, updateTheme, resetTheme, defaultTheme }}>
+        <ThemeContext.Provider value={{ theme, loading: tenantLoading, updateTheme, resetTheme, defaultTheme }}>
             {children}
         </ThemeContext.Provider>
     );

@@ -73,50 +73,43 @@ const AdminDashboard = () => {
         <div className="space-y-8">
 
 
-            {/* Stats Grid - Modern Look */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {/* Stats Grid - Clean Minimal Design */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((stat) => (
-                    <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-3">
-                            <div className={`p-2.5 rounded-xl ${stat.iconBg}`}>
-                                <stat.icon className="w-5 h-5" />
+                    <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-lg p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{stat.name}</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{stat.value}</p>
+                                <div className="flex items-center text-xs">
+                                    <ArrowTrendingUpIcon className="w-3 h-3 text-green-500 mr-1" />
+                                    <span className="text-green-600 dark:text-green-500 font-medium">{stat.change}</span>
+                                </div>
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 bg-gray-500/10 px-2 py-1 rounded-full">
-                                {stat.change}
-                            </span>
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{stat.value}</div>
-                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">{stat.name}</div>
+                            <div className={`p-2.5 rounded-lg ${stat.iconBg}`}>
+                                <stat.icon className="w-5 h-5" aria-hidden="true" />
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Chart Section - Double Charts */}
+            {/* Charts Grid - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h2 className="text-base font-bold text-gray-900 dark:text-white">Revenue Overview</h2>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Monthly revenue performance</p>
-                        </div>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
-                            <EllipsisHorizontalIcon className="w-5 h-5" />
-                        </button>
+                {/* Revenue Chart */}
+                <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="mb-4">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revenue Overview</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Monthly revenue performance</p>
                     </div>
                     <RevenueChart />
                 </div>
 
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h2 className="text-base font-bold text-gray-900 dark:text-white">User Activity</h2>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Weekly platform engagement</p>
-                        </div>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
-                            <EllipsisHorizontalIcon className="w-5 h-5" />
-                        </button>
+                {/* Activity Chart */}
+                <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="mb-4">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">User Activity</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly platform engagement</p>
                     </div>
                     <ActivityChart />
                 </div>

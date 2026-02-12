@@ -243,6 +243,37 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 	})
 }
 
+// GetTenantConfig returns the resolved tenant configuration for the frontend
+func (pc *PublicController) GetTenantConfig(c *gin.Context) {
+	isMainDomain, _ := c.Get("is_main_domain")
+	tenantID, tenantExists := c.Get("tenant_id")
+
+	response := gin.H{
+		"is_main_domain": isMainDomain,
+	}
+
+	if tenantExists {
+		var agent models.Agent
+		if err := pc.db.Preload("Theme").First(&agent, "id = ?", tenantID).Error; err == nil {
+			response["agent"] = gin.H{
+				"id":              agent.ID,
+				"name":            agent.Name,
+				"logo":            agent.Logo,
+				"description":     agent.Description,
+				"phone":           agent.Phone,
+				"email":           agent.Email,
+				"address":         agent.Address,
+				"theme":           agent.Theme,
+				"min_price_limit": agent.MinPriceLimit,
+				"max_price_limit": agent.MaxPriceLimit,
+				"price_format":    agent.PriceFormat,
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
 // GetPlans returns active subscription plans for the public sales page
 func (pc *PublicController) GetPlans(c *gin.Context) {
 	var plans []models.Subscription

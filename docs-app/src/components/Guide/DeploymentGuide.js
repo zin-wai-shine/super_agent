@@ -55,9 +55,13 @@ cd super-real-estate`}</CodeBlock>
                             <code style={{ color: 'var(--accent)' }}>POSTGRES_PASSWORD</code>:
                             Set a strong database password.
                         </li>
-                        <li>
+                        <li style={{ marginBottom: '8px' }}>
                             <code style={{ color: 'var(--accent)' }}>GIN_MODE</code>:
                             Set to <code>release</code> for production performance.
+                        </li>
+                        <li>
+                            <code style={{ color: 'var(--accent)' }}>MAIN_DOMAIN</code>:
+                            <strong>REQUIRED:</strong> The primary domain of the platform (e.g., <code>superealestate.com</code>). Used to distinguish between admin and agent portals.
                         </li>
                     </ul>
                 </div>

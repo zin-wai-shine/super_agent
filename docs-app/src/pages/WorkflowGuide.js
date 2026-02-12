@@ -64,6 +64,11 @@ export const agentApi = {
     getListings: (params) => api.get('/agent/listings', { params }),
     createListing: (data) => api.post('/agent/listings', data),
     // ...
+};
+
+// api.js - Public Tenant API
+export const publicApi = {
+    getTenantConfig: () => api.get('/public/tenant/config'),
 };`}</CodeBlock>
                 </div>
             </div>
@@ -85,11 +90,12 @@ agent.GET("/listings", agentController.GetListings)`}</CodeBlock>
             <div className="workflow-step">
                 <div className="step-number">4</div>
                 <div className="step-content">
-                    <h4>Middleware Pipeline</h4>
+                    <h4>Middleware & Context Pipeline</h4>
                     <p>
-                        <strong>TenantMiddleware</strong> — Resolves the agent from the subdomain/host header<br />
+                        <strong>TenantMiddleware (Backend)</strong> — Resolves agent from <code>Host</code> header<br />
+                        <strong>TenantContext (Frontend)</strong> — Pre-fetches agent config and branding<br />
                         <strong>AuthMiddleware</strong> — Validates JWT token and sets user context<br />
-                        <strong>RoleMiddleware</strong> — Checks user role (super_admin, agent, sub_agent)
+                        <strong>RoleMiddleware</strong> — Checks user role (super_admin, agent, etc.)
                     </p>
                 </div>
             </div>
@@ -170,7 +176,7 @@ type Listing struct {
                         <td><code>super_admin_controller.go</code>, <code>agent_controller.go</code></td>
                         <td><code>routes.go</code></td>
                         <td><code>api.js</code> → adminApi, agentApi</td>
-                        <td><code>AgentManagement.js</code>, <code>AgentSettings.js</code>, <code>AgentDashboard.js</code></td>
+                        <td><code>AgentManagement.js</code>, <code>AgentSettings.js</code>, <code>AgentDashboard.js</code> (all under <code>/dashboard</code>)</td>
                     </tr>
                     <tr>
                         <td><strong>Listing</strong></td>
@@ -235,6 +241,134 @@ type Listing struct {
                         <td><code>routes.go</code></td>
                         <td><code>api.js</code> → appointmentApi</td>
                         <td><code>AppointmentManagement.js</code>, <code>BookAppointment.js</code>, <code>MyBookings.js</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div className="card">
+            <div className="card-title">🗺️ Frontend Routes & Pages</div>
+            <div className="card-subtitle">Key pages and their corresponding routes</div>
+            <table className="doc-table">
+                <thead>
+                    <tr>
+                        <th>Page Name</th>
+                        <th>Component</th>
+                        <th>Route</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colSpan="4"><h4>Public Routes</h4></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Home Page</strong></td>
+                        <td><code>HomePage.js</code></td>
+                        <td><code>/</code></td>
+                        <td>Main landing page, displays featured listings, search bar, banners.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Listings Search</strong></td>
+                        <td><code>ListingsPage.js</code></td>
+                        <td><code>/listings</code></td>
+                        <td>Searchable and filterable list of all public listings. Map view integration.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Listing Detail</strong></td>
+                        <td><code>ListingDetailPage.js</code></td>
+                        <td><code>/listings/:id</code></td>
+                        <td>Detailed view of a single listing, including images, description, agent info, and booking form.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Login Page</strong></td>
+                        <td><code>LoginPage.js</code></td>
+                        <td><code>/login</code></td>
+                        <td>User authentication page.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Register Page</strong></td>
+                        <td><code>RegisterPage.js</code></td>
+                        <td><code>/register</code></td>
+                        <td>New user registration page.</td>
+                    </tr>
+                    <tr>
+                        <td colSpan="4"><h4>Agent Dashboard Routes</h4></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dashboard</strong></td>
+                        <td><code>AgentDashboard.js</code></td>
+                        <td><code>/dashboard</code></td>
+                        <td>Agent-specific stats: total listings, published count, view count, appointments.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Listings</strong></td>
+                        <td><code>AgentListings.js</code></td>
+                        <td><code>/dashboard/listings</code></td>
+                        <td>Table of all listings with search, date filter, status filter. Publish/unpublish toggle. Actions (edit, delete, view).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Create Listing</strong></td>
+                        <td><code>CreateListing.js</code></td>
+                        <td><code>/dashboard/listings/new</code></td>
+                        <td>Multi-section form: basic info, location (map + address), features, media upload, transit station selection.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Edit Listing</strong></td>
+                        <td><code>EditListing.js</code></td>
+                        <td><code>/dashboard/listings/:id/edit</code></td>
+                        <td>Same form as create, pre-populated with existing data. Supports media reordering and deletion.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Appointments</strong></td>
+                        <td><code>AppointmentManagement.js</code></td>
+                        <td><code>/dashboard/appointments</code></td>
+                        <td>Manage incoming bookings. Status update (pending → confirmed → completed/cancelled). Date filters, notes.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sub-Agents</strong></td>
+                        <td><code>SubAgents.js</code></td>
+                        <td><code>/dashboard/sub-agents</code></td>
+                        <td>Manage team members. Create sub-agent accounts, set permissions, activate/deactivate.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Theme Settings</strong></td>
+                        <td><code>ThemeSettings.js</code></td>
+                        <td><code>/dashboard/theme</code></td>
+                        <td>Customize public site: colors, fonts, logo, header/footer text, custom CSS. Real-time preview.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Settings</strong></td>
+                        <td><code>AgentSettings.js</code></td>
+                        <td><code>/dashboard/settings</code></td>
+                        <td>Agent profile: name, contact info, price limits, price format.</td>
+                    </tr>
+                    <tr>
+                        <td colSpan="4"><h4>Admin Routes</h4></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin Dashboard</strong></td>
+                        <td><code>AdminDashboard.js</code></td>
+                        <td><code>/admin</code></td>
+                        <td>Overview of system health, user activity, and key metrics.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent Management</strong></td>
+                        <td><code>AgentManagement.js</code></td>
+                        <td><code>/admin/agents</code></td>
+                        <td>Manage all agents: create, edit, delete, assign subscriptions.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Subscription Plans</strong></td>
+                        <td><code>SubscriptionPlans.js</code></td>
+                        <td><code>/admin/subscriptions</code></td>
+                        <td>Configure subscription tiers and features.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>System Settings</strong></td>
+                        <td><code>SystemSettings.js</code></td>
+                        <td><code>/admin/settings</code></td>
+                        <td>Global application settings.</td>
                     </tr>
                 </tbody>
             </table>

@@ -26,7 +26,7 @@ const AgentSettings = () => {
             // For now, let's assume we can get it from getAgentInfo via public or dedicated endpoint.
             // Using publicApi.getAgentInfo wouldn't be right as it uses subdomain/tenant context.
             // We should use a protected endpoint.
-            // Wait, we didn't adding GET /agent/settings.
+            // Wait, we didn't adding GET /dashboard/settings.
             // But we can get current agent info via getProfile or getTheme? No.
             // Actually, we usually preload agent settings or have a "get me" for agent.
             // Let's rely on the fact that we can fetch "theme" or just use a new "getSettings" if we had one.
@@ -41,16 +41,16 @@ const AgentSettings = () => {
             // Let's add GET /settings quickly?
             // Or... wait, `GetAgentInfo` in PublicController is for PUBLIC.
 
-            // Re-evaluating: I missed adding GET /agent/settings in backend plan.
+            // Re-evaluating: I missed adding GET /dashboard/settings in backend plan.
             // I should add it now to be complete.
             // But to save time/steps, maybe there is another way?
             // `GetTheme` returns `Theme` model.
             // `GetDashboard` returns stats.
 
-            // Okay, I will add GET /agent/settings quickly in backend.
+            // Okay, I will add GET /dashboard/settings quickly in backend.
 
             // Wait, I can't interrupt this file creation easily.
-            // I will write the frontend assuming GET /agent/settings exists, and then go BACK to backend to add it.
+            // I will write the frontend assuming GET /dashboard/settings exists, and then go BACK to backend to add it.
 
             const response = await agentApi.getSettings(); // I need to add this to api.js too
             reset(response.data);
