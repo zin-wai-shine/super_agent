@@ -1,0 +1,158 @@
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js:262:            ).filter(Boolean);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js-263-        }
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js-264-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js-265-        return value;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js-266-    }, [value, options]);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Form/StyledSelect.js-267-
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js:61:    const navigation = isSuperAdmin ? adminNavigation : agentNavigation.filter(item => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js-62-        const sub = user?.agent?.subscription || user?.agent?.Subscription;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js-63-        if (!sub) return true; // Default to show if no plan info
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js-64-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js-65-        switch (item.name) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Layout/DashboardLayout.js-66-            case 'Appointments': return sub.allow_appointments ?? sub.AllowAppointments;
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js:37:    const listingImages = media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js-38-    if (listingImages.length === 0) listingImages.push(featuredImage);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js-39-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js-40-    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js-41-    const navigate = useNavigate();
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/ListingCard.js-42-    const location = useLocation();
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js:231:            const validListings = listings.filter(l => l.latitude && l.longitude);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-232-            if (validListings.length > 0) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-233-                setHasInitiallyCentered(true);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-234-                return {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-235-                    lat: parseFloat(validListings[0].latitude),
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-236-                    lng: parseFloat(validListings[0].longitude)
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js:261:            {listings.filter(l => l.latitude && l.longitude).map((property) => (
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-262-                <PropertyMarker
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-263-                    key={property.id}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-264-                    map={map}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-265-                    property={property}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/GoogleMap.js-266-                    onClick={onMarkerClick}
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js:20:            setUnreadCount(data.filter(n => !n.is_read).length); // Simple unread check
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-21-        } catch (error) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-22-            console.error("Failed to fetch notifications", error);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-23-        }
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-24-    };
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-25-
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js:41:                const filtered = prev.filter(n => n.id !== lastNotification.id);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-42-                return [lastNotification, ...filtered].slice(0, 5);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-43-            });
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-44-            // Increment unread count
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-45-            setUnreadCount(prev => prev + 1);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/NotificationBell.js-46-        }
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js:25:                const company = banners.filter(b => b.agent_id == null);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js:26:                const agent = banners.filter(b => b.agent_id != null);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js-27-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js-28-                setCompanyBanners(company.slice(0, 1));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js-29-                setAgentBanners(agent.slice(0, 1));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js-30-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/ShowcaseBanners.js-31-            } catch (error) {
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js:178:                                .filter(s =>
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-179-                                    s.name_en?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-180-                                    s.id?.toLowerCase().includes(searchTerm.toLowerCase())
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-181-                                )
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-182-                                .map(station => (
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-183-                                    <button
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js:203:                            {stations.filter(s => s.name_en?.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-204-                                <div className="p-4 text-center text-sm text-gray-500">No stations found</div>
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-205-                            )}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-206-                        </div>
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-207-                    )}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/TransitMap/TransitMapFilter.js-208-                </div>
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js:94:                features: data.features ? data.features.split(',').map((f) => f.trim()).filter(Boolean).join(',') : '',
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js-95-            };
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js-96-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js-97-            if (editingPlan) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js-98-                await adminApi.updatePlan(editingPlan.id, payload);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/SubscriptionPlans.js-99-                toast.success('Plan updated!');
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js:156:        return agents.filter(agent => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js-157-            // Status Filter
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js-158-            // Normalize status to explicit boolean
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js-159-            const isSuspended = agent.is_suspended === true || agent.is_suspended === 1 || agent.is_active === false || agent.IsActive === false;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js-160-            const matchesStatus = statusFilter === 'all'
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/AgentManagement.js-161-                ? true
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js:333:        return banners.filter(banner => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js-334-            // Status Filter
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js-335-            const matchesStatus = statusFilter === 'all'
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js-336-                ? true
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js-337-                : statusFilter === 'active' ? banner.is_active : !banner.is_active;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Admin/BannerManagement.js-338-
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js:170:        setSelectedImages(prev => prev.filter((_, i) => i !== index));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js-171-        if (lightboxIndex === index) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js-172-            setLightboxIndex(null);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js-173-        } else if (lightboxIndex > index) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js-174-            setLightboxIndex(lightboxIndex - 1);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/CreateListing.js-175-        }
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js:179:        return listings.filter(listing => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js-180-            // Status Filter
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js-181-            const matchesStatus = statusFilter === 'all'
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js-182-                ? true
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js-183-                : statusFilter === 'published' ? listing.is_published : !listing.is_published;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentListings.js-184-
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js:89:    const filteredCards = statCards.filter(card => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js-90-        const sub = user?.agent?.subscription || user?.agent?.Subscription;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js-91-        if (!sub) return true;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js-92-        if (card.feature === 'appointments') {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js-93-            // Check for allow_appointments safely
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/AgentDashboard.js-94-            return sub.allow_appointments === true || sub.AllowAppointments === true;
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js:153:                    setValue('unit_amenities', featureList.filter(f => unitAmenities.includes(f)));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js:154:                    setValue('building_features', featureList.filter(f => buildingFeatures.includes(f)));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js:155:                    setValue('project_facilities', featureList.filter(f => projectFacilities.includes(f)));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-156-                } catch (e) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-157-                    console.error('Failed to parse features:', e);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-158-                }
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-159-            }
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-160-
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js:274:            setMedia(media.filter((m) => m.id !== mediaId));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-275-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-276-            if (lightboxIndex === index) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-277-                setLightboxIndex(null);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-278-            } else if (lightboxIndex > index) {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-279-                setLightboxIndex(lightboxIndex - 1);
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js:362:                        {media.filter((m) => m.type === 'image').map((item, index) => (
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-363-                            <div key={item.id}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-364-                                className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-365-                                onClick={() => setLightboxIndex(index)}
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-366-                            >
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Agent/EditListing.js-367-                                <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js:309:    const images = listing.media?.filter((m) => m.type === 'image') || [];
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js:310:    const videos = listing.media?.filter((m) => m.type === 'video') || [];
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-311-    const hasImages = images.length > 0;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-312-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-313-    const nextImage = () => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-314-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-315-    };
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js:680:                                                const amenities = featureList.filter(id => unitBuildingIds.includes(id));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js:681:                                                const facilities = featureList.filter(id => projectFacilityIds.includes(id));
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-682-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-683-                                                if (!featureList.length) return <p className="text-gray-500 italic">No specific amenities listed.</p>;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-684-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-685-                                                return (
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js-686-                                                    <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-4">
+--
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js:60:    const filteredAppointments = appointments.filter(app => {
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js-61-        if (filter === 'all') return true;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js-62-        return app.status === filter;
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js-63-    });
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js-64-
+/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/MyBookings.js-65-    if (loading) {

@@ -8,46 +8,11 @@ export const TransitMapSVG = () => (
  }
 
  :root {
-   --future-color: rgb(223 223 223 / 50%);
-   --grey-line-color: #949897;
+   --future-color: transparent;
+   --grey-line-color: transparent;
  }
 
- [data-status="open"] circle {
-   cursor: pointer;
- }
 
- [data-status="open"] rect {
-   cursor: pointer;
- }
-
- [data-status="future"] [data-name="track"] path,
- [data-status="future"] [data-name="track"] line {
-   stroke: rgb(223 223 223 / 30%);
-   stroke-width: 2;
- }
-
- [data-status="future"] text {
-   display: none;
- }
-
- [data-status="future"] circle {
-   stroke: rgb(223 223 223 / 50%);
- }
-
- [data-status="under-construction"] [data-name="track"] path,
- [data-status="under-construction"] [data-name="track"] line {
-   stroke: rgb(223 223 223 / 30%);
-   stroke-width: 2;
-   /* stroke-dasharray: 4; */
- }
-
- [data-status="under-construction"] text {
-   display: none;
- }
-
- [data-status="under-construction"] circle {
-   stroke: rgb(223 223 223 / 50%);
- }
 
  .locale-th [data-name="label-en"] {
    display: none;
@@ -74,126 +39,7 @@ export const TransitMapSVG = () => (
       <circle cx="463.5" cy="750" r="3.4" fill="#fff" stroke="#B8E5FA" stroke-width="1.6" class="station-id-RIVER"></circle>
     </g>
     <g id="light-red-line" data-name="train-line">
-      <g id="light-red-line-extension" data-status="future">
-        <g id="light-red-line-extension-track" data-name="track">
-          <path d="M438.51 811.78H387.25C385.563 811.782 383.944 811.121 382.74 809.94L381.32 808.55L283.64 710.17L278.59 704.95" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-          <path d="M112.56 704.76H278.5" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-          <path d="M583.2 611L582.77 733.99C582.77 734.731 582.916 735.466 583.2 736.151C583.484 736.836 583.901 737.458 584.425 737.982C584.95 738.505 585.573 738.921 586.259 739.203C586.944 739.486 587.678 739.631 588.42 739.63H1130.49" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-        </g>
-        <g id="station_RE07" data-name="station" data-station-id="RE07">
-          <g id="label-en" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1123.69 750.99)" font-size="6" fill="#424143">Hua Mak</text> </g>
-          <g id="label-th" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1125.15 750.99)" font-size="6" fill="#424143">หัวหมาก</text> </g>
-          <g id="station-path" data-name="station-path">
-            <circle cx="1133.7" cy="739.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE07"></circle>
-          </g>
-        </g>
-        <g id="station_RE06" data-name="station" data-station-id="RE06">
-          <g id="label-en-2" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1022.23 751.62)" font-size="6" fill="#424143">Ram khamhaeng</text> </g>
-          <g id="label-th-2" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1030.7 751.62)" font-size="6" fill="#424143">รามคำแหง</text> </g>
-          <g id="station-path-2" data-name="station-path">
-            <circle cx="1043.49" cy="739.7" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE06"></circle>
-          </g>
-        </g>
-        <g id="station_RE05" data-name="station" data-station-id="RE05">
-          <g id="label-en-3" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(833.73 750.99)" font-size="6" fill="#424143">Phetchaburi</text> </g>
-          <g id="label-th-3" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(839.23 750.99)" font-size="6" fill="#424143">เพชรบุรี</text> </g>
-          <g id="station-path-3" data-name="station-path">
-            <circle cx="837.06" cy="739.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE05"></circle>
-          </g>
-        </g>
-        <g id="station_RE04" data-name="station" data-station-id="RE04">
-          <g id="label-en-4" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(683.66 748.33)" font-size="6" fill="#424143">Phaya Thai</text> </g>
-          <g id="label-th-4" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(683.66 748.33)" font-size="6" fill="#424143">พญาไท</text> </g>
-          <g id="station-path-4" data-name="station-path">
-            <circle cx="665.5" cy="739.09" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE04"></circle>
-          </g>
-        </g>
-        <g id="station_RE03" data-name="station" data-station-id="RE03">
-          <g id="label-en-5" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(546.82 699.94)" font-size="6" fill="#424143">Ratchawithi</text> </g>
-          <g id="label-th-5" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(560.21 699.94)" font-size="6" fill="#424143">ราชวิถี</text> </g>
-          <g id="station-path-5" data-name="station-path">
-            <circle cx="582.76" cy="698.73" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE03"></circle>
-          </g>
-        </g>
-        <g id="station_RE02" data-name="station" data-station-id="RE02">
-          <g id="label-en-6" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(553.65 658.07)" font-size="6" fill="#424143">Sam Sen</text> </g>
-          <g id="label-th-6" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(558.11 658.07)" font-size="6" fill="#424143">สามเสน</text> </g>
-          <g id="station-path-6" data-name="station-path">
-            <circle cx="582.76" cy="656.85" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RE02"></circle>
-          </g>
-        </g>
 
-        <g id="station_RW03" data-name="station" data-station-id="RW03">
-          <g id="label-en-10" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(389 589.5)" font-size="6" fill="#424143">Rama VI Bridge</text> </g>
-          <g id="label-th-10" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(391.54 589.5)" font-size="6" fill="#424143">สะพานพระราม 6</text> </g>
-          <g id="station-path-10" data-name="station-path">
-            <circle cx="440.7" cy="588.16" r="3.4" fill="#fff" stroke="#F26163" stroke-width="1.6" class="station-id-RW03"></circle>
-          </g>
-        </g>
-        <g id="station_RW04" data-name="station" data-station-id="RW04">
-          <g id="label-en-11" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(336 632.89)" font-size="6" fill="#424143">Bang Kruai - EGAT</text> </g>
-          <g id="label-th-11" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(344.83 632.89)" font-size="6" fill="#424143">บางกรวย - กฟผ.</text> </g>
-          <g id="station-path-11" data-name="station-path">
-            <circle cx="396.99" cy="631.55" r="3.4" fill="#fff" stroke="#F26163" stroke-width="1.6" class="station-id-RW04"></circle>
-          </g>
-        </g>
-        <g id="station_RW07" data-name="station" data-station-id="RW07">
-          <g id="label-en-14" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(208.63 697.31)" font-size="6" fill="#424143">Ban Chimpli</text> </g>
-          <g id="label-th-14" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(210.99 697.31)" font-size="6" fill="#424143">บ้านฉิมพลี</text> </g>
-          <g id="station-path-14" data-name="station-path">
-            <circle cx="221.54" cy="704.96" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RW07"></circle>
-          </g>
-        </g>
-        <g id="station_RW08" data-name="station" data-station-id="RW08">
-          <g id="label-en-15" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(169.05 691.81)" font-size="6" fill="#424143">Kanchana phisek</text> </g>
-          <g id="label-th-15" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(164.71 696.8)" font-size="6" fill="#424143">กาญจนาภิเษก</text> </g>
-          <g id="station-path-15" data-name="station-path">
-            <circle cx="179.26" cy="704.96" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RW08"></circle>
-          </g>
-        </g>
-        <g id="station_RW09" data-name="station" data-station-id="RW09">
-          <g id="label-en-16" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(137.21 691.81)" font-size="6" fill="#424143">Sala Thammason</text> </g>
-          <g id="label-th-16" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(136.66 691.31)" font-size="6" fill="#424143">ศาลาธรรมสพน์</text> </g>
-          <g id="station-path-16" data-name="station-path">
-            <circle cx="141.99" cy="704.96" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RW09"></circle>
-          </g>
-        </g>
-        <g id="station_RW010" data-name="station" data-station-id="RW010">
-          <g id="label-en-17" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(101.34 697.22)" font-size="6" fill="#424143">Salaya</text> </g>
-          <g id="label-th-17" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(100.71 697.22)" font-size="6" fill="#424143">ศาลายา</text> </g>
-          <g id="station-path-17" data-name="station-path">
-            <circle cx="108.73" cy="704.96" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RW010"></circle>
-          </g>
-        </g>
-        <g id="station_RWS1" data-name="station" data-station-id="RWS1">
-          <g id="label-en-18" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(261.72 727.31)" font-size="6" fill="#424143">Taling Chan</text> </g>
-          <g id="label-th-18" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(274.02 727.31)" font-size="6" fill="#424143">ตลิ่งชัน</text> </g>
-          <g id="station-path-18" data-name="station-path">
-            <circle cx="297.54" cy="723.89" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RWS1"></circle>
-          </g>
-        </g>
-        <g id="station_RWS2" data-name="station" data-station-id="RWS2">
-          <g id="label-en-19" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(292.78 756.82)" font-size="6" fill="#424143">Taling Chan District Office</text> </g>
-          <g id="label-th-19" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(290.91 756.82)" font-size="6" fill="#424143">สำนักงานเขตตลิ่งชัน</text> </g>
-          <g id="station-path-19" data-name="station-path">
-            <circle cx="329.44" cy="755.79" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RWS2"></circle>
-          </g>
-        </g>
-        <g id="station_RWS3" data-name="station" data-station-id="RWS3">
-          <g id="label-en-20" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(320.96 793.38)" font-size="6" fill="#424143">Bang Khun Non</text> </g>
-          <g id="label-th-20" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(334.35 793.38)" font-size="6" fill="#424143">บางขุนนนท์</text> </g>
-          <g id="station-path-20" data-name="station-path">
-            <circle cx="365.83" cy="792.17" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RWS3"></circle>
-          </g>
-        </g>
-        <g id="station_RWS4" data-name="station" data-station-id="RWS4">
-          <g id="label-en-21" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(435.67 803.93)" font-size="6" fill="#424143">Siriraj</text> </g>
-          <g id="label-th-21" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(435.47 803.93)" font-size="6" fill="#424143">ศิิริราช</text> </g>
-          <g id="station-path-21" data-name="station-path">
-            <circle cx="442.2" cy="811.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RWS4"></circle>
-          </g>
-        </g>
-      </g>
       <g data-status="open">
         <g id="track">
           <path d="M278.5 704.76H321.39C322.133 704.761 322.868 704.616 323.554 704.333C324.241 704.05 324.865 703.634 325.39 703.11L450.03 578.46C450.556 577.936 451.18 577.52 451.866 577.237C452.552 576.954 453.288 576.809 454.03 576.81H577.13C578.624 576.815 580.056 577.411 581.112 578.468C582.169 579.524 582.765 580.956 582.77 582.45V611.5" stroke="#F26163" stroke-width="4" stroke-miterlimit="10"></path>
@@ -217,214 +63,8 @@ export const TransitMapSVG = () => (
       </g>
     </g>
     <g id="dark-red-line" data-name="train-line">
-      <g id="extention1" data-status="future">
-        <g data-name="track">
-          <path id="Vector_24_2" d="M590.4 596.5L590.93 893C590.928 894.928 590.342 896.811 589.25 898.4L537.14 974.24L383.93 974.11L111 1247.68" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-        </g>
-        <g id="station_RS02" data-name="station" data-station-id="RS02">
-          <g id="label-en-1000" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(561.34 655.83)" font-size="6" fill="#424143">Sam Sen</text> </g>
-          <g id="label-th-1000" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(565.8 656.18)" font-size="6" fill="#424143">สามเสน</text> </g>
-          <g id="station-path-1000" data-name="station-path">
-            <circle cx="590.96" cy="659.03" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS03" data-name="station" data-station-id="RS03">
-          <g id="label-en-1001" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(554.51 697.37)" font-size="6" fill="#424143">Ratchawithi</text> </g>
-          <g id="label-th-1001" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(566.9 697.72)" font-size="6" fill="#424143">ราชวิถี</text> </g>
-          <g id="station-path-1001" data-name="station-path">
-            <circle cx="590.96" cy="700.55" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS04" data-name="station" data-station-id="RS04">
-          <g id="label-en-1003" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(558.52 764.55)" font-size="6" fill="#424143">Yommarat</text> </g>
-          <g id="label-th-1003" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(566.69 764.9)" font-size="6" fill="#424143">ยมราช</text> </g>
-          <g id="station-path-1003" data-name="station-path">
-            <circle cx="590.96" cy="763.3" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS05" data-name="station" data-station-id="RS05">
-          <g id="label-en-1004" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(567.93 823.26)" font-size="6" fill="#424143">Yossae</text> </g>
-          <g id="label-th-1004" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(564.09 823.26)" font-size="6" fill="#424143">ยศเศ</text> </g>
-          <g id="station-path-1004" data-name="station-path">
-            <circle cx="590.96" cy="821.64" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS06" data-name="station" data-station-id="RS06">
-          <g id="label-en-1005" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(564.15 848.22)" font-size="6" fill="#424143">HueLamphong</text> </g>
-          <g id="label-th-1005" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(562.21 850.82)" font-size="6" fill="#424143">หัวลำโพง</text> </g>
-          <g id="station-path-1005" data-name="station-path">
-            <circle cx="590.96" cy="853.65" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS07" data-name="station" data-station-id="RS07">
-          <g id="label-en-1006" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(518.88 953.31)" font-size="6" fill="#424143">Klong San</text> </g>
-          <g id="label-th-1006" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(518.88 953.31)" font-size="6" fill="#424143">คลองสาน</text> </g>
-          <g id="station-path-1006" data-name="station-path">
-            <circle cx="551.49" cy="952.11" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS08" data-name="station" data-station-id="RS08">
-          <g id="label-en-1007" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(520.66 984.69)" font-size="6" fill="#424143">Wongwain Yai</text> </g>
-          <g id="label-th-1007" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(524.56 984.69)" font-size="6" fill="#424143">วงเวียนใหญ่</text> </g>
-          <g id="station-path-1007" data-name="station-path">
-            <circle cx="519.29" cy="973.73" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RS09" data-name="station" data-station-id="RS09">
-          <g id="label-en-35" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(448.12 980.74)" font-size="6" fill="#424143">Talat Phlu (North)</text> </g>
-          <g id="label-th-35" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(445 980.74)" font-size="6" fill="#424143">ตลาดพลูเหนือ</text> </g>
-          <g id="station-path-35" data-name="station-path">
-            <circle cx="459.37" cy="974.01" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS09"></circle>
-          </g>
-        </g>
-        <g id="station_RS10" data-name="station" data-station-id="RS10">
-          <g id="label-en-36" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(337.68 980.73)" font-size="6" fill="#424143">Wutthakat</text> </g>
-          <g id="label-th-36" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(342.99 980.75)" font-size="6" fill="#424143">วุฒากาศ</text> </g>
-          <g id="station-path-36" data-name="station-path">
-            <circle cx="376.28" cy="980.75" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS10"></circle>
-          </g>
-        </g>
-        <g id="station_RS11" data-name="station" data-station-id="RS11">
-          <g id="label-en-37" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(309.03 1005.68)" font-size="6" fill="#424143">Chom Thong</text> </g>
-          <g id="label-th-37" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(320.79 1005.66)" font-size="6" fill="#424143">จอมทอง</text> </g>
-          <g id="station-path-37" data-name="station-path">
-            <circle cx="351.99" cy="1005.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS11"></circle>
-          </g>
-        </g>
-        <g id="station_RS12" data-name="station" data-station-id="RS12">
-          <g id="label-en-38" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(308.42 1023.77)" font-size="6" fill="#424143" letter-spacing="-0.04em">W<tspan x="5.05" y="0" letter-spacing="-0.02em">at</tspan>
-            <tspan x="9.95" y="0" letter-spacing="-0.03em">S</tspan>
-            <tspan x="12.95" y="0" letter-spacing="-0.02em">ai</tspan>
-          </text> </g>
-          <g id="label-th-38" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(310.4 1023.77)" font-size="6" fill="#424143">วัดไทร</text> </g>
-          <g id="station-path-38" data-name="station-path">
-            <circle cx="334.53" cy="1023.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS12"></circle>
-          </g>
-        </g>
-        <g id="station_RS13" data-name="station" data-station-id="RS13">
-          <g id="label-th-39" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(286.79 1045.24)" font-size="6" fill="#424143">วัดสิงห์</text> </g>
-          <g id="label-en-39" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(281.83 1045.23)" font-size="6" fill="#424143" letter-spacing="-0.04em">W<tspan x="5.05" y="0" letter-spacing="-0.02em">at Sing </tspan></text> </g>
-          <g id="station-path-39" data-name="station-path">
-            <circle cx="312.85" cy="1044.94" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS13"></circle>
-          </g>
-        </g>
-        <g id="station_RS14" data-name="station" data-station-id="RS14">
-          <g id="label-en-40" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(258.65 1063.6)" font-size="6" fill="#424143">Bang Bon</text> </g>
-          <g id="label-th-40" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(261.5.27 1063.6)" font-size="6" fill="#424143">บางบอน</text> </g>
-          <g id="station-path-40" data-name="station-path">
-            <circle cx="292.76" cy="1064.9" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS14"></circle>
-          </g>
-        </g>
-        <g id="station_RS15" data-name="station" data-station-id="RS15">
-          <g id="label-en-41" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(236.18 1084.77)" font-size="6" fill="#424143" letter-spacing="-0.02em">R<tspan x="3.42" y="0" letter-spacing="-0.01em">ang </tspan>
-            <tspan x="13" y="0">S</tspan>
-            <tspan x="16.06" y="0" letter-spacing="-0.01em">a</tspan>
-            <tspan x="19.03" y="0" letter-spacing="-0.03em">k</tspan>
-            <tspan x="21.89" y="0" letter-spacing="-0.01em">ae</tspan>
-          </text> </g>
-          <g id="label-th-41" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(243.31 1084.79)" font-size="6" fill="#424143">รางสะแก</text> </g>
-          <g id="station-path-41" data-name="station-path">
-            <circle cx="272.9" cy="1084.78" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS15"></circle>
-          </g>
-        </g>
-        <g id="station_RS16" data-name="station" data-station-id="RS16">
-          <g id="label-en-42" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(220.32 1105.12)" font-size="6" fill="#424143" letter-spacing="-0.02em">R<tspan x="3.42" y="0" letter-spacing="-0.01em">ang Pho </tspan></text> </g>
-          <g id="label-th-42" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(226.18 1105.13)" font-size="6" fill="#424143">รางโพธิ์</text> </g>
-          <g id="station-path-42" data-name="station-path">
-            <circle cx="253.12" cy="1104.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS16"></circle>
-          </g>
-        </g>
-        <g id="station_RS17" data-name="station" data-station-id="RS17">
-          <g id="label-en-43" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(194.21 1130.91)" font-size="6" fill="#424143" letter-spacing="-0.02em">S<tspan x="3.06" y="0" letter-spacing="-0.01em">a</tspan>
-            <tspan x="6.02" y="0" letter-spacing="-0.04em">m</tspan>
-            <tspan x="10.58" y="0" letter-spacing="-0.06em">Y</tspan>
-            <tspan x="13.63" y="0" letter-spacing="-0.01em">aek</tspan>
-          </text> </g>
-          <g id="label-th-43" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(197.08 1130.92)" font-size="6" fill="#424143">สามแยก</text> </g>
-          <g id="station-path-43" data-name="station-path">
-            <circle cx="227.29" cy="1130.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS17"></circle>
-          </g>
-        </g>
-        <g id="station_RS18" data-name="station" data-station-id="RS18">
-          <g id="label-en-44" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(169.05 1148.52)" font-size="6" fill="#424143">Ph<tspan x="6.79" y="0" letter-spacing="-0.01em">r</tspan>
-            <tspan x="8.96" y="0">om Daen</tspan>
-          </text> </g>
-          <g id="label-th-44" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(180.04 1148.52)" font-size="6" fill="#424143">พรมแดน</text> </g>
-          <g id="station-path-44" data-name="station-path">
-            <circle cx="209.83" cy="1147.96" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS18"></circle>
-          </g>
-        </g>
-        <g id="station_RS19" data-name="station" data-station-id="RS19">
-          <g id="label-en-45" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(137.83 1169.68)" font-size="6" fill="#424143">Thung Si Thong</text> </g>
-          <g id="label-th-45" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(157.33 1169.64)" font-size="6" fill="#424143">ทุ่งสีทอง</text> </g>
-          <g id="station-path-45" data-name="station-path">
-            <circle cx="188.14" cy="1169.65" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS19"></circle>
-          </g>
-        </g>
-        <g id="station_RS20" data-name="station" data-station-id="RS20">
-          <g id="label-en-46" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(114.38 1191.78)" font-size="6" fill="#424143">Bang Nam Chuet</text> </g>
-          <g id="label-th-46" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(134.64 1191.74)" font-size="6" fill="#424143">บางน้ำจืด</text> </g>
-          <g id="station-path-46" data-name="station-path">
-            <circle cx="168.08" cy="1189.61" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS20"></circle>
-          </g>
-        </g>
-        <g id="station_RS21" data-name="station" data-station-id="RS21">
-          <g id="label-en-47" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(109.18 1209.94)" font-size="6" fill="#424143">Khok Khwai</text> </g>
-          <g id="label-th-47" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(115.46 1209.92)" font-size="6" fill="#424143">คอกควาย</text> </g>
-          <g id="station-path-47" data-name="station-path">
-            <circle cx="148.19" cy="1209.49" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS21"></circle>
-          </g>
-        </g>
-        <g id="station_RS22" data-name="station" data-station-id="RS22">
-          <g id="label-en-48" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(98.15 1227.32)" font-size="6" fill="#424143">Ek<tspan x="6.32" y="0" letter-spacing="-0.02em">k</tspan>
-            <tspan x="9.24" y="0">achai</tspan>
-          </text> </g>
-          <g id="label-th-48" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(105.59 1227.33)" font-size="6" fill="#424143">เอกชัย</text> </g>
-          <g id="station-path-48" data-name="station-path">
-            <circle cx="130.36" cy="1227.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS22"></circle>
-          </g>
-        </g>
-        <g id="station_RS23" data-name="station" data-station-id="RS23">
-          <g id="label-en-49" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(74.39 1248.81)" font-size="6" fill="#424143">Maha Chai</text> </g>
-          <g id="label-th-49" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(84.55 1248.79)" font-size="6" fill="#424143">มหาชัย</text> </g>
-          <g id="station-path-49" data-name="station-path">
-            <circle cx="111.01" cy="1247.31" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RS23"></circle>
-          </g>
-        </g>
-      </g>
-      <g id="extention2" data-status="future">
-        <g data-name="track">
-          <path d="M592 9L591 141" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-        </g>
-        <g id="station_RN14" data-name="station" data-station-id="RN14">
-          <g id="label-en-21" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(607.35 5.04)" font-size="6" fill="#424143">Thammasart University - Rangsit</text> </g>
-          <g id="label-th-21" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(606.34 5.04)" font-size="6" fill="#424143">มหาวิทยาลัยธรรมศาสตร์ - รังสิต</text> </g>
-          <g id="station-path-21" data-name="station-path">
-            <circle cx="590.96" cy="5.81" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6"></circle>
-          </g>
-        </g>
-        <g id="station_RN13" data-name="station" data-station-id="RN13">
-          <g id="label-en-22" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(600.46 36.98)" font-size="6" fill="#424143">Chiang Rak</text> </g>
-          <g id="label-th-22" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(600.46 36.98)" font-size="6" fill="#424143">เชียงราก</text> </g>
-          <g id="station-path-22" data-name="station-path">
-            <circle cx="590.96" cy="35.77" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RN13"></circle>
-          </g>
-        </g>
-        <g id="station_RN12" data-name="station" data-station-id="RN12">
-          <g id="label-en-23" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(612.99 70.29)" font-size="6" fill="#424143">Bangkok University - Rangsit</text> </g>
-          <g id="label-th-23" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(603.9 70.29)" font-size="6" fill="#424143">มหาวิทยาลัยกรุงเทพ - รังสิต</text> </g>
-          <g id="station-path-23" data-name="station-path">
-            <circle cx="590.96" cy="73.91" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RN12"></circle>
-          </g>
-        </g>
-        <g id="station_RN11" data-name="station" data-station-id="RN11">
-          <g id="label-en-24" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(600.32 104.87)" font-size="6" fill="#424143">Khlong Neung</text> </g>
-          <g id="label-th-24" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(600.32 105.22)" font-size="6" fill="#424143">คลองหนึ่ง</text> </g>
-          <g id="station-path-24" data-name="station-path">
-            <circle cx="590.96" cy="103.65" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-RN11"></circle>
-          </g>
-        </g>
-      </g>
+
+
       <g data-status="open">
         <g id="track_2">
           <path d="M591 141L590.93 611" stroke="#C42329" stroke-width="4" stroke-miterlimit="10"></path>
@@ -492,833 +132,10 @@ export const TransitMapSVG = () => (
 
       </g>
     </g>
-    <g id="grey-line" data-status="future" data-name="train-line">
-      <g id="track-3" data-name="track">
-        <line x1="927.93" y1="274.17" x2="927.93" y2="812.35" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></line>
-        <path d="M429.94,984.47l-.07,13.78a3.1,3.1,0,0,0,.85,2.17l89,95.67a3.18,3.18,0,0,0,2.32,1h107.9a3.14,3.14,0,0,1,2.24.93l78.46,78.45a3.17,3.17,0,0,0,4.47,0h0l101.13-101.1a3.18,3.18,0,0,0,0-4.43l-76.4-79.89a4.78,4.78,0,0,1-1.33-3.38V940a3.83,3.83,0,0,1,3.81-3.81h0l241.5.15a6.13,6.13,0,0,0,4.35-1.81l4.59-4.59" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-      </g>
-      <g id="station_GY01" data-name="station" data-station-id="GY01">
-        <g id="label-en-50" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 294.72)" font-size="6" fill="#424143">Vatcharaphol</text> </g>
-        <g id="label-th-50" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 294.72)" font-size="6" fill="#424143">วัชรพล</text> </g>
-        <g id="station-path-50" data-name="station-path">
-          <circle cx="927.76" cy="292.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY01"></circle>
-        </g>
-      </g>
-      <g id="station_GY02" data-name="station" data-station-id="GY02">
-        <g id="label-en-51" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 319.18)" font-size="6" fill="#424143">Nuan Chan</text> </g>
-        <g id="label-th-51" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 319.18)" font-size="6" fill="#424143">นวลจันทร์</text> </g>
-        <g id="station-path-51" data-name="station-path">
-          <circle cx="927.76" cy="317.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY02"></circle>
-        </g>
-      </g>
-      <g id="station_GY03" data-name="station" data-station-id="GY03">
-        <g id="label-en-52" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 348.74)" font-size="6" fill="#424143">K<tspan x="3.38" y="0">aset Nawamin</tspan></text> </g>
-        <g id="label-th-52" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 348.74)" font-size="6" fill="#424143">เกษตรนวมินทร์</text> </g>
-        <g id="station-path-52" data-name="station-path">
-          <circle cx="927.76" cy="347.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY03"></circle>
-        </g>
-      </g>
-      <g id="station_GY04" data-name="station" data-station-id="GY04">
-        <g id="label-en-53" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 382.48)" font-size="6" fill="#424143">Khlong Lam Chiak</text> </g>
-        <g id="label-th-53" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 382.48)" font-size="6" fill="#424143">คลองลำเจียก</text> </g>
-        <g id="station-path-53" data-name="station-path">
-          <circle cx="927.76" cy="380.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY04"></circle>
-        </g>
-      </g>
-      <g id="station_GY05" data-name="station" data-station-id="GY05">
-        <g id="label-en-54" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 419)" font-size="6" fill="#424143">Y<tspan x="2.69" y="0">othin Pha</tspan>
-          <tspan x="24.4" y="0">t</tspan>
-          <tspan x="26.23" y="0">tana</tspan>
-        </text> </g>
-        <g id="label-th-54" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.85 419)" font-size="6" fill="#424143">โยธินพัฒนา</text> </g>
-        <g id="station-path-54" data-name="station-path">
-          <circle cx="927.76" cy="417.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY05"></circle>
-        </g>
-      </g>
-      <g id="station_GY06" data-name="station" data-station-id="GY06">
-        <g id="label-en-55" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 458.81)" font-size="6" fill="#424143">Lat Ph<tspan x="16.52" y="0">r</tspan>
-          <tspan x="18.63" y="0">ao 87</tspan>
-        </text> </g>
-        <g id="label-th-55" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 458.81)" font-size="6" fill="#424143">ลาดพร้าว 87</text> </g>
-        <g id="station-path-55" data-name="station-path">
-          <circle cx="927.76" cy="457.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY06"></circle>
-        </g>
-      </g>
-      <g id="station_GY07" data-name="station" data-station-id="GY07">
-        <g id="label-en-56" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 493.78)" font-size="6" fill="#424143">S<tspan x="3.06" y="0">angkhom Songkh</tspan>
-          <tspan x="47.54" y="0">r</tspan>
-          <tspan x="49.66" y="0">o</tspan>
-        </text> </g>
-        <g id="label-th-56" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 493.78)" font-size="6" fill="#424143">สังคมสงเคราะห์</text> </g>
-        <g id="station-path-56" data-name="station-path">
-          <circle cx="927.76" cy="492.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY07"></circle>
-        </g>
-      </g>
-      <g id="station_GY08" data-name="station" data-station-id="GY08">
-        <g id="label-en-57" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 537.08)" font-size="6" fill="#424143">Chalong<tspan x="21.26" y="0">R</tspan>
-          <tspan x="24.74" y="0">at</tspan>
-        </text> </g>
-        <g id="label-th-57" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 537.08)" font-size="6" fill="#424143">ฉลองรัช</text> </g>
-        <g id="station-path-57" data-name="station-path">
-          <circle cx="927.76" cy="535.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY08"></circle>
-        </g>
-      </g>
-      <g id="station_GY09" data-name="station" data-station-id="GY09">
-        <g id="label-en-58" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 571.98)" font-size="6" fill="#424143">Si<tspan x="4.62" y="0">W</tspan>
-          <tspan x="9.79" y="0">a</tspan>
-          <tspan x="12.81" y="0">r</tspan>
-          <tspan x="14.92" y="0">a</tspan>
-        </text> </g>
-        <g id="label-th-58" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 571.98)" font-size="6" fill="#424143">ศรีวรา</text> </g>
-        <g id="station-path-58" data-name="station-path">
-          <circle cx="927.76" cy="569.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY09"></circle>
-        </g>
-      </g>
-      <g id="station_GY10" data-name="station" data-station-id="GY10">
-        <g id="label-en-59" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 602.38)" font-size="6" fill="#424143">Nawa Si</text> </g>
-        <g id="label-th-59" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 602.38)" font-size="6" fill="#424143">นวศรี</text> </g>
-        <g id="station-path-59" data-name="station-path">
-          <circle cx="927.76" cy="600.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY10"></circle>
-        </g>
-      </g>
-      <g id="station_GY11" data-name="station" data-station-id="GY11">
-        <g id="label-en-60" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.75 636.29)" font-size="6" fill="#424143">W<tspan x="5.05" y="0">at Ph</tspan>
-          <tspan x="17.88" y="0">r</tspan>
-          <tspan x="19.87" y="0">a</tspan>
-          <tspan x="22.78" y="0">r</tspan>
-          <tspan x="24.77" y="0">am</tspan>
-          <tspan x="32.35" y="0">K</tspan>
-          <tspan x="35.74" y="0">ao</tspan>
-        </text> </g>
-        <g id="label-th-60" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.75 636.29)" font-size="6" fill="#424143">วัดพระราม 9</text> </g>
-        <g id="station-path-60" data-name="station-path">
-          <circle cx="927.76" cy="634.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY11"></circle>
-        </g>
-      </g>
-      <g id="station_GY12" data-name="station" data-station-id="GY12">
-        <g id="label-en-61" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.23 750.42)" font-size="6" fill="#424143">P<tspan x="3.1" y="0">etchaburi - Thong</tspan>
-          <tspan x="46.23" y="0">L</tspan>
-          <tspan x="49.08" y="0">o</tspan>
-        </text> </g>
-        <g id="label-th-61" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.23 750.42)" font-size="6" fill="#424143">เพชรบุรี - ทองหล่อ</text> </g>
-        <g id="station-path-61" data-name="station-path">
-          <circle cx="927.76" cy="748.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY12"></circle>
-        </g>
-      </g>
-      <g id="station_GY13" data-name="station" data-station-id="GY13">
-        <g id="label-en-62" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.23 770.88)" font-size="6" fill="#424143">Cham Chan</text> </g>
-        <g id="label-th-62" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.23 770.88)" font-size="6" fill="#424143">แจ่มจันทร์</text> </g>
-        <g id="station-path-62" data-name="station-path">
-          <circle cx="927.76" cy="769.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY13"></circle>
-        </g>
-      </g>
-      <g id="station_GY14" data-name="station" data-station-id="GY14">
-        <g id="label-en-63" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(935.71 789.79)" font-size="6" fill="#424143">Thong<tspan x="16.45" y="0">L</tspan>
-          <tspan x="19.48" y="0">o 10</tspan>
-        </text> </g>
-        <g id="label-th-63" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(935.71 789.79)" font-size="6" fill="#424143">ทองหล่อ 10</text> </g>
-        <g id="station-path-63" data-name="station-path">
-          <circle cx="927.76" cy="788.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY14"></circle>
-        </g>
-      </g>
-      <g id="station_GY15" data-name="station" data-station-id="GY15">
-        <g id="label-en-64" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936.17 806.53)" font-size="6" fill="#424143">Thong<tspan x="16.45" y="0">L</tspan>
-          <tspan x="19.48" y="0">o</tspan>
-        </text> </g>
-        <g id="label-th-64" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936.17 806.53)" font-size="6" fill="#424143">ทองหล่อ</text> </g>
-        <g id="station-path-64" data-name="station-path">
-          <circle cx="927.76" cy="809.28" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY15"></circle>
-        </g>
-      </g>
-      <g id="station_GY16" data-name="station" data-station-id="GY16">
-        <g id="label-en-65" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(929.2 869.13)" font-size="6" fill="#424143">Ph<tspan x="6.79" y="0">r</tspan>
-          <tspan x="8.9" y="0">a Khanong</tspan>
-        </text> </g>
-        <g id="label-th-65" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(945.01 869.37)" font-size="6" fill="#424143">พระโขนง</text> </g>
-        <g id="station-path-65" data-name="station-path">
-          <circle cx="967.68" cy="876.83" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY16"></circle>
-        </g>
-      </g>
-      <g id="station_GY17" data-name="station" data-station-id="GY17">
-        <g id="label-en-66" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(929.72 895.33)" font-size="6" fill="#424143">Ban Kluai<tspan x="24.48" y="0">T</tspan>
-          <tspan x="27.43" y="0">ai</tspan>
-        </text> </g>
-        <g id="label-th-66" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(931.02 895.33)" font-size="6" fill="#424143">บ้านกล้วยใต้</text> </g>
-        <g id="station-path-66" data-name="station-path">
-          <circle cx="945.67" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY17"></circle>
-        </g>
-      </g>
-      <g id="station_GY18" data-name="station" data-station-id="GY18">
-        <g id="label-en-67" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(897.88 876.51)" font-size="6" fill="#424143">Kluai Namthai</text> </g>
-        <g id="label-th-67" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(903.21 876.51)" font-size="6" fill="#424143">กล้วยน้ำไท</text> </g>
-        <g id="station-path-67" data-name="station-path">
-          <circle cx="915.97" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY18"></circle>
-        </g>
-      </g>
-      <g id="station_GY19" data-name="station" data-station-id="GY19">
-        <g id="label-en-68" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(873.86 895.27)" font-size="6" fill="#424143">K<tspan x="3.38" y="0">asem</tspan>
-          <tspan x="16.34" y="0">R</tspan>
-          <tspan x="19.7" y="0">at</tspan>
-        </text> </g>
-        <g id="label-th-68" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(871.93 895.27)" font-size="6" fill="#424143">เกษมราษฎร์</text> </g>
-        <g id="station-path-68" data-name="station-path">
-          <circle cx="886.39" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY19"></circle>
-        </g>
-      </g>
-      <g id="station_GY20" data-name="station" data-station-id="GY20">
-        <g id="label-en-69" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(835.67 895.21)" font-size="6" fill="#424143">Ph<tspan x="6.79" y="0">r</tspan>
-          <tspan x="8.9" y="0">a</tspan>
-          <tspan x="11.92" y="0">R</tspan>
-          <tspan x="15.4" y="0">am 4</tspan>
-        </text> </g>
-        <g id="label-th-69" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(840.44 895.21)" font-size="6" fill="#424143">พระราม 4</text> </g>
-        <g id="station-path-69" data-name="station-path">
-          <circle cx="850.94" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY20"></circle>
-        </g>
-      </g>
-      <g id="station_GY21" data-name="station" data-station-id="GY21">
-        <g id="label-en-70" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(798.6 895.15)" font-size="6" fill="#424143">Khlong<tspan x="18.43" y="0">T</tspan>
-          <tspan x="21.37" y="0">oei</tspan>
-        </text> </g>
-        <g id="label-th-70" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(801.69 895.15)" font-size="6" fill="#424143">คลองเตย</text> </g>
-        <g id="station-path-70" data-name="station-path">
-          <circle cx="813.13" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY21"></circle>
-        </g>
-      </g>
-      <g id="station_GY22" data-name="station" data-station-id="GY22">
-        <g id="label-en-71" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(753.02 895.02)" font-size="6" fill="#424143">Ngam Duphli</text> </g>
-        <g id="label-th-71" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(759.15 895.02)" font-size="6" fill="#424143">งามดูพลี</text> </g>
-        <g id="station-path-71" data-name="station-path">
-          <circle cx="769.81" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY22"></circle>
-        </g>
-      </g>
-      <g id="station_GY23" data-name="station" data-station-id="GY23">
-        <g id="label-en-72" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(722.11 895.02)" font-size="6" fill="#424143">L<tspan x="2.84" y="0">umphini</tspan></text> </g>
-        <g id="label-th-72" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(726.2 895.02)" font-size="6" fill="#424143">ลุมพินี</text> </g>
-        <g id="station-path-72" data-name="station-path">
-          <circle cx="733.65" cy="883.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY23"></circle>
-        </g>
-      </g>
-      <g id="station_GY24" data-name="station" data-station-id="GY24">
-        <g id="label-en-73" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(720.66 910.33)" font-size="6" fill="#424143">Suarn Plu</text> </g>
-        <g id="label-th-73" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(720.66 910.33)" font-size="6" fill="#424143">สวนพลู</text> </g>
-        <g id="station-path-73" data-name="station-path">
-          <circle cx="712.76" cy="908.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY24"></circle>
-        </g>
-      </g>
-      <g id="station_GY25" data-name="station" data-station-id="GY25">
-        <g id="label-en-74" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(720.35 937.47)" font-size="6" fill="#424143">Chong Nonsi</text> </g>
-        <g id="label-th-74" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(720.35 937.47)" font-size="6" fill="#424143">ช่องนนทรี</text> </g>
-        <g id="station-path-74" data-name="station-path">
-          <circle cx="712.76" cy="935.74" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY25"></circle>
-        </g>
-      </g>
-      <g id="station_GY26" data-name="station" data-station-id="GY26">
-        <g id="label-en-75" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(736.44 952.75)" font-size="6" fill="#424143">Na<tspan x="7.02" y="0">r</tspan>
-          <tspan x="9.13" y="0">adhiwas</tspan>
-        </text> </g>
-        <g id="label-th-75" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(736.44 952.75)" font-size="6" fill="#424143">นราธิวาส</text> </g>
-        <g id="station-path-75" data-name="station-path">
-          <circle cx="727.76" cy="952.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY26"></circle>
-        </g>
-      </g>
-      <g id="station_GY27" data-name="station" data-station-id="GY27">
-        <g id="label-en-76" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(754.29 971.03)" font-size="6" fill="#424143">Nang Linchi</text> </g>
-        <g id="label-th-76" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(754.29 971.03)" font-size="6" fill="#424143">นางลิ้นจี่</text> </g>
-        <g id="station-path-76" data-name="station-path">
-          <circle cx="744.76" cy="971.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY27"></circle>
-        </g>
-      </g>
-      <g id="station_GY28" data-name="station" data-station-id="GY28">
-        <g id="label-en-77" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(772.17 990.39)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">atchada - Na</tspan>
-          <tspan x="35.37" y="0">r</tspan>
-          <tspan x="37.42" y="0">adhiwas</tspan>
-        </text> </g>
-        <g id="label-th-77" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(772.17 990.39)" font-size="6" fill="#424143">รัชดา - นราธิวาส</text> </g>
-        <g id="station-path-77" data-name="station-path">
-          <circle cx="762.76" cy="989.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY28"></circle>
-        </g>
-      </g>
-      <g id="station_GY29" data-name="station" data-station-id="GY29">
-        <g id="label-en-78" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(789.13 1008.78)" font-size="6" fill="#424143">Y<tspan x="2.81" y="0">ann</tspan>
-          <tspan x="11.7" y="0">a</tspan>
-          <tspan x="14.39" y="0">v</tspan>
-          <tspan x="16.85" y="0">a</tspan>
-        </text> </g>
-        <g id="label-th-78" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(789.13 1008.78)" font-size="6" fill="#424143">ยานนาวา</text> </g>
-        <g id="station-path-78" data-name="station-path">
-          <circle cx="780.8" cy="1008.78" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY29"></circle>
-        </g>
-      </g>
-      <g id="station_GY30" data-name="station" data-station-id="GY30">
-        <g id="label-en-79" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(781.24 1043.1)" font-size="6" fill="#424143">Ph<tspan x="6.79" y="0">r</tspan>
-          <tspan x="8.9" y="0">a</tspan>
-          <tspan x="11.92" y="0">R</tspan>
-          <tspan x="15.4" y="0">am 3</tspan>
-        </text> </g>
-        <g id="label-th-79" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(781.24 1043.1)" font-size="6" fill="#424143">พระราม 3</text> </g>
-        <g id="station-path-79" data-name="station-path">
-          <circle cx="772.76" cy="1040.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY30"></circle>
-        </g>
-      </g>
-      <g id="station_GY31" data-name="station" data-station-id="GY31">
-        <g id="label-en-80" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(759.76 1064.78)" font-size="6" fill="#424143">Khlong Phum</text> </g>
-        <g id="label-th-80" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(759.76 1064.78)" font-size="6" fill="#424143">คลองภูมิ</text> </g>
-        <g id="station-path-80" data-name="station-path">
-          <circle cx="752.14" cy="1061.85" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY31"></circle>
-        </g>
-      </g>
-      <g id="station_GY32" data-name="station" data-station-id="GY32">
-        <g id="label-en-81" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(735.71 1089.27)" font-size="6" fill="#424143">Khlong Dan</text> </g>
-        <g id="label-th-81" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(735.71 1089.27)" font-size="6" fill="#424143">คลองด่าน</text> </g>
-        <g id="station-path-81" data-name="station-path">
-          <circle cx="727.76" cy="1085.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY32"></circle>
-        </g>
-      </g>
-      <g id="station_GY33" data-name="station" data-station-id="GY33">
-        <g id="label-en-82" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(713.8 1110.44)" font-size="6" fill="#424143">S<tspan x="3.06" y="0">athu P</tspan>
-          <tspan x="19.48" y="0">r</tspan>
-          <tspan x="21.53" y="0">adit</tspan>
-        </text> </g>
-        <g id="label-th-82" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(713.8 1110.44)" font-size="6" fill="#424143">สาธุประดิษธ์</text> </g>
-        <g id="station-path-82" data-name="station-path">
-          <circle cx="704.26" cy="1108.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY33"></circle>
-        </g>
-      </g>
-      <g id="station_GY34" data-name="station" data-station-id="GY34">
-        <g id="label-en-83" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(613.96 1108.74)" font-size="6" fill="#424143">Ph<tspan x="6.79" y="0">r</tspan>
-          <tspan x="8.9" y="0">a</tspan>
-          <tspan x="11.92" y="0">R</tspan>
-          <tspan x="15.4" y="0">am 9 Bridge</tspan>
-        </text> </g>
-        <g id="label-th-83" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(621.33 1108.74)" font-size="6" fill="#424143">สะพานพระราม 9</text> </g>
-        <g id="station-path-83" data-name="station-path">
-          <circle cx="667.69" cy="1107.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY34"></circle>
-        </g>
-      </g>
-      <g id="station_GY35" data-name="station" data-station-id="GY35">
-        <g id="label-en-84" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(653.4 1083.38)" font-size="6" fill="#424143">Cha<tspan x="9.85" y="0">r</tspan>
-          <tspan x="12.02" y="0">oen</tspan>
-          <tspan x="21.65" y="0">R</tspan>
-          <tspan x="25.13" y="0">at</tspan>
-        </text> </g>
-        <g id="label-th-84" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(653.4 1083.38)" font-size="6" fill="#424143">เจริญราษฎร์</text> </g>
-        <g id="station-path-84" data-name="station-path">
-          <circle cx="645.12" cy="1084.39" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY35"></circle>
-        </g>
-      </g>
-      <g id="station_GY36" data-name="station" data-station-id="GY36">
-        <g id="label-en-85" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(633.7 1064.33)" font-size="6" fill="#424143">Cha<tspan x="9.85" y="0">r</tspan>
-          <tspan x="12.02" y="0">oen Krung</tspan>
-        </text> </g>
-        <g id="label-th-85" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(633.7 1064.33)" font-size="6" fill="#424143">เจริญกรุง</text> </g>
-        <g id="station-path-85" data-name="station-path">
-          <circle cx="625.37" cy="1064.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY36"></circle>
-        </g>
-      </g>
-      <g id="station_GY37" data-name="station" data-station-id="GY37">
-        <g id="label-en-86" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(455.27 1052.65)" font-size="6" fill="#424143">Mahai<tspan x="15.63" y="0">s</tspan>
-          <tspan x="18.2" y="0">awan</tspan>
-        </text> </g>
-        <g id="label-th-86" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(462.2 1052.65)" font-size="6" fill="#424143">มไหสวรรย์</text> </g>
-        <g id="station-path-86" data-name="station-path">
-          <circle cx="494.43" cy="1044.82" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY37"></circle>
-        </g>
-      </g>
-      <g id="station_GY38" data-name="station" data-station-id="GY38">
-        <g id="label-en-87" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(415.52 994.83)" font-size="6" fill="#424143">T<tspan x="2.65" y="0">alat Phul</tspan></text> </g>
-        <g id="label-th-87" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(416.56 994.82)" font-size="6" fill="#424143">ตลาดพลู</text> </g>
-        <g id="station-path-87" data-name="station-path">
-          <circle cx="447.76" cy="993.81" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY38"></circle>
-        </g>
-      </g>
-      <g id="station_GY39" data-name="station" data-station-id="GY39">
-        <g id="label-en-88" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(371.75 935.43)" font-size="6" fill="#424143">Bang Phai</text> </g>
-        <g id="label-th-88" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(382.51 935.43)" font-size="6" fill="#424143">บางไผ่</text> </g>
-        <g id="station-path-88" data-name="station-path">
-          <circle cx="404.12" cy="929.11" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-GY39"></circle>
-        </g>
-      </g>
-    </g>
-    <g id="brown-line" data-status="future" data-name="train-line">
-      <g id="track-4" data-name="track">
-        <path id="Line-7" d="M1104.42,656.37V471.22a12.32,12.32,0,0,0-3.6-8.69l-60-60a12.36,12.36,0,0,0-8.69-3.6H817.79a12.36,12.36,0,0,0-8.69,3.6L758.73,452.9a12.3,12.3,0,0,1-8.7,3.6H406.51" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-      </g>
-      <g id="station_BR01" data-name="station" data-station-id="BR01">
-        <g id="label-en-89" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(370.41 410.72)" font-size="6" fill="#424143">Nonthaburi Civi <tspan x="40.16" y="0">c</tspan>
-          <tspan x="42.86" y="0">C</tspan>
-          <tspan x="46.18" y="0">enter</tspan>
-        </text> </g>
-        <g id="label-th-89" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(370.65 410.72)" font-size="6" fill="#424143">ศูนย์ราชการนนทบุรี</text> </g>
-        <g id="station-path-89" data-name="station-path">
-          <circle cx="383.12" cy="403.7" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR01"></circle>
-        </g>
-      </g>
-      <g id="station_BR02" data-name="station" data-station-id="BR02">
-        <g id="label-en-90" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(413.99 415.72)" font-size="6" fill="#424143">Nga<tspan x="10.37" y="0">m</tspan>
-          <tspan x="15.05" y="0">W</tspan>
-          <tspan x="20.28" y="0">ong </tspan>
-          <tspan x="31.76" y="0">W</tspan>
-          <tspan x="36.92" y="0">an 2</tspan>
-        </text> </g>
-        <g id="label-th-90" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(414.43 415.72)" font-size="6" fill="#424143">งามวงศ์วาน 2</text> </g>
-        <g id="station-path-90" data-name="station-path">
-          <circle cx="428.04" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR02"></circle>
-        </g>
-      </g>
-      <g id="station_BR03" data-name="station" data-station-id="BR03">
-        <g id="label-en-91" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(465.31 415.72)" font-size="6" fill="#424143">Nga<tspan x="10.37" y="0">m</tspan>
-          <tspan x="15.05" y="0">W</tspan>
-          <tspan x="20.28" y="0">ong </tspan>
-          <tspan x="31.76" y="0">W</tspan>
-          <tspan x="36.92" y="0">an 18</tspan>
-        </text> </g>
-        <g id="label-th-91" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(464.44 415.72)" font-size="6" fill="#424143">งามวงศ์วาน 18</text> </g>
-        <g id="station-path-91" data-name="station-path">
-          <circle cx="479.36" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR03"></circle>
-        </g>
-      </g>
-      <g id="station_BR04" data-name="station" data-station-id="BR04">
-        <g id="label-en-92" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(511.23 415.72)" font-size="6" fill="#424143">Chinnakhet</text> </g>
-        <g id="label-th-92" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(517.44 415.72)" font-size="6" fill="#424143">ชินเขต</text> </g>
-        <g id="station-path-92" data-name="station-path">
-          <circle cx="524.01" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR04"></circle>
-        </g>
-      </g>
-      <g id="station_BR05" data-name="station" data-station-id="BR05">
-        <g id="label-en-93" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(558.31 415.72)" font-size="6" fill="#424143">Bang Khen</text> </g>
-        <g id="label-th-93" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(563.41 415.72)" font-size="6" fill="#424143">บางเขน</text> </g>
-        <g id="station-path-93" data-name="station-path">
-          <circle cx="576.69" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR05"></circle>
-        </g>
-      </g>
-      <g id="station_BR06" data-name="station" data-station-id="BR06">
-        <g id="label-en-94" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(610.15 414.78)" font-size="6" fill="#424143">
-          <tspan>K</tspan>
-          <tspan x="3.5" y="0">aset Uni. Gate 2</tspan>
-        </text> </g>
-        <g id="label-th-94" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(615.34 414.78)" font-size="6" fill="#424143">ม.เกษตร ประตู 2</text> </g>
-        <g id="station-path-94" data-name="station-path">
-          <circle cx="632.26" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR06"></circle>
-        </g>
-      </g>
-      <g id="station_BR07" data-name="station" data-station-id="BR07">
-        <g id="label-en-95" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(700.41 414.66)" font-size="6" fill="#424143">K<tspan x="3.38" y="0">aset</tspan>
-          <tspan x="13.66" y="0">s</tspan>
-          <tspan x="16.12" y="0">a</tspan>
-          <tspan x="19.02" y="0">r</tspan>
-          <tspan x="21.19" y="0">t Uni</tspan>
-          <tspan x="33.05" y="0">v</tspan>
-          <tspan x="35.71" y="0">ersi</tspan>
-          <tspan x="44.51" y="0">t</tspan>
-          <tspan x="46.46" y="0">y</tspan>
-        </text> </g>
-        <g id="label-th-95" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(700.41 414.78)" font-size="6" fill="#424143">ม.เกษตรศาตร์</text> </g>
-        <g id="station-path-95" data-name="station-path">
-          <circle cx="704.34" cy="403.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR07"></circle>
-        </g>
-      </g>
-      <g id="station_BR08" data-name="station" data-station-id="BR08">
-        <g id="label-en-96" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(750.4 389.6)" font-size="6" fill="#424143">Khong Bang<tspan x="31.95" y="0">B</tspan>
-          <tspan x="35.59" y="0">ua</tspan>
-        </text> </g>
-        <g id="label-th-96" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(750.4 389.6)" font-size="6" fill="#424143">คลองบางบัว</text> </g>
-        <g id="station-path-96" data-name="station-path">
-          <circle cx="741.99" cy="391.09" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR08"></circle>
-        </g>
-      </g>
-      <g id="station_BR09" data-name="station" data-station-id="BR09">
-        <g id="label-en-97" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(775.29 364.97)" font-size="6" fill="#424143">P<tspan x="3.4" y="0">r</tspan>
-          <tspan x="5.51" y="0">ase</tspan>
-          <tspan x="14.14" y="0">r</tspan>
-          <tspan x="16.43" y="0">t Manukitch - Lat Pla Khao</tspan>
-        </text> </g>
-        <g id="label-th-97" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(781.56 364.97)" font-size="6" fill="#424143">ประเสริฐมนูกิจ- ลาดปลาเค้า</text> </g>
-        <g id="station-path-97" data-name="station-path">
-          <circle cx="766.82" cy="367.45" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR09"></circle>
-        </g>
-      </g>
-      <g id="station_BR10" data-name="station" data-station-id="BR10">
-        <g id="label-en-98" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(802.98 333.43)" font-size="6" fill="#424143">S<tspan x="3.06" y="0">ena Niwet</tspan></text> </g>
-        <g id="label-th-98" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(803.8 333.43)" font-size="6" fill="#424143">เสนานิเวศน์</text> </g>
-        <g id="station-path-98" data-name="station-path">
-          <circle cx="815.86" cy="346.02" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR10"></circle>
-        </g>
-      </g>
-      <g id="station_BR11" data-name="station" data-station-id="BR11">
-        <g id="label-en-99" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(852.4 328.43)" font-size="6" fill="#424143">
-          <tspan>S</tspan>
-          <tspan x="3.06" y="0">atri Wi</tspan>
-          <tspan x="19.69" y="0">t</tspan>
-          <tspan x="21.81" y="0">thaya 2 School</tspan>
-        </text> </g>
-        <g id="label-th-99" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(849.33 333.43)" font-size="6" fill="#424143">โรงเรียนสตรีวิทยา 2</text> </g>
-        <g id="station-path-99" data-name="station-path">
-          <circle cx="870.06" cy="346.02" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR11"></circle>
-        </g>
-      </g>
-      <g id="station_BR12" data-name="station" data-station-id="BR12">
-        <g id="station-path-100" data-name="station-path">
-          <circle cx="921.29" cy="346.02" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR12"></circle>
-        </g>
-        <g id="label-en-100" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(903.29 333.95)" font-size="6" fill="#424143">K<tspan x="3.38" y="0">aset Nawamin</tspan></text> </g>
-        <g id="label-th-100" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(905.26 333.95)" font-size="6" fill="#424143">เกษตรนวมินทร์</text> </g>
-      </g>
-      <g id="station_BR13" data-name="station" data-station-id="BR13">
-        <g id="label-en-101" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(989.71 334.43)" font-size="6" fill="#424143">Khlong Lam Chlak</text> </g>
-        <g id="label-th-101" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(996.58 334.43)" font-size="6" fill="#424143">คลองลำเจียก</text> </g>
-        <g id="station-path-101" data-name="station-path">
-          <circle cx="1010.59" cy="346.02" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR13"></circle>
-        </g>
-      </g>
-      <g id="station_BR14" data-name="station" data-station-id="BR14">
-        <g id="label-en-102" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1047.89 370.59)" font-size="6" fill="#424143">Nuanchan</text> </g>
-        <g id="label-th-102" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1047.89 370.59)" font-size="6" fill="#424143">นวลจันทร์</text> </g>
-        <g id="station-path-102" data-name="station-path">
-          <circle cx="1039.29" cy="374.08" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR14"></circle>
-        </g>
-      </g>
-      <g id="station_BR15" data-name="station" data-station-id="BR15">
-        <g id="label-en-103" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1075.82 398.53)" font-size="6" fill="#424143">Nawamin Juntion</text> </g>
-        <g id="label-th-103" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1075.82 398.53)" font-size="6" fill="#424143">แยกนวมินทร์</text> </g>
-        <g id="station-path-103" data-name="station-path">
-          <circle cx="1067.29" cy="402.01" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR15"></circle>
-        </g>
-      </g>
-      <g id="station_BR16" data-name="station" data-station-id="BR16">
-        <g id="label-en-104" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1087.75 445.16)" font-size="6" fill="#424143">Pho<tspan x="10.03" y="0">k</tspan>
-          <tspan x="12.95" y="0">aew</tspan>
-        </text> </g>
-        <g id="label-th-104" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1087.86 445.16)" font-size="6" fill="#424143">โพธิ์แก้ว</text> </g>
-        <g id="station-path-104" data-name="station-path">
-          <circle cx="1079" cy="448.64" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR16"></circle>
-        </g>
-      </g>
-      <g id="station_BR17" data-name="station" data-station-id="BR17">
-        <g id="label-en-105" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1086.02 484.99)" font-size="6" fill="#424143">Inth<tspan x="10.4" y="0">r</tspan>
-          <tspan x="12.51" y="0">a</tspan>
-          <tspan x="15.53" y="0">r</tspan>
-          <tspan x="17.65" y="0">ak</tspan>
-        </text> </g>
-        <g id="label-th-105" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1086.02 484.99)" font-size="6" fill="#424143">อิินทรารักษ์</text> </g>
-        <g id="station-path-105" data-name="station-path">
-          <circle cx="1078.76" cy="487.9" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR17"></circle>
-        </g>
-      </g>
-      <g id="station_BR18" data-name="station" data-station-id="BR18">
-        <g id="label-en-106" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1086.02 526.47)" font-size="6" fill="#424143">Nawaminphi<tspan x="31.96" y="0">r</tspan>
-          <tspan x="34.13" y="0">om</tspan>
-          <tspan x="42.17" y="0">P</tspan>
-          <tspan x="45.37" y="0">ark</tspan>
-        </text> </g>
-        <g id="label-th-106" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1086.02 524.22)" font-size="6" fill="#424143">สวนนวมินทร์ภิรมย์</text> </g>
-        <g id="station-path-106" data-name="station-path">
-          <circle cx="1078.76" cy="529.95" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR18"></circle>
-        </g>
-      </g>
-      <g id="station_BR19" data-name="station" data-station-id="BR19">
-        <g id="label-en-107" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1086.02 561.55)" font-size="6" fill="#424143">Nationnal Housing <tspan x="49.38" y="0">A</tspan>
-          <tspan x="53.08" y="0">othori</tspan>
-          <tspan x="68.74" y="0">t</tspan>
-          <tspan x="70.81" y="0">y</tspan>
-        </text> </g>
-        <g id="label-th-107" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1086.02 566.55)" font-size="6" fill="#424143">การเคหะแห่งชาติ</text> </g>
-        <g id="station-path-107" data-name="station-path">
-          <circle cx="1078.76" cy="570.03" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR19"></circle>
-        </g>
-      </g>
-      <g id="station_BR20" data-name="station" data-station-id="BR20">
-        <g id="label-en-108" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1086.4 601.2)" font-size="6" fill="#424143">La<tspan x="6.11" y="0">m</tspan>
-          <tspan x="10.87" y="0">S</tspan>
-          <tspan x="13.99" y="0">ali Junction</tspan>
-        </text> </g>
-        <g id="label-th-108" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1086.4 603.7)" font-size="6" fill="#424143">แยกลำสาลี</text> </g>
-        <g id="station-path-108" data-name="station-path">
-          <circle cx="1078.76" cy="605.89" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BR20"></circle>
-        </g>
-      </g>
-    </g>
 
-    <g id="orange-line" data-status="under-construction" data-name="train-line">
-      <g id="track-12" data-name="track">
-        <path d="M1319.62,473.6,1093.26,699.53a8.65,8.65,0,0,1-6.09,2.52L779.77,702a8.61,8.61,0,0,0-8.61,8.6v109a8.6,8.6,0,0,1-8.59,8.61H610.09a8.63,8.63,0,0,0-6.17,2.6l-41.54,42.76a8.63,8.63,0,0,1-6.17,2.6h-126" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-      </g>
-      <g id="station_OR01" data-name="station" data-station-id="OR01">
-        <g id="label-en-243" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(386.07 834.86)" font-size="6" fill="#424143">Bang Khun Non</text> </g>
-        <g id="label-th-243" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(392.76 834.86)" font-size="6" fill="#424143">บางขุนนนท์</text> </g>
-        <g id="station-path-243" data-name="station-path">
-          <circle cx="403.95" cy="823.26" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR01"></circle>
-        </g>
-      </g>
-      <g id="station_OR02" data-name="station" data-station-id="OR02">
-        <g id="label-en-244" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(435.39 834.86)" font-size="6" fill="#424143">Siri<tspan x="8.29" y="0">r</tspan>
-          <tspan x="10.4" y="0">aj</tspan>
-        </text> </g>
-        <g id="label-th-244" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(435.17 834.86)" font-size="6" fill="#424143">ศิริราช</text> </g>
-        <g id="station-path-244" data-name="station-path">
-          <circle cx="441.93" cy="823.26" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR02"></circle>
-        </g>
-      </g>
-      <g id="station_OR03" data-name="station" data-station-id="OR03">
-        <g id="label-en-245" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(465.32 830.86)" font-size="6" fill="#424143">S<tspan x="3.06" y="0">anamluang</tspan></text> </g>
-        <g id="label-th-245" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(468.53 830.86)" font-size="6" fill="#424143">สนามหลวง</text> </g>
-        <g id="station-path-245" data-name="station-path">
-          <circle cx="479.46" cy="823.95" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR03"></circle>
-        </g>
-      </g>
-      <g id="station_OR04" data-name="station" data-station-id="OR04">
-        <g id="label-en-246" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(511.94 834.86)" font-size="6" fill="#424143">Phan<tspan x="13.19" y="0">F</tspan>
-          <tspan x="16.25" y="0">a</tspan>
-        </text> </g>
-        <g id="label-th-246" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(513.7 834.86)" font-size="6" fill="#424143">ผ่านฟ้า</text> </g>
-        <g id="station-path-246" data-name="station-path">
-          <circle cx="521.07" cy="823.26" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR04"></circle>
-        </g>
-      </g>
-      <g id="station_OR05" data-name="station" data-station-id="OR05">
-        <g id="label-en-247" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(526.94 794.69)" font-size="6" fill="#424143">Lan<tspan x="9.49" y="0">L</tspan>
-          <tspan x="12.46" y="0">uang</tspan>
-        </text> </g>
-        <g id="label-th-247" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(528.79 794.48)" font-size="6" fill="#424143">หลานหลวง</text> </g>
-        <g id="station-path-247" data-name="station-path">
-          <circle cx="559.13" cy="798.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR05"></circle>
-        </g>
-      </g>
-      <g id="station_OR06" data-name="station" data-station-id="OR06">
-        <g id="label-en-248" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(595.17 784.74)" font-size="6" fill="#424143">Y<tspan x="2.69" y="0">omma</tspan>
-          <tspan x="17.14" y="0">r</tspan>
-          <tspan x="18.9" y="0">at</tspan>
-        </text> </g>
-        <g id="label-th-248" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(600.09 784.74)" font-size="6" fill="#424143">ยมราช</text> </g>
-        <g id="station-path-248" data-name="station-path">
-          <circle cx="590.96" cy="775.48" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR06"></circle>
-        </g>
-      </g>
-      <g id="station_OR07" data-name="station" data-station-id="OR07">
-        <g id="label-en-249" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(636.07 786.65)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">atchathawi</tspan></text> </g>
-        <g id="label-th-249" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(649.86 786.65)" font-size="6" fill="#424143">ราชเทวี</text> </g>
-        <g id="station-path-249" data-name="station-path">
-          <circle cx="665" cy="775.48" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR07"></circle>
-        </g>
-      </g>
-      <g id="station_OR08" data-name="station" data-station-id="OR08">
-        <g id="label-en-250" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(754.66 766.93)" font-size="6" fill="#424143">P<tspan x="3.4" y="0">r</tspan>
-          <tspan x="5.51" y="0">a</tspan>
-          <tspan x="8.53" y="0">t</tspan>
-          <tspan x="10.6" y="0">unam</tspan>
-        </text> </g>
-        <g id="label-th-250" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(754.66 766.93)" font-size="6" fill="#424143">ประตูน้ำ</text> </g>
-        <g id="station-path-250" data-name="station-path">
-          <circle cx="745.29" cy="770.41" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR08"></circle>
-        </g>
-      </g>
-      <g id="station_OR09" data-name="station" data-station-id="OR09">
-        <g id="label-en-251" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(754.66 716.9)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">atshap</tspan>
-          <tspan x="20.57" y="0">r</tspan>
-          <tspan x="22.63" y="0">a</tspan>
-          <tspan x="25.59" y="0">r</tspan>
-          <tspan x="27.7" y="0">op</tspan>
-        </text> </g>
-        <g id="station-path-251" data-name="station-path">
-          <circle cx="745.29" cy="715.69" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR09"></circle>
-        </g>
-        <g id="label-th-251" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(754.66 716.9)" font-size="6" fill="#424143">ราชปรารภ</text> </g>
-      </g>
-      <g id="station_OR10" data-name="station" data-station-id="OR10">
-        <g id="label-en-252" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(754.66 676.11)" font-size="6" fill="#424143">Din Daeng</text> </g>
-        <g id="label-th-252" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(754.66 676.11)" font-size="6" fill="#424143">ดินแดน</text> </g>
-        <g id="station-path-252" data-name="station-path">
-          <circle cx="745.29" cy="679.59" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR10"></circle>
-        </g>
-      </g>
-      <g id="station_OR11" data-name="station" data-station-id="OR11">
-        <g id="label-en-253" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(756.38 636.28)" font-size="6" fill="#424143">P<tspan x="3.4" y="0">r</tspan>
-          <tspan x="5.51" y="0">acha Songkh</tspan>
-          <tspan x="38.8" y="0">r</tspan>
-          <tspan x="40.97" y="0">o</tspan>
-        </text> </g>
-        <g id="label-th-253" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(759.61 636.28)" font-size="6" fill="#424143">ประชาสงเคราะห์</text> </g>
-        <g id="station-path-253" data-name="station-path">
-          <circle cx="775.66" cy="649.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR11"></circle>
-        </g>
-      </g>
-      <g id="station_OR12" data-name="station" data-station-id="OR12">
-        <g id="label-en-254" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(837.82 660.42)" font-size="6" fill="#424143">Thailand <tspan x="23.65" y="0">C</tspan>
-          <tspan x="27.02" y="0">ul</tspan>
-          <tspan x="31.81" y="0">t</tspan>
-          <tspan x="33.87" y="0">u</tspan>
-          <tspan x="37.22" y="0">r</tspan>
-          <tspan x="39.33" y="0">al</tspan>
-          <tspan x="43.79" y="0">C</tspan>
-          <tspan x="47.11" y="0">ent</tspan>
-          <tspan x="55.63" y="0">r</tspan>
-          <tspan x="57.8" y="0">e</tspan>
-        </text> </g>
-        <g id="label-th-254" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(832.2 660.42)" font-size="6" fill="#424143">ศูนย์วัฒนธรรมแห่งประเทศไทย</text> </g>
-        <g id="station-path-254" data-name="station-path">
-          <circle cx="847.06" cy="648.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR12"></circle>
-        </g>
-      </g>
-      <g id="station_OR13" data-name="station" data-station-id="OR13">
-        <g id="label-en-255" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(895.47 656.42)" font-size="6" fill="#424143">M<tspan x="4.75" y="0">R</tspan>
-          <tspan x="8.23" y="0">T</tspan>
-          <tspan x="10.98" y="0">A</tspan>
-        </text> </g>
-        <g id="label-th-255" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(896.45 656.42)" font-size="6" fill="#424143">รฟม.</text> </g>
-        <g id="station-path-255" data-name="station-path">
-          <circle cx="901.44" cy="649.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR13"></circle>
-        </g>
-      </g>
-      <g id="station_OR14" data-name="station" data-station-id="OR14">
-        <g id="label-en-256" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(925.05 660.42)" font-size="6" fill="#424143">W<tspan x="5.05" y="0">at Ph</tspan>
-          <tspan x="17.88" y="0">r</tspan>
-          <tspan x="19.87" y="0">a</tspan>
-          <tspan x="22.78" y="0">r</tspan>
-          <tspan x="24.77" y="0">am</tspan>
-          <tspan x="32.35" y="0">K</tspan>
-          <tspan x="35.74" y="0">ao</tspan>
-        </text> </g>
-        <g id="label-th-256" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(916.43 660.42)" font-size="6" fill="#424143">วัดพระราม 9</text> </g>
-        <g id="station-path-256" data-name="station-path">
-          <circle cx="928.93" cy="648.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR14"></circle>
-        </g>
-      </g>
-      <g id="station_OR15" data-name="station" data-station-id="OR15">
-        <g id="label-en-257" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(957.97 657.42)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">am khamhaeng 12</tspan></text> </g>
-        <g id="label-th-257" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(949.17 657.41)" font-size="6" fill="#424143">รามคำแหง 12</text> </g>
-        <g id="station-path-257" data-name="station-path">
-          <circle cx="962.84" cy="648.66" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR15"></circle>
-        </g>
-      </g>
-      <g id="station_OR16" data-name="station" data-station-id="OR16">
-        <g id="label-en-258" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(990.81 657.42)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">am khamhaeng Uni</tspan>
-          <tspan x="52.54" y="0">v</tspan>
-          <tspan x="55.26" y="0">ersi</tspan>
-          <tspan x="64.3" y="0">t</tspan>
-          <tspan x="66.31" y="0">y</tspan>
-        </text> </g>
-        <g id="label-th-258" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(983.49 657.42)" font-size="6" fill="#424143">มหาวิทยาลัยรามคำแหง</text> </g>
-        <g id="station-path-258" data-name="station-path">
-          <circle cx="995.68" cy="650.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR16"></circle>
-        </g>
-      </g>
-      <g id="station_OR17" data-name="station" data-station-id="OR17">
-        <g id="label-en-259" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1012.87 657.42)" font-size="6" fill="#424143">Ramkhamhaeng University</text> </g>
-        <g id="label-th-259" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1017.09 657.42)" font-size="6" fill="#424143">มหาวิทยาลัยรามคำแหง</text> </g>
-        <g id="station-path-259" data-name="station-path">
-          <circle cx="1027.76" cy="650.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR17"></circle>
-        </g>
-      </g>
-      <g id="station_OR18" data-name="station" data-station-id="OR18">
-        <g id="label-en-260" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1055.46 657.41)" font-size="6" fill="#424143">R<tspan x="3.42" y="0">am Khamhaeng 34</tspan></text> </g>
-        <g id="label-th-260" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1046.67 657.42)" font-size="6" fill="#424143">รามคำแหง 34</text> </g>
-        <g id="station-path-260" data-name="station-path">
-          <circle cx="1060.29" cy="650.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR18"></circle>
-        </g>
-      </g>
-      <g id="station_OR19" data-name="station" data-station-id="OR19">
-        <g id="label-en-261" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1088.17 635.3)" font-size="6" fill="#424143">La<tspan x="6.11" y="0">m</tspan>
-          <tspan x="10.87" y="0">S</tspan>
-          <tspan x="13.99" y="0">ali Junction</tspan>
-        </text> </g>
-        <g id="label-th-261" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1088.17 635.31)" font-size="6" fill="#424143">แยกลำสาลี</text> </g>
-        <g id="station-path-261" data-name="station-path">
-          <circle cx="1077.29" cy="637.63" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR19"></circle>
-        </g>
-      </g>
-      <g id="station_OR20" data-name="station" data-station-id="OR20">
-        <g id="label-en-262" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1127.96 597.51)" font-size="6" fill="#424143">Si<tspan x="4.62" y="0">B</tspan>
-          <tspan x="8.26" y="0">u</tspan>
-          <tspan x="11.6" y="0">r</tspan>
-          <tspan x="13.72" y="0">apha</tspan>
-        </text> </g>
-        <g id="label-th-262" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1127.96 597.51)" font-size="6" fill="#424143">ศรีบูรพา</text> </g>
-        <g id="station-path-262" data-name="station-path">
-          <circle cx="1119.13" cy="595.14" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR20"></circle>
-        </g>
-      </g>
-      <g id="station_OR21" data-name="station" data-station-id="OR21">
-        <g id="label-en-261.5" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1146.72 580.71)" font-size="6" fill="#424143">Ban Ma</text> </g>
-        <g id="label-th-261.5" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1146.72 580.71)" font-size="6" fill="#424143">บ้านม้า</text> </g>
-        <g id="station-path-261.5" data-name="station-path">
-          <circle cx="1138.41" cy="577.31" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR21"></circle>
-        </g>
-      </g>
-      <g id="station_OR22" data-name="station" data-station-id="OR22">
-        <g id="label-en-264" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1164.2 562.44)" font-size="6" fill="#424143">S<tspan x="3.06" y="0">amma k on</tspan></text> </g>
-        <g id="label-th-264" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1164.2 562.44)" font-size="6" fill="#424143">สัมมากร</text> </g>
-        <g id="station-path-264" data-name="station-path">
-          <circle cx="1156.1" cy="558.86" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR22"></circle>
-        </g>
-      </g>
-      <g id="station_OR23" data-name="station" data-station-id="OR23">
-        <g id="label-en-265" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1184.08 542.96)" font-size="6" fill="#424143">Nom Klao</text> </g>
-        <g id="label-th-265" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1184.08 542.96)" font-size="6" fill="#424143">น้อมเกล้า</text> </g>
-        <g id="station-path-265" data-name="station-path">
-          <circle cx="1175.4" cy="539.56" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR23"></circle>
-        </g>
-      </g>
-      <g id="station_OR24" data-name="station" data-station-id="OR24">
-        <g id="label-en-266" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1208.35 519.53)" font-size="6" fill="#424143">
-          <tspan>R</tspan>
-          <tspan x="3.42" y="0">at Pha</tspan>
-          <tspan x="19.52" y="0">t</tspan>
-          <tspan x="21.64" y="0">thana</tspan>
-        </text> </g>
-        <g id="label-th-266" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1208.35 519.54)" font-size="6" fill="#424143">ราษฎร์พัฒนา</text> </g>
-        <g id="station-path-266" data-name="station-path">
-          <circle cx="1199.29" cy="516.14" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR24"></circle>
-        </g>
-      </g>
-      <g id="station_OR25" data-name="station" data-station-id="OR25">
-        <g id="label-en-267" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1230.49 495.99)" font-size="6" fill="#424143">W<tspan x="5.05" y="0">at Bang Pheng</tspan></text> </g>
-        <g id="label-th-267" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1230.49 495.99)" font-size="6" fill="#424143">วัดบางเพ็ญ</text> </g>
-        <g id="station-path-267" data-name="station-path">
-          <circle cx="1222.39" cy="492.57" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR25"></circle>
-        </g>
-      </g>
-      <g id="station_OR26" data-name="station" data-station-id="OR26">
-        <g id="label-en-268" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1251.64 475.73)" font-size="6" fill="#424143">W<tspan x="5.05" y="0">at Bang Pheng</tspan></text> </g>
-        <g id="label-th-268" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1251.64 475.73)" font-size="6" fill="#424143">วัดบางเพ็ญ</text> </g>
-        <g id="station-path-268" data-name="station-path">
-          <circle cx="1242.59" cy="472.33" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR26"></circle>
-        </g>
-      </g>
-      <g id="station_OR27" data-name="station" data-station-id="OR27">
-        <g id="label-en-269" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1276.64 448.83)" font-size="6" fill="#424143">Min<tspan x="9.58" y="0">B</tspan>
-          <tspan x="13.21" y="0">uri</tspan>
-        </text> </g>
-        <g id="label-th-269" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1276.64 448.83)" font-size="6" fill="#424143">มีนบุรี</text> </g>
-        <g id="station-path-269" data-name="station-path">
-          <circle cx="1268.72" cy="446.12" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR27"></circle>
-        </g>
-      </g>
-      <g id="station_OR28" data-name="station" data-station-id="OR28">
-        <g id="label-en-270" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1302.17 422.65)" font-size="6" fill="#424143">SuwinthawongJunction</text> </g>
-        <g id="label-th-270" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1305.45 422.65)" font-size="6" fill="#424143">แยกสุวินทวงศ์</text> </g>
-        <g id="station-path-270" data-name="station-path">
-          <circle cx="1293.99" cy="420.28" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-OR28"></circle>
-        </g>
-      </g>
-    </g>
+
     <g id="pink-line" data-name="train-line">
-      <g data-status="future">
-        <line id="Line 1" x1="463" y1="178" x2="463" y2="271" stroke="#E0E0DF" stroke-width="2"></line>
-        <g id="station_MT01" data-name="station" data-station-id="MT01">
-          <g id="label-en-137" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(471.09 215.29)" font-size="6" fill="#424143">Impact Muang Thong Thani</text> </g>
-          <g id="label-th-137" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(471.09 215.29)" font-size="6" fill="#424143">อิมแพคชาเลนเจอร์</text> </g>
-          <g id="station-path-137" data-name="station-path">
-            <circle cx="462.76" cy="218.77" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-MT01"></circle>
-          </g>
-        </g>
-        <g id="station_MT02" data-name="station" data-station-id="MT02">
-          <g id="label-en-138" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(471.09 171.81)" font-size="6" fill="#424143">Lake Muang Thong Thani</text> </g>
-          <g id="label-th-138" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(471.09 174.02)" font-size="6" fill="#424143">ทะเลสาบเมืองทองธานี</text> </g>
-          <g id="station-path-138" data-name="station-path">
-            <circle cx="462.76" cy="177.51" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-MT02"></circle>
-          </g>
-        </g>
-      </g>
+
       <g data-status="open">
         <g id="track-5" data-name="track">
           <g id="Line-10">
@@ -1362,15 +179,15 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK07" data-name="station" data-station-id="PK07">
-          <g id="label-en-115" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(347.87 261.5)" font-size="6" fill="#424143">Pak Kret Bypass</text> </g>
+          <g id="label-en-115" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(347.87 284.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Pak Kret</tspan><tspan x="0" dy="7">Bypass</tspan></text> </g>
           <g id="label-th-115" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(333 284.5)" font-size="6" fill="#424143">เลี่ยงเมืองปากเกร็ด</text> </g>
           <g id="station-path-115" data-name="station-path">
             <circle cx="357.42" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK07"></circle>
           </g>
         </g>
         <g id="station_PK08" data-name="station" data-station-id="PK08">
-          <g id="label-en-116" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(384.64 261.5)" font-size="6" fill="#424143">Chaeng Watthana - Pak Kret 28</text> </g>
-          <g id="label-th-116" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(378.29 248.5)" font-size="6" fill="#424143">
+          <g id="label-en-116" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(384.64 255.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Chaeng Watthana -</tspan><tspan x="0" dy="7">Pak Kret 28</tspan></text> </g>
+          <g id="label-th-116" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(378.29 242.5)" font-size="6" fill="#424143">
             <tspan x="2" y="0">แจ้งวัฒนะ</tspan>
             <tspan x="12" y="6">-</tspan>
             <tspan x="0" y="13">ปากเกร็ด 28</tspan>
@@ -1380,8 +197,8 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK09" data-name="station" data-station-id="PK09">
-          <g id="label-en-117" data-name="label-en"><text text-rendering="geometricPrecision" transform="translate(414.23 261.5)" font-size="6" fill="#424143">Si Rat</text></g>
-          <g id="label-th-117" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(420.27 261.5)" font-size="6" fill="#424143">ศรีรัช</text></g>
+          <g id="label-en-117" data-name="label-en"><text text-rendering="geometricPrecision" transform="translate(414.23 284.5)" font-size="6" fill="#424143">Si Rat</text></g>
+          <g id="label-th-117" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(420.27 284.5)" font-size="6" fill="#424143">ศรีรัช</text></g>
           <g id="station-path-117" data-name="station-path">
             <circle cx="427.21" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK09"></circle>
           </g>
@@ -1390,8 +207,8 @@ export const TransitMapSVG = () => (
           <g id="station-path-136" data-name="station-path">
             <circle cx="462.76" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK10"></circle>
           </g>
-          <g id="label-en-136" data-name="label-en"><text text-rendering="geometricPrecision" transform="translate(455.65 261.5)" font-size="6" fill="#424143">Mung ThongThani</text></g>
-          <g id="label-th-136" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(446.58 261.5)" font-size="6" fill="#424143">เมืองทองธานี</text></g>
+          <g id="label-en-136" data-name="label-en"><text text-rendering="geometricPrecision" transform="translate(455.65 248.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Muang Thong</tspan><tspan x="0" dy="7">Thani</tspan></text></g>
+          <g id="label-th-136" data-name="label-th"><text text-rendering="geometricPrecision" transform="translate(446.58 248.5)" font-size="6" fill="#424143">เมืองทองธานี</text></g>
         </g>
         <g id="station_PK11" data-name="station" data-station-id="PK11">
           <g id="label-en-118" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(480.51 284.5)" font-size="6" fill="#424143">Chaeng Watthana 14</text> </g>
@@ -1401,21 +218,21 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK12" data-name="station" data-station-id="PK12">
-          <g id="label-en-119" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(509.05 261.5)" font-size="6" fill="#424143">Government Complex</text> </g>
-          <g id="label-th-119" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(508.39 261.5)" font-size="6" fill="#424143">ศูนย์ราชการฯ</text> </g>
+          <g id="label-en-119" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(509.05 255.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Government</tspan><tspan x="0" dy="7">Complex</tspan></text> </g>
+          <g id="label-th-119" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(508.39 255.5)" font-size="6" fill="#424143">ศูนย์ราชการฯ</text> </g>
           <g id="station-path-119" data-name="station-path">
             <circle cx="522.85" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK12"></circle>
           </g>
         </g>
         <g id="station_PK13" data-name="station" data-station-id="PK13">
-          <g id="label-en-120" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(547.96 284.5)" font-size="6" fill="#424143">National Telecom</text> </g>
+          <g id="label-en-120" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(547.96 284.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">National</tspan><tspan x="0" dy="7">Telecom</tspan></text> </g>
           <g id="label-th-120" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(546.9 284.5)" font-size="6" fill="#424143">ทีโอที</text> </g>
           <g id="station-path-120" data-name="station-path">
             <circle cx="552.13" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK13"></circle>
           </g>
         </g>
         <g id="station_PK15" data-name="station" data-station-id="PK15">
-          <g id="label-en-121" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(608.71 284.5)" font-size="6" fill="#424143">Rajabhat Phranakhon</text> </g>
+          <g id="label-en-121" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(608.71 284.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Rajabhat</tspan><tspan x="0" dy="7">Phranakhon</tspan></text> </g>
           <g id="label-th-121" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(604.53 284.5)" font-size="6" fill="#424143">ราชภัฏพระนคร</text> </g>
           <g id="station-path-121" data-name="station-path">
             <circle cx="618.6" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK15"></circle>
@@ -1429,22 +246,22 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK18" data-name="station" data-station-id="PK18">
-          <g id="label-en-123" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(770.91 261.5)" font-size="6" fill="#424143">Lat Pla Khao</text> </g>
-          <g id="label-th-123" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(773.52 261.5)" font-size="6" fill="#424143">ลาดปลาเค้า</text> </g>
+          <g id="label-en-123" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(770.91 284.5)" font-size="6" fill="#424143">Lat Pla Khao</text> </g>
+          <g id="label-th-123" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(773.52 284.5)" font-size="6" fill="#424143">ลาดปลาเค้า</text> </g>
           <g id="station-path-123" data-name="station-path">
             <circle cx="785.18" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK18"></circle>
           </g>
         </g>
         <g id="station_PK19" data-name="station" data-station-id="PK19">
-          <g id="label-en-124" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(821.41 261.5)" font-size="6" fill="#424143">Ram Inthra Kor Mor 4</text> </g>
-          <g id="label-th-124" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(823.27 261.5)" font-size="6" fill="#424143">รามอินทรา กม.4</text> </g>
+          <g id="label-en-124" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(821.41 255.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Ram Inthra</tspan><tspan x="0" dy="7">Kor Mor 4</tspan></text> </g>
+          <g id="label-th-124" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(823.27 255.5)" font-size="6" fill="#424143">รามอินทรา กม.4</text> </g>
           <g id="station-path-124" data-name="station-path">
             <circle cx="837.44" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK19"></circle>
           </g>
         </g>
         <g id="station_PK20" data-name="station" data-station-id="PK20">
-          <g id="label-en-125" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(873.96 261.5)" font-size="6" fill="#424143">Maiyalap</text> </g>
-          <g id="label-th-125" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(876.84 261.5)" font-size="6" fill="#424143">มัยลาภ</text> </g>
+          <g id="label-en-125" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(873.96 284.5)" font-size="6" fill="#424143">Maiyalap</text> </g>
+          <g id="label-th-125" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(876.84 284.5)" font-size="6" fill="#424143">มัยลาภ</text> </g>
           <g id="station-path-125" data-name="station-path">
             <circle cx="884.03" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK20"></circle>
           </g>
@@ -1457,8 +274,8 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK22" data-name="station" data-station-id="PK22">
-          <g id="label-en-127" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(966.02 261.5)" font-size="6" fill="#424143">Ram Inthra Kor Mor 6</text> </g>
-          <g id="label-th-127" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(967.89 261.5)" font-size="6" fill="#424143">รามอินทรา กม.6</text> </g>
+          <g id="label-en-127" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(966.02 284.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Ram Inthra</tspan><tspan x="0" dy="7">Kor Mor 6</tspan></text> </g>
+          <g id="label-th-127" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(967.89 284.5)" font-size="6" fill="#424143">รามอินทรา กม.6</text> </g>
           <g id="station-path-127" data-name="station-path">
             <circle cx="982.05" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK22"></circle>
           </g>
@@ -1471,14 +288,14 @@ export const TransitMapSVG = () => (
           </g>
         </g>
         <g id="station_PK24" data-name="station" data-station-id="PK24">
-          <g id="label-en-129" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1063.29 261.5)" font-size="6" fill="#424143">Ram Inthra Kor Mor 9</text> </g>
-          <g id="label-th-129" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1064.43 261.5)" font-size="6" fill="#424143">รามอินทรา กม.9</text> </g>
+          <g id="label-en-129" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1063.29 284.5)" font-size="6" fill="#424143"><tspan x="0" dy="0">Ram Inthra</tspan><tspan x="0" dy="7">Kor Mor 9</tspan></text> </g>
+          <g id="label-th-129" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1064.43 284.5)" font-size="6" fill="#424143">รามอินทรา กม.9</text> </g>
           <g id="station-path-129" data-name="station-path">
             <circle cx="1078.6" cy="270.33" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK24"></circle>
           </g>
         </g>
         <g id="station_PK25" data-name="station" data-station-id="PK25">
-          <g id="label-en-130" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1123.45 290.18)" font-size="6" fill="#424143">Outer Ring Road - Ram Inthra</text> </g>
+          <g id="label-en-130" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1123.45 290.18)" font-size="6" fill="#424143"><tspan x="0" dy="0">Outer Ring Road -</tspan><tspan x="0" dy="7">Ram Inthra</tspan></text> </g>
           <g id="label-th-130" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1123.45 290.18)" font-size="6" fill="#424143">วงแหวาน- รามอินทรา</text> </g>
           <g id="station-path-130" data-name="station-path">
             <circle cx="1115.58" cy="292.01" r="3.4" fill="#fff" stroke="#FFB2DD" stroke-width="1.6" class="station-id-PK25"></circle>
@@ -1525,28 +342,6 @@ export const TransitMapSVG = () => (
     </g>
     <g id="yellow-line" data-name="train-line">
 
-      <g data-status="future">
-
-        <g id="track-6-1" data-name="track">
-
-          <path d="M0.0585938 1.76955H39.2486C41.9663 1.76423 44.575 2.83732 46.5023 4.75338C48.4296 6.66943 49.518 9.27187 49.5286 11.9895V21.4995C49.5803 25.9759 49.5632 30.0901 51.2404 32.5" stroke="#E0E0DF" stroke-width="4" fill="none" transform="translate(697.6 492.6)" stroke-miterlimit="10"></path>
-        </g>
-
-        <g id="station_YLEX02" data-name="station" data-station-id="YLEX02">
-          <g id="label-en-139" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(684.2 485.92)" font-size="6" fill="#424143">Phaholyothin 24</text> </g>
-          <g id="label-th-139" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(691.68 485.92)" font-size="6" fill="#424143">พลโยธิน 24</text> </g>
-          <g id="station-path-139" data-name="station-path">
-            <circle cx="697.87" cy="494.47" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-YLEX02"></circle>
-          </g>
-        </g>
-        <g id="station_YLEX01" data-name="station" data-station-id="YLEX01">
-          <g id="label-en-140" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(745.39 485.98)" font-size="6" fill="#424143">Chandrakasem</text> </g>
-          <g id="label-th-140" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(745.39 485.98)" font-size="6" fill="#424143">จันทรเกษม</text> </g>
-          <g id="station-path-140" data-name="station-path">
-            <circle cx="743.91" cy="497.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-YLEX01"></circle>
-          </g>
-        </g>
-      </g>
 
       <g data-status="open">
 
@@ -1701,19 +496,7 @@ export const TransitMapSVG = () => (
     </g>
     <g id="gold-line" data-name="train-line">
 
-      <g data-status="future">
-        <g id="station_G4" data-name="station" data-station-id="G4">
-          <g id="label-en-167" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(520.88 929.45)" font-size="6" fill="#424143">Memorial Bridge</text> </g>
-          <g id="label-th-167" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(521.85 929.45)" font-size="6" fill="#424143">สะพานพุทธ</text> </g>
-          <g id="station-path-167" data-name="station-path">
-            <circle cx="524.61" cy="937.29" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-G4"></circle>
-          </g>
-        </g>
 
-        <g id="track-777" data-name="track">
-          <path id="Line-14_2" d="M557.999 942.5L554.169 938.3C553.77 937.889 553.293 937.562 552.766 937.339C552.238 937.116 551.672 937 551.099 937H526.999" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-        </g>
-      </g>
       <g data-status="open">
         <g id="track-7" data-name="track">
           <path id="Line-14" d="M596.869 994.82L600.079 991.31C600.821 990.503 601.225 989.443 601.208 988.347C601.192 987.251 600.755 986.204 599.989 985.42L557.499 942" stroke="#D0AB4F" stroke-width="4" stroke-miterlimit="10"></path>
@@ -1842,165 +625,10 @@ export const TransitMapSVG = () => (
         </g>
 
       </g>
-      <g id="purple-line-extension" data-status="future">
-        <g id="track-9" data-name="track">
-          <path d="M536.22,667.7v398.5a6.49,6.49,0,0,0,1.9,4.59l173.27,173.27" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-        </g>
-        <g id="station_PP17" data-name="station" data-station-id="PP17">
-          <g id="label-en-184" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(518.65 639.5)" font-size="6" fill="#424143">Parliament House</text> </g>
-          <g id="label-th-184" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(518.65 639.5)" font-size="6" fill="#424143">รัฐสภา</text> </g>
-          <g id="station-path-184" data-name="station-path">
-            <circle cx="510.29" cy="642.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP17"></circle>
-          </g>
-        </g>
-        <g id="station_PP18" data-name="station" data-station-id="PP18">
-          <g id="label-en-185" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(518.65 672.91)" font-size="6" fill="#424143">Sri Yan</text> </g>
-          <g id="label-th-185" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(518.65 672.91)" font-size="6" fill="#424143">ศรีย่าน</text> </g>
-          <g id="station-path-185" data-name="station-path">
-            <circle cx="510.29" cy="676.4" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP18"></circle>
-          </g>
-        </g>
-        <g id="station_PP19" data-name="station" data-station-id="PP19">
-          <g id="label-en-186" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(521.61 705.65)" font-size="6" fill="#424143">Vajira Hospital</text> </g>
-          <g id="label-th-186" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(518.65 705.65)" font-size="6" fill="#424143">วชิรพยาบาล</text> </g>
-          <g id="station-path-186" data-name="station-path">
-            <circle cx="510.29" cy="709.13" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP19"></circle>
-          </g>
-        </g>
-        <g id="station_PP20" data-name="station" data-station-id="PP20">
-          <g id="label-en-187" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(518.65 737.57)" font-size="6" fill="#424143">National Library</text> </g>
-          <g id="label-th-187" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(518.65 737.57)" font-size="6" fill="#424143">หอสมุดแห่งชาติ</text> </g>
-          <g id="station-path-187" data-name="station-path">
-            <circle cx="510.29" cy="741.05" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP20"></circle>
-          </g>
-        </g>
-        <g id="station_PP21" data-name="station" data-station-id="PP21">
-          <g id="label-en-188" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(480.52 775.08)" font-size="6" fill="#424143">Bang Khun Phrom</text> </g>
-          <g id="label-th-188" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(474.82 775.08)" font-size="6" fill="#424143">บางขุนพรหม</text> </g>
-          <g id="station-path-188" data-name="station-path">
-            <circle cx="510.29" cy="778.56" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP21"></circle>
-          </g>
-        </g>
-        <g id="station_PP22" data-name="station" data-station-id="PP22">
-          <g id="label-en-189" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(482.32 808.9)" font-size="6" fill="#424143">Phan Fa</text> </g>
-          <g id="label-th-189" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(485.84 808.9)" font-size="6" fill="#424143">ผ่านฟ้า</text> </g>
-          <g id="station-path-189" data-name="station-path">
-            <circle cx="510.29" cy="812.38" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP22"></circle>
-          </g>
-        </g>
-        <g id="station_PP23" data-name="station" data-station-id="PP23">
-          <g id="label-en-190" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(481.88 857.07)" font-size="6" fill="#424143">Sam Yot</text> </g>
-          <g id="label-th-190" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(483.24 857.07)" font-size="6" fill="#424143">สามยอด</text> </g>
-          <g id="station-path-190" data-name="station-path">
-            <circle cx="510.32" cy="855.86" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP23"></circle>
-          </g>
-        </g>
-        <g id="station_PP24" data-name="station" data-station-id="PP24">
-          <g id="label-en-191" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(479.08 931.95)" font-size="6" fill="#424143">Memorial Bridge</text> </g>
-          <g id="label-th-191" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(477.02 931.95)" font-size="6" fill="#424143">สะพานพุทธ</text> </g>
-          <g id="station-path-191" data-name="station-path">
-            <circle cx="510.29" cy="935.43" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP24"></circle>
-          </g>
-        </g>
-        <g id="station_PP25" data-name="station" data-station-id="PP25">
-          <g id="label-en-192" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(468.55 979.19)" font-size="6" fill="#424143">Wong Wian Yai</text> </g>
-          <g id="label-th-192" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(476.35 979.19)" font-size="6" fill="#424143">วงเวียนใหญ่</text> </g>
-          <g id="station-path-192" data-name="station-path">
-            <circle cx="510.18" cy="983.67" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP25"></circle>
-          </g>
-        </g>
-        <g id="station_PP26" data-name="station" data-station-id="PP26">
-          <g id="label-en-193" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(534.9 1063.54)" font-size="6" fill="#424143">Sam Rae</text> </g>
-          <g id="label-th-193" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(537.26 1063.54)" font-size="6" fill="#424143">สำเหร่</text> </g>
-          <g id="station-path-193" data-name="station-path">
-            <circle cx="559.22" cy="1065.02" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP26"></circle>
-          </g>
-        </g>
-        <g id="station_PP27" data-name="station" data-station-id="PP27">
-          <g id="label-en-194" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(552.77 1079.89)" font-size="6" fill="#424143">DaoKhanong</text> </g>
-          <g id="label-th-194" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(546.04 1081.85)" font-size="6" fill="#424143">ดาวคะนอง</text> </g>
-          <g id="station-path-194" data-name="station-path">
-            <circle cx="577.57" cy="1083.38" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP27"></circle>
-          </g>
-        </g>
-        <g id="station_PP28" data-name="station" data-station-id="PP28">
-          <g id="label-en-195" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(555.01 1100.09)" font-size="6" fill="#424143">Bang Pakaeo</text> </g>
-          <g id="label-th-195" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(563.94 1100.09)" font-size="6" fill="#424143">บางปะแก้ว</text> </g>
-          <g id="station-path-195" data-name="station-path">
-            <circle cx="595.59" cy="1101.58" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP28"></circle>
-          </g>
-        </g>
-        <g id="station_PP29" data-name="station" data-station-id="PP29">
-          <g id="label-en-196" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(577.44 1118.49)" font-size="6" fill="#424143">Bang Pakok</text> </g>
-          <g id="label-th-196" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(582.67 1118.49)" font-size="6" fill="#424143">บางปะกอก</text> </g>
-          <g id="station-path-196" data-name="station-path">
-            <circle cx="614.41" cy="1120.39" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP29"></circle>
-          </g>
-        </g>
-        <g id="station_PP30" data-name="station" data-station-id="PP30">
-          <g id="label-en-197" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(590.34 1136.98)" font-size="6" fill="#424143">Yeak Pacha Uthit</text> </g>
-          <g id="label-th-197" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(590.34 1139.48)" font-size="6" fill="#424143">แยกประชาอุทิศ</text> </g>
-          <g id="station-path-197" data-name="station-path">
-            <circle cx="630.98" cy="1136.27" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP30"></circle>
-          </g>
-        </g>
-        <g id="station_PP31" data-name="station" data-station-id="PP31">
-          <g id="label-en-198" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(611.75 1156.57)" font-size="6" fill="#424143">Rat Burana</text> </g>
-          <g id="label-th-198" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(612.75 1153.57)" font-size="6" fill="#424143">ราษฎร์บูรณะ</text> </g>
-          <g id="station-path-198" data-name="station-path">
-            <circle cx="649.06" cy="1156.05" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP31"></circle>
-          </g>
-        </g>
-        <g id="station_PP32" data-name="station" data-station-id="PP32">
-          <g id="label-en-199" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(640 1169.89)" font-size="6" fill="#424143">Phra Pradaeng</text> </g>
-          <g id="label-th-199" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(634.48 1172.39)" font-size="6" fill="#424143">พระประแดง</text> </g>
-          <g id="station-path-199" data-name="station-path">
-            <circle cx="668.88" cy="1174.87" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP32"></circle>
-          </g>
-        </g>
-        <g id="station_PP33" data-name="station" data-station-id="PP33">
-          <g id="label-en-200" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(656.99 1191.75)" font-size="6" fill="#424143">Khru Nai</text> </g>
-          <g id="label-th-200" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(656.98 1191.75)" font-size="6" fill="#424143">ครุใน</text> </g>
-          <g id="station-path-200" data-name="station-path">
-            <circle cx="687.45" cy="1193.44" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-PP33"></circle>
-          </g>
-        </g>
-      </g>
+
     </g>
     <g id="mrt" data-name="train-line">
-      <g id="mrt-extension" data-status="future">
-        <g id="track-10" data-name="track">
-          <path id="Line-20" d="M110.76,969.91H230.92" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-        </g>
-        <g id="station_BL39" data-name="station" data-station-id="BL39">
-          <g id="label-en-201" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(167.96 905.24)" font-size="6" fill="#424143">Phutthamonthon Sai 2</text> </g>
-          <g id="label-th-201" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(163.55 905.24)" font-size="6" fill="#424143">พุทธมณฑลสาย 2</text> </g>
-          <g id="station-path-201" data-name="station-path">
-            <circle cx="176.29" cy="917.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BL39"></circle>
-          </g>
-        </g>
-        <g id="station_BL40" data-name="station" data-station-id="BL40">
-          <g id="label-en-202" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(138.6 904.56)" font-size="6" fill="#424143">Thawi watthana</text> </g>
-          <g id="label-th-202" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(136.3 909.63)" font-size="6" fill="#424143">ทวีวัฒนา</text> </g>
-          <g id="station-path-202" data-name="station-path">
-            <circle cx="148.1" cy="917.22" r="3.4" transform="" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BL40"></circle>
-          </g>
-        </g>
-        <g id="station_BL41" data-name="station" data-station-id="BL41">
-          <g id="station-path-203" data-name="station-path">
-            <circle cx="116.62" cy="917.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BL41"></circle>
-          </g>
-          <g id="label-en-203" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(108.29 904.56)" font-size="6" fill="#424143">Phutthamonthon Sai 3</text> </g>
-          <g id="label-th-203" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(103.88 904.56)" font-size="6" fill="#424143">พุทธมณฑลสาย 3</text> </g>
-        </g>
-        <g id="station_BL42" data-name="station" data-station-id="BL42">
-          <g id="label-en-204" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(77.84 904.56)" font-size="6" fill="#424143">Phutthamonthon Sai 4</text> </g>
-          <g id="label-th-204" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(73.42 904.89)" font-size="6" fill="#424143">พุทธมณฑลสาย 4</text> </g>
-          <g id="station-path-204" data-name="station-path">
-            <circle cx="86.16" cy="917.22" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-BL42"></circle>
-          </g>
-        </g>
-      </g>
+
       <g data-status="open">
         <g id="track-11" data-name="track">
           <path id="Line-19" d="M232,970.48H476.34a7.42,7.42,0,0,0,5.24-2.17l41.1-41.1a7.42,7.42,0,0,1,5.25-2.17H865.39a7.43,7.43,0,0,0,7.42-7.43V682.37a7.46,7.46,0,0,0-2-5.07l-80.64-86.37a7.42,7.42,0,0,0-5.42-2.35l-92.47.83a5.19,5.19,0,0,0-5.15,5.2v61.83a7.43,7.43,0,0,1-7.42,7.43H515.44a7.42,7.42,0,0,0-5.25,2.17l-78,78a7.39,7.39,0,0,0-2.18,5.25V970.48" transform="translate(-25.75 -52.38)" fill="none" stroke="#0e6494" stroke-miterlimit="10" stroke-width="4"></path>
@@ -2308,79 +936,8 @@ export const TransitMapSVG = () => (
 
     </g>
     <g id="bts-sukhumvit" data-name="train-line">
-      <g id="bts-sukhumvit-north-extension" data-status="future">
-        <g id="track-15" data-name="track">
-          <line x1="870.98" y1="138.19" x2="1037.34" y2="138.19" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></line>
-        </g>
-        <g id="station_N28" data-name="station" data-station-id="N28">
-          <g id="label-en-285" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1028 129)" font-size="6" fill="#424143">Eastern Outer Ring Road</text> </g>
-          <g id="label-th-285" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1028 129)" font-size="6" fill="#424143">วงแหวนรอบนอกตะวันออก</text> </g>
-          <g id="station-path-285" data-name="station-path">
-            <circle cx="1040.34" cy="138.19" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-N28"></circle>
-          </g>
-        </g>
-        <g id="station_N27" data-name="station" data-station-id="N27">
-          <g id="label-en-286" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(985 129)" font-size="6" fill="#424143">Khlong 5</text> </g>
-          <g id="label-th-286" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(985 129)" font-size="6" fill="#424143">คลองห้า</text> </g>
-          <g id="station-path-286" data-name="station-path">
-            <circle cx="994.34" cy="138.19" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-N27"></circle>
-          </g>
-        </g>
-        <g id="station_N26" data-name="station" data-station-id="N26">
-          <g id="label-en-287" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(936 129)" font-size="6" fill="#424143">Khlong 4</text> </g>
-          <g id="label-th-287" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(936 129)" font-size="6" fill="#424143">คลองสี่</text> </g>
-          <g id="station-path-287" data-name="station-path">
-            <circle cx="948.18" cy="138.19" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-N26"></circle>
-          </g>
-        </g>
-        <g id="station_N25" data-name="station" data-station-id="N25">
-          <g id="label-en-288" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(894 129)" font-size="6" fill="#424143">Khlong 3</text> </g>
-          <g id="label-th-288" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(894 129)" font-size="6" fill="#424143">คลองสาม</text> </g>
-          <g id="station-path-288" data-name="station-path">
-            <circle cx="906.76" cy="138.19" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-N25"></circle>
-          </g>
-        </g>
-      </g>
-      <g id="bts-sukhumvit-east-extension" data-status="future">
-        <g id="track-16" data-name="track">
-          <path id="Line-23" d="M1070 1292L1247.33 1291.9" stroke="#E0E0DF" stroke-width="2" stroke-miterlimit="10"></path>
-        </g>
-        <g id="station_E24" data-name="station" data-station-id="E24">
-          <g id="label-en-340" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1088.71 1283.17)" font-size="6" fill="#E0E0DF">Sawang Khaniwat</text> </g>
-          <g id="label-th-340" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1096.25 1283.17)" font-size="6" fill="#424143">สวางคนิวาส</text> </g>
-          <g id="station-path-340" data-name="station-path">
-            <circle cx="1111.08" cy="1291.48" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-E24"></circle>
-          </g>
-        </g>
-        <g id="station_E25" data-name="station" data-station-id="E25">
-          <g id="label-en-289" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1136.85 1283.23)" font-size="6" fill="#424143">Ancient City</text> </g>
-          <g id="label-th-289" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1138.05 1283.23)" font-size="6" fill="#424143">เมืองโบราณ</text> </g>
-          <g id="station-path-289" data-name="station-path">
-            <circle cx="1151.64" cy="1291.31" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-E25"></circle>
-          </g>
-        </g>
-        <g id="station_E26" data-name="station" data-station-id="E26">
-          <g id="label-en-290" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1164.23 1303.95)" font-size="6" fill="#424143">Srichan pradit</text> </g>
-          <g id="label-th-290" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1164.17 1303.95)" font-size="6" fill="#424143">ศรีจันทร์ประดิษฐ์</text> </g>
-          <g id="station-path-290" data-name="station-path">
-            <circle cx="1183.25" cy="1291.44" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-E26"></circle>
-          </g>
-        </g>
-        <g id="station_E27" data-name="station" data-station-id="E27">
-          <g id="label-en-291" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1206.52 1283.23)" font-size="6" fill="#424143">Bang Pu</text> </g>
-          <g id="label-th-291" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1210.73 1283.23)" font-size="6" fill="#424143">บางปู</text> </g>
-          <g id="station-path-291" data-name="station-path">
-            <circle cx="1216.43" cy="1291.98" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-E27"></circle>
-          </g>
-        </g>
-        <g id="station_E28" data-name="station" data-station-id="E28">
-          <g id="label-en-292" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(1241.48 1303.95)" font-size="6" fill="#424143">Tamru</text> </g>
-          <g id="label-th-292" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(1242.65 1303.95)" font-size="6" fill="#424143">ตำหรุ</text> </g>
-          <g id="station-path-292" data-name="station-path">
-            <circle cx="1249.27" cy="1291.65" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-E28"></circle>
-          </g>
-        </g>
-      </g>
+
+
       <g data-status="open">
         <g id="track-14" data-name="track">
           <path id="Line-22" d="M870.25 138.21H811.39C809.6 138.209 807.828 138.562 806.176 139.249C804.523 139.935 803.022 140.942 801.76 142.21L679.38 265.49C676.857 268.032 675.441 271.468 675.44 275.05V798.44C675.453 802.033 676.888 805.475 679.43 808.014C681.973 810.553 685.417 811.982 689.01 811.99H915.42C919.02 812 922.469 813.439 925.01 815.99L1032.88 923.89C1035.43 926.435 1036.87 929.887 1036.88 933.49V1278.32C1036.88 1281.92 1038.31 1285.37 1040.85 1287.91C1043.39 1290.46 1046.84 1291.89 1050.44 1291.89H1070.5" stroke="#69a543" stroke-width="4" stroke-miterlimit="10"></path>
@@ -2681,19 +1238,7 @@ export const TransitMapSVG = () => (
       </g>
     </g>
     <g id="airport-link" data-name="train-line">
-      <g id="airport-link-extension" data-status="future">
-        <g id="track-17" data-name="track">
-          <path d="M625.43,254.59V779.64a1.88,1.88,0,0,0,1.88,1.88h0l73.88.25" transform="translate(-25.75 -52.38)" fill="none" stroke="#e0e0df" stroke-miterlimit="10" stroke-width="2"></path>
-        </g>
 
-        <g id="station_A10" data-name="station" data-station-id="A10">
-          <g id="label-en-342" data-name="label-en"> <text text-rendering="geometricPrecision" transform="translate(608.49 206.11)" font-size="6" fill="#424143">Don Mueang</text> </g>
-          <g id="label-th-342" data-name="label-th"> <text text-rendering="geometricPrecision" transform="translate(608.49 206.11)" font-size="6" fill="#424143">ดอนเมือง</text> </g>
-          <g id="station-path-342" data-name="station-path">
-            <circle cx="599.61" cy="204.9" r="3.4" fill="#fff" stroke="#e0e0df" stroke-width="1.6" class="station-id-A10"></circle>
-          </g>
-        </g>
-      </g>
       <g data-status="open">
         <g id="track-18" data-name="track">
           <path id="Line-12" d="M701.19,781.77l596.32-.25a3,3,0,0,1,3,3v31.85" transform="translate(-25.75 -52.38)" fill="none" stroke="#B21617" stroke-miterlimit="10" stroke-width="4"></path>
@@ -3137,5 +1682,5 @@ export const TransitMapSVG = () => (
           </g>
 
         </g>
-      </g></g></svg></g></svg >
+      </g></g></svg ></g ></svg >
 );

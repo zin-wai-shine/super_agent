@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useOutletContext } from 'react-router-dom';
+import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
@@ -142,7 +142,7 @@ const ListingsPage = () => {
     const observerTarget = useRef(null);
 
     // Modal States
-    const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
+
     const isGoogleMapOpen = searchParams.get('view') === 'map';
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
 
@@ -187,9 +187,9 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = (isTransitModalOpen || isGoogleMapOpen || isSidebarOpen) ? 'hidden' : 'unset';
+        document.body.style.overflow = (isGoogleMapOpen || isSidebarOpen) ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isTransitModalOpen, isGoogleMapOpen, isSidebarOpen]);
+    }, [isGoogleMapOpen, isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
         const newParams = new URLSearchParams(searchParams);
@@ -258,8 +258,19 @@ const ListingsPage = () => {
             search: searchParams.get('search') || saved.search || '',
         };
     });
+
     const [searchTerm, setSearchTerm] = useState(filters.search);
-    const [stationSearch, setStationSearch] = useState('');
+
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchTerm !== filters.search) {
+                handleFilterChange('search', searchTerm);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
     // Sync URL with restored filters on mount
@@ -275,15 +286,6 @@ const ListingsPage = () => {
         if (updated) setSearchParams(params, { replace: true });
     }, []);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchTerm !== filters.search) {
-                handleFilterChange('search', searchTerm);
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -381,8 +383,11 @@ const ListingsPage = () => {
         setSearchTerm('');
         setPage(1); // Reset page
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
-        setSearchParams({});
-        setIsFilterModalOpen(false);
+        // Preserve 'view' parameter if it exists
+        const newParams = new URLSearchParams();
+        const currentView = searchParams.get('view');
+        if (currentView) newParams.set('view', currentView);
+        setSearchParams(newParams);
     };
 
     // Generate active filters list (memoized or simple var)
@@ -450,14 +455,6 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Search */}
-                <div className="space-y-2">
-                    <label className="text-sm font-bold">Search</label>
-                    <div className="relative">
-                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
-                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Type location, name..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border rounded-[3px]" />
-                    </div>
-                </div>
                 {/* Selects */}
                 <div className="space-y-4">
                     <div className="space-y-2">
@@ -482,10 +479,7 @@ const ListingsPage = () => {
                 </div>
                 {/* Buttons */}
                 <div className="space-y-4 border-t pt-6">
-                    <button onClick={() => { setIsFilterModalOpen(false); setIsTransitModalOpen(true); }} className="w-full flex justify-between items-center p-4 bg-gray-50 border rounded-[3px] font-bold">
-                        <span className="flex items-center gap-2"><MapPinIcon className="w-5 h-5" /> Open Transit Map</span>
-                        <GlobeAltIcon className="w-5 h-5 text-gray-400" />
-                    </button>
+
                     <div className="p-1 bg-gray-50 rounded-[3px] flex gap-1">
                         <button onClick={() => setViewMode('grid')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
                             <Squares2X2Icon className="w-5 h-5" /> Grid
@@ -503,12 +497,13 @@ const ListingsPage = () => {
         <div className="min-h-screen bg-gray-50 relative">
             {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
             {/* --- SIDEBAR FILTER MENU (SHARED) --- */}
-            <div className={`fixed inset-y-0 left-0 z-[70] w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="h-full flex flex-col">
+            <div className={`fixed inset-y-0 md:top-20 md:left-6 md:bottom-6 md:right-6 md:inset-y-auto left-0 z-[70] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0 visible pointer-events-auto' : '-translate-x-full md:-translate-y-full md:translate-x-0 md:opacity-0 invisible pointer-events-none'} w-full md:w-auto md:max-w-7xl md:mx-auto flex overflow-hidden md:rounded-[12px]`}>
+                {/* Left Pane: Filters */}
+                <div className="w-80 flex-shrink-0 flex flex-col border-r border-gray-100 bg-white h-full">
                     {/* Sidebar Header */}
-                    <div className="p-4 border-b flex items-center justify-between bg-primary-600 text-white">
+                    <div className="h-16 px-4 border-b flex items-center justify-between bg-primary-600 text-white flex-shrink-0">
                         <span className="font-bold text-lg">Filters & Menu</span>
-                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors md:hidden">
                             <XMarkIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -519,33 +514,30 @@ const ListingsPage = () => {
                     </div>
 
                     {/* Sidebar Footer */}
-                    <div className="p-4 border-t bg-gray-50">
-                        <div className="flex gap-3">
-                            <button onClick={clearFilters} className="px-4 py-2 bg-gray-200 rounded-[3px] font-bold text-gray-600 text-sm">Reset</button>
-                            <button
-                                onClick={() => {
-                                    setIsSidebarOpen(false);
-                                    if (isGoogleMapOpen) toggleMapView(false);
-                                }}
-                                className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-[3px] font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                            >
-                                {isGoogleMapOpen ? (
-                                    <>
-                                        <Squares2X2Icon className="w-4 h-4" />
-                                        Back to Grid
-                                    </>
-                                ) : (
-                                    "View Results"
-                                )}
-                            </button>
-                        </div>
+                    <div className="p-4 border-t bg-gray-50 flex-shrink-0 flex justify-center">
+                        <button onClick={clearFilters} className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-[3px] font-bold text-gray-600 text-sm transition-colors">Reset Filters</button>
+                    </div>
+                </div>
+
+                {/* Right Pane: Transit Map (Desktop Only) */}
+                <div className="hidden md:flex flex-1 flex-col h-full bg-gray-50 animate-fade-in relative">
+                    <div className="flex-1 relative bg-white">
+                        <TransitMapFilter
+                            onStationClick={id => {
+                                handleStationSelect(id);
+                            }}
+                            selectedStation={filters.station_id}
+                            searchable={true}
+                            showTitle={false}
+                            onClose={() => setIsSidebarOpen(false)}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Overlay for Sidebar */}
             {isSidebarOpen && (
-                <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
+                <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" />
             )}
 
             {/* --- MAP VIEW LAYOUT (FULL SCREEN) --- */}
@@ -563,7 +555,7 @@ const ListingsPage = () => {
                             {/* List View Header (Sticky) */}
                             <div className="px-5 py-3 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-primary-600 to-primary-700 z-20 sticky top-0 shadow-lg backdrop-blur-sm bg-opacity-95 h-16">
                                 {/* Left: Logo & Short Name */}
-                                <div className="flex items-center gap-3 select-none">
+                                <Link to="/" className="flex items-center gap-3 select-none hover:opacity-90 transition-opacity">
                                     <div className="bg-white/20 p-1 rounded-xl backdrop-blur-md shadow-inner transition-transform hover:scale-105 border border-white/20">
                                         <Logo className="w-8 h-8 text-white drop-shadow-md" />
                                     </div>
@@ -571,7 +563,7 @@ const ListingsPage = () => {
                                         <span className="text-xl font-black tracking-tighter text-white leading-none drop-shadow-sm">SUPER</span>
                                         <span className="text-[10px] font-bold tracking-[0.2em] text-white/90 uppercase leading-none mt-0.5 ml-0.5 drop-shadow-sm">Real Estate</span>
                                     </div>
-                                </div>
+                                </Link>
 
                                 {/* Right: Controls Group */}
                                 <div className="flex items-center gap-4">
@@ -729,14 +721,7 @@ const ListingsPage = () => {
                                     <span>Filters</span>
                                 </button>
 
-                                {/* Transit Button */}
-                                <button
-                                    onClick={() => setIsTransitModalOpen(true)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${filters.station_id ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700'}`}
-                                >
-                                    <MapPinIcon className="w-4 h-4" />
-                                    <span>Transit</span>
-                                </button>
+
 
                                 {/* View Toggles (Grid/List) */}
                                 <div className="flex items-center bg-gray-100 p-1 rounded-[3px] border border-gray-200 ml-2">
@@ -856,30 +841,12 @@ const ListingsPage = () => {
             {/* Modals */}
 
 
-            {
-                isTransitModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center md:p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsTransitModalOpen(false)} />
-                        <div className="bg-white w-full h-[100dvh] md:h-[85vh] md:max-w-5xl md:rounded-[3px] shadow-2xl relative z-10 flex flex-col overflow-hidden">
-                            <div className="p-4 border-b flex justify-between items-center bg-white/50 backdrop-blur-md">
-                                <h3 className="font-bold flex items-center gap-2"><MapPinIcon className="w-5 h-5 text-primary-600" /> Select Station</h3>
-                                <div className="flex-1 max-w-sm mx-4">
-                                    <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Search station..." className="w-full px-4 py-2 bg-gray-100 rounded-[3px] text-sm" />
-                                </div>
-                                <button onClick={() => setIsTransitModalOpen(false)} className="p-2"><XMarkIcon className="w-6 h-6" /></button>
-                            </div>
-                            <div className="flex-1 bg-white relative">
-                                <TransitMapFilter onStationClick={id => { handleStationSelect(id); setIsTransitModalOpen(false); }} selectedStation={filters.station_id} searchable={false} />
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+
 
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isTransitModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
@@ -912,16 +879,7 @@ const ListingsPage = () => {
                             <span className="text-[10px] font-black uppercase tracking-tight">Map View</span>
                         </button>
 
-                        {/* Transit Map Button */}
-                        <button
-                            onClick={() => setIsTransitModalOpen(true)}
-                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
-                        >
-                            <div className="w-8 h-8 flex items-center justify-center">
-                                <MapPinIcon className="w-6 h-6 stroke-[2.5]" />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-tight">Stations</span>
-                        </button>
+
 
                         {/* Bulging Filter Button - Submerged into the curve */}
                         <div className="absolute left-1/2 -translate-x-1/2 -top-10 w-20 h-20 flex items-center justify-center">
