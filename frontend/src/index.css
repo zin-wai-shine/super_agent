@@ -8,6 +8,7 @@
     scroll-behavior: smooth;
     font-size: 87.5%;
     /* Scale entire app down (14px base) */
+    scrollbar-color: #9ca3af40 transparent !important;
   }
 
   body {
@@ -16,20 +17,21 @@
 
   /* Custom scrollbar - Global */
   ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
+    width: 4px !important;
+    height: 4px !important;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100/50;
+    background: rgba(243, 244, 246, 0.5) !important;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary-600;
+    background: rgba(156, 163, 175, 0.4) !important;
+    border-radius: 10px !important;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-700;
+    background: rgba(107, 114, 128, 0.6) !important;
   }
 
   /* Left side scrollbar utility */
@@ -42,7 +44,7 @@
     direction: ltr;
   }
 
-  /* Specific Scrollbar - Primary Blue */
+  /* Specific Scrollbar - Neutral */
   .custom-scrollbar-primary::-webkit-scrollbar {
     width: 3px;
     height: 3px;
@@ -53,11 +55,11 @@
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-thumb {
-    @apply bg-primary-600;
+    @apply bg-gray-400/50;
   }
 
   .custom-scrollbar-primary:hover::-webkit-scrollbar-thumb {
-    @apply bg-primary-700;
+    @apply bg-gray-500/50;
   }
 }
 
@@ -76,7 +78,7 @@
 
   /* Premium button */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-[3px] shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 hover:from-primary-500 hover:to-primary-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-[3px] shadow-lg shadow-primary-500 hover:shadow-xl hover:shadow-primary-500 hover:from-primary-500 hover:to-primary-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
   .btn-secondary {

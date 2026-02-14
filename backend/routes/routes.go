@@ -144,6 +144,15 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 					appointments.PUT("/:id", appointmentController.UpdateAppointmentStatus)
 					appointments.DELETE("/:id", appointmentController.DeleteAppointment)
 				}
+
+				// User management (Agent only)
+				users := agent.Group("/users")
+				users.Use(middleware.RoleMiddleware(models.RoleAgent))
+				{
+					users.GET("", agentController.GetUsers)
+					users.PUT("/:id/toggle", agentController.ToggleUserStatus)
+					users.DELETE("/:id", agentController.DeleteUser)
+				}
 			}
 
 			// Upload routes

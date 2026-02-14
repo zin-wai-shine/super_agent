@@ -17,18 +17,19 @@ const (
 
 // User represents a user in the system
 type User struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	Email        string         `gorm:"uniqueIndex;not null" json:"email"`
-	PasswordHash string         `gorm:"not null" json:"-"`
-	FirstName    string         `gorm:"size:100" json:"first_name"`
-	LastName     string         `gorm:"size:100" json:"last_name"`
-	Role         string         `gorm:"size:20;not null;default:'public'" json:"role"`
-	AgentID      *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"`
-	Agent        *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
-	IsActive     bool           `gorm:"default:true" json:"is_active"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                    uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Email                 string         `gorm:"uniqueIndex;not null" json:"email"`
+	PasswordHash          string         `gorm:"not null" json:"-"`
+	FirstName             string         `gorm:"size:100" json:"first_name"`
+	LastName              string         `gorm:"size:100" json:"last_name"`
+	Role                  string         `gorm:"size:20;not null;default:'public'" json:"role"`
+	AgentID               *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"`
+	Agent                 *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	IsActive              bool           `gorm:"default:true" json:"is_active"`
+	LateCancellationCount int            `gorm:"default:0" json:"late_cancellation_count"`
+	CreatedAt             time.Time      `json:"created_at"`
+	UpdatedAt             time.Time      `json:"updated_at"`
+	DeletedAt             gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // Agent represents a real estate agent/tenant
@@ -67,19 +68,25 @@ type Agent struct {
 
 // Theme represents agent site customization
 type Theme struct {
-	ID              uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	AgentID         uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"agent_id"`
-	BackgroundColor string    `gorm:"size:20;default:'#f5f5f5'" json:"background_color"`
-	PrimaryColor    string    `gorm:"size:20;default:'#1a73e8'" json:"primary_color"`
-	SecondaryColor  string    `gorm:"size:20;default:'#34a853'" json:"secondary_color"`
-	TextColor       string    `gorm:"size:20;default:'#202124'" json:"text_color"`
-	FontFamily      string    `gorm:"size:100;default:'Inter, sans-serif'" json:"font_family"`
-	LogoURL         string    `gorm:"size:500" json:"logo_url,omitempty"`
-	HeaderText      string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
-	FooterText      string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
-	CustomCSS       string    `gorm:"type:text" json:"custom_css,omitempty"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	ID                  uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID             uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"agent_id"`
+	BackgroundColor     string    `gorm:"size:20;default:'#f5f5f5'" json:"background_color"`
+	PrimaryColor        string    `gorm:"size:20;default:'#1a73e8'" json:"primary_color"`
+	SecondaryColor      string    `gorm:"size:20;default:'#34a853'" json:"secondary_color"`
+	TextColor           string    `gorm:"size:20;default:'#202124'" json:"text_color"`
+	FontFamily          string    `gorm:"size:100;default:'Inter, sans-serif'" json:"font_family"`
+	LogoURL             string    `gorm:"size:500" json:"logo_url,omitempty"`
+	HeaderText          string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
+	FooterText          string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
+	ButtonRadius        string    `gorm:"size:50;default:'0.5rem'" json:"button_radius"` // e.g., 0, 0.25rem, 0.5rem, 9999px, or 4 values
+	CardRadius          string    `gorm:"size:50;default:'1rem'" json:"card_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
+	MenuRadius          string    `gorm:"size:50;default:'1rem'" json:"menu_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
+	ButtonGradient      bool      `gorm:"default:false" json:"button_gradient"`
+	ButtonGradientStyle string    `gorm:"size:255;default:''" json:"button_gradient_style"` // Linear gradient string
+	ShadowStyle         string    `gorm:"size:20;default:'soft'" json:"shadow_style"`       // none, soft, hard
+	CustomCSS           string    `gorm:"type:text" json:"custom_css,omitempty"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 // Domain type constants
@@ -223,21 +230,23 @@ const (
 
 // Appointment represents a property viewing appointment
 type Appointment struct {
-	ID            uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	ListingID     uuid.UUID      `gorm:"type:uuid;not null" json:"listing_id"`
-	Listing       *Listing       `gorm:"foreignKey:ListingID" json:"listing,omitempty"`
-	AgentID       uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
-	Agent         *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
-	FullName      string         `gorm:"size:200;not null" json:"full_name"`
-	Email         string         `gorm:"size:255;not null" json:"email"`
-	Phone         string         `gorm:"size:50;not null" json:"phone"`
-	PreferredDate time.Time      `gorm:"type:date;not null" json:"preferred_date"`
-	PreferredTime string         `gorm:"size:10;not null" json:"preferred_time"` // e.g. "10:00", "14:30"
-	Purpose       string         `gorm:"size:20;not null" json:"purpose"`        // rent, buy
-	Message       string         `gorm:"type:text" json:"message,omitempty"`
-	Status        string         `gorm:"size:20;not null;default:'pending'" json:"status"`
-	AgentNotes    string         `gorm:"type:text" json:"agent_notes,omitempty"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                    uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ListingID             uuid.UUID      `gorm:"type:uuid;not null" json:"listing_id"`
+	Listing               *Listing       `gorm:"foreignKey:ListingID" json:"listing,omitempty"`
+	AgentID               uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
+	Agent                 *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	FullName              string         `gorm:"size:200;not null" json:"full_name"`
+	Email                 string         `gorm:"size:255;not null" json:"email"`
+	Phone                 string         `gorm:"size:50;not null" json:"phone"`
+	PreferredDate         time.Time      `gorm:"type:date;not null" json:"preferred_date"`
+	PreferredTime         string         `gorm:"size:10;not null" json:"preferred_time"` // e.g. "10:00", "14:30"
+	Purpose               string         `gorm:"size:20;not null" json:"purpose"`        // rent, buy
+	Message               string         `gorm:"type:text" json:"message,omitempty"`
+	Status                string         `gorm:"size:20;not null;default:'pending'" json:"status"`
+	AgentNotes            string         `gorm:"type:text" json:"agent_notes,omitempty"`
+	LateCancellationCount int            `gorm:"-" json:"late_cancellation_count"`
+	IsRegistered          bool           `gorm:"-" json:"is_registered"`
+	CreatedAt             time.Time      `json:"created_at"`
+	UpdatedAt             time.Time      `json:"updated_at"`
+	DeletedAt             gorm.DeletedAt `gorm:"index" json:"-"`
 }

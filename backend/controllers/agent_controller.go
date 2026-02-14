@@ -329,6 +329,64 @@ func (ac *AgentController) UpdateSubAgent(c *gin.Context) {
 	c.JSON(http.StatusOK, subAgent)
 }
 
+// GetUsers returns all public users registered for this agent
+func (ac *AgentController) GetUsers(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var users []models.User
+	if err := ac.db.Where("agent_id = ? AND role = ?", agentID, models.RolePublic).Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// ToggleUserStatus toggles the IsActive status of a registered user
+func (ac *AgentController) ToggleUserStatus(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+	var user models.User
+	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RolePublic).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	user.IsActive = !user.IsActive
+	if err := ac.db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// DeleteUser deletes a registered user
+func (ac *AgentController) DeleteUser(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RolePublic).Delete(&models.User{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
 // GetTheme returns the agent's theme
 func (ac *AgentController) GetTheme(c *gin.Context) {
 	agentID, ok := middleware.GetAgentID(c)
@@ -398,6 +456,7 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 		PublishedListings    int64 `json:"published_listings"`
 		DraftListings        int64 `json:"draft_listings"`
 		TotalSubAgents       int64 `json:"total_sub_agents"`
+		TotalUsers           int64 `json:"total_users"`
 		TotalViews           int64 `json:"total_views"`
 		TotalAppointments    int64 `json:"total_appointments"`
 		PendingAppointments  int64 `json:"pending_appointments"`
@@ -408,6 +467,7 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 	ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, true).Count(&stats.PublishedListings)
 	ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, false).Count(&stats.DraftListings)
 	ac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agentID, models.RoleSubAgent).Count(&stats.TotalSubAgents)
+	ac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agentID, models.RolePublic).Count(&stats.TotalUsers)
 
 	// Sum view counts
 	var viewSum struct{ Total int64 }

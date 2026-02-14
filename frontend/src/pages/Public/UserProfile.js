@@ -1,6 +1,6 @@
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { UserCircleIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 
 const UserProfile = () => {
     const { user, logout } = useAuth();
@@ -10,7 +10,7 @@ const UserProfile = () => {
             <div className="max-w-md mx-auto space-y-6">
 
                 {/* Profile Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center relative overflow-hidden">
+                <Card className="p-8 text-center relative overflow-hidden rounded-3xl">
                     <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-primary-100 to-indigo-100 dark:from-primary-900/40 dark:to-indigo-900/40" />
 
                     <div className="relative">
@@ -28,31 +28,32 @@ const UserProfile = () => {
                         </p>
                         <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
                     </div>
-                </div>
+                </Card>
 
                 {/* Account Actions */}
                 <div className="space-y-4">
                     {/* Dashboard Access for Agents/Admins */}
+                    {/* Dashboard Access for Agents/Admins */}
                     {(user?.role === 'agent' || user?.role === 'super_admin' || user?.role === 'sub_agent') && (
-                        <a
-                            href={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                            className="block w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 rounded-2xl shadow-lg shadow-primary-500/30 text-center font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                            Go to Dashboard
-                        </a>
+                        <Link to={user?.role === 'super_admin' ? '/admin' : '/agent'}>
+                            <Button className="w-full bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg shadow-primary-500/30 text-sm uppercase tracking-wider py-4 rounded-2xl">
+                                Go to Dashboard
+                            </Button>
+                        </Link>
                     )}
 
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <button
+                    <Card className="rounded-3xl overflow-hidden">
+                        <Button
+                            variant="ghost"
                             onClick={logout}
-                            className="w-full flex items-center justify-between p-6 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                            className="w-full justify-between p-6 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 h-auto rounded-none"
                         >
                             <span className="font-medium flex items-center gap-3">
                                 <ArrowLeftOnRectangleIcon className="w-6 h-6" />
                                 Sign Out
                             </span>
-                        </button>
-                    </div>
+                        </Button>
+                    </Card>
                 </div>
 
             </div>

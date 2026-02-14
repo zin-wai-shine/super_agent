@@ -83,6 +83,13 @@ const AgentDashboard = () => {
             trend: `${stats?.appointments_this_week || 0} this week`,
             feature: 'appointments'
         },
+        {
+            name: 'Registered Users',
+            value: stats?.total_users || 0,
+            icon: UsersIcon,
+            iconBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+            trend: 'Direct'
+        },
     ];
 
     // Filter cards based on feature flags (SAFE VERSION)

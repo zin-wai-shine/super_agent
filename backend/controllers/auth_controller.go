@@ -3,10 +3,12 @@ package controllers
 import (
 	"net/http"
 
+	"super_real_estate/middleware"
 	"super_real_estate/models"
 	"super_real_estate/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -58,6 +60,12 @@ func (ac *AuthController) Register(c *gin.Context) {
 		return
 	}
 
+	// Associate with agent if registering through a tenant domain/subdomain
+	var agentIDPtr *uuid.UUID
+	if agentID, ok := middleware.GetAgentID(c); ok {
+		agentIDPtr = &agentID
+	}
+
 	// Create user
 	user := models.User{
 		Email:        req.Email,
@@ -65,6 +73,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		Role:         models.RolePublic,
+		AgentID:      agentIDPtr,
 		IsActive:     true,
 	}
 

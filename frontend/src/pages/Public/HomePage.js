@@ -126,7 +126,18 @@ const HomePage = () => {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-up" style={{ animationDelay: '0.7s' }}>
-                        <Link to="/listings" className="w-full sm:w-auto px-10 py-5 bg-primary-600 text-white font-bold rounded-2xl shadow-2xl shadow-primary-600/30 hover:bg-primary-700 transition-all hover:-translate-y-1.5 active:scale-[0.98] text-lg flex items-center justify-center gap-3">
+                        <Link
+                            to="/listings"
+                            className="w-full sm:w-auto px-10 py-5 text-white font-bold shadow-2xl transition-all hover:-translate-y-1.5 active:scale-[0.98] text-lg flex items-center justify-center gap-3"
+                            style={{
+                                backgroundColor: !isMainDomain && agent?.theme?.primary_color ? agent.theme.primary_color : undefined, // Fallback to class if undefined, but we need to remove bg-primary-600 class to avoid conflict? No, inline style overrides.
+                                borderRadius: !isMainDomain && agent?.theme?.button_radius ? agent.theme.button_radius : '0.3rem',
+                                backgroundImage: !isMainDomain && agent?.theme?.button_gradient
+                                    ? (agent.theme.button_gradient_style || `linear-gradient(135deg, ${agent.theme.primary_color || '#2663EB'}, ${agent.theme.secondary_color || '#34a853'})`)
+                                    : 'none',
+                                // Keep raw Tailwind classes for fallback or main domain
+                            }}
+                        >
                             {isMainDomain ? 'Get Started Free' : 'View All Properties'}
                             <ArrowRightIcon className="w-5 h-5" />
                         </Link>

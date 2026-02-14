@@ -107,12 +107,24 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
         };
     }, [onStationClick]);
 
-    // Sync selectedStation prop with marker position
+    // Sync selectedStation prop with marker position and zoom
     useEffect(() => {
+        if (!mapWrapperRef.current) return;
+        const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
+        const mapWidth = 1368;
+        const mapHeight = 1340;
+
         if (!selectedStation) {
             setMarkerPos(null);
+            // Default centered view
+            const defaultZoom = 1.2;
+            const resetPanX = (wrapperWidth - mapWidth * defaultZoom) / 2;
+            const resetPanY = (wrapperHeight - mapHeight * defaultZoom) / 2;
+            setZoom(defaultZoom);
+            setPan({ x: resetPanX, y: resetPanY });
             return;
         }
+
         if (loading || stations.length === 0) return;
 
         const container = svgContainerRef.current;
@@ -126,27 +138,15 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                 const cy = parseFloat(circle.getAttribute('cy'));
                 setMarkerPos({ x: cx, y: cy });
 
-                // Optional: Center map on selection
-                // valid zoom ranges roughly 0.2 to 2.0
-                // We'll keep current zoom if reasonable, or set default
-                const targetZoom = Math.max(zoom, 0.6);
-                const mapWidth = 1368;
-                const mapHeight = 1340;
+                // Targeted zoom on selection
+                const targetZoom = 2.5;
 
                 // Calculate pan to center the point
-                // viewport center = (containerWidth/2, containerHeight/2)
-                // point in pixels = (cx * zoom + panX, cy * zoom + panY)
-                // We want point in pixels to be center
+                const newPanX = (wrapperWidth / 2) - (cx * targetZoom);
+                const newPanY = (wrapperHeight / 2) - (cy * targetZoom);
 
-                if (mapWrapperRef.current) {
-                    const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
-
-                    const newPanX = (wrapperWidth / 2) - (cx * targetZoom);
-                    const newPanY = (wrapperHeight / 2) - (cy * targetZoom);
-
-                    setPan({ x: newPanX, y: newPanY });
-                    if (targetZoom !== zoom) setZoom(targetZoom);
-                }
+                setPan({ x: newPanX, y: newPanY });
+                setZoom(targetZoom);
             }
         }
     }, [selectedStation, loading, stations]);
@@ -270,17 +270,12 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                             </div>
                         </div>
                     )}
-
-                    {onClose && (
-                        <button onClick={onClose} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white hover:bg-red-50 text-red-500 rounded-full shadow-md border border-gray-100 flex-shrink-0 transition-all z-[120]">
-                            <XMarkIcon className="w-6 h-6" />
-                        </button>
-                    )}
                 </div>
             )}
+
             {/* Legend - Modern Pill Chips with 3px Radius & Padding */}
-            <div className="px-4">
-                <div className="mb-2 md:mb-6 flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible gap-2 px-3 py-3 md:px-1 md:py-4 bg-gray-50/30 rounded-[3px] border-b md:border border-gray-100/50 custom-scrollbar shrink-0 w-full md:w-auto -mx-0 md:mx-0">
+            <div className="px-4 relative z-[100]">
+                <div className="mb-2 md:mb-6 flex flex-wrap gap-2 px-3 py-3 md:px-0 md:py-4 bg-gray-50/30 rounded-[3px] border-b md:border-0 border-gray-100/50 w-full">
                     {[
                         { name: 'BTS Sukhumvit', color: '#7FBA00' },
                         { name: 'BTS Silom', color: '#006633' },

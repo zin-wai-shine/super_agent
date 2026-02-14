@@ -159,19 +159,28 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                     )}
 
                     {/* Listing type badge - Mobile: Small Top Left / Desktop: Standard */}
-                    <div className={`absolute top-2 left-2 md:top-4 md:left-4 text-[9px] md:text-[11px] uppercase font-black px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-[3px] shadow-sm tracking-wider z-10 ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                    <div
+                        className={`absolute top-2 left-2 md:top-4 md:left-4 text-[9px] md:text-[11px] uppercase font-black px-1.5 py-0.5 md:px-2.5 md:py-1 shadow-sm tracking-wider z-10 ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}
+                        style={{ borderRadius: 'var(--btn-radius)' }}
+                    >
                         {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                     </div>
 
                     {/* Featured badge - Desktop Only */}
                     {is_featured && (
-                        <div className="hidden md:block absolute top-4 right-4 bg-yellow-400 text-white text-[11px] uppercase font-black px-2.5 py-1 rounded-[3px] shadow-sm tracking-wider z-10">
+                        <div
+                            className="hidden md:block absolute top-4 right-4 bg-yellow-400 text-white text-[11px] uppercase font-black px-2.5 py-1 shadow-sm tracking-wider z-10"
+                            style={{ borderRadius: 'var(--btn-radius)' }}
+                        >
                             Featured
                         </div>
                     )}
 
                     {/* Date badge - Desktop Only */}
-                    <div className="hidden md:flex absolute bottom-4 left-4 bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-2 py-1 rounded-[3px] shadow-sm tracking-wider items-center gap-1.5 z-10">
+                    <div
+                        className="hidden md:flex absolute bottom-4 left-4 bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-2 py-1 shadow-sm tracking-wider items-center gap-1.5 z-10"
+                        style={{ borderRadius: 'var(--btn-radius)' }}
+                    >
                         <CalendarDaysIcon className="w-3.5 h-3.5 text-primary-500" />
                         Listed {formatRelativeTime(created_at)}
                     </div>
@@ -181,7 +190,10 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 <div className="p-3 md:p-4 flex flex-col justify-between flex-1 min-w-0 relative">
                     <div>
                         <div className="flex items-start justify-between mb-1">
-                            <span className={`hidden md:inline-block px-2 py-0.5 rounded-[3px] text-[10px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
+                            <span
+                                className={`hidden md:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}
+                                style={{ borderRadius: 'var(--btn-radius)' }}
+                            >
                                 {property_type || 'Property'}
                             </span>
                             <div className="flex items-baseline gap-1 text-primary-600">
@@ -221,8 +233,8 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                         </span>
 
                                         <span
-                                            className="px-1 py-0.5 rounded-[3px] text-[8px] md:text-[9px] font-bold text-white tabular-nums"
-                                            style={{ backgroundColor: line_color || station?.line_color || '#3b82f6' }}
+                                            className="px-1 py-0.5 text-[8px] md:text-[9px] font-bold text-white tabular-nums"
+                                            style={{ backgroundColor: line_color || station?.line_color || 'var(--primary-color)', borderRadius: 'var(--btn-radius)' }}
                                         >
                                             {station?.id || station_id}
                                         </span>
@@ -262,14 +274,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                     e.preventDefault();
                                     navigate(`/listings/${id}`);
                                 }}
-                                className="px-4 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-[3px] transition-all"
+                                className="px-4 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all"
+                                style={{ borderRadius: 'var(--btn-radius)' }}
                             >
                                 View Details
                             </button>
                             {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
                                 <button
                                     onClick={handleBookClick}
-                                    className="bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded-[3px] hover:bg-primary-700 transition-all shadow-sm"
+                                    className="bg-primary-600 text-white text-xs font-bold px-4 py-2 hover:bg-primary-700 transition-all shadow-sm"
+                                    style={{ borderRadius: 'var(--btn-radius)' }}
                                 >
                                     Book Viewing
                                 </button>
@@ -277,14 +291,15 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                         </div>
                     </div>
                 </div>
-            </Link>
+            </Link >
         );
     }
 
     return (
         <Link
             to={`/listings/${id}`}
-            className="listing-card group block bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-scale"
+            className="listing-card group block bg-white overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-scale"
+            style={{ borderRadius: 'var(--card-radius)' }}
         >
             {/* Image */}
             <div className="relative aspect-[16/10] overflow-hidden">
@@ -297,24 +312,36 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 {/* Featured badge & Date badge - Stacked Top Left */}
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                     {is_featured && (
-                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[11px] uppercase font-black px-1.5 py-0.5 rounded-[3px] shadow-lg tracking-tight">
+                        <div
+                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[11px] uppercase font-black px-1.5 py-0.5 shadow-lg tracking-tight"
+                            style={{ borderRadius: 'var(--btn-radius)' }}
+                        >
                             Featured
                         </div>
                     )}
-                    <div className="bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-[3px] shadow-sm tracking-wider flex items-center gap-1">
+                    <div
+                        className="bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-1.5 py-0.5 shadow-sm tracking-wider flex items-center gap-1"
+                        style={{ borderRadius: 'var(--btn-radius)' }}
+                    >
                         <CalendarDaysIcon className="w-3 h-3 text-primary-500" />
                         {formatRelativeTime(created_at)}
                     </div>
                 </div>
 
                 {/* Listing type badge */}
-                <div className={`absolute top-3 right-3 text-[11px] uppercase font-black px-2 py-0.5 rounded-[3px] shadow-sm ${listing_type === 'sale' ? 'bg-primary-500 text-white' : 'bg-secondary-500 text-white'
-                    }`}>
+                <div
+                    className={`absolute top-3 right-3 text-[11px] uppercase font-black px-2 py-0.5 shadow-sm ${listing_type === 'sale' ? 'bg-primary-500 text-white' : 'bg-secondary-500 text-white'
+                        }`}
+                    style={{ borderRadius: 'var(--btn-radius)' }}
+                >
                     {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                 </div>
 
                 {/* Price overlay: Light glassmorphism style */}
-                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-[3px] shadow-md border border-white/40">
+                <div
+                    className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 shadow-md border border-white/40"
+                    style={{ borderRadius: 'var(--btn-radius)' }}
+                >
                     <div className="flex items-center space-x-1.5 text-gray-900">
                         <span className="text-primary-600 font-bold text-sm">฿</span>
                         <span className="text-base font-black tracking-tight">{formatPrice(price)}</span>
@@ -328,7 +355,10 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
             <div className="p-4">
                 {/* Property type & ID */}
                 <div className="flex items-center justify-between mb-1.5">
-                    <span className={`px-1.5 py-0.5 rounded-[3px] text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}>
+                    <span
+                        className={`px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}
+                        style={{ borderRadius: 'var(--btn-radius)' }}
+                    >
                         {property_type || 'Property'}
                     </span>
                     <span className="text-[12px] text-gray-400 font-medium tabular-nums">#{id.slice(0, 5)}</span>
@@ -368,8 +398,8 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
 
                                 {/* Station ID Badge */}
                                 <span
-                                    className="px-1.5 py-0.5 rounded-[3px] text-[10px] font-bold text-white tabular-nums flex-shrink-0"
-                                    style={{ backgroundColor: line_color || station?.line_color || '#3b82f6' }}
+                                    className="px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums flex-shrink-0"
+                                    style={{ backgroundColor: line_color || station?.line_color || 'var(--primary-color)', borderRadius: 'var(--btn-radius)' }}
                                 >
                                     {station?.id || station_id}
                                 </span>
@@ -405,14 +435,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                             e.preventDefault();
                             navigate(`/listings/${id}`);
                         }}
-                        className="flex-1 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-[3px] transition-all"
+                        className="flex-1 py-3 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all"
+                        style={{ borderRadius: 'var(--btn-radius)' }}
                     >
                         View Details
                     </button>
                     {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
                         <button
                             onClick={handleBookClick}
-                            className="flex-1 py-2 bg-primary-600 text-white text-xs font-bold rounded-[3px] hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
+                            className="flex-1 py-3 bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
+                            style={{ borderRadius: 'var(--btn-radius)' }}
                         >
                             <span>Book Viewing</span>
                             <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />

@@ -22,9 +22,11 @@ import {
     ArrowPathIcon,
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
-    PlusIcon, // If needed for new appointments
+    PlusIcon,
+    CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { format, startOfDay, endOfDay, subDays, startOfMonth, subMonths, addMonths, getMonth, getYear, setMonth, setYear } from 'date-fns';
+import { format, startOfDay, endOfDay, subDays, startOfMonth, subMonths, addMonths, getMonth, getYear, setMonth, setYear, parseISO, isWithinInterval } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
@@ -85,8 +87,16 @@ const AppointmentManagement = () => {
             if (search) params.search = search;
 
             if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
-                params.date_from = format(dateRange[0].startDate, 'yyyy-MM-dd');
-                params.date_to = format(dateRange[0].endDate, 'yyyy-MM-dd');
+                try {
+                    const from = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
+                    const to = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                    if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+                        params.date_from = format(from, 'yyyy-MM-dd');
+                        params.date_to = format(to, 'yyyy-MM-dd');
+                    }
+                } catch (e) {
+                    console.error('Date range parameter error:', e);
+                }
             }
 
             const response = await appointmentApi.getAppointments(params);
@@ -225,7 +235,10 @@ const AppointmentManagement = () => {
     };
 
     const formatDate = (dateStr) => {
-        return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     const StatusBadge = ({ status }) => {
@@ -342,7 +355,7 @@ const AppointmentManagement = () => {
                                 { value: 20, label: '20' },
                                 { value: 50, label: '50' },
                             ]}
-                            value={{ value: limit, label: `${limit}` }}
+                            value={limit}
                             onChange={(val) => { setLimit(val); setPage(1); }}
                             isSearchable={false}
                             components={{
@@ -417,15 +430,28 @@ const AppointmentManagement = () => {
                                 onChange={(val) => handleDatePresetChange(val)}
                                 isSearchable={false}
                                 placeholder="Date Range"
-                                formatOptionLabel={(option) => (
-                                    <div className="flex items-center justify-between w-full">
-                                        <span>
-                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate
-                                                ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
-                                                : option.label}
-                                        </span>
-                                    </div>
-                                )}
+                                formatOptionLabel={(option) => {
+                                    if (option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate) {
+                                        try {
+                                            const start = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
+                                            const end = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                                            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                                                return (
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <span>{format(start, "MMM dd")} - {format(end, "MMM dd")}</span>
+                                                    </div>
+                                                );
+                                            }
+                                        } catch (e) {
+                                            console.error('Date formatting error:', e);
+                                        }
+                                    }
+                                    return (
+                                        <div className="flex items-center justify-between w-full">
+                                            <span>{option.label}</span>
+                                        </div>
+                                    );
+                                }}
                                 styles={{
                                     control: (base) => ({
                                         ...base,
@@ -457,7 +483,7 @@ const AppointmentManagement = () => {
                                     <div className="flex items-center gap-2">
                                         <div className="w-32">
                                             <StyledSelect
-                                                value={{ value: getMonth(shownDate || new Date()), label: format(shownDate || new Date(), 'MMMM') }}
+                                                value={getMonth(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                 onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
                                                 isSearchable={false}
@@ -466,7 +492,7 @@ const AppointmentManagement = () => {
                                         </div>
                                         <div className="w-24">
                                             <StyledSelect
-                                                value={{ value: getYear(shownDate || new Date()), label: getYear(shownDate || new Date()).toString() }}
+                                                value={getYear(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                 onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 10 }, (_, i) => { const y = new Date().getFullYear() - 5 + i; return { value: y, label: y.toString() }; })}
                                                 isSearchable={false}
@@ -477,6 +503,7 @@ const AppointmentManagement = () => {
                                     <button onClick={() => setShownDate(addMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 rounded-full"><ChevronRightIcon className="w-5 h-5" /></button>
                                 </div>
                                 <DateRange
+                                    locale={enUS}
                                     editableDateInputs={false}
                                     onChange={item => {
                                         setDateRange([item.selection]);
@@ -486,7 +513,7 @@ const AppointmentManagement = () => {
                                     }}
                                     moveRangeOnFirstSelection={false}
                                     ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
-                                    shownDate={shownDate || new Date()}
+                                    shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']}
                                 />
@@ -544,8 +571,24 @@ const AppointmentManagement = () => {
                                     {appointments.map(appointment => (
                                         <tr key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4">
-                                                <div className="font-semibold text-gray-900 dark:text-white text-sm">{appointment.full_name}</div>
-                                                <div className="text-xs text-gray-400 font-medium">{appointment.email}</div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">{appointment.full_name}</div>
+                                                        {appointment.is_registered && (
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold border border-blue-100 dark:border-blue-800" title="Registered Site User">
+                                                                <CheckCircleIcon className="w-2.5 h-2.5" />
+                                                                <span>Site User</span>
+                                                            </div>
+                                                        )}
+                                                        {appointment.late_cancellation_count >= 3 && (
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[9px] font-bold animate-pulse border border-red-200 dark:border-red-800" title={`Warning: ${appointment.late_cancellation_count} late cancellations`}>
+                                                                <ExclamationTriangleIcon className="w-2.5 h-2.5" />
+                                                                <span>Warning</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 font-medium">{appointment.email}</div>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 max-w-[200px]">
@@ -556,8 +599,22 @@ const AppointmentManagement = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{format(new Date(appointment.created_at), 'MMM dd, yyyy')}</div>
-                                                <div className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">{format(new Date(appointment.created_at), 'hh:mm a')}</div>
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {appointment.created_at ? (
+                                                        (() => {
+                                                            const d = new Date(appointment.created_at);
+                                                            return !isNaN(d.getTime()) ? format(d, 'MMM dd, yyyy') : '-';
+                                                        })()
+                                                    ) : '-'}
+                                                </div>
+                                                <div className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">
+                                                    {appointment.created_at ? (
+                                                        (() => {
+                                                            const d = new Date(appointment.created_at);
+                                                            return !isNaN(d.getTime()) ? format(d, 'hh:mm a') : '';
+                                                        })()
+                                                    ) : ''}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(appointment.preferred_date)}</div>

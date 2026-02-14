@@ -53,6 +53,7 @@ const DashboardLayout = () => {
         { name: 'Listings', href: '/dashboard/listings', icon: BuildingOfficeIcon },
         { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarDaysIcon },
         { name: 'Sub-Agents', href: '/dashboard/sub-agents', icon: UsersIcon },
+        { name: 'Users', href: '/dashboard/users', icon: UsersIcon },
         { name: 'Theme', href: '/dashboard/theme', icon: SwatchIcon },
         { name: 'Notifications', href: '/dashboard/notifications', icon: BellIcon },
         { name: 'Banners', href: '/dashboard/banners', icon: MegaphoneIcon },

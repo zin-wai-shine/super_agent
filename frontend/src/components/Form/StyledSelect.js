@@ -7,11 +7,11 @@ const getCustomStyles = (isDarkMode) => ({
         ...base,
         minHeight: '38px',
         borderRadius: '3px',
-        borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
-        boxShadow: state.isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
-        backgroundColor: state.isDisabled ? (isDarkMode ? '#2A3241' : '#f9fafb') : (isDarkMode ? '#111318' : '#ffffff'),
+        borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
+        boxShadow: state.isFocused ? '0 0 0 3px color-mix(in srgb, var(--primary-color), transparent 90%)' : 'none',
+        backgroundColor: state.isDisabled ? (isDarkMode ? '#2A3241' : '#f9fafb') : (isDarkMode ? '#111318' : '#f9fafb'),
         '&:hover': {
-            borderColor: state.isFocused ? '#3b82f6' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
+            borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
         },
         transition: 'all 0.2s ease',
         fontSize: '13px',
@@ -41,7 +41,7 @@ const getCustomStyles = (isDarkMode) => ({
         borderRadius: '3px',
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
         border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
-        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+        backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
         overflow: 'hidden',
         zIndex: 100,
         padding: '8px',
@@ -54,17 +54,16 @@ const getCustomStyles = (isDarkMode) => ({
     }),
     option: (base, state) => {
         const { data } = state;
-        let activeColor = '#3b82f6'; // Default Blue
-
+        let activeColor = 'var(--primary-color)'; // Default Blue
         if (data.value === 'pending') activeColor = '#f59e0b'; // Amber/Yellow
-        if (data.value === 'confirmed') activeColor = '#3b82f6'; // Blue
+        if (data.value === 'confirmed') activeColor = 'var(--primary-color)'; // Blue
         if (data.value === 'completed') activeColor = '#10b981'; // Green
         if (data.value === 'cancelled') activeColor = '#ef4444'; // Red
 
         return {
             ...base,
             backgroundColor: state.isSelected
-                ? (isDarkMode ? '#2563eb' : '#3b82f6')
+                ? 'var(--primary-color)'
                 : state.isFocused
                     ? (activeColor + (isDarkMode ? '40' : '20')) // Add transparency
                     : 'transparent',
@@ -95,12 +94,12 @@ const getCustomStyles = (isDarkMode) => ({
     }),
     dropdownIndicator: (base, state) => ({
         ...base,
-        color: state.isFocused ? '#3b82f6' : '#9ca3af',
+        color: state.isFocused ? 'var(--primary-color)' : '#9ca3af',
         padding: '4px',
         transition: 'transform 0.2s ease',
         transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
         '&:hover': {
-            color: '#3b82f6',
+            color: 'var(--primary-color)',
         },
     }),
     clearIndicator: (base) => ({
@@ -124,11 +123,11 @@ const getCustomStyles = (isDarkMode) => ({
     }),
     multiValueRemove: (base) => ({
         ...base,
-        color: isDarkMode ? '#60a5fa' : '#3b82f6',
+        color: isDarkMode ? '#60a5fa' : 'var(--primary-color)',
         borderRadius: '0 4px 4px 0',
         '&:hover': {
-            backgroundColor: isDarkMode ? '#383838' : '#dbeafe',
-            color: isDarkMode ? '#93c5fd' : '#1d4ed8',
+            backgroundColor: isDarkMode ? '#383838' : 'color-mix(in srgb, var(--primary-color), white 80%)',
+            color: isDarkMode ? '#93c5fd' : 'var(--primary-color)',
         },
     }),
     noOptionsMessage: (base) => ({
@@ -159,10 +158,10 @@ const customTheme = (theme) => ({
     borderRadius: 8,
     colors: {
         ...theme.colors,
-        primary: '#3b82f6',
-        primary75: '#60a5fa',
-        primary50: '#93c5fd',
-        primary25: '#eff6ff',
+        primary: 'var(--primary-color)',
+        primary75: 'color-mix(in srgb, var(--primary-color), white 25%)',
+        primary50: 'color-mix(in srgb, var(--primary-color), white 50%)',
+        primary25: 'color-mix(in srgb, var(--primary-color), white 75%)',
         danger: '#ef4444',
         dangerLight: '#fee2e2',
         neutral0: '#ffffff',
@@ -256,9 +255,9 @@ const StyledSelect = ({
             return [...acc, opt];
         }, []) || [];
 
-        // If it's a string, find the matching option
-        if (typeof value === 'string') {
-            return allOptions.find(opt => opt.value === value) || null;
+        // If it's a string or number, find the matching option
+        if (typeof value === 'string' || typeof value === 'number') {
+            return allOptions.find(opt => opt.value === value || String(opt.value) === String(value)) || null;
         }
 
         // For multi-select with array of strings
@@ -297,13 +296,23 @@ const StyledSelect = ({
             classNamePrefix="react-select"
             formatOptionLabel={(option, { context }) => (
                 <div className="flex items-center justify-between w-full">
-                    <span>{option.label}</span>
+                    <div className="flex items-center gap-2">
+                        {option.line_name && context === 'menu' && (
+                            <span
+                                className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-bold text-white uppercase whitespace-nowrap"
+                                style={{ backgroundColor: option.line_color || 'var(--primary-color)' }}
+                            >
+                                {option.line_name}
+                            </span>
+                        )}
+                        <span>{option.label}</span>
+                    </div>
                     {context === 'menu' && selectValue && (
                         Array.isArray(selectValue)
                             ? selectValue.some(sv => sv.value === option.value)
                             : selectValue.value === option.value
                     ) && (
-                            <span className="ml-2 text-white">✓</span>
+                            <span className="ml-2 text-primary-600 font-bold">✓</span>
                         )}
                 </div>
             )}

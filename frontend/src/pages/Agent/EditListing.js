@@ -19,6 +19,7 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { format, addMonths, subMonths, getYear, getMonth, setYear, setMonth } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 
 const availabilityOptions = [
     { value: 'ready', label: '✅ Ready to Move In' },
@@ -95,18 +96,20 @@ const EditListing = () => {
         stations.forEach((station) => {
             const lineName = station.line_name || station.LineName || 'Other';
             if (!lineGroups[lineName]) {
-                lineGroups[lineName] = [];
+                lineGroups[lineName] = {
+                    label: lineName,
+                    options: []
+                };
             }
-            lineGroups[lineName].push({
+            lineGroups[lineName].options.push({
                 value: station.id || station.ID,
                 label: `${station.id || station.ID} - ${station.name_en || station.NameEN}`,
+                line_name: lineName,
+                line_color: station.line_color || station.LineColor
             });
         });
 
-        return Object.entries(lineGroups).map(([line, options]) => ({
-            label: line,
-            options,
-        }));
+        return Object.values(lineGroups);
     }, [stations]);
 
     const fetchData = useCallback(async () => {
@@ -537,10 +540,7 @@ const EditListing = () => {
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-32">
                                                         <StyledSelect
-                                                            value={{
-                                                                value: getMonth(shownDate),
-                                                                label: format(shownDate, 'MMMM')
-                                                            }}
+                                                            value={getMonth(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                             onChange={(val) => setShownDate(setMonth(shownDate, val))}
                                                             options={Array.from({ length: 12 }, (_, i) => ({
                                                                 value: i,
@@ -563,10 +563,7 @@ const EditListing = () => {
                                                     </div>
                                                     <div className="w-28">
                                                         <StyledSelect
-                                                            value={{
-                                                                value: getYear(shownDate),
-                                                                label: getYear(shownDate).toString()
-                                                            }}
+                                                            value={getYear(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                             onChange={(val) => setShownDate(setYear(shownDate, val))}
                                                             options={Array.from({ length: 10 }, (_, i) => {
                                                                 const year = new Date().getFullYear() + i;
@@ -599,6 +596,7 @@ const EditListing = () => {
                                             </div>
 
                                             <DateRange
+                                                locale={enUS}
                                                 editableDateInputs={false}
                                                 showDateDisplay={false}
                                                 onChange={(item) => {
@@ -613,7 +611,7 @@ const EditListing = () => {
                                                     endDate: availabilityDate,
                                                     key: 'selection'
                                                 }]}
-                                                shownDate={shownDate}
+                                                shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                                 showMonthAndYearPickers={false}
                                                 rangeColors={['#3b82f6']}
                                                 minDate={new Date()}

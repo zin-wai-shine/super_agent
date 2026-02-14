@@ -154,6 +154,15 @@ func (ac *AppointmentController) GetAppointments(c *gin.Context) {
 		return
 	}
 
+	// Populate LateCancellationCount and IsRegistered for each appointment
+	for i := range appointments {
+		var user models.User
+		if err := ac.db.Where("TRIM(LOWER(email)) = ?", strings.TrimSpace(strings.ToLower(appointments[i].Email))).First(&user).Error; err == nil {
+			appointments[i].LateCancellationCount = user.LateCancellationCount
+			appointments[i].IsRegistered = true
+		}
+	}
+
 	// Calculate global stats for this agent (not affected by current filters)
 	type GlobalStats struct {
 		Pending   int64 `json:"pending"`
@@ -196,6 +205,13 @@ func (ac *AppointmentController) GetAppointment(c *gin.Context) {
 		return
 	}
 
+	// Populate LateCancellationCount and IsRegistered
+	var user models.User
+	if err := ac.db.Where("TRIM(LOWER(email)) = ?", strings.TrimSpace(strings.ToLower(appointment.Email))).First(&user).Error; err == nil {
+		appointment.LateCancellationCount = user.LateCancellationCount
+		appointment.IsRegistered = true
+	}
+
 	c.JSON(http.StatusOK, appointment)
 }
 
@@ -236,6 +252,16 @@ func (ac *AppointmentController) UpdateAppointmentStatus(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status. Must be: pending, confirmed, completed, or cancelled"})
 			return
 		}
+
+		// Handle late cancellation warning logic
+		if appointment.Status == models.AppointmentConfirmed && input.Status == models.AppointmentCancelled {
+			// Find user by email and increment LateCancellationCount
+			var user models.User
+			if err := ac.db.Where("TRIM(LOWER(email)) = ?", strings.TrimSpace(strings.ToLower(appointment.Email))).First(&user).Error; err == nil {
+				ac.db.Model(&user).Update("late_cancellation_count", user.LateCancellationCount+1)
+			}
+		}
+
 		appointment.Status = input.Status
 	}
 

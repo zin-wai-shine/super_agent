@@ -32,6 +32,7 @@ import EmptyState from '../../components/Common/EmptyState';
 import { getMediaUrl } from '../../utils/media';
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, isWithinInterval, parseISO, subDays, startOfMonth } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
@@ -357,10 +358,7 @@ const AgentListings = () => {
                                 { value: 20, label: '20' },
                                 { value: 50, label: '50' },
                             ]}
-                            value={{
-                                value: table.getState().pagination.pageSize,
-                                label: `${table.getState().pagination.pageSize}`
-                            }}
+                            value={table.getState().pagination.pageSize}
                             onChange={(val) => table.setPageSize(val)}
                             isSearchable={false}
                             components={{
@@ -402,7 +400,7 @@ const AgentListings = () => {
                                 { value: 'published', label: 'Published' },
                                 { value: 'draft', label: 'Draft' },
                             ]}
-                            value={{ value: statusFilter, label: statusFilter === 'all' ? 'All Status' : (statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)) }}
+                            value={statusFilter}
                             onChange={(val) => setStatusFilter(val)}
                             isSearchable={false}
                             placeholder="Status"
@@ -436,15 +434,28 @@ const AgentListings = () => {
                                 onChange={(val) => handleDatePresetChange(val)}
                                 isSearchable={false}
                                 placeholder="Date Range"
-                                formatOptionLabel={(option) => (
-                                    <div className="flex items-center justify-between w-full">
-                                        <span>
-                                            {option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate
-                                                ? `${format(dateRange[0].startDate, "MMM dd")} - ${format(dateRange[0].endDate, "MMM dd")}`
-                                                : option.label}
-                                        </span>
-                                    </div>
-                                )}
+                                formatOptionLabel={(option) => {
+                                    if (option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate) {
+                                        try {
+                                            const start = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
+                                            const end = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                                            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                                                return (
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <span>{format(start, "MMM dd")} - {format(end, "MMM dd")}</span>
+                                                    </div>
+                                                );
+                                            }
+                                        } catch (e) {
+                                            console.error('Date formatting error:', e);
+                                        }
+                                    }
+                                    return (
+                                        <div className="flex items-center justify-between w-full">
+                                            <span>{option.label}</span>
+                                        </div>
+                                    );
+                                }}
                                 styles={{
                                     control: (base) => ({
                                         ...base,
@@ -484,10 +495,7 @@ const AgentListings = () => {
                                     <div className="flex items-center gap-2">
                                         <div className="w-32">
                                             <StyledSelect
-                                                value={{
-                                                    value: getMonth(shownDate || new Date()),
-                                                    label: format(shownDate || new Date(), 'MMMM')
-                                                }}
+                                                value={getMonth(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                 onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({
                                                     value: i,
@@ -511,10 +519,7 @@ const AgentListings = () => {
                                         </div>
                                         <div className="w-28">
                                             <StyledSelect
-                                                value={{
-                                                    value: getYear(shownDate || new Date()),
-                                                    label: getYear(shownDate || new Date()).toString()
-                                                }}
+                                                value={getYear(shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date())}
                                                 onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 10 }, (_, i) => {
                                                     const year = new Date().getFullYear() - 5 + i;
@@ -547,6 +552,7 @@ const AgentListings = () => {
                                 </div>
 
                                 <DateRange
+                                    locale={enUS}
                                     editableDateInputs={true}
                                     onChange={item => {
                                         setDateRange([item.selection]);
@@ -555,7 +561,7 @@ const AgentListings = () => {
                                     }}
                                     moveRangeOnFirstSelection={false}
                                     ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
-                                    shownDate={shownDate}
+                                    shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']} // primary-500
                                 />

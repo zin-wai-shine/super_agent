@@ -29,6 +29,10 @@ import { HeartIcon as HeartSolidIcon, CheckBadgeIcon } from '@heroicons/react/24
 import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
 import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
@@ -298,8 +302,8 @@ const ListingDetailPage = () => {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Property not found</h2>
                     <p className="text-gray-500 mb-4">This property may have been removed or is unavailable.</p>
-                    <Link to="/listings" className="btn-primary">
-                        Browse Listings
+                    <Link to="/listings">
+                        <Button>Browse Listings</Button>
                     </Link>
                 </div>
             </div>
@@ -330,13 +334,14 @@ const ListingDetailPage = () => {
         <div key={id} className="min-h-screen bg-white animate-in fade-in duration-500">
             {/* Back button - Modern Floating style for mobile */}
             <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 md:pt-6 md:pb-4 pointer-events-none">
-                <Link
-                    to="/listings"
-                    className="inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 text-white rounded-2xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-xl hover:-translate-y-0.5 transition-all group pointer-events-auto active:scale-95"
-                >
-                    <ArrowLeftIcon className="w-5 h-5 md:mr-2 group-hover:-translate-x-1 transition-transform" />
-                    <span className="hidden md:inline font-bold text-sm">Back to listings</span>
-                </Link>
+                <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 md:pt-6 md:pb-4 pointer-events-none">
+                    <Link to="/listings">
+                        <Button className="pointer-events-auto shadow-lg shadow-primary-600/20 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 rounded-2xl md:px-4 md:py-2.5 px-3 py-2">
+                            <ArrowLeftIcon className="w-5 h-5 md:mr-2 group-hover:-translate-x-1 transition-transform" />
+                            <span className="hidden md:inline font-bold text-sm">Back to listings</span>
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -352,9 +357,9 @@ const ListingDetailPage = () => {
                                     </h1>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold bg-gray-50/50 border border-gray-100 px-2 py-1 rounded-lg">
+                                    <Badge variant="neutral" className="border border-gray-100 px-2 py-1 rounded-lg">
                                         ID: {listing.id?.slice(0, 8)}...
-                                    </span>
+                                    </Badge>
                                 </div>
                             </div>
 
@@ -377,17 +382,16 @@ const ListingDetailPage = () => {
 
                             {/* Confirmed Button & Book a Viewing */}
                             <div className="flex flex-wrap gap-3">
-                                <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide">
+                                <Button variant="success" className="text-sm tracking-wide">
                                     <CheckBadgeIcon className="w-5 h-5 mr-2" />
                                     Confirmed Available Today
-                                </button>
+                                </Button>
                                 {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
-                                    <Link
-                                        to={`/listings/${listing.id}/book`}
-                                        className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors text-sm tracking-wide hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
-                                    >
-                                        <CalendarDaysIcon className="w-5 h-5 mr-2" />
-                                        Book a Viewing
+                                    <Link to={`/listings/${listing.id}/book`}>
+                                        <Button className="text-sm tracking-wide shadow-none hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
+                                            <CalendarDaysIcon className="w-5 h-5 mr-2" />
+                                            Book a Viewing
+                                        </Button>
                                     </Link>
                                 )}
                             </div>
@@ -534,14 +538,12 @@ const ListingDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Badges Overlay (Common) */}
                             <div className="absolute top-4 left-4 flex space-x-2 pointer-events-none">
-                                <span className={`badge ${listing.listing_type === 'sale' ? 'bg-primary-500' : 'bg-secondary-500'
-                                    } text-white shadow-sm`}>
+                                <Badge variant={listing.listing_type === 'sale' ? 'primary' : 'secondary'} className="shadow-sm">
                                     For {listing.listing_type === 'sale' ? 'Sale' : 'Rent'}
-                                </span>
+                                </Badge>
                                 {listing.is_featured && (
-                                    <span className="badge bg-yellow-500 text-white shadow-sm">Featured</span>
+                                    <Badge variant="warning" className="shadow-sm">Featured</Badge>
                                 )}
                             </div>
 
@@ -571,7 +573,7 @@ const ListingDetailPage = () => {
                             {/* Features */}
                             {/* Features */}
                             {/* Features Grid */}
-                            <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden mb-8 mt-8 shadow-sm">
+                            <Card className="rounded-3xl overflow-hidden mb-8 mt-8 shadow-sm border-gray-100">
                                 <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
                                     {/* Row 1 */}
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
@@ -633,7 +635,7 @@ const ListingDetailPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Card>
 
 
 
@@ -701,9 +703,10 @@ const ListingDetailPage = () => {
                                                                     })}
                                                                 </div>
                                                                 {amenities.length > 4 && (
-                                                                    <button
+                                                                    <Button
+                                                                        variant="ghost"
                                                                         onClick={() => setShowAllAmenities(!showAllAmenities)}
-                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group"
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group p-0 hover:bg-transparent"
                                                                     >
                                                                         {showAllAmenities ? (
                                                                             <>
@@ -714,7 +717,7 @@ const ListingDetailPage = () => {
                                                                                 See more ({amenities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
                                                                             </>
                                                                         )}
-                                                                    </button>
+                                                                    </Button>
                                                                 )}
                                                             </div>
                                                         )}
@@ -736,9 +739,10 @@ const ListingDetailPage = () => {
                                                                     })}
                                                                 </div>
                                                                 {facilities.length > 4 && (
-                                                                    <button
+                                                                    <Button
+                                                                        variant="ghost"
                                                                         onClick={() => setShowAllFacilities(!showAllFacilities)}
-                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group"
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group p-0 hover:bg-transparent"
                                                                     >
                                                                         {showAllFacilities ? (
                                                                             <>
@@ -749,7 +753,7 @@ const ListingDetailPage = () => {
                                                                                 See more ({facilities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
                                                                             </>
                                                                         )}
-                                                                    </button>
+                                                                    </Button>
                                                                 )}
                                                             </div>
                                                         )}

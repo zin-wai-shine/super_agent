@@ -7,7 +7,10 @@ import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
 import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
-import axios from 'axios';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 
 import {
     FunnelIcon,
@@ -56,8 +59,10 @@ const bedroomOptions = [
 
 const formatPrice = (p) => p ? `${parseInt(p).toLocaleString()}` : '';
 
-const getSelectedOption = (options, value) =>
-    options.find(opt => opt.value === value) || null;
+const getSelectedOption = (options, value) => {
+    if (!options || !value) return null;
+    return options.find(opt => opt.value === value) || null;
+};
 
 // Skeleton Component moved outside for stability
 const ListingSkeleton = ({ viewMode = 'grid' }) => {
@@ -65,7 +70,7 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
 
     if (isListView) {
         return (
-            <div className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row animate-pulse h-[130px] md:h-[220px]">
+            <Card className="flex flex-row animate-pulse h-[130px] md:h-[220px]" style={{ borderRadius: 'var(--card-radius)' }}>
                 {/* Image Section Skeleton */}
                 <div className="w-[130px] md:w-[40%] h-full bg-gray-200 flex-none relative">
                     {/* Type Badge Skeleton */}
@@ -90,12 +95,12 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
                         <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
                     </div>
                 </div>
-            </div>
+            </Card>
         );
     }
 
     return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+        <Card className="animate-pulse" style={{ borderRadius: 'var(--card-radius)' }}>
             {/* Image Skeleton */}
             <div className="aspect-[16/10] bg-gray-200 w-full relative">
                 {/* Badge Top Left */}
@@ -126,7 +131,7 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
                     <div className="h-5 w-8 bg-gray-100 rounded-[3px]" />
                 </div>
             </div>
-        </div>
+        </Card>
     );
 };
 
@@ -222,7 +227,27 @@ const ListingsPage = () => {
         const fetchStations = async () => {
             try {
                 const response = await publicApi.getStations();
-                setStations(response.data.stations || []);
+                const fetchedStations = response.data.stations || [];
+
+                // Group stations for StyledSelect
+                const groups = fetchedStations.reduce((acc, station) => {
+                    const line = station.line_name || 'Other';
+                    if (!acc[line]) {
+                        acc[line] = {
+                            label: line,
+                            options: []
+                        };
+                    }
+                    acc[line].options.push({
+                        value: station.id,
+                        label: station.name_en,
+                        line_name: station.line_name,
+                        line_color: station.line_color
+                    });
+                    return acc;
+                }, {});
+
+                setStations(Object.values(groups));
             } catch (error) {
                 console.error('Failed to fetch stations:', error);
             }
@@ -273,18 +298,26 @@ const ListingsPage = () => {
     }, [searchTerm]);
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
-    // Sync URL with restored filters on mount
+    // Sync filters with URL search params
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
-        let updated = false;
-        Object.keys(filters).forEach(key => {
-            if (filters[key] && !params.has(key)) {
-                params.set(key, filters[key]);
-                updated = true;
-            }
-        });
-        if (updated) setSearchParams(params, { replace: true });
-    }, []);
+        const newFilters = {
+            type: params.get('type') || '',
+            listing_type: params.get('listing_type') || '',
+            min_price: params.get('min_price') || '',
+            max_price: params.get('max_price') || '',
+            bedrooms: params.get('bedrooms') || '',
+            station_id: params.get('station_id') || '',
+            search: params.get('search') || '',
+        };
+
+        // Only update if filters have actually changed to avoid infinite loops
+        const hasChanged = Object.keys(newFilters).some(key => newFilters[key] !== filters[key]);
+        if (hasChanged) {
+            setFilters(newFilters);
+            setPage(1);
+        }
+    }, [searchParams]);
 
 
     useEffect(() => {
@@ -408,8 +441,12 @@ const ListingsPage = () => {
     if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
     if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
     if (filters.station_id) {
-        const station = stations.find(s => s.id === parseInt(filters.station_id));
-        if (station) activeFiltersList.push({ label: `Station: ${station.name_en}`, key: 'station_id' });
+        // Flatten grouped stations to find the label
+        const allStations = stations.reduce((acc, group) => {
+            return [...acc, ...group.options];
+        }, []);
+        const station = allStations.find(s => s.value === filters.station_id);
+        if (station) activeFiltersList.push({ label: `Station: ${station.label}`, key: 'station_id' });
     }
 
     // --- Render Helper: Compact Filter Content (Reusable for Sidebar/Modal) ---
@@ -417,14 +454,14 @@ const ListingsPage = () => {
         return (
             <div className="space-y-6">
                 {/* Active Filters Section */}
-                <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
+                <Card className="p-4 rounded-[3px]">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
                             <FunnelIcon className="w-4 h-4" />
                             Active Filters
                         </h3>
                         {hasActiveFilters && (
-                            <button onClick={clearFilters} className="text-sm text-red-500 font-medium hover:text-red-700">Clear All</button>
+                            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500 hover:text-red-700 p-0 h-auto">Clear All</Button>
                         )}
                     </div>
                     {hasActiveFilters ? (
@@ -449,11 +486,11 @@ const ListingsPage = () => {
                         </div>
                     )}
 
-                    <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
+                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-xs font-bold border border-primary-100 flex items-center gap-2 justify-center">
                         <CheckCircleIcon className="w-4 h-4" />
                         {total} {total === 1 ? 'Property' : 'Properties'} Found
                     </div>
-                </div>
+                </Card>
 
                 {/* Selects */}
                 <div className="space-y-4">
@@ -461,31 +498,59 @@ const ListingsPage = () => {
                         <label className="text-sm font-bold">Property Type</label>
                         <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold">Listing Type</label>
-                        <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
+                    <div className="flex gap-2">
+                        <div className="flex-1 space-y-2">
+                            <label className="text-sm font-bold">Listing Type</label>
+                            <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                            <label className="text-sm font-bold">Bedrooms</label>
+                            <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
+                        </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold">Bedrooms</label>
-                        <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
+                        <label className="text-sm font-bold">Search by Station</label>
+                        <StyledSelect
+                            options={stations}
+                            value={getSelectedOption(stations.reduce((acc, g) => [...acc, ...g.options], []), filters.station_id)}
+                            onChange={opt => handleSelectChange('station_id', opt)}
+                            placeholder="Select a BTS/MRT Station"
+                            className="w-full"
+                        />
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-bold">Price Range</label>
                         <div className="flex gap-2">
-                            <input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
-                            <input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2 p-2 bg-gray-50 border rounded-[3px]" />
+                            <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2" />
+                            <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2" />
                         </div>
                     </div>
                 </div>
                 {/* Buttons */}
                 <div className="space-y-4 border-t pt-6">
 
-                    <div className="p-1 bg-gray-50 rounded-[3px] flex gap-1">
-                        <button onClick={() => setViewMode('grid')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
-                            <Squares2X2Icon className="w-5 h-5" /> Grid
+                    <div className="p-1 bg-gray-100 rounded-[3px] flex gap-1 relative h-[52px]">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`flex-1 relative z-10 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-gray-600'}`}
+                            style={{ borderRadius: 'var(--btn-radius)' }}
+                        >
+                            <Squares2X2Icon className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.15em]">Grid View</span>
+                            {viewMode === 'grid' && (
+                                <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
+                            )}
                         </button>
-                        <button onClick={() => setViewMode('list')} className={`flex-1 py-3 rounded-[3px] font-bold flex items-center justify-center gap-2 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500'}`}>
-                            <ListBulletIcon className="w-5 h-5" /> List
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`flex-1 relative z-10 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${viewMode === 'list' ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-gray-600'}`}
+                            style={{ borderRadius: 'var(--btn-radius)' }}
+                        >
+                            <ListBulletIcon className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.15em]">List View</span>
+                            {viewMode === 'list' && (
+                                <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
+                            )}
                         </button>
                     </div>
                 </div>
@@ -497,13 +562,13 @@ const ListingsPage = () => {
         <div className="min-h-screen bg-gray-50 relative">
             {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
             {/* --- SIDEBAR FILTER MENU (SHARED) --- */}
-            <div className={`fixed inset-y-0 md:top-20 md:left-6 md:bottom-6 md:right-6 md:inset-y-auto left-0 z-[70] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0 visible pointer-events-auto' : '-translate-x-full md:-translate-y-full md:translate-x-0 md:opacity-0 invisible pointer-events-none'} w-full md:w-auto md:max-w-7xl md:mx-auto flex overflow-hidden md:rounded-[12px]`}>
+            <div className={`fixed inset-y-0 md:top-20 md:left-6 md:bottom-6 md:right-6 md:inset-y-auto left-0 z-[70] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0 visible pointer-events-auto' : '-translate-x-full md:-translate-y-full md:translate-x-0 md:opacity-0 invisible pointer-events-none'} w-full md:w-full md:max-w-7xl md:mx-auto flex overflow-hidden md:rounded-[3px]`}>
                 {/* Left Pane: Filters */}
                 <div className="w-80 flex-shrink-0 flex flex-col border-r border-gray-100 bg-white h-full">
                     {/* Sidebar Header */}
                     <div className="h-16 px-4 border-b flex items-center justify-between bg-primary-600 text-white flex-shrink-0">
                         <span className="font-bold text-lg">Filters & Menu</span>
-                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors md:hidden">
+                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
                             <XMarkIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -515,7 +580,7 @@ const ListingsPage = () => {
 
                     {/* Sidebar Footer */}
                     <div className="p-4 border-t bg-gray-50 flex-shrink-0 flex justify-center">
-                        <button onClick={clearFilters} className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-[3px] font-bold text-gray-600 text-sm transition-colors">Reset Filters</button>
+                        <Button onClick={clearFilters} variant="primary" className="w-full">Reset Filters</Button>
                     </div>
                 </div>
 
@@ -686,13 +751,13 @@ const ListingsPage = () => {
                         <div className="flex items-center justify-between gap-4">
 
                             {/* Search Section */}
-                            <div className="flex-1 max-w-2xl flex items-center bg-gray-100/80 hover:bg-gray-100 rounded-[3px] px-4 py-2.5 transition-colors group focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-500 border border-transparent">
-                                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors mr-3" />
-                                <input
-                                    className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-sm font-medium text-gray-900 placeholder-gray-500 p-0 shadow-none focus:border-none"
-                                    placeholder="Search location, name..."
+                            <div className="flex-1 max-w-2xl">
+                                <Input
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search location, name..."
+                                    className="w-full shadow-sm"
+                                    style={{ height: '42px' }} // Match design
                                 />
                             </div>
 
@@ -705,21 +770,22 @@ const ListingsPage = () => {
                                 </div>
 
                                 {/* Filters Button */}
-                                <button
+                                <Button
+                                    variant="outline"
                                     onClick={() => setIsSidebarOpen(true)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all border ${hasActiveFilters ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700'}`}
+                                    className={`gap-2 ${hasActiveFilters ? 'bg-[var(--primary-color)] text-white' : ''}`}
                                 >
                                     <div className="relative">
                                         <FunnelIcon className="w-4 h-4" />
                                         {hasActiveFilters && (
                                             <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                                             </span>
                                         )}
                                     </div>
                                     <span>Filters</span>
-                                </button>
+                                </Button>
 
 
 
@@ -727,13 +793,15 @@ const ListingsPage = () => {
                                 <div className="flex items-center bg-gray-100 p-1 rounded-[3px] border border-gray-200 ml-2">
                                     <button
                                         onClick={() => setViewMode('grid')}
-                                        className={`p-1.5 rounded-[2px] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1.5 transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        style={{ borderRadius: 'var(--btn-radius)' }}
                                     >
                                         <Squares2X2Icon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => setViewMode('list')}
-                                        className={`p-1.5 rounded-[2px] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1.5 transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                        style={{ borderRadius: 'var(--btn-radius)' }}
                                     >
                                         <ListBulletIcon className="w-4 h-4" />
                                     </button>
@@ -792,7 +860,7 @@ const ListingsPage = () => {
                                         </div>
                                     )}
 
-                                    <div className="mt-4 bg-green-50 p-2 rounded-[3px] text-green-800 text-xs font-bold border border-green-100 flex items-center gap-2 justify-center">
+                                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-xs font-bold border border-primary-100 flex items-center gap-2 justify-center">
                                         <CheckCircleIcon className="w-4 h-4" />
                                         {total} {total === 1 ? 'Property' : 'Properties'} Found
                                     </div>
@@ -846,7 +914,7 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
@@ -928,7 +996,8 @@ const ListingsPage = () => {
                             </div>
                             <button
                                 onClick={() => toggleMapView(false)}
-                                className="p-3 bg-gray-50 rounded-[20px] hover:bg-gray-100 text-gray-400 transition-all active:scale-90"
+                                className="bg-white border border-gray-200 text-gray-700 px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
+                                style={{ borderRadius: 'var(--btn-radius)' }}
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>

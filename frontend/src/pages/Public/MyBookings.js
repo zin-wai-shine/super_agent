@@ -11,7 +11,8 @@ import {
     CheckCircleIcon,
     XCircleIcon,
     ArrowRightIcon,
-    FunnelIcon
+    FunnelIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 const MyBookings = () => {
@@ -99,6 +100,23 @@ const MyBookings = () => {
                     </div>
                 </div>
 
+                {user?.late_cancellation_count >= 3 && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-[3px] mb-10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-start gap-4">
+                            <div className="shrink-0 bg-red-100 p-2 rounded-full">
+                                <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-red-900 leading-none mb-2">Process Warning: Appointment Cancellations</h3>
+                                <p className="text-red-700 font-bold leading-relaxed">
+                                    Our system has detected multiple cancellations for confirmed appointments (Total: {user.late_cancellation_count}).
+                                    Repeated late cancellations may lead to account restrictions. Please ensure you can attend before booking, or contact support if you need assistance.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <div className="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-[3px] mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
                         <XCircleIcon className="w-6 h-6 shrink-0" />
@@ -151,8 +169,8 @@ const MyBookings = () => {
                                         {/* Glassmorphic Status Badge */}
                                         <div className="absolute top-4 left-4">
                                             <div className={`backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/20 text-[11px] font-black uppercase tracking-wider flex items-center gap-2 shadow-sm ${appointment.status === 'confirmed' ? 'bg-emerald-500/80 text-white' :
-                                                    appointment.status === 'cancelled' ? 'bg-rose-500/80 text-white' :
-                                                        'bg-amber-500/80 text-white'
+                                                appointment.status === 'cancelled' ? 'bg-rose-500/80 text-white' :
+                                                    'bg-amber-500/80 text-white'
                                                 }`}>
                                                 <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
                                                 {appointment.status}
