@@ -20,9 +20,12 @@ import {
     BuildingOfficeIcon,
 } from '@heroicons/react/24/outline'; // Outline for generic icons
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
+import Button from '../../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 const BookAppointment = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -158,7 +161,7 @@ const BookAppointment = () => {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div></div>;
     if (!listing) return <div className="p-10 text-center">Listing not found</div>;
 
     const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -167,13 +170,19 @@ const BookAppointment = () => {
     if (success && bookedAppointment) {
         return (
             <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
-                <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100">
+                <div className="max-w-md w-full bg-white rounded-[var(--btn-radius)] shadow-xl p-8 text-center border border-gray-100">
                     <div className="w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircleIcon className="w-10 h-10 text-secondary-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Appointment Confirmed!</h2>
                     <p className="text-gray-500 mb-8">We've sent the details to {form.email}</p>
-                    <Link to="/listings" className="block w-full py-3 bg-primary-600 text-white rounded-[3px] font-bold hover:bg-primary-700 transition">Return to Listings</Link>
+                    <Button
+                        onClick={() => navigate('/listings')}
+                        variant="primary"
+                        className="w-full font-bold"
+                    >
+                        Return to Listings
+                    </Button>
                 </div>
             </div>
         );
@@ -184,7 +193,7 @@ const BookAppointment = () => {
             <div className="max-w-7xl mx-auto">
                 {/* Back Link */}
                 <div className="mb-6">
-                    <Link to={`/listings/${id}`} className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors group">
+                    <Link to={`/listings/${id}`} className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-gray-900 transition-all py-2 px-4 rounded-lg hover:bg-gray-100/50 active:scale-95 group">
                         <ArrowLeftIcon className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                         Back to Property
                     </Link>
@@ -198,13 +207,14 @@ const BookAppointment = () => {
                         {/* 1. Purpose Selector (Minimal Design) */}
                         {/* Logic: If 'both', show a sleek segmented control. If single, show a clean badge/header combo. */}
                         {listing.listing_type === 'both' ? (
-                            <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-6">
+                            <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">I want to</h3>
-                                <div className="bg-gray-100 p-1 rounded-[3px] flex items-center">
+                                <div className="bg-gray-100 p-1 rounded-[var(--btn-radius)] flex items-center">
                                     <button
                                         type="button"
                                         onClick={() => setForm(prev => ({ ...prev, purpose: 'rent' }))}
-                                        className={`flex-1 py-2 rounded-[3px] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'rent' ? 'bg-white text-primary-600 shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                        className={`flex-1 py-2 rounded-[var(--btn-radius)] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'rent' ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                        style={form.purpose === 'rent' ? { color: 'var(--primary-color)' } : {}}
                                     >
                                         <HomeIcon className="w-4 h-4" />
                                         For Rent
@@ -212,7 +222,8 @@ const BookAppointment = () => {
                                     <button
                                         type="button"
                                         onClick={() => setForm(prev => ({ ...prev, purpose: 'buy' }))}
-                                        className={`flex-1 py-2 rounded-[3px] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'buy' ? 'bg-white text-primary-600 shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                        className={`flex-1 py-2 rounded-[var(--btn-radius)] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'buy' ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                        style={form.purpose === 'buy' ? { color: 'var(--primary-color)' } : {}}
                                     >
                                         <BuildingOfficeIcon className="w-4 h-4" />
                                         For Buy
@@ -221,8 +232,12 @@ const BookAppointment = () => {
                             </div>
                         ) : (
                             // Single Option State (Rent only or Buy only)
-                            <div className="flex items-center gap-3 mb-2 p-4 bg-white rounded-[3px] shadow-sm border border-gray-100">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${listing.listing_type === 'rent' ? 'bg-primary-50 text-primary-600' : 'bg-secondary-50 text-secondary-600'}`}>
+                            <div className="flex items-center gap-3 mb-2 p-4 bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center`}
+                                    style={listing.listing_type === 'rent'
+                                        ? { backgroundColor: 'color-mix(in srgb, var(--primary-color), white 90%)', color: 'var(--primary-color)' }
+                                        : { backgroundColor: 'color-mix(in srgb, var(--secondary-color), white 90%)', color: 'var(--secondary-color)' }
+                                    }>
                                     {listing.listing_type === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                 </div>
                                 <div>
@@ -235,7 +250,7 @@ const BookAppointment = () => {
                         )}
 
                         {/* 2. Date & Time Selection */}
-                        <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Select Date & Time</h3>
 
                             <div className="flex flex-col md:flex-row gap-8">
@@ -274,11 +289,12 @@ const BookAppointment = () => {
                                                     className={`
                                                         w-10 h-10 mx-auto rounded-full text-sm font-semibold flex items-center justify-center transition-all
                                                         ${isSelected
-                                                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-200 scale-105'
+                                                            ? 'text-white shadow-lg'
                                                             : isPast
                                                                 ? 'text-gray-300 cursor-not-allowed'
-                                                                : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700'}
+                                                                : 'text-gray-700 hover:bg-[var(--primary-color-light)] hover:text-[var(--primary-color)]'}
                                                     `}
+                                                    style={isSelected ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
                                                     {day}
                                                 </button>
@@ -299,7 +315,8 @@ const BookAppointment = () => {
                                             <button
                                                 key={time}
                                                 onClick={() => setForm(prev => ({ ...prev, preferred_time: time }))}
-                                                className={`py-2 px-3 rounded-[3px] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-100' : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'}`}
+                                                className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]'}`}
+                                                style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                             >
                                                 {time}
                                             </button>
@@ -312,7 +329,7 @@ const BookAppointment = () => {
                                             <button
                                                 key={time}
                                                 onClick={() => setForm(prev => ({ ...prev, preferred_time: time }))}
-                                                className={`py-2 px-3 rounded-[3px] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-100' : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'}`}
+                                                className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'bg-[var(--primary-color)] text-white border-primary-600 shadow-md shadow-[var(--primary-color-light)]' : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-[var(--primary-color)]'}`}
                                             >
                                                 {time}
                                             </button>
@@ -325,7 +342,7 @@ const BookAppointment = () => {
                         </div>
 
                         {/* 3. User Details Form */}
-                        <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Your Details</h3>
                             <div className="space-y-4">
                                 <div>
@@ -334,7 +351,7 @@ const BookAppointment = () => {
                                         type="text"
                                         value={form.full_name}
                                         onChange={e => setForm({ ...form, full_name: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-[3px] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.full_name ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-primary-300'}`}
+                                        className="w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border-transparent focus:bg-white focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 placeholder-gray-400"
                                         placeholder="John Doe"
                                         autoComplete="name"
                                     />
@@ -346,7 +363,7 @@ const BookAppointment = () => {
                                             type="tel"
                                             value={form.phone}
                                             onChange={e => setForm({ ...form, phone: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-[3px] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.phone ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-primary-300'}`}
+                                            className={`w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.phone ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-[var(--primary-color)]'}`}
                                             placeholder="+66..."
                                             autoComplete="tel"
                                         />
@@ -357,7 +374,7 @@ const BookAppointment = () => {
                                             type="email"
                                             value={form.email}
                                             onChange={e => setForm({ ...form, email: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-[3px] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.email ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-primary-300'}`}
+                                            className={`w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.email ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-[var(--primary-color)]'}`}
                                             placeholder="john@example.com"
                                             autoComplete="email"
                                         />
@@ -369,7 +386,7 @@ const BookAppointment = () => {
                                         rows={3}
                                         value={form.message}
                                         onChange={e => setForm({ ...form, message: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-[3px] bg-gray-50 border-transparent focus:bg-white focus:border-primary-300 focus:ring-0 transition-all font-semibold text-gray-800 placeholder-gray-400"
+                                        className="w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border-transparent focus:bg-white focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 placeholder-gray-400"
                                         placeholder="Any special requests?"
                                     />
                                 </div>
@@ -382,13 +399,15 @@ const BookAppointment = () => {
                             )}
 
                             <div className="mt-8">
-                                <button
+                                <Button
                                     onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="w-full py-3 bg-primary-600 text-white rounded-[3px] font-bold shadow-lg shadow-primary-200/50 hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    isLoading={submitting}
+                                    variant="primary"
+                                    className="w-full font-bold shadow-lg"
+                                    style={{ boxShadow: '0 10px 20px -10px var(--primary-color)' }}
                                 >
-                                    {submitting ? 'Scheduling...' : 'Confirm Appointment'}
-                                </button>
+                                    Confirm Appointment
+                                </Button>
                             </div>
                         </div>
 
@@ -398,7 +417,7 @@ const BookAppointment = () => {
                     <div className="lg:col-span-1 space-y-6 sticky top-6">
 
                         {/* 1. Property Info Card */}
-                        <div className="bg-white rounded-[3px] shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden">
+                        <div className="bg-white rounded-[var(--btn-radius)] shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden">
                             <div className="h-48 bg-gray-100 relative group z-0">
                                 {listing.latitude && listing.longitude ? (
                                     <GoogleMapComponent
@@ -425,7 +444,7 @@ const BookAppointment = () => {
                                             style={{ backgroundImage: `url('/map-placeholder.png')` }}
                                         />
                                         <div className="absolute inset-0 bg-primary-50/50 flex items-center justify-center">
-                                            <MapPinIcon className="w-10 h-10 text-primary-600 drop-shadow-md" />
+                                            <MapPinIcon className="w-10 h-10 text-[var(--primary-color)] drop-shadow-md" />
                                         </div>
                                     </>
                                 )}
@@ -454,7 +473,7 @@ const BookAppointment = () => {
                         </div>
 
                         {/* 2. Real-time Selection Summary (REDESIGNED V2 - Flat & Cool) */}
-                        <div className="bg-white rounded-[3px] shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden relative ring-1 ring-gray-950/5">
+                        <div className="bg-white shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden relative ring-1 ring-gray-950/5" style={{ borderRadius: 'var(--btn-radius)' }}>
                             {/* Header - Sleek Dark Blue */}
                             <div className="bg-slate-900 p-6 text-white relative overflow-hidden">
                                 {/* Abstract Geometric Pattern */}
@@ -471,7 +490,7 @@ const BookAppointment = () => {
                                 </h3>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="w-14 h-14 rounded-[3px] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                    <div className="w-14 h-14 rounded-[var(--btn-radius)] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md">
                                         {form.preferred_date ? (
                                             <>
                                                 <span className="text-[10px] items-center text-white/60 uppercase font-bold tracking-wider mb-px">
@@ -502,7 +521,8 @@ const BookAppointment = () => {
                                     {/* Time Row */}
                                     <div className="flex items-center justify-between group">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-[3px] flex items-center justify-center transition-colors ${form.preferred_time ? 'bg-primary-50 text-primary-600' : 'bg-gray-50 text-gray-300'}`}>
+                                            <div className={`w-10 h-10 rounded-[var(--btn-radius)] flex items-center justify-center transition-colors ${form.preferred_time ? 'bg-[var(--primary-color-light)]' : 'bg-gray-50 text-gray-300'}`}
+                                                style={form.preferred_time ? { color: 'var(--primary-color)' } : {}}>
                                                 <ClockIcon className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -513,7 +533,7 @@ const BookAppointment = () => {
                                             </div>
                                         </div>
                                         {form.preferred_time && (
-                                            <div className="h-1.5 w-1.5 rounded-full bg-primary-500"></div>
+                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--primary-color)' }}></div>
                                         )}
                                     </div>
 
@@ -523,7 +543,7 @@ const BookAppointment = () => {
                                     {/* Purpose Row */}
                                     <div className="flex items-center justify-between group">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-[3px] bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <div className="w-10 h-10 rounded-[var(--btn-radius)] bg-emerald-50 flex items-center justify-center text-emerald-600">
                                                 {form.purpose === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                             </div>
                                             <div>
@@ -540,12 +560,12 @@ const BookAppointment = () => {
                                 {/* Status Footer */}
                                 <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
                                     {(!form.preferred_date || !form.preferred_time) ? (
-                                        <div className="flex items-center justify-center gap-2 text-gray-400 bg-gray-50 py-3 rounded-[3px] border border-gray-100 text-xs font-bold uppercase tracking-wide">
+                                        <div className="flex items-center justify-center gap-2 text-gray-400 bg-gray-50 py-3 rounded-[var(--btn-radius)] border border-gray-100 text-xs font-bold uppercase tracking-wide">
                                             <span className="w-2 h-2 rounded-full bg-gray-300"></span>
                                             Pending Selection
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-center gap-2 text-emerald-700 bg-emerald-50/50 py-3 rounded-[3px] border border-emerald-100/50 text-xs font-bold uppercase tracking-wide animate-in fade-in">
+                                        <div className="flex items-center justify-center gap-2 text-emerald-700 bg-emerald-50/50 py-3 rounded-[var(--btn-radius)] border border-emerald-100/50 text-xs font-bold uppercase tracking-wide animate-in fade-in">
                                             <CheckCircleIcon className="w-4 h-4" />
                                             Ready to Book
                                         </div>

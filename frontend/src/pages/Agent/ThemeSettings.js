@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { agentApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -14,7 +14,12 @@ import {
     UserCircleIcon,
     ChartBarIcon,
     ArrowRightOnRectangleIcon,
-    CalendarDaysIcon
+    CalendarDaysIcon,
+    Bars3Icon,
+    MagnifyingGlassIcon,
+    MapIcon,
+    TagIcon,
+    ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,7 +28,7 @@ import ModernSlider from '../../components/ui/ModernSlider';
 import ModernColorPicker from '../../components/ui/ModernColorPicker';
 import ModernSwitch from '../../components/ui/ModernSwitch';
 import ModernCornerRadiusInput from '../../components/ui/ModernCornerRadiusInput';
-import ModernGradientPicker from '../../components/ui/ModernGradientPicker';
+import ModernShadowPicker from '../../components/ui/ModernShadowPicker';
 
 const ThemeSettings = () => {
     const { user } = useAuth();
@@ -33,10 +38,10 @@ const ThemeSettings = () => {
     const [activeTab, setActiveTab] = useState('brand');
     const logoInputRef = useRef(null);
 
-    const { register, control, handleSubmit, reset, watch, setValue } = useForm({
+    const { register, control, handleSubmit, reset, setValue } = useForm({
         mode: 'onChange'
     });
-    const watchAll = watch();
+    const watchAll = useWatch({ control });
 
     const fontOptions = [
         { value: 'Inter, sans-serif', label: 'Inter' },
@@ -60,16 +65,30 @@ const ThemeSettings = () => {
         button_radius: '0.3rem',
         card_radius: '0.3rem',
         menu_radius: '0.3rem',
+        menu_background_color: '#ffffff',
         button_gradient: false,
-        button_gradient_style: '',
-        shadow_style: 'soft'
+        button_gradient_color2: '#34a853',
+        shadow_style: 'soft',
+        shadow_x: 0,
+        shadow_y: 4,
+        shadow_blur: 4,
+        shadow_spread: 0,
+        shadow_color: '#000000',
+        shadow_opacity: 25,
+        button_shadow_x: 0,
+        button_shadow_y: 4,
+        button_shadow_blur: 4,
+        button_shadow_spread: 0,
+        button_shadow_color: '#000000',
+        button_shadow_opacity: 25,
     };
 
     // Derived state for live preview (always reflects form state)
     const preview = {
         ...DEFAULT_THEME,
         ...watchAll,
-        font_family: watchAll.font_family?.value || watchAll.font_family || DEFAULT_THEME.font_family
+        font_family: watchAll?.font_family?.value || watchAll?.font_family || DEFAULT_THEME.font_family,
+        menu_background_color: watchAll?.menu_background_color || DEFAULT_THEME.menu_background_color,
     };
 
     useEffect(() => {
@@ -81,9 +100,22 @@ const ThemeSettings = () => {
         register('button_radius');
         register('card_radius');
         register('menu_radius');
+        register('menu_background_color');
         register('button_gradient');
-        register('button_gradient_style');
+        register('button_gradient_color2');
         register('shadow_style');
+        register('shadow_x');
+        register('shadow_y');
+        register('shadow_blur');
+        register('shadow_spread');
+        register('shadow_color');
+        register('shadow_opacity');
+        register('button_shadow_x');
+        register('button_shadow_y');
+        register('button_shadow_blur');
+        register('button_shadow_spread');
+        register('button_shadow_color');
+        register('button_shadow_opacity');
     }, [register]);
 
     const fetchTheme = async () => {
@@ -98,12 +130,26 @@ const ThemeSettings = () => {
                 logo_url: theme.logo_url || '',
                 header_text: theme.header_text || '',
                 footer_text: theme.footer_text || '',
+                font_family: theme.font_family || DEFAULT_THEME.font_family,
                 button_radius: theme.button_radius || DEFAULT_THEME.button_radius,
                 card_radius: theme.card_radius || DEFAULT_THEME.card_radius,
                 menu_radius: theme.menu_radius || DEFAULT_THEME.menu_radius,
+                menu_background_color: theme.menu_background_color || DEFAULT_THEME.menu_background_color,
                 button_gradient: theme.button_gradient || false,
-                button_gradient_style: theme.button_gradient_style || '',
+                button_gradient_color2: theme.button_gradient_color2 || DEFAULT_THEME.button_gradient_color2,
                 shadow_style: theme.shadow_style || 'soft',
+                shadow_x: theme.shadow_x ?? DEFAULT_THEME.shadow_x,
+                shadow_y: theme.shadow_y ?? DEFAULT_THEME.shadow_y,
+                shadow_blur: theme.shadow_blur ?? DEFAULT_THEME.shadow_blur,
+                shadow_spread: theme.shadow_spread ?? DEFAULT_THEME.shadow_spread,
+                shadow_color: theme.shadow_color || DEFAULT_THEME.shadow_color,
+                shadow_opacity: theme.shadow_opacity ?? DEFAULT_THEME.shadow_opacity,
+                button_shadow_x: theme.button_shadow_x ?? DEFAULT_THEME.button_shadow_x,
+                button_shadow_y: theme.button_shadow_y ?? DEFAULT_THEME.button_shadow_y,
+                button_shadow_blur: theme.button_shadow_blur ?? DEFAULT_THEME.button_shadow_blur,
+                button_shadow_spread: theme.button_shadow_spread ?? DEFAULT_THEME.button_shadow_spread,
+                button_shadow_color: theme.button_shadow_color || DEFAULT_THEME.button_shadow_color,
+                button_shadow_opacity: theme.button_shadow_opacity ?? DEFAULT_THEME.button_shadow_opacity,
             };
             reset(initialData);
 
@@ -160,6 +206,18 @@ const ThemeSettings = () => {
         toast.success('Reset to defaults');
     };
 
+    const hexToRgba = (hex, opacity) => {
+        if (!hex) return 'rgba(0,0,0,0.25)';
+        let color = hex.replace('#', '');
+        if (color.length === 3) {
+            color = color.split('').map(c => c + c).join('');
+        }
+        const r = parseInt(color.slice(0, 2), 16);
+        const g = parseInt(color.slice(2, 4), 16);
+        const b = parseInt(color.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -172,7 +230,8 @@ const ThemeSettings = () => {
         { id: 'brand', label: 'Identity', icon: GlobeAltIcon },
         { id: 'colors', label: 'Colors & Type', icon: SwatchIcon },
         { id: 'buttons', label: 'Buttons', icon: SparklesIcon },
-        { id: 'cards', label: 'Cards & Menus', icon: PhotoIcon },
+        { id: 'cards', label: 'Cards', icon: PhotoIcon },
+        { id: 'menus', label: 'Menus & Dropdowns', icon: Bars3Icon },
     ];
 
     return (
@@ -211,38 +270,11 @@ const ThemeSettings = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-200px)] min-h-[600px]">
-                {/* SETTINGS PANEL (LEFT) - SCROLLABLE */}
-                <div className="lg:col-span-4 bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex relative">
-                    {/* Sidebar Tabs - Icon Only Version */}
-                    <div className="w-14 sm:w-16 border-r border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm flex flex-col py-4 z-20">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`w-full py-4 flex flex-col items-center justify-center transition-all relative group ${activeTab === tab.id
-                                    ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-white/5'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5'
-                                    }`}
-                            >
-                                <tab.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`} />
-
-                                {/* Tooltip */}
-                                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-2xl border border-white/10 translate-x-1 group-hover:translate-x-0">
-                                    {tab.label}
-                                    {/* Arrow */}
-                                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 border-l border-b border-white/10" />
-                                </div>
-
-                                {activeTab === tab.id && (
-                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary-500 rounded-l-full shadow-[0_0_10px_rgba(38,99,235,0.5)]" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-white dark:bg-transparent rounded-r-xl">
+            <div className="flex justify-center h-[calc(100vh-200px)] min-h-[600px]">
+                {/* SETTINGS PANEL - CENTERED - FULL WIDTH */}
+                <div className="w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex relative">
+                    {/* Content Area - Left Side */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-white dark:bg-transparent rounded-l-xl">
                         {/* Section Title */}
                         <div className="mb-6 pb-4 border-b border-gray-50 dark:border-white/5">
                             <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
@@ -367,8 +399,8 @@ const ThemeSettings = () => {
                                             style={{
                                                 backgroundColor: preview.primary_color,
                                                 borderRadius: preview.button_radius,
-                                                backgroundImage: preview.button_gradient ? (preview.button_gradient_style || `linear-gradient(135deg, ${preview.primary_color}, ${preview.secondary_color})`) : 'none',
-                                                boxShadow: preview.shadow_style === 'hard' ? '4px 4px 0px 0px rgba(0,0,0,1)' : ''
+                                                backgroundImage: preview.button_gradient ? `linear-gradient(135deg, ${preview.primary_color}, ${preview.button_gradient_color2})` : 'none',
+                                                boxShadow: `${preview.button_shadow_x}px ${preview.button_shadow_y}px ${preview.button_shadow_blur}px ${preview.button_shadow_spread}px ${hexToRgba(preview.button_shadow_color, preview.button_shadow_opacity)}`
                                             }}
                                         >
                                             Primary Button
@@ -397,25 +429,22 @@ const ThemeSettings = () => {
                                 />
 
                                 {!!preview.button_gradient && (
-                                    <ModernGradientPicker
-                                        label="Gradient Style"
-                                        value={preview.button_gradient_style || `linear-gradient(135deg, ${preview.primary_color} 0%, ${preview.secondary_color} 100%)`}
-                                        onChange={(val) => setValue('button_gradient_style', val)}
+                                    <ModernColorPicker
+                                        label="Gradient End Color"
+                                        value={preview.button_gradient_color2}
+                                        onChange={(val) => setValue('button_gradient_color2', val)}
                                     />
                                 )}
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                        Shadow Style
-                                    </label>
-                                    <StyledSelect
-                                        value={preview.shadow_style}
-                                        onChange={(e) => setValue('shadow_style', e.target.value)}
-                                    >
-                                        <option value="none">None</option>
-                                        <option value="soft">Soft</option>
-                                        <option value="hard">Hard</option>
-                                    </StyledSelect>
-                                </div>
+                                <ModernShadowPicker
+                                    label="Button Shadow"
+                                    x={preview.button_shadow_x}
+                                    y={preview.button_shadow_y}
+                                    blur={preview.button_shadow_blur}
+                                    spread={preview.button_shadow_spread}
+                                    color={preview.button_shadow_color}
+                                    opacity={preview.button_shadow_opacity}
+                                    onChange={(vals) => Object.entries(vals).forEach(([k, v]) => setValue(`button_shadow_${k}`, v))}
+                                />
                             </div>
                         )}
 
@@ -428,7 +457,7 @@ const ThemeSettings = () => {
                                         className="w-full max-w-[200px] bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 overflow-hidden"
                                         style={{
                                             borderRadius: preview.card_radius,
-                                            boxShadow: preview.shadow_style === 'hard' ? '4px 4px 0px 0px rgba(0,0,0,1)' : '0 10px 30px -5px rgb(0 0 0 / 0.05)'
+                                            boxShadow: `${preview.shadow_x}px ${preview.shadow_y}px ${preview.shadow_blur}px ${preview.shadow_spread}px ${hexToRgba(preview.shadow_color, preview.shadow_opacity)}`
                                         }}
                                     >
                                         <div className="h-24 bg-gray-200 dark:bg-gray-700 relative">
@@ -441,218 +470,143 @@ const ThemeSettings = () => {
                                     </div>
                                 </div>
 
-                                {/* Inline Menu Preview */}
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex justify-center relative">
-                                    <span className="absolute top-2 left-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Menu Dropdown Preview</span>
-                                    <div
-                                        className="w-full max-w-[200px] bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/10 overflow-hidden shadow-2xl transition-all duration-300"
-                                        style={{
-                                            borderRadius: preview.menu_radius,
-                                        }}
-                                    >
-                                        {/* Menu Header with User Profile Mockup */}
-                                        <div className="p-4 border-b border-gray-50 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm"
-                                                style={{ backgroundColor: preview.primary_color }}
-                                            >
-                                                JD
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <div className="h-2 w-16 bg-gray-900 dark:bg-white/20 rounded-full" />
-                                                <div className="h-1.5 w-24 bg-gray-400 dark:bg-white/10 rounded-full" />
-                                            </div>
-                                        </div>
-
-                                        {/* Menu Items */}
-                                        <div className="p-2 space-y-1">
-                                            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
-                                                <ChartBarIcon className="w-4 h-4" />
-                                                <div className="h-2 w-16 bg-current opacity-50 rounded-full" />
-                                            </div>
-                                            <div className="flex items-center gap-3 px-3 py-2 text-gray-400 dark:text-white/40">
-                                                <CalendarDaysIcon className="w-4 h-4" />
-                                                <div className="h-2 w-20 bg-current opacity-20 rounded-full" />
-                                            </div>
-                                            <div className="h-px bg-gray-50 dark:bg-white/10 my-1 mx-2" />
-                                            <div className="flex items-center gap-3 px-3 py-2 text-rose-500">
-                                                <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                                                <div className="h-2 w-14 bg-current opacity-40 rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <ModernCornerRadiusInput
                                     label="Card Corner Radius"
                                     value={preview.card_radius}
                                     onChange={(val) => setValue('card_radius', val)}
                                 />
-                                <ModernCornerRadiusInput
-                                    label="Menu/Dropdown Radius"
-                                    value={preview.menu_radius}
-                                    onChange={(val) => setValue('menu_radius', val)}
+                                <ModernShadowPicker
+                                    label="Card Shadow"
+                                    x={preview.shadow_x}
+                                    y={preview.shadow_y}
+                                    blur={preview.shadow_blur}
+                                    spread={preview.shadow_spread}
+                                    color={preview.shadow_color}
+                                    opacity={preview.shadow_opacity}
+                                    onChange={(vals) => Object.entries(vals).forEach(([k, v]) => setValue(`shadow_${k}`, v))}
                                 />
                             </div>
                         )}
+
+                        {activeTab === 'menus' && (
+                            <div className="space-y-6 animate-fadeIn">
+                                {/* Mega Menu Preview */}
+                                <div className="bg-gray-50 dark:bg-gray-800/50 p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex justify-center relative overflow-hidden">
+                                    <span className="absolute top-2 left-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Mega Menu Layout Preview</span>
+                                    <div
+                                        className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 p-8 shadow-2xl transition-all duration-300 border border-gray-100 dark:border-white/10"
+                                        style={{
+                                            borderRadius: preview.menu_radius,
+                                            backgroundColor: preview.menu_background_color,
+                                            color: preview.text_color
+                                        }}
+                                    >
+                                        {/* Column 1: Browse Properties Skeletons */}
+                                        <div className="space-y-6">
+                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-50" />
+                                            <div className="space-y-6">
+                                                <div className="space-y-2">
+                                                    <div className="h-3 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="h-2 w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="h-2 w-28 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="h-3 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="h-2 w-36 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Column 2: Quick Filters Skeletons */}
+                                        <div className="space-y-6">
+                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-50" />
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <div className="h-2 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-60" />
+                                                    <div className="h-10 w-full bg-gray-50/50 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 rounded-xl animate-pulse" />
+                                                </div>
+                                                <div className="p-4 bg-gray-50/50 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 rounded-2xl flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+                                                        <div className="space-y-2">
+                                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                            <div className="h-1.5 w-24 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-10 h-5 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Column 3: Featured Section Skeletons */}
+                                        <div className="space-y-4">
+                                            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 animate-pulse">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-gray-200/50 dark:from-white/10 to-transparent" />
+                                                <div className="absolute top-4 left-4 h-4 w-16 bg-primary-500/20 rounded-full" />
+                                                <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                                                    <div className="h-3 w-3/4 bg-gray-300 dark:bg-white/20 rounded-full" />
+                                                    <div className="h-2 w-full bg-gray-200 dark:bg-white/10 rounded-full" />
+                                                </div>
+                                            </div>
+                                            <div className="h-11 w-full bg-primary-500/20 rounded-xl animate-pulse flex items-center justify-center">
+                                                <div className="h-2 w-24 bg-primary-500/40 rounded-full" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <ModernCornerRadiusInput
+                                            label="Menu Corner Radius"
+                                            value={preview.menu_radius}
+                                            onChange={(val) => setValue('menu_radius', val)}
+                                        />
+                                        <ModernColorPicker
+                                            label="Menu Background Color"
+                                            value={preview.menu_background_color}
+                                            onChange={(val) => setValue('menu_background_color', val)}
+                                        />
+                                    </div>
+                                    <div className="p-4 bg-blue-50/50 dark:bg-primary-900/10 rounded-xl border border-blue-100/50 dark:border-primary-500/10">
+                                        <div className="flex gap-3">
+                                            <SparklesIcon className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                                            <div className="space-y-1">
+                                                <h4 className="text-xs font-bold text-primary-900 dark:text-primary-100">Mega Menu Preview</h4>
+                                                <p className="text-[10px] text-primary-800/60 dark:text-primary-200/40 leading-relaxed">
+                                                    This preview shows how your site's navigation dropdowns will look. Adjust the radius and background color to match your brand's aesthetic.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                {/* LIVE PREVIEW (RIGHT) */}
-                <div className="lg:col-span-8 flex flex-col bg-gray-100 dark:bg-[#0A0A0A] rounded-xl overflow-hidden relative shadow-inner">
-                    {/* Dot grid background pattern */}
-                    <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
-                        style={{
-                            backgroundImage: 'radial-gradient(#000 1px, transparent 1px)',
-                            backgroundSize: '20px 20px'
-                        }}
-                    />
+                    {/* Sidebar Tabs - Right Side - Text Version */}
+                    <div className="w-56 border-l border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm flex flex-col py-4 z-20">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`w-full px-6 py-4 flex flex-row items-center justify-start transition-all relative group ${activeTab === tab.id
+                                    ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-white/5'
+                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5'
+                                    }`}
+                            >
+                                <span className={`text-[10px] font-extrabold uppercase tracking-widest transition-colors ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`}>
+                                    {tab.label}
+                                </span>
 
-                    <div className="flex-1 p-8 flex flex-col relative z-10 overflow-hidden">
-                        {/* Browser Window Mockup */}
-                        <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-t-xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col flex-1 overflow-hidden transition-all duration-300">
-                            {/* Browser Header */}
-                            <div className="h-9 border-b border-gray-100 dark:border-gray-700/50 flex items-center px-4 gap-2 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                                <div className="flex gap-1.5 opacity-80">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                                </div>
-                                <div className="flex-1 flex justify-center">
-                                    <div className="px-3 py-0.5 rounded-md bg-gray-100/50 dark:bg-gray-700/30 text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-green-500/50" />
-                                        {preview.domain || 'agent.superrealestate.com'}
-                                    </div>
-                                </div>
-                                <div className="w-10" />
-                            </div>
-
-                            {/* Preview Content */}
-                            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0F0F0F] relative">
-                                {/* Values injected via inline styles for preview */}
-                                <div
-                                    style={{
-                                        '--primary-color': preview.primary_color,
-                                        '--secondary-color': preview.secondary_color,
-                                        '--btn-radius': preview.button_radius,
-                                        '--card-radius': preview.card_radius,
-                                        '--menu-radius': preview.menu_radius,
-                                        '--font-family': preview.font_family,
-                                        '--btn-gradient': preview.button_gradient ? (preview.button_gradient_style || `linear-gradient(135deg, ${preview.primary_color}, ${preview.secondary_color})`) : 'none',
-                                        '--card-shadow': preview.shadow_style === 'hard' ? '4px 4px 0px 0px rgba(0,0,0,1)' : preview.shadow_style === 'none' ? 'none' : '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
-                                    }}
-                                    className="min-h-full font-sans text-gray-800 dark:text-gray-200"
-                                >
-                                    {/* Navbar Mock */}
-                                    <nav className="border-b border-gray-100 dark:border-gray-800 p-4 sticky top-0 bg-white/80 dark:bg-[#0F0F0F]/80 backdrop-blur-md z-10 transition-colors">
-                                        <div className="max-w-4xl mx-auto flex justify-between items-center gap-4">
-                                            <div className="flex items-center gap-3">
-                                                {preview.logo_url ? (
-                                                    <img src={getMediaUrl(preview.logo_url)} alt="Logo" className="h-8 w-auto object-contain" />
-                                                ) : (
-                                                    <div className="h-8 w-8 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-                                                )}
-                                                <span className="font-bold text-lg tracking-tight hidden sm:block">{preview.header_text}</span>
-                                            </div>
-                                            <div className="hidden md:flex gap-6 text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                <span className="hover:text-primary-500 cursor-pointer">Home</span>
-                                                <span className="hover:text-primary-500 cursor-pointer">Listings</span>
-                                                <span className="hover:text-primary-500 cursor-pointer">About</span>
-                                                <span className="hover:text-primary-500 cursor-pointer">Contact</span>
-                                            </div>
-                                            <button
-                                                className="px-4 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-700 rounded-md md:hidden"
-                                                style={{ borderRadius: preview.button_radius }}
-                                            >
-                                                Menu
-                                            </button>
-                                        </div>
-                                    </nav>
-
-                                    {/* Hero Section */}
-                                    <div className="py-12 md:py-20 px-4 text-center">
-                                        <h1 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight dark:text-white leading-tight" style={{ color: preview.text_color, fontFamily: preview.font_family }}>
-                                            Find Your <span style={{ color: preview.primary_color }}>Dream Home</span>
-                                        </h1>
-                                        <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed">
-                                            Discover luxury properties in prime locations, curated just for you. Experience the difference.
-                                        </p>
-
-                                        <div className="flex flex-col sm:flex-row justify-center gap-4">
-                                            <button
-                                                className="px-8 py-3 text-white font-medium transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-primary-500/20"
-                                                style={{
-                                                    backgroundColor: preview.primary_color,
-                                                    borderRadius: preview.button_radius,
-                                                    backgroundImage: preview.button_gradient ? (preview.button_gradient_style || `linear-gradient(135deg, ${preview.primary_color}, ${preview.secondary_color})`) : 'none',
-                                                    boxShadow: preview.shadow_style === 'hard' ? '4px 4px 0px 0px rgba(0,0,0,1)' : ''
-                                                }}
-                                            >
-                                                View Listings
-                                            </button>
-                                            <button
-                                                className="px-8 py-3 bg-white dark:bg-gray-800 font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                                style={{
-                                                    borderRadius: preview.button_radius,
-                                                    color: preview.text_color
-                                                }}
-                                            >
-                                                Contact Us
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Cards Section */}
-                                    <div className="max-w-4xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
-                                        {[1, 2].map((i) => (
-                                            <div
-                                                key={i}
-                                                className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 overflow-hidden group hover:border-primary-200 dark:hover:border-primary-900 transition-colors duration-300"
-                                                style={{
-                                                    borderRadius: preview.card_radius,
-                                                    boxShadow: preview.shadow_style === 'hard' ? '4px 4px 0px 0px rgba(0,0,0,1)' : '0 10px 30px -5px rgb(0 0 0 / 0.05)'
-                                                }}
-                                            >
-                                                <div className="h-56 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
-                                                    <div className="absolute inset-0 bg-gray-300 animate-pulse" /> {/* Placeholder image */}
-                                                    <div className="absolute top-4 left-4 z-20 bg-white/90 dark:bg-black/80 backdrop-blur px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                                                        For Sale
-                                                    </div>
-                                                    <div className="absolute bottom-4 left-4 z-20 text-white font-bold text-xl drop-shadow-md">
-                                                        $1,250,000
-                                                    </div>
-                                                </div>
-                                                <div className="p-6">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <h3 className="text-xl font-bold dark:text-white group-hover:text-primary-500 transition-colors">Modern Villa {i}</h3>
-                                                    </div>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 flex items-center gap-2">
-                                                        <GlobeAltIcon className="w-4 h-4" />
-                                                        123 Palm Avenue, Miami FL
-                                                    </p>
-                                                    <div className="flex gap-4 mb-6 text-xs font-medium text-gray-500 dark:text-gray-400 border-t border-gray-50 dark:border-gray-700/50 pt-4">
-                                                        <span>4 Beds</span>
-                                                        <span>3 Baths</span>
-                                                        <span>2,500 sqft</span>
-                                                    </div>
-                                                    <button
-                                                        className="w-full py-3 text-white text-sm font-semibold tracking-wide transition-opacity hover:opacity-90"
-                                                        style={{
-                                                            backgroundColor: preview.secondary_color,
-                                                            borderRadius: preview.button_radius
-                                                        }}
-                                                    >
-                                                        VIEW DETAILS
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
+                                {activeTab === tab.id && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary-500 rounded-r-full shadow-[0_0_10px_rgba(38,99,235,0.5)]" />
+                                )}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>

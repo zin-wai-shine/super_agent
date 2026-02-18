@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { publicApi } from '../../services/api';
+import { publicApi, appointmentApi } from '../../services/api';
+import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
     MapPinIcon,
     HomeIcon,
@@ -24,15 +28,30 @@ import {
     ChevronDownIcon,
     ChevronUpIcon,
     CalendarDaysIcon,
+    BuildingOfficeIcon,
+    ArrowRightIcon,
+    BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
+import {
+    HeartIcon as HeartSolidIcon,
+    BookmarkIcon as BookmarkSolidIcon,
+    CheckBadgeIcon,
+    StarIcon,
+    CalendarIcon,
+    ClockIcon,
+    XCircleIcon
+} from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
+import PropertyShare from '../../components/Listings/PropertyShare';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import Button from '../../components/ui/Button';
+
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
+import FilterBar from '../../components/ui/FilterBar';
+import { useSearchParams } from 'react-router-dom';
 import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
@@ -67,6 +86,7 @@ import {
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
+import StyledSelect from '../../components/Form/StyledSelect';
 
 // Custom Icons for "cool" look
 const BedIcon = (props) => (
@@ -130,8 +150,10 @@ const TrainIconCool = (props) => (
     </svg>
 );
 
-const ListingDetailPage = () => {
-    const { id } = useParams();
+export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }) => {
+    const navigate = useNavigate();
+    const { id: routeId } = useParams();
+    const id = propId || routeId;
     const { user, isAuthenticated } = useAuth();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -151,18 +173,170 @@ const ListingDetailPage = () => {
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
+    const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [savingListing, setSavingListing] = useState(false);
 
-    // Lock background scroll when modals are open
+    // Booking states (from BookAppointment.js)
+    const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [bookedAppointment, setBookedAppointment] = useState(null);
+    const [bookingErrors, setBookingErrors] = useState({});
+    const [calendarMonth, setCalendarMonth] = useState(new Date());
+    const [bookingForm, setBookingForm] = useState({
+        full_name: '',
+        email: '',
+        phone: '',
+        preferred_date: '',
+        preferred_time: '',
+        purpose: 'rent',
+        message: '',
+    });
+
+    // Update Modal Title when overlays are open
     useEffect(() => {
-        if (isGalleryOpen || isContactOverlayOpen) {
+        if (isModal && onTitleChange) {
+            if (isBookingOverlayOpen) {
+                onTitleChange(
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsBookingOverlayOpen(false)}
+                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-1.5 px-3 rounded-lg hover:bg-gray-100/50 active:scale-95 group"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                            <span className="text-sm font-bold">Back</span>
+                        </button>
+                        <span className="text-lg font-bold text-gray-900">Booking Message</span>
+                    </div>
+                );
+            } else if (isContactOverlayOpen) {
+                onTitleChange(
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsContactOverlayOpen(false)}
+                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-1.5 px-3 rounded-lg hover:bg-gray-100/50 active:scale-95 group"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                            <span className="text-sm font-bold">Back</span>
+                        </button>
+                        <span className="text-lg font-bold text-gray-900">Contact Agent</span>
+                    </div>
+                );
+            } else {
+                onTitleChange("Property Details");
+            }
+        }
+    }, [isModal, onTitleChange, isBookingOverlayOpen, isContactOverlayOpen]);
+
+    // Lock background scroll when modals or overlays are open
+    useEffect(() => {
+        if (isGalleryOpen || isContactOverlayOpen || isBookingOverlayOpen) {
             document.body.style.overflow = 'hidden';
+
+            // Also lock the inner modal scrollable if we're in modal mode
+            if (isModal) {
+                const containers = document.querySelectorAll('.modal-scrollable');
+                containers.forEach(container => {
+                    // Lock anything that isn't the active overlay itself
+                    if (!container.classList.contains('z-[60]')) {
+                        container.style.setProperty('overflow', 'hidden', 'important');
+                    }
+                });
+            }
         } else {
             document.body.style.overflow = 'unset';
+            if (isModal) {
+                const containers = document.querySelectorAll('.modal-scrollable');
+                containers.forEach(container => {
+                    container.style.overflow = '';
+                });
+            }
         }
         return () => {
             document.body.style.overflow = 'unset';
+            const containers = document.querySelectorAll('.modal-scrollable');
+            containers.forEach(container => {
+                container.style.overflow = '';
+            });
         };
-    }, [isGalleryOpen, isContactOverlayOpen]);
+    }, [isGalleryOpen, isContactOverlayOpen, isBookingOverlayOpen, isModal]);
+
+    // Scroll Contact modal to top when it opens
+    useEffect(() => {
+        if (isContactOverlayOpen) {
+            // Find the contact modal container and scroll it to top
+            setTimeout(() => {
+                const contactModal = document.querySelector('.contact-modal-scrollable');
+                if (contactModal) {
+                    contactModal.scrollTop = 0;
+
+                    // Also reset the parent modal-scrollable container
+                    let parent = contactModal.parentElement;
+                    while (parent) {
+                        if (parent.classList.contains('modal-scrollable') && parent !== contactModal) {
+                            parent.scrollTop = 0;
+                            break;
+                        }
+                        parent = parent.parentElement;
+                    }
+                }
+            }, 50);
+        }
+    }, [isContactOverlayOpen]);
+
+    // Check if listing is saved on load
+    useEffect(() => {
+        const checkSavedStatus = async () => {
+            if (listing && user) {
+                try {
+                    const response = await checkIfSaved(listing.id);
+                    setIsSaved(response.saved);
+                } catch (error) {
+                    // User not logged in or error - not saved
+                    setIsSaved(false);
+                }
+            }
+        };
+        checkSavedStatus();
+    }, [listing, user]);
+
+    // Handle save/unsave listing
+    const handleToggleSave = async () => {
+        if (!user) {
+            toast.error('Please login to save listings', {
+                onClick: () => navigate('/login')
+            });
+            return;
+        }
+
+        setSavingListing(true);
+        try {
+            if (isSaved) {
+                await unsaveListing(listing.id);
+                setIsSaved(false);
+            } else {
+                await saveListing(listing.id);
+                setIsSaved(true);
+            }
+        } catch (error) {
+            console.error('Save listing error:', error);
+
+            // Handle authentication errors
+            if (error.error === 'Unauthorized' || error.message?.includes('token')) {
+                toast.error('Your session has expired. Please login again.', {
+                    onClick: () => navigate('/login')
+                });
+                // Clear invalid tokens
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+            } else {
+                toast.error(error.error || error.message || 'Failed to save listing');
+            }
+        } finally {
+            setSavingListing(false);
+        }
+    };
+
 
     // Map Constants
     const MAP_WIDTH = 1368;
@@ -234,9 +408,12 @@ const ListingDetailPage = () => {
     }, [activeMapTab, listing?.station_id]);
 
     useEffect(() => {
-        // Smooth scroll to top when changing listings
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Smooth scroll to top when changing listings - only if not in a modal
+        if (!isModal) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         setLoading(true);
+
 
         const fetchListing = async () => {
             try {
@@ -272,8 +449,11 @@ const ListingDetailPage = () => {
                         const relatedResponse = await publicApi.getListings(relatedParams);
                         const allRelated = relatedResponse.data.listings || [];
 
+                        // Defensive Filter: Ensure current ID is absolutely excluded even if backend fails
+                        const filteredRelated = allRelated.filter(item => String(item.id) !== String(id));
+
                         // "Random and Recent": Shuffle the top recent results and pick 4
-                        const shuffled = allRelated.sort(() => 0.5 - Math.random()).slice(0, 4);
+                        const shuffled = filteredRelated.sort(() => 0.5 - Math.random()).slice(0, 4);
                         setRelatedListings(shuffled);
                     } catch (err) {
                         console.error('Failed to fetch related listings:', err);
@@ -287,6 +467,86 @@ const ListingDetailPage = () => {
         };
         fetchListing();
     }, [id, user]);
+
+    // Pre-fill form for logged-in users
+    useEffect(() => {
+        if (user) {
+            setBookingForm(prev => ({
+                ...prev,
+                full_name: `${user.first_name} ${user.last_name}`.trim(),
+                email: user.email,
+                phone: user.phone || '',
+            }));
+        }
+    }, [user]);
+
+    // Update purpose based on listing type
+    useEffect(() => {
+        if (listing) {
+            if (listing.listing_type === 'rent') {
+                setBookingForm(prev => ({ ...prev, purpose: 'rent' }));
+            } else if (listing.listing_type === 'sale') {
+                setBookingForm(prev => ({ ...prev, purpose: 'buy' }));
+            }
+        }
+    }, [listing]);
+
+    // Booking Logic Helpers
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const days = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(year, month, 1).getDay();
+        return { days, firstDay };
+    };
+
+    const generateCalendarGrid = () => {
+        const { days, firstDay } = getDaysInMonth(calendarMonth);
+        const grid = [];
+        for (let i = 0; i < firstDay; i++) grid.push(null);
+        for (let i = 1; i <= days; i++) grid.push(i);
+        return grid;
+    };
+
+    const handleDateSelect = (day) => {
+        if (!day) return;
+        const selectedDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+        const offset = selectedDate.getTimezoneOffset();
+        const adjustedDate = new Date(selectedDate.getTime() - (offset * 60 * 1000));
+        const formatted = adjustedDate.toISOString().split('T')[0];
+        setBookingForm(prev => ({ ...prev, preferred_date: formatted }));
+    };
+
+    const morningSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
+    const afternoonSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
+
+    const validateBookingForm = () => {
+        const newErrors = {};
+        if (!bookingForm.full_name.trim()) newErrors.full_name = 'Required';
+        if (!bookingForm.email.trim()) newErrors.email = 'Required';
+        if (!bookingForm.phone.trim()) newErrors.phone = 'Required';
+        if (!bookingForm.preferred_date) newErrors.preferred_date = 'Required';
+        if (!bookingForm.preferred_time) newErrors.preferred_time = 'Required';
+        setBookingErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleBookingSubmit = async () => {
+        if (!validateBookingForm()) return;
+        setSubmitting(true);
+        try {
+            const response = await appointmentApi.createAppointment({
+                listing_id: id,
+                ...bookingForm,
+            });
+            setBookedAppointment(response.data.appointment);
+            setSuccess(true);
+        } catch (error) {
+            setBookingErrors({ submit: error.response?.data?.error || 'Failed to book' });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -330,23 +590,541 @@ const ListingDetailPage = () => {
         }).format(price);
     };
 
-    return (
-        <div key={id} className="min-h-screen bg-white animate-in fade-in duration-500">
-            {/* Back button - Modern Floating style for mobile */}
-            <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 md:pt-6 md:pb-4 pointer-events-none">
-                <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 md:pt-6 md:pb-4 pointer-events-none">
-                    <Link to="/listings">
-                        <Button className="pointer-events-auto shadow-lg shadow-primary-600/20 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 rounded-2xl md:px-4 md:py-2.5 px-3 py-2">
-                            <ArrowLeftIcon className="w-5 h-5 md:mr-2 group-hover:-translate-x-1 transition-transform" />
-                            <span className="hidden md:inline font-bold text-sm">Back to listings</span>
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+    // Portal for badges into modal header
+    // Badge Relocation Tasks:
+    // - [x] Move Badges to Modal Header
+    // - [x] Add `modal-header-extra` portal target to `Modal.js`
+    // - [x] Implement badge portal logic in `ListingDetailPage.js`
+    // - [x] Remove badges from the content area
+    // - [x] Fix component syntax and nesting issues
+    const renderBadges = () => {
+        const badgesContainer = document.getElementById('modal-header-extra');
+        if (!isModal || !badgesContainer || !listing || isBookingOverlayOpen || isContactOverlayOpen) return null;
 
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <div
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border animate-in fade-in slide-in-from-left-2 duration-500 ${listing.listing_type === 'sale'
+                        ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
+                        : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700'
+                        }`}
+                >
+                    {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+                </div>
+                {listing.is_featured && (
+                    <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border bg-amber-400/10 border-amber-400/20 text-amber-700 flex items-center gap-1 animate-in fade-in slide-in-from-left-4 duration-700">
+                        <SparklesIcon className="w-3 h-3 text-amber-500" />
+                        FEATURED
+                    </div>
+                )}
+            </div>,
+            badgesContainer
+        );
+    };
+
+    // Render Actions for Modal Header
+    const renderHeaderActions = () => {
+        const actionsContainer = document.getElementById('modal-header-actions');
+        if (!isModal || !actionsContainer || isBookingOverlayOpen || isContactOverlayOpen) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-6">
+                {/* Group 1: Contact & Booking */}
+                <div className="flex items-center gap-2">
+                    {/* Contact */}
+                    <button
+                        onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                    >
+                        <PhoneIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
+                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">contact</span>
+                    </button>
+
+                    {/* Booking */}
+                    <button
+                        onClick={() => setIsBookingOverlayOpen(!isBookingOverlayOpen)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                    >
+                        <CalendarDaysIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
+                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">booking</span>
+                    </button>
+                </div>
+
+                {/* Group 2: Saved, Share, Copy Link */}
+                <div className="flex items-center gap-2">
+                    {/* Saved */}
+                    <button
+                        onClick={handleToggleSave}
+                        disabled={savingListing}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group disabled:opacity-50"
+                    >
+                        {isSaved ? (
+                            <BookmarkSolidIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
+                        ) : (
+                            <BookmarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
+                        )}
+                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">
+                            {isSaved ? 'saved' : 'save'}
+                        </span>
+                    </button>
+
+                    {/* Share & Copy Link handled by PropertyShare */}
+                    <PropertyShare
+                        property={{
+                            id,
+                            title: listing?.title,
+                            description: listing?.description || `${listing?.bedrooms} Bed, ${listing?.bathrooms} Bath property in ${listing?.district || 'Bangkok'}`,
+                            image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
+                            url: window.location.href
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                        showLabel={true}
+                    />
+                </div>
+
+            </div>,
+            actionsContainer
+        );
+    };
+
+    // Booking Overlay Component
+    const renderBookingOverlay = () => {
+        if (!isBookingOverlayOpen) return null;
+
+        const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        return (
+            <>
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[55] animate-in fade-in duration-300"
+                    onClick={() => setIsBookingOverlayOpen(false)}
+                />
+
+                <div
+                    className="fixed inset-0 z-[60] backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in slide-in-from-top-2 duration-300 flex flex-col overflow-hidden"
+                    style={{
+                        backgroundColor: 'var(--menu-bg-color, rgba(255, 255, 255, 0.95))',
+                        borderRadius: 'var(--card-radius)'
+                    }}
+                >
+                    {/* Header bar - Hide on success */}
+                    {!success && (
+                        <div
+                            className="flex items-center justify-between px-6 py-4 border-b backdrop-blur-xl z-[70]"
+                            style={{
+                                backgroundColor: 'var(--menu-bg-color)',
+                                borderBottomColor: 'var(--menu-divider)'
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setIsBookingOverlayOpen(false)}
+                                    className="flex items-center gap-1.5 transition-all py-1.5 px-3 rounded-lg group active:scale-95"
+                                    style={{ color: 'var(--menu-text-muted)' }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.color = 'var(--menu-text-primary)';
+                                        e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.color = 'var(--menu-text-muted)';
+                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                    }}
+                                >
+                                    <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                                    <span className="text-sm font-bold">Back</span>
+                                </button>
+                                <span
+                                    className="text-lg font-bold"
+                                    style={{ color: 'var(--menu-text-primary)' }}
+                                >
+                                    Booking Message
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setIsBookingOverlayOpen(false)}
+                                className="p-2 transition-all rounded-full"
+                                style={{ color: 'var(--menu-text-muted)' }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = 'var(--menu-text-primary)';
+                                    e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = 'var(--menu-text-muted)';
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Content Area */}
+                    <div className={`flex-1 overflow-y-auto modal-scrollable ${success ? 'flex items-center justify-center' : ''}`}>
+                        <div className={`max-w-[1400px] mx-auto p-8 lg:p-12 ${success ? 'h-full w-full flex items-center justify-center' : ''}`}>
+                            {success ? (
+                                <div className="h-full w-full flex items-center justify-center p-6">
+                                    <div
+                                        className="max-w-md w-full text-center px-8 py-12 flex flex-col items-center transition-all animate-in zoom-in-95 duration-300"
+                                    >
+                                        <div
+                                            className="w-20 h-20 rounded-full flex items-center justify-center mb-8 relative"
+                                            style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 10%, transparent)' }}
+                                        >
+                                            <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                                            <CheckCircleIcon className="w-10 h-10 relative z-10" style={{ color: 'var(--primary-color)' }} />
+                                        </div>
+                                        <h2
+                                            className="text-3xl font-bold mb-3 tracking-tight text-center"
+                                            style={{ color: 'var(--menu-text-primary)' }}
+                                        >
+                                            Appointment Confirmed!
+                                        </h2>
+                                        <p
+                                            className="text-sm mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5"
+                                            style={{ color: 'var(--menu-text-muted)' }}
+                                        >
+                                            You can check your booking information and status at
+                                            <span
+                                                className="group inline-flex items-center gap-1 font-bold cursor-pointer transition-all duration-300"
+                                                onClick={() => {
+                                                    setIsBookingOverlayOpen(false);
+                                                    setSuccess(false);
+                                                    window.location.href = '/my-bookings';
+                                                }}
+                                            >
+                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300" style={{ color: 'var(--menu-text-primary)' }}>Bookings</span>
+                                                <ArrowRightIcon
+                                                    className="w-4 h-4 transition-all duration-300 transform group-hover:translate-x-1"
+                                                    style={{ color: 'var(--primary-color)' }}
+                                                />
+                                            </span>
+                                        </p>
+                                        <div className="flex items-center justify-center w-full">
+                                            <Button
+                                                onClick={() => {
+                                                    setIsBookingOverlayOpen(false);
+                                                    setSuccess(false);
+                                                }}
+                                                className="min-w-[180px] font-black py-4 tracking-[0.2em] text-xs text-white border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
+                                                style={{
+                                                    borderRadius: 'var(--btn-radius)',
+                                                    background: 'var(--primary-color)'
+                                                }}
+                                            >
+                                                DONE
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 xl:gap-16 pb-12">
+                                    {/* Column 1: Purpose, Date & Time */}
+                                    <div className="space-y-10">
+                                        {/* Purpose */}
+                                        <div>
+                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">I want to</h3>
+                                            <StyledSelect
+                                                options={[
+                                                    { value: 'rent', label: 'For Rent' },
+                                                    { value: 'buy', label: 'For Buy' }
+                                                ]}
+                                                value={bookingForm.purpose}
+                                                onChange={(val) => setBookingForm(prev => ({ ...prev, purpose: val }))}
+                                                className="w-full"
+                                            />
+                                        </div>
+
+                                        {/* Time Selection */}
+                                        <div>
+                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Select Time</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 rounded-3xl p-6 border border-gray-100">
+                                                <div>
+                                                    <h4 className="text-[10px] items-center text-gray-400 uppercase font-black tracking-widest mb-3 flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                                                        Morning
+                                                    </h4>
+                                                    <StyledSelect
+                                                        options={morningSlots.map(time => ({ value: time, label: time }))}
+                                                        value={morningSlots.includes(bookingForm.preferred_time) ? bookingForm.preferred_time : null}
+                                                        onChange={(val) => setBookingForm(prev => ({ ...prev, preferred_time: val }))}
+                                                        placeholder="Morning"
+                                                        className="w-full"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-[10px] items-center text-gray-400 uppercase font-black tracking-widest mb-3 flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                                        Afternoon
+                                                    </h4>
+                                                    <StyledSelect
+                                                        options={afternoonSlots.map(time => ({ value: time, label: time }))}
+                                                        value={afternoonSlots.includes(bookingForm.preferred_time) ? bookingForm.preferred_time : null}
+                                                        onChange={(val) => setBookingForm(prev => ({ ...prev, preferred_time: val }))}
+                                                        placeholder="Afternoon"
+                                                        className="w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Calendar */}
+                                        <div>
+                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Select Date</h3>
+                                            <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100">
+                                                <div className="flex items-center justify-between mb-6 px-2">
+                                                    <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                        <ChevronLeftIcon className="w-5 h-5 text-gray-400" />
+                                                    </button>
+                                                    <h4 className="font-bold text-gray-900 uppercase tracking-widest text-sm">{monthYear}</h4>
+                                                    <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() + 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                                                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-[10px] font-black text-gray-400 py-1">{d}</div>)}
+                                                </div>
+                                                <div className="grid grid-cols-7 gap-1">
+                                                    {generateCalendarGrid().map((day, i) => {
+                                                        if (!day) return <div key={i} />;
+                                                        const isSelected = bookingForm.preferred_date && new Date(bookingForm.preferred_date).getDate() === day && new Date(bookingForm.preferred_date).getMonth() === calendarMonth.getMonth();
+                                                        const isPast = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day) < new Date(new Date().setHours(0, 0, 0, 0));
+                                                        return (
+                                                            <button
+                                                                key={i}
+                                                                disabled={isPast}
+                                                                onClick={() => handleDateSelect(day)}
+                                                                className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'bg-gray-900 text-white shadow-lg shadow-gray-200 scale-110' : isPast ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                            >
+                                                                {day}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Column 2: Details & Message */}
+                                    <div className="space-y-10">
+                                        <div className="space-y-6">
+                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Your Details</h3>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Full Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={bookingForm.full_name}
+                                                        onChange={e => setBookingForm({ ...bookingForm, full_name: e.target.value })}
+                                                        className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                        style={{ borderRadius: 'var(--card-radius)' }}
+                                                        placeholder="John Doe"
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Phone Number</label>
+                                                        <input
+                                                            type="text"
+                                                            value={bookingForm.phone}
+                                                            onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                                                            className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                            style={{ borderRadius: 'var(--card-radius)' }}
+                                                            placeholder="+66..."
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Email Address</label>
+                                                        <input
+                                                            type="text"
+                                                            value={bookingForm.email}
+                                                            onChange={e => setBookingForm({ ...bookingForm, email: e.target.value })}
+                                                            className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                            style={{ borderRadius: 'var(--card-radius)' }}
+                                                            placeholder="john@example.com"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Additional Message</h3>
+                                            <textarea
+                                                value={bookingForm.message}
+                                                onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
+                                                rows={5}
+                                                className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm resize-none"
+                                                style={{ borderRadius: 'var(--card-radius)' }}
+                                                placeholder="I would like to know more about..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Column 3: Summary & Preview */}
+                                    <div className="space-y-10">
+                                        <div className="space-y-8">
+                                            <div
+                                                className="p-8 relative overflow-hidden group"
+                                                style={{
+                                                    borderRadius: 'var(--card-radius)',
+                                                    backgroundColor: 'var(--menu-bg-color)',
+                                                    boxShadow: 'var(--card-shadow)'
+                                                }}
+                                            >
+                                                <div className="relative z-10">
+                                                    <h4
+                                                        className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 flex items-center gap-2"
+                                                        style={{ color: 'var(--menu-text-muted)' }}
+                                                    >
+                                                        Booking Summary
+                                                    </h4>
+                                                    <div className="space-y-8">
+                                                        <div
+                                                            className="flex items-center gap-6 border-b pb-8"
+                                                            style={{ borderBottomColor: 'var(--menu-divider)' }}
+                                                        >
+                                                            <div className="relative">
+                                                                <img
+                                                                    src={hasImages ? getMediaUrl(images[0].url) : '/api/placeholder/100/100'}
+                                                                    className="w-20 h-20 object-cover"
+                                                                    style={{ borderRadius: 'calc(var(--card-radius) * 0.5)' }}
+                                                                    alt=""
+                                                                />
+                                                                <div
+                                                                    className="absolute -top-2 -right-2 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
+                                                                    style={{ backgroundColor: 'var(--primary-color)' }}
+                                                                >
+                                                                    {bookingForm.purpose === 'rent' ? 'Rent' : 'Buy'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div
+                                                                    className="text-[10px] font-bold uppercase mb-1 tracking-wider"
+                                                                    style={{ color: 'var(--menu-text-secondary)' }}
+                                                                >
+                                                                    {listing.district}
+                                                                </div>
+                                                                <div
+                                                                    className="font-bold text-base leading-tight mb-2 truncate"
+                                                                    style={{ color: 'var(--menu-text-primary)' }}
+                                                                >
+                                                                    {listing.title}
+                                                                </div>
+                                                                <div
+                                                                    className="flex items-center gap-2 font-bold text-[10px]"
+                                                                    style={{ color: 'var(--menu-text-muted)' }}
+                                                                >
+                                                                    <MapPinIcon className="w-3 h-3" />
+                                                                    {listing.location || 'Bangkok'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-8">
+                                                            <div>
+                                                                <div
+                                                                    className="text-[9px] font-bold uppercase mb-2 tracking-widest"
+                                                                    style={{ color: 'var(--menu-text-muted)' }}
+                                                                >
+                                                                    Preferred Date
+                                                                </div>
+                                                                <div
+                                                                    className="font-black text-sm"
+                                                                    style={{ color: 'var(--menu-text-primary)' }}
+                                                                >
+                                                                    {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div
+                                                                    className="text-[9px] font-bold uppercase mb-2 tracking-widest"
+                                                                    style={{ color: 'var(--menu-text-muted)' }}
+                                                                >
+                                                                    Preferred Time
+                                                                </div>
+                                                                <div
+                                                                    className="font-black text-sm"
+                                                                    style={{ color: 'var(--menu-text-primary)' }}
+                                                                >
+                                                                    {bookingForm.preferred_time || '---'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {bookingForm.message && (
+                                                            <div
+                                                                className="pt-4 border-t"
+                                                                style={{ borderTopColor: 'var(--menu-divider)' }}
+                                                            >
+                                                                <div
+                                                                    className="text-[9px] font-bold uppercase mb-3 tracking-widest"
+                                                                    style={{ color: 'var(--menu-text-muted)' }}
+                                                                >
+                                                                    Your Message
+                                                                </div>
+                                                                <div
+                                                                    className="text-xs italic leading-relaxed line-clamp-2 pl-4 border-l-2"
+                                                                    style={{
+                                                                        color: 'var(--menu-text-secondary)',
+                                                                        borderLeftColor: 'var(--menu-divider)'
+                                                                    }}
+                                                                >
+                                                                    "{bookingForm.message}"
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Persistent Footer for Button - Only show if not success */}
+                    {!success && (
+                        <div className="p-6 z-[70] flex justify-center items-center">
+                            <div className="max-w-[1400px] w-full flex justify-end px-4">
+                                <Button
+                                    onClick={handleBookingSubmit}
+                                    isLoading={submitting}
+                                    variant="outline"
+                                    className="w-full md:w-auto md:min-w-[280px] font-black py-3.5 transition-all hover:translate-y-[-2px] active:scale-[0.98] tracking-[0.2em] text-sm"
+                                    style={{
+                                        borderRadius: 'var(--btn-radius)'
+                                    }}
+                                >
+                                    SEND BOOKING REQUEST
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <div key={id} className={`min-h-screen bg-white ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'}`}>
+            {renderBookingOverlay()}
+            {/* Back button - Modern minimalist style - Hidden in modal mode */}
+            {!isModal && (
+                <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="pointer-events-auto text-gray-400 hover:text-gray-900 transition-all py-2 px-4 rounded-lg hover:bg-gray-100/50 active:scale-95 group flex items-center"
+                    >
+                        <ArrowLeftIcon className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-bold text-sm">Back</span>
+                    </button>
+                </div>
+            )}
+
+            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-4 sm:px-6 lg:px-8'} ${isModal ? 'py-12' : 'py-6'}`}>
                 <div className="flex justify-center">
-                    <div className="w-full max-w-7xl space-y-6">
+                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-6`}>
                         {/* Details - Header Section */}
                         <div className="">
                             {/* Title & ID - Fixed overlapping on mobile */}
@@ -380,20 +1158,12 @@ const ListingDetailPage = () => {
                                 )}
                             </div>
 
-                            {/* Confirmed Button & Book a Viewing */}
+                            {/* Confirmed Button */}
                             <div className="flex flex-wrap gap-3">
                                 <Button variant="success" className="text-sm tracking-wide">
                                     <CheckBadgeIcon className="w-5 h-5 mr-2" />
                                     Confirmed Available Today
                                 </Button>
-                                {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
-                                    <Link to={`/listings/${listing.id}/book`}>
-                                        <Button className="text-sm tracking-wide shadow-none hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
-                                            <CalendarDaysIcon className="w-5 h-5 mr-2" />
-                                            Book a Viewing
-                                        </Button>
-                                    </Link>
-                                )}
                             </div>
                         </div>
 
@@ -518,8 +1288,6 @@ const ListingDetailPage = () => {
                                                 alt="Gallery 5"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                            {/* Show All Overlay */}
                                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors">
                                                 <button className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-white transition-all transform group-hover:scale-105">
                                                     <Square2StackIcon className="w-5 h-5" />
@@ -538,42 +1306,17 @@ const ListingDetailPage = () => {
                                 </div>
                             </div>
 
-                            <div className="absolute top-4 left-4 flex space-x-2 pointer-events-none">
-                                <Badge variant={listing.listing_type === 'sale' ? 'primary' : 'secondary'} className="shadow-sm">
-                                    For {listing.listing_type === 'sale' ? 'Sale' : 'Rent'}
-                                </Badge>
-                                {listing.is_featured && (
-                                    <Badge variant="warning" className="shadow-sm">Featured</Badge>
-                                )}
-                            </div>
-
-                            {/* Action Buttons Overlay (Common) */}
-                            <div className="absolute top-4 right-4 flex space-x-2 z-10">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setIsFavorite(!isFavorite); }}
-                                    className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-colors"
-                                >
-                                    {isFavorite ? (
-                                        <HeartSolidIcon className="w-5 h-5 text-red-500" />
-                                    ) : (
-                                        <HeartIcon className="w-5 h-5 text-gray-700" />
-                                    )}
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); }}
-                                    className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-colors"
-                                >
-                                    <ShareIcon className="w-5 h-5 text-gray-700" />
-                                </button>
-                            </div>
                         </div>
+
+                        {renderBadges()}
+                        {renderHeaderActions()}
 
                         {/* Details - Features & Description */}
                         <div className="">
                             {/* Features */}
                             {/* Features */}
                             {/* Features Grid */}
-                            <Card className="rounded-3xl overflow-hidden mb-8 mt-8 shadow-sm border-gray-100">
+                            <Card className="rounded-3xl overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
                                     {/* Row 1 */}
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
@@ -951,7 +1694,7 @@ const ListingDetailPage = () => {
                                         </div>
 
                                         {/* Map Utilities */}
-                                        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 py-4 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                                             <div className="flex items-center gap-6">
                                                 <div className="flex items-center text-sm text-gray-500">
                                                     <MapPinIcon className="w-5 h-5 mr-2 text-primary-500" />
@@ -990,184 +1733,272 @@ const ListingDetailPage = () => {
                         </div>
                     </div>
 
-                </div >
-            </div >
-
-            {/* Related Listings Section */}
-            {
-                relatedListings.length > 0 && (
-                    <div className="max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-20 py-12 border-t border-gray-100">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {relatedListings.map((related) => (
-                                <ListingCard key={related.id} listing={related} viewMode="grid" />
-                            ))}
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* Gallery Modal - Lightbox Style */}
-            {
-                isGalleryOpen && (
-                    <div className="fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm animate-in fade-in duration-300">
-                        {/* Dynamic Blurred Background */}
-                        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-                            <img
-                                src={getMediaUrl(images[galleryIndex].url)}
-                                alt=""
-                                className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
-                            />
-                            <div className="absolute inset-0 bg-black/60" />
-                        </div>
-
-                        {/* Header: Counter & Close */}
-                        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[120] font-bold">
-                            <div className="text-white/90 font-medium tracking-wide">
-                                {galleryIndex + 1} / {images.length}
-                            </div>
-                            <button
-                                onClick={() => setIsGalleryOpen(false)}
-                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-105 pointer-events-auto"
-                            >
-                                <XMarkIcon className="w-8 h-8" />
-                            </button>
-                        </div>
-
-                        {/* Main Image */}
-                        <div className="relative z-10 w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
-                            <img
-                                src={getMediaUrl(images[galleryIndex].url)}
-                                alt={`Gallery ${galleryIndex + 1}`}
-                                className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
-                            />
-                        </div>
-
-                        {/* Navigation Buttons (Huge) */}
-                        {images.length > 1 && (
-                            <>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
-                                    }}
-                                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
-                                >
-                                    <ChevronLeftIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:-translate-x-1 transition-transform" />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setGalleryIndex((prev) => (prev + 1) % images.length);
-                                    }}
-                                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
-                                >
-                                    <ChevronRightIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            </>
-                        )}
-
-                        {/* Bottom Caption (Optional) */}
-                        <div className="absolute bottom-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90 text-sm font-medium tracking-wide z-[120]">
-                            {listing.title} | {formatPrice(listing.price)}{listing.listing_type === 'rent' && '/mo'}
-                        </div>
-                    </div>
-                )
-            }
-            {isContactOverlayOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
-                    {/* Backdrop with extreme dark blur */}
-                    <div
-                        className="absolute inset-0 bg-black/70 backdrop-blur-2xl"
-                        onClick={() => setIsContactOverlayOpen(false)}
-                    />
-
-                    {/* Absolute Viewport Close Button (X) */}
-                    <button
-                        onClick={() => setIsContactOverlayOpen(false)}
-                        className="fixed top-8 right-8 p-4 text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-full z-[120] active:scale-95 group shadow-2xl"
-                    >
-                        <XMarkIcon className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
-                    </button>
-
-                    {/* Content Container - No background, just centered content */}
-                    <div className="relative w-full max-w-lg p-8 pb-12 sm:pb-8 flex flex-col items-center text-center animate-in slide-in-from-bottom-20 duration-500 ease-out">
-                        {/* Pull Bar for mobile feel */}
-                        <div className="w-12 h-1.5 bg-white/20 rounded-full mb-8 sm:hidden" />
-
-                        <div className="mb-8">
-                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
-                                <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-3xl font-black text-white tracking-tight mb-2">Interested?</h3>
-                            <p className="text-white/80 font-bold px-4 leading-relaxed">Select your preferred contact method to schedule a viewing.</p>
-                        </div>
-
-                        <div className="w-full grid grid-cols-1 gap-4">
-                            <a
-                                href="https://line.me/ti/p/~kiki33467"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#06C755' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <ChatBubbleOvalLeftEllipsisIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Line</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="tel:0951953607"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-gray-900 hover:bg-black shadow-lg active:shadow-inner"
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <PhoneIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Call Agent</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="viber://chat?number=%2B66951953607"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#7360f2' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <ChatBubbleLeftRightIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">Viber</span>
-                                </div>
-                            </a>
-
-                            <a
-                                href="https://wa.me/66951953607"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center w-full py-5 rounded-[2rem] text-white font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg active:shadow-inner"
-                                style={{ backgroundColor: '#25D366' }}
-                            >
-                                <div className="flex items-center w-40 space-x-5">
-                                    <DevicePhoneMobileIcon className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-xl">WhatsApp</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
                 </div>
-            )}
 
-            {/* Floating Contact FAB - Modern Circular Design (Visible on all devices) */}
-            <div className={`fixed bottom-24 md:bottom-10 right-6 md:right-10 z-[45] transition-all duration-500 ${isContactOverlayOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
-                <button
-                    onClick={() => setIsContactOverlayOpen(true)}
-                    className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-primary-600 text-white rounded-full shadow-[0_20px_40px_rgba(37,99,235,0.35)] hover:bg-primary-700 hover:scale-110 transition-all active:scale-90 group overflow-hidden"
-                >
-                    {/* Ripple/Pulse Effect */}
-                    <div className="absolute inset-0 bg-white/20 animate-ping rounded-full opacity-20" />
-                    <ChatBubbleLeftRightIcon className="w-7 h-7 md:w-9 md:h-9 relative z-10" />
-                </button>
+                {/* Related Listings Section */}
+                {
+                    relatedListings.length > 0 && (
+                        <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {relatedListings.map((related) => (
+                                    <ListingCard key={related.id} listing={related} viewMode="grid" />
+                                ))}
+                            </div>
+                        </div>
+                    )
+                }
+
+                {/* Gallery Modal - Lightbox Style */}
+                {
+                    isGalleryOpen && (
+                        <div className="fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm animate-in fade-in duration-300">
+                            {/* Dynamic Blurred Background */}
+                            <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                                <img
+                                    src={getMediaUrl(images[galleryIndex].url)}
+                                    alt=""
+                                    className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/60" />
+                            </div>
+
+                            {/* Header: Counter & Close */}
+                            <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[120] font-bold">
+                                <div className="text-white/90 font-medium tracking-wide">
+                                    {galleryIndex + 1} / {images.length}
+                                </div>
+                                <button
+                                    onClick={() => setIsGalleryOpen(false)}
+                                    className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-105 pointer-events-auto"
+                                >
+                                    <XMarkIcon className="w-8 h-8" />
+                                </button>
+                            </div>
+
+                            {/* Main Image */}
+                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
+                                <img
+                                    src={getMediaUrl(images[galleryIndex].url)}
+                                    alt={`Gallery ${galleryIndex + 1}`}
+                                    className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+                                />
+                            </div>
+
+                            {/* Navigation Buttons (Huge) */}
+                            {images.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
+                                        }}
+                                        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
+                                    >
+                                        <ChevronLeftIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:-translate-x-1 transition-transform" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setGalleryIndex((prev) => (prev + 1) % images.length);
+                                        }}
+                                        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
+                                    >
+                                        <ChevronRightIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Bottom Caption (Optional) */}
+                            <div className="absolute bottom-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90 text-sm font-medium tracking-wide z-[120]">
+                                {listing.title} | {formatPrice(listing.price)}{listing.listing_type === 'rent' && '/mo'}
+                            </div>
+                        </div>
+                    )
+                }
+                {
+                    isContactOverlayOpen && (
+                        <>
+                            {/* Local Backdrop */}
+                            <div
+                                className="absolute inset-x-0 bottom-0 top-0 bg-black/40 backdrop-blur-[2px] z-[55] animate-in fade-in duration-300"
+                                onClick={() => setIsContactOverlayOpen(false)}
+                            />
+
+                            <div
+                                className="absolute top-0 left-0 right-0 bottom-0 z-[60] backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-b animate-in slide-in-from-top-2 duration-300 overflow-y-auto modal-scrollable contact-modal-scrollable"
+                                style={{ backgroundColor: 'var(--menu-bg-color, rgba(255, 255, 255, 0.95))', borderColor: 'var(--menu-border, #f3f4f6)' }}
+                            >
+                                <div className="max-w-2xl mx-auto p-8 relative flex flex-col items-center text-center">
+
+                                    {/* Header */}
+                                    <div className="mb-12 w-full">
+                                        <h3 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Let's Connect</h3>
+                                        <p className="text-gray-600 text-lg font-medium">Choose your preferred way to reach out</p>
+                                    </div>
+
+                                    {/* Contact Options Grid */}
+                                    <div className="w-full grid grid-cols-2 gap-6 max-w-xl">
+                                        {/* Line */}
+                                        <a
+                                            href="https://line.me/ti/p/~kiki33467"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="group flex flex-col items-center justify-center p-8 rounded-3xl transition-all duration-300 hover:scale-105 active:scale-95"
+                                            style={{
+                                                background: 'linear-gradient(135deg, rgba(6, 199, 85, 0.15) 0%, rgba(6, 199, 85, 0.05) 100%)',
+                                                backdropFilter: 'blur(10px)',
+                                                WebkitBackdropFilter: 'blur(10px)',
+                                                border: '1.5px solid rgba(6, 199, 85, 0.2)',
+                                                boxShadow: '0 4px 12px rgba(6, 199, 85, 0.1)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(6, 199, 85, 0.2)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(6, 199, 85, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(6, 199, 85, 0.1)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(6, 199, 85, 0.2)';
+                                            }}
+                                        >
+                                            <div
+                                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
+                                                style={{
+                                                    backgroundColor: '#06C755',
+                                                    boxShadow: '0 4px 12px rgba(6, 199, 85, 0.3)'
+                                                }}
+                                            >
+                                                <ChatBubbleOvalLeftEllipsisIcon className="w-8 h-8 text-white" />
+                                            </div>
+                                            <span className="text-xl font-black text-gray-900">Line</span>
+                                        </a>
+
+                                        {/* Call */}
+                                        <a
+                                            href="tel:0951953607"
+                                            className="group flex flex-col items-center justify-center p-8 rounded-3xl transition-all duration-300 hover:scale-105 active:scale-95"
+                                            style={{
+                                                background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.15) 0%, rgba(17, 24, 39, 0.05) 100%)',
+                                                backdropFilter: 'blur(10px)',
+                                                WebkitBackdropFilter: 'blur(10px)',
+                                                border: '1.5px solid rgba(17, 24, 39, 0.2)',
+                                                boxShadow: '0 4px 12px rgba(17, 24, 39, 0.1)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(17, 24, 39, 0.2)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(17, 24, 39, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(17, 24, 39, 0.1)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(17, 24, 39, 0.2)';
+                                            }}
+                                        >
+                                            <div
+                                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
+                                                style={{
+                                                    backgroundColor: '#111827',
+                                                    boxShadow: '0 4px 12px rgba(17, 24, 39, 0.3)'
+                                                }}
+                                            >
+                                                <PhoneIcon className="w-8 h-8 text-white" />
+                                            </div>
+                                            <span className="text-xl font-black text-gray-900">Call</span>
+                                        </a>
+
+                                        {/* Viber */}
+                                        <a
+                                            href="viber://chat?number=%2B66951953607"
+                                            className="group flex flex-col items-center justify-center p-8 rounded-3xl transition-all duration-300 hover:scale-105 active:scale-95"
+                                            style={{
+                                                background: 'linear-gradient(135deg, rgba(115, 96, 242, 0.15) 0%, rgba(115, 96, 242, 0.05) 100%)',
+                                                backdropFilter: 'blur(10px)',
+                                                WebkitBackdropFilter: 'blur(10px)',
+                                                border: '1.5px solid rgba(115, 96, 242, 0.2)',
+                                                boxShadow: '0 4px 12px rgba(115, 96, 242, 0.1)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(115, 96, 242, 0.2)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(115, 96, 242, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(115, 96, 242, 0.1)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(115, 96, 242, 0.2)';
+                                            }}
+                                        >
+                                            <div
+                                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
+                                                style={{
+                                                    backgroundColor: '#7360f2',
+                                                    boxShadow: '0 4px 12px rgba(115, 96, 242, 0.3)'
+                                                }}
+                                            >
+                                                <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
+                                            </div>
+                                            <span className="text-xl font-black text-gray-900">Viber</span>
+                                        </a>
+
+                                        {/* WhatsApp */}
+                                        <a
+                                            href="https://wa.me/66951953607"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="group flex flex-col items-center justify-center p-8 rounded-3xl transition-all duration-300 hover:scale-105 active:scale-95"
+                                            style={{
+                                                background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.15) 0%, rgba(37, 211, 102, 0.05) 100%)',
+                                                backdropFilter: 'blur(10px)',
+                                                WebkitBackdropFilter: 'blur(10px)',
+                                                border: '1.5px solid rgba(37, 211, 102, 0.2)',
+                                                boxShadow: '0 4px 12px rgba(37, 211, 102, 0.1)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 211, 102, 0.2)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(37, 211, 102, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 211, 102, 0.1)';
+                                                e.currentTarget.style.border = '1.5px solid rgba(37, 211, 102, 0.2)';
+                                            }}
+                                        >
+                                            <div
+                                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
+                                                style={{
+                                                    backgroundColor: '#25D366',
+                                                    boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+                                                }}
+                                            >
+                                                <DevicePhoneMobileIcon className="w-8 h-8 text-white" />
+                                            </div>
+                                            <span className="text-xl font-black text-gray-900">WhatsApp</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )
+                }
+
+                {/* Floating Contact FAB removed as it is now in the nav bar */}
+
+                {/* Toast Container for notifications */}
+                <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                />
             </div>
-        </div >
+        </div>
     );
+};
+
+const ListingDetailPage = () => {
+    return <ListingDetailView />;
 };
 
 export default ListingDetailPage;

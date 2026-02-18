@@ -17,7 +17,38 @@ import {
     PhoneIcon,
     EnvelopeIcon,
     MapIcon,
+    HeartIcon,
 } from '@heroicons/react/24/outline';
+import {
+    FiSearch,
+    FiHome,
+    FiKey,
+    FiDollarSign,
+    FiPlusCircle,
+    FiStar,
+    FiClock,
+    FiMapPin,
+    FiHeart,
+    FiUsers,
+    FiBookOpen,
+    FiBriefcase,
+    FiZap,
+    FiMessageCircle,
+    FiFacebook,
+    FiCalendar,
+    FiUser,
+    FiShield,
+    FiFileText,
+    FiTruck,
+    FiSettings,
+} from 'react-icons/fi';
+import { CiBookmark } from 'react-icons/ci';
+import {
+    HiOutlineBuildingOffice2,
+    HiOutlineHomeModern,
+    HiOutlineBuildingStorefront,
+    HiOutlineGlobeAsiaAustralia,
+} from 'react-icons/hi2';
 import Logo from '../Common/Logo';
 import { getMediaUrl } from '../../utils/media';
 import { publicApi } from '../../services/api';
@@ -36,9 +67,11 @@ const PublicLayout = () => {
     const navigation = isMainDomain ? [
         { name: 'Features', href: '/#features', icon: BuildingOfficeIcon },
         { name: 'Plans', href: '/#plans', icon: ChartBarIcon },
+        { name: 'Services', href: '/services', icon: FiBriefcase },
     ] : [
         { name: 'Home', href: '/', icon: HomeIcon },
         { name: 'Properties', href: '/listings', icon: BuildingOfficeIcon },
+        { name: 'Services', href: '/services', icon: FiBriefcase },
     ];
 
     const navigate = useNavigate();
@@ -192,17 +225,20 @@ const PublicLayout = () => {
                     />
 
                     {/* Drawer Panel */}
-                    <div className="absolute inset-y-0 left-0 w-3/4 max-w-xs bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-out">
+                    <div className="absolute inset-y-0 left-0 w-3/4 max-w-xs shadow-2xl transform transition-transform duration-300 ease-out border-r" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
                         <div className="flex flex-col h-full">
                             {/* Drawer Header */}
-                            <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
+                            <div className="h-16 flex items-center justify-between px-4 border-b" style={{ borderColor: 'var(--menu-border)' }}>
                                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                                    <Logo className="w-8 h-8 text-white" />
-                                    <span className="text-xl font-bold text-white">Super</span>
+                                    <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
+                                    <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>Super</span>
                                 </Link>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg"
+                                    className="p-2 transition-colors rounded-lg"
+                                    style={{ color: 'var(--menu-text-secondary)', hoverBg: 'var(--menu-hover-bg)' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
                                     <XMarkIcon className="w-6 h-6" />
                                 </button>
@@ -227,21 +263,21 @@ const PublicLayout = () => {
 
                                                 {/* Mega Menu Dropdown */}
                                                 <div className="relative left-0 w-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] p-2">
-                                                    <div className="bg-gray-800 backdrop-blur-xl shadow-xl border border-white/10 overflow-hidden p-4" style={{ borderRadius: 'var(--menu-radius)' }}>
+                                                    <div className="backdrop-blur-xl shadow-xl border border-white/10 overflow-hidden p-4" style={{ borderRadius: 'var(--menu-radius)', backgroundColor: 'var(--menu-bg-color)' }}>
 
                                                         {/* Property Types */}
                                                         <div className="flex flex-col gap-1 mb-4">
-                                                            <Link to="/listings" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors group/link">
-                                                                <span className="font-medium">All Properties</span>
-                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                                            <Link to="/listings" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                                <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>All Properties</span>
+                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
-                                                            <Link to="/listings?type=rent" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors group/link">
-                                                                <span className="font-medium">To Rent</span>
-                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                                            <Link to="/listings?type=rent" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                                <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>To Rent</span>
+                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
-                                                            <Link to="/listings?type=sale" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors group/link">
-                                                                <span className="font-medium">To Buy</span>
-                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                                            <Link to="/listings?type=sale" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                                <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>To Buy</span>
+                                                                <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
                                                         </div>
 
@@ -249,7 +285,7 @@ const PublicLayout = () => {
 
                                                         {/* Station Selector */}
                                                         <div className="mb-4">
-                                                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                                                            <label className="text-xs font-semibold uppercase tracking-wider mb-2 block" style={{ color: 'var(--menu-text-muted)' }}>
                                                                 Station
                                                             </label>
                                                             <div className="relative">
@@ -266,10 +302,11 @@ const PublicLayout = () => {
                                                         {/* Map Toggle */}
                                                         <div
                                                             onClick={toggleMapView}
-                                                            className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isMapView
-                                                                ? 'bg-primary-900/30 border-primary-700 shadow-inner'
-                                                                : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
-                                                                }`}
+                                                            className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border`}
+                                                            style={{
+                                                                backgroundColor: isMapView ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--menu-hover-bg)',
+                                                                borderColor: isMapView ? 'var(--primary-color)' : 'var(--menu-border)'
+                                                            }}
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isMapView ? 'bg-primary-600 text-white' : 'bg-white/10 text-gray-400 border border-white/10'
@@ -277,10 +314,10 @@ const PublicLayout = () => {
                                                                     <MapIcon className="w-4 h-4" />
                                                                 </div>
                                                                 <div>
-                                                                    <div className={`font-semibold text-sm ${isMapView ? 'text-primary-400' : 'text-white'}`}>
+                                                                    <div className="font-semibold text-sm" style={{ color: isMapView ? 'var(--primary-color)' : 'var(--menu-text-primary)' }}>
                                                                         Map View
                                                                     </div>
-                                                                    <div className="text-xs text-gray-500">
+                                                                    <div className="text-xs" style={{ color: 'var(--menu-text-secondary)' }}>
                                                                         {isMapView ? 'Active' : 'Switch to map'}
                                                                     </div>
                                                                 </div>
@@ -305,10 +342,13 @@ const PublicLayout = () => {
                                             key={item.name}
                                             to={item.href}
                                             onClick={() => setMobileMenuOpen(false)}
-                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive(item.href)
-                                                ? 'bg-primary-900/30 text-primary-400'
-                                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                                                }`}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors`}
+                                            style={{
+                                                color: isActive(item.href) ? 'var(--primary-color)' : 'var(--menu-text-primary)',
+                                                backgroundColor: isActive(item.href) ? 'rgba(var(--primary-rgb), 0.1)' : 'transparent'
+                                            }}
+                                            onMouseEnter={(e) => !isActive(item.href) && (e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)')}
+                                            onMouseLeave={(e) => !isActive(item.href) && (e.currentTarget.style.backgroundColor = 'transparent')}
                                         >
                                             <item.icon className="w-5 h-5" />
                                             <span>{item.name}</span>
@@ -357,8 +397,13 @@ const PublicLayout = () => {
                                                 }
                                                 setMobileMenuOpen(false);
                                             }}
-                                            className="block w-full text-center py-2.5 bg-white/5 border border-white/10 text-gray-200 font-semibold shadow-sm hover:bg-white/10 transition-all"
-                                            style={{ borderRadius: 'var(--btn-radius)' }}
+                                            className="block w-full text-center py-2.5 bg-white/5 border font-semibold shadow-sm transition-all"
+                                            style={{
+                                                borderRadius: 'var(--btn-radius)',
+                                                color: 'var(--menu-text-primary)',
+                                                borderColor: 'var(--menu-border)',
+                                                backgroundColor: 'var(--menu-hover-bg)'
+                                            }}
                                         >
                                             Dashboard
                                         </Link>
@@ -378,8 +423,13 @@ const PublicLayout = () => {
                                         <Link
                                             to="/login"
                                             onClick={() => setMobileMenuOpen(false)}
-                                            className="flex justify-center py-2.5 bg-white/5 border border-white/10 text-gray-200 font-semibold shadow-sm hover:bg-white/10 transition-all"
-                                            style={{ borderRadius: 'var(--btn-radius)' }}
+                                            className="flex justify-center py-2.5 border font-semibold shadow-sm transition-all"
+                                            style={{
+                                                borderRadius: 'var(--btn-radius)',
+                                                color: 'var(--menu-text-primary)',
+                                                borderColor: 'var(--menu-border)',
+                                                backgroundColor: 'var(--menu-hover-bg)'
+                                            }}
                                         >
                                             Sign In
                                         </Link>
@@ -403,8 +453,11 @@ const PublicLayout = () => {
             {
                 !isMapView && (
                     <nav
-                        className={`hidden md:block border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
-                        style={{ backgroundColor: theme.primaryColor || '#111827' }}
+                        className={`hidden md:block border-b sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                        style={{
+                            backgroundColor: theme.primaryColor || '#111827',
+                            borderColor: 'var(--nav-border)'
+                        }}
                     >
                         <div className="w-full px-4 sm:px-6 lg:px-8">
                             <div className="flex items-center justify-between h-16">
@@ -430,13 +483,13 @@ const PublicLayout = () => {
                                 ) : (
                                     <>
                                         {/* Logo */}
-                                        <Link to="/" className="flex items-center space-x-2 group">
+                                        <Link to="/" className="flex items-center space-x-3 group">
                                             {theme.logoUrl ? (
-                                                <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
+                                                <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-8 h-8 object-contain" />
                                             ) : (
-                                                <Logo className="w-8 h-8 text-white" />
+                                                <Logo className="w-8 h-8" style={{ color: 'var(--nav-text)' }} />
                                             )}
-                                            <span className="text-xl font-bold text-white group-hover:text-white/90 transition-colors">
+                                            <span className="text-xl font-bold group-hover:opacity-90 transition-opacity" style={{ color: 'var(--nav-text)' }}>
                                                 {theme.headerText || 'Super Real Estate'}
                                             </span>
                                         </Link>
@@ -448,132 +501,263 @@ const PublicLayout = () => {
                                                     return (
                                                         <div key={item.name} className="relative group px-1">
                                                             <button
-                                                                className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${isActive(item.href)
-                                                                    ? 'bg-white/15 text-white shadow-sm'
-                                                                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                                                                    }`}
-                                                                style={{ borderRadius: 'var(--menu-radius)' }}
+                                                                className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5`}
+                                                                style={{
+                                                                    borderRadius: 'var(--btn-radius)',
+                                                                    color: 'var(--nav-text)',
+                                                                    backgroundColor: 'transparent'
+                                                                }}
+                                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                                                             >
                                                                 <span>{item.name}</span>
                                                                 <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
                                                             </button>
 
                                                             {/* Mega Menu Dropdown */}
-                                                            <div className="absolute left-1/2 -translate-x-1/2 top-full pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-[900px]">
-                                                                <div className="bg-gray-900/95 backdrop-blur-xl shadow-2xl border border-white/10 p-6" style={{ borderRadius: 'var(--menu-radius)' }}>
-                                                                    <div className="grid grid-cols-12 gap-8">
+                                                            <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
+                                                                <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
+                                                                    <div className="w-full px-12 py-10">
+                                                                        <div className="grid grid-cols-5 gap-12 relative">
 
-                                                                        {/* Column 1: Navigation Links (Span 3) */}
-                                                                        <div className="col-span-3 border-r border-white/10 pr-8">
-                                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                                                                                Browse Properties
-                                                                            </h3>
-                                                                            <div className="flex flex-col gap-2">
-                                                                                <Link to="/listings" className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 text-gray-200 hover:text-white transition-all group/link">
-                                                                                    <div className="flex flex-col">
-                                                                                        <span className="font-semibold text-base">All Properties</span>
-                                                                                        <span className="text-xs text-gray-500 font-normal">Explore our complete inventory</span>
+                                                                            {/* Column 1: Browse Properties */}
+                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-primary-600/20 flex items-center justify-center">
+                                                                                        <FiSearch className="w-4 h-4 text-primary-500" />
                                                                                     </div>
-                                                                                    <ArrowRightOnRectangleIcon className="w-5 h-5 opacity-0 group-hover/link:opacity-100 transition-all transform group-hover/link:translate-x-1" />
-                                                                                </Link>
-                                                                                <Link to="/listings?type=rent" className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 text-gray-200 hover:text-white transition-all group/link">
-                                                                                    <div className="flex flex-col">
-                                                                                        <span className="font-semibold text-base">To Rent</span>
-                                                                                        <span className="text-xs text-gray-500 font-normal">Find your next rental home</span>
-                                                                                    </div>
-                                                                                    <ArrowRightOnRectangleIcon className="w-5 h-5 opacity-0 group-hover/link:opacity-100 transition-all transform group-hover/link:translate-x-1" />
-                                                                                </Link>
-                                                                                <Link to="/listings?type=sale" className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 text-gray-200 hover:text-white transition-all group/link">
-                                                                                    <div className="flex flex-col">
-                                                                                        <span className="font-semibold text-base">To Buy</span>
-                                                                                        <span className="text-xs text-gray-500 font-normal">Invest in your dream property</span>
-                                                                                    </div>
-                                                                                    <ArrowRightOnRectangleIcon className="w-5 h-5 opacity-0 group-hover/link:opacity-100 transition-all transform group-hover/link:translate-x-1" />
-                                                                                </Link>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Column 2: Filters & Tools (Span 4) */}
-                                                                        <div className="col-span-4 border-r border-white/10 pr-8">
-                                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                                                                                Quick Filters
-                                                                            </h3>
-
-                                                                            {/* Station Selector */}
-                                                                            <div className="mb-6">
-                                                                                <label className="text-sm font-semibold text-gray-300 mb-2 block">
-                                                                                    Search by Station
-                                                                                </label>
-                                                                                <StyledSelect
-                                                                                    options={stationOptions}
-                                                                                    onChange={handleStationChange}
-                                                                                    placeholder="Select a BTS/MRT Station"
-                                                                                    isSearchable={true}
-                                                                                    className="w-full"
-                                                                                />
-                                                                                <p className="text-xs text-gray-500 mt-2 ml-1">
-                                                                                    Find properties near popular transit lines
-                                                                                </p>
-                                                                            </div>
-
-                                                                            {/* Map Toggle */}
-                                                                            <div
-                                                                                onClick={toggleMapView}
-                                                                                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all border group/map ${isMapView
-                                                                                    ? 'bg-primary-900/30 border-primary-700 shadow-inner'
-                                                                                    : 'bg-white/5 border-white/10 hover:border-white/20 hover:shadow-md'
-                                                                                    }`}
-                                                                            >
-                                                                                <div className="flex items-center gap-4">
-                                                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isMapView ? 'bg-primary-600 text-white' : 'bg-white/10 text-gray-400 group-hover/map:bg-white/20 group-hover/map:text-white'
-                                                                                        }`}>
-                                                                                        <MapIcon className="w-5 h-5" />
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        <div className={`font-bold text-sm ${isMapView ? 'text-primary-400' : 'text-white'}`}>
-                                                                                            Interactive Map View
-                                                                                        </div>
-                                                                                        <div className="text-xs text-gray-500">
-                                                                                            {isMapView ? 'Currently Active' : 'Switch to explore on map'}
-                                                                                        </div>
-                                                                                    </div>
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3>
                                                                                 </div>
-
-                                                                                <div className={`w-12 h-7 rounded-full transition-colors relative ${isMapView ? 'bg-primary-600' : 'bg-gray-600'
-                                                                                    }`}>
-                                                                                    <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${isMapView ? 'translate-x-5' : 'translate-x-0'
-                                                                                        }`} />
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    {[
+                                                                                        { name: 'All Properties', href: '/listings', icon: FiSearch },
+                                                                                        { name: 'Properties for Rent', href: '/listings?type=rent', icon: FiKey },
+                                                                                        { name: 'Properties for Sale', href: '/listings?type=sale', icon: FiDollarSign },
+                                                                                        { name: 'New Listings', href: '/listings?sort=newest', icon: FiPlusCircle },
+                                                                                        { name: 'Featured Properties', href: '/listings?featured=true', icon: FiStar },
+                                                                                        { name: 'Ready to Move', href: '/listings', icon: FiClock },
+                                                                                    ].map((link) => (
+                                                                                        <Link
+                                                                                            key={link.name}
+                                                                                            to={link.href}
+                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                        >
+                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
+                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                        </Link>
+                                                                                    ))}
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
 
-                                                                        {/* Column 3: Featured / Visual (Span 5) */}
-                                                                        <div className="col-span-5 pl-4">
-                                                                            <div className="relative h-full rounded-2xl overflow-hidden bg-gray-900 group/card">
-                                                                                <img
-                                                                                    src="https://images.unsplash.com/photo-1600596542815-2495db9a72c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                                                                    alt="Luxury Home"
-                                                                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover/card:scale-105 transition-transform duration-700"
-                                                                                />
-                                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                                                                                <div className="absolute bottom-0 left-0 p-6">
-                                                                                    <span className="inline-block px-3 py-1 bg-primary-600 text-white text-xs font-bold rounded-full mb-3">
-                                                                                        FEATURED
-                                                                                    </span>
-                                                                                    <h3 className="text-2xl font-bold text-white mb-2 leading-tight">
-                                                                                        Discover Your Dream Home
-                                                                                    </h3>
-                                                                                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                                                                                        Explore our exclusive collection of premium properties across the city.
+                                                                            {/* Column 2: Property Types */}
+                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                                                                                        <HiOutlineHomeModern className="w-4 h-4 text-purple-500" />
+                                                                                    </div>
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Types</h3>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    {[
+                                                                                        { name: 'Condo', href: '/listings?category=Condo', icon: HiOutlineBuildingOffice2 },
+                                                                                        { name: 'Apartment', href: '/listings?category=Apartment', icon: HiOutlineHomeModern },
+                                                                                        { name: 'House', href: '/listings?category=House', icon: FiHome },
+                                                                                        { name: 'Townhome', href: '/listings?category=Townhouse', icon: HiOutlineBuildingStorefront },
+                                                                                        { name: 'Commercial', href: '/listings?category=Commercial', icon: FiBriefcase },
+                                                                                        { name: 'Land', href: '/listings?category=Land', icon: HiOutlineGlobeAsiaAustralia },
+                                                                                    ].map((link) => (
+                                                                                        <Link
+                                                                                            key={link.name}
+                                                                                            to={link.href}
+                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                        >
+                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
+                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                        </Link>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Column 3: Locations */}
+                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                                                                                        <FiMapPin className="w-4 h-4 text-blue-500" />
+                                                                                    </div>
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    {[
+                                                                                        { name: 'Sukhumvit Area', href: '/listings?search=Sukhumvit' },
+                                                                                        { name: 'Rama 9 Area', href: '/listings?search=Rama 9' },
+                                                                                        { name: 'Silom / Sathorn', href: '/listings?search=Silom' },
+                                                                                        { name: 'Ladprao / Bangna', href: '/listings?search=Ladprao' },
+                                                                                        { name: 'Near BTS Stations', href: '/listings?transport=bts' },
+                                                                                        { name: 'Near MRT Stations', href: '/listings?transport=mrt' },
+                                                                                    ].map((link) => (
+                                                                                        <Link
+                                                                                            key={link.name}
+                                                                                            to={link.href}
+                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                        >
+                                                                                            <FiMapPin className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
+                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                        </Link>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Column 4: Needs */}
+                                                                            <div className="space-y-8 pr-6">
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center">
+                                                                                        <FiZap className="w-4 h-4 text-emerald-500" />
+                                                                                    </div>
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Featured</h3>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    {[
+                                                                                        { name: 'Luxury Properties', href: '/listings?min_price=100000', icon: FiHeart },
+                                                                                        { name: 'Pet-Friendly Homes', href: '/listings?tags=pet-friendly', icon: FiZap },
+                                                                                        { name: 'Family Homes', href: '/listings?tags=family', icon: FiUsers },
+                                                                                        { name: 'Students & Faculty', href: '/listings?near=university', icon: FiBookOpen },
+                                                                                        { name: 'Business Centric', href: '/listings?near=business', icon: FiBriefcase },
+                                                                                        { name: 'Budget Friendly', href: '/listings?max_price=20000', icon: FiDollarSign },
+                                                                                    ].map((link) => (
+                                                                                        <Link
+                                                                                            key={link.name}
+                                                                                            to={link.href}
+                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                        >
+                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
+                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                        </Link>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Column 5: Promo Card */}
+                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-end">
+                                                                                <div className="h-full rounded-[3px] p-8 backdrop-blur-3xl border shadow-md transition-all duration-500 hover:shadow-lg flex flex-col justify-center items-center text-center group-hover/promo:-translate-y-1" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
+                                                                                    <div className="mb-6 p-4 rounded-[3px] bg-primary-500/10 border border-primary-500/20 group-hover/promo:scale-110 transition-transform duration-500">
+                                                                                        <FiZap className="w-8 h-8 text-primary-500" />
+                                                                                    </div>
+                                                                                    <h3 className="text-xl font-black mb-2 leading-tight" style={{ color: 'var(--menu-text-primary)' }}>Elevate Your Living</h3>
+                                                                                    <p className="text-[12px] mb-6 font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
+                                                                                        Experience unparalleled luxury with our elite collection of prime real estate.
                                                                                     </p>
-                                                                                    <Link to="/listings" className="inline-flex items-center text-white font-semibold hover:text-primary-400 transition-colors">
-                                                                                        Start Browsing
-                                                                                        <ArrowRightOnRectangleIcon className="w-5 h-5 ml-2" />
+                                                                                    <Link to="/listings" className="group/btn relative inline-flex items-center gap-2 px-8 py-3 bg-primary-600 text-white font-black text-[11px] uppercase tracking-widest rounded-[3px] overflow-hidden transition-all hover:pr-10 active:scale-95 shadow-lg shadow-primary-600/20">
+                                                                                        <span className="relative z-10">Explore Now</span>
+                                                                                        <FiZap className="w-4 h-4 relative z-10" />
+                                                                                        <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                                     </Link>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
 
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                if (item.name === 'Services') {
+                                                    return (
+                                                        <div key={item.name} className="relative group px-1">
+                                                            <button
+                                                                className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5`}
+                                                                style={{
+                                                                    borderRadius: 'var(--btn-radius)',
+                                                                    color: 'var(--nav-text)',
+                                                                    backgroundColor: 'transparent'
+                                                                }}
+                                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                            >
+                                                                <span>{item.name}</span>
+                                                                <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+                                                            </button>
+
+                                                            {/* Services Mega Menu Dropdown */}
+                                                            <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
+                                                                <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
+                                                                    <div className="w-full px-12 py-10">
+                                                                        <div className="grid grid-cols-3 gap-16 max-w-7xl mx-auto">
+                                                                            {/* Column 1: Find Your Property */}
+                                                                            <div className="flex flex-col">
+                                                                                <div className="flex items-center gap-2 mb-6">
+                                                                                    <FiSearch className="w-5 h-5 text-primary-500 ml-1" />
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3>
+                                                                                </div>
+                                                                                <div className="space-y-2">
+                                                                                    {[
+                                                                                        { title: 'Find a Rental Home', desc: 'Verified listings based on your budget and lifestyle.', icon: FiHome },
+                                                                                        { title: 'Buy a Property', desc: 'Expert guidance and negotiation support for purchases.', icon: FiSearch },
+                                                                                        { title: 'Schedule a Viewing', desc: 'Book property tours quickly at your convenience.', icon: FiCalendar },
+                                                                                    ].map((service, idx) => (
+                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
+                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-primary-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
+                                                                                                <service.icon className="w-full h-full" />
+                                                                                            </div>
+                                                                                            <div className="flex flex-col justify-center">
+                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-primary-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
+                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Column 2: Owners & Investment */}
+                                                                            <div className="flex flex-col">
+                                                                                <div className="flex items-center gap-2 mb-6">
+                                                                                    <FiBriefcase className="w-5 h-5 text-purple-500 ml-1" />
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Owners & Investors</h3>
+                                                                                </div>
+                                                                                <div className="space-y-2">
+                                                                                    {[
+                                                                                        { title: 'List Your Property', desc: 'Promote your property to qualified tenants and buyers.', icon: FiPlusCircle },
+                                                                                        { title: 'Property Management', desc: 'Rent collection and maintenance coordination.', icon: FiSettings },
+                                                                                        { title: 'Investment Consultation', desc: 'Advice on high-yield locations and rental demand.', icon: FiDollarSign },
+                                                                                    ].map((service, idx) => (
+                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
+                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-purple-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
+                                                                                                <service.icon className="w-full h-full" />
+                                                                                            </div>
+                                                                                            <div className="flex flex-col justify-center">
+                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-purple-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
+                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Column 3: Extra Support */}
+                                                                            <div className="flex flex-col">
+                                                                                <div className="flex items-center gap-2 mb-6">
+                                                                                    <FiTruck className="w-5 h-5 text-blue-500 ml-1" />
+                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3>
+                                                                                </div>
+                                                                                <div className="space-y-2">
+                                                                                    {[
+                                                                                        { title: 'Relocation Support', desc: 'Helping expats find homes near BTS and schools.', icon: FiTruck },
+                                                                                        { title: 'Area Recommendations', desc: 'Neighborhood suggestions based on your budget.', icon: FiMapPin },
+                                                                                        { title: 'Legal & Contract Support', desc: 'Rental agreements and property paperwork assistance.', icon: FiFileText },
+                                                                                    ].map((service, idx) => (
+                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
+                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-blue-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
+                                                                                                <service.icon className="w-full h-full" />
+                                                                                            </div>
+                                                                                            <div className="flex flex-col justify-center">
+                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-blue-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
+                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -585,11 +769,14 @@ const PublicLayout = () => {
                                                     <Link
                                                         key={item.name}
                                                         to={item.href}
-                                                        className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 ${isActive(item.href)
-                                                            ? 'bg-white/15 text-white shadow-sm'
-                                                            : 'text-white/80 hover:bg-white/10 hover:text-white'
-                                                            }`}
-                                                        style={{ borderRadius: 'var(--btn-radius)' }}
+                                                        className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200`}
+                                                        style={{
+                                                            borderRadius: 'var(--btn-radius)',
+                                                            color: 'var(--nav-text)',
+                                                            backgroundColor: 'transparent'
+                                                        }}
+                                                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                                                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                                                     >
                                                         {item.name}
                                                     </Link>
@@ -599,68 +786,97 @@ const PublicLayout = () => {
                                             {/* Contact Hover Menu */}
                                             <div className="relative group px-1">
                                                 <button
-                                                    className="w-auto flex-none px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200 flex items-center gap-1.5"
-                                                    style={{ borderRadius: 'var(--menu-radius)' }}
+                                                    className="w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5"
+                                                    style={{
+                                                        borderRadius: 'var(--btn-radius)',
+                                                        color: 'var(--nav-text)',
+                                                        backgroundColor: 'transparent'
+                                                    }}
+                                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                                                 >
                                                     Contact
                                                     <ChevronDownIcon className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
                                                 </button>
 
                                                 {/* Contact Dropdown Content */}
-                                                <div className="absolute left-1/2 -translate-x-1/2 mt-4 w-[480px] opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60]">
-                                                    <div className="bg-gray-900/95 backdrop-blur-xl shadow-2xl border border-white/10 overflow-hidden p-1" style={{ borderRadius: 'var(--menu-radius)' }}>
-                                                        {/* Contact Header */}
-                                                        {/* Contact Header */}
-                                                        <div className="px-6 py-6 bg-gradient-to-br from-primary-600 to-primary-700 text-white text-center" style={{ borderRadius: 'calc(var(--menu-radius) - 4px)' }}>
-                                                            <h3 className="text-xl font-bold opacity-95 tracking-wide">Get in Touch</h3>
-                                                            <p className="text-sm opacity-80 mt-1 font-medium text-white/90">We'd love to hear from you. Connect with us on social media.</p>
-                                                            {agent?.phone && (
-                                                                <a href={`tel:${agent.phone}`} className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-                                                                    <PhoneIcon className="w-4 h-4" />
-                                                                    <span className="font-bold tracking-wide">{agent.phone}</span>
-                                                                </a>
-                                                            )}
-                                                        </div>
+                                                <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
+                                                    <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
+                                                        <div className="w-full px-12 py-10">
+                                                            <div className="grid grid-cols-2 gap-32 max-w-5xl mx-auto">
+                                                                {/* Column 1: Contact Information */}
+                                                                <div className="flex flex-col">
+                                                                    <div className="mb-6">
+                                                                        <h3 className="text-xl font-black mb-2" style={{ color: 'var(--menu-text-primary)' }}>Talk to Our Team</h3>
+                                                                        <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
+                                                                            Our property consultants are ready to help you find the perfect home or investment.
+                                                                        </p>
+                                                                    </div>
 
-                                                        {/* Social Media Section */}
-                                                        {(agent?.facebook || agent?.instagram || agent?.linkedin || agent?.line) && (
-                                                            <div className="p-8">
-                                                                <div className="flex items-center justify-center gap-6">
-                                                                    {agent?.facebook && (
-                                                                        <a href={agent.facebook} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group/icon">
-                                                                            <div className="w-14 h-14 rounded-full bg-blue-900/20 border border-blue-500/20 flex items-center justify-center text-[#1877F2] group-hover/icon:bg-[#1877F2] group-hover/icon:text-white transition-all duration-300 shadow-sm group-hover/icon:shadow-md group-hover/icon:scale-110">
-                                                                                <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                                                                    <div className="space-y-4 mb-8">
+                                                                        <a href={`tel:${agent?.phone || '062-718-8699'}`} className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all" style={{ backgroundColor: 'var(--menu-hover-bg)' }}>
+                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary-500/10 text-primary-500 group-hover/item:scale-110 transition-transform">
+                                                                                <PhoneIcon className="w-5 h-5" />
                                                                             </div>
-                                                                            <span className="text-xs font-semibold text-gray-400 group-hover/icon:text-primary-400 transition-colors">Facebook</span>
-                                                                        </a>
-                                                                    )}
-                                                                    {agent?.instagram && (
-                                                                        <a href={agent.instagram} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group/icon">
-                                                                            <div className="w-14 h-14 rounded-full bg-pink-900/20 border border-pink-500/20 flex items-center justify-center text-[#E4405F] group-hover/icon:bg-gradient-to-tr group-hover/icon:from-[#f9ce34] group-hover/icon:via-[#ee2a7b] group-hover/icon:to-[#6228d7] group-hover/icon:text-white transition-all duration-300 shadow-sm group-hover/icon:shadow-md group-hover/icon:scale-110">
-                                                                                <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Phone</span>
+                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
                                                                             </div>
-                                                                            <span className="text-xs font-semibold text-gray-400 group-hover/icon:text-primary-400 transition-colors">Instagram</span>
                                                                         </a>
-                                                                    )}
-                                                                    {agent?.linkedin && (
-                                                                        <a href={agent.linkedin} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group/icon">
-                                                                            <div className="w-14 h-14 rounded-full bg-sky-900/20 border border-sky-500/20 flex items-center justify-center text-[#0A66C2] group-hover/icon:bg-[#0A66C2] group-hover/icon:text-white transition-all duration-300 shadow-sm group-hover/icon:shadow-md group-hover/icon:scale-110">
-                                                                                <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+
+                                                                        <a href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5">
+                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 text-green-500 group-hover/item:scale-110 transition-transform">
+                                                                                <FiMessageCircle className="w-5 h-5" />
                                                                             </div>
-                                                                            <span className="text-xs font-semibold text-gray-400 group-hover/icon:text-primary-400 transition-colors">LinkedIn</span>
-                                                                        </a>
-                                                                    )}
-                                                                    {agent?.line && (
-                                                                        <a href={agent.line.startsWith('http') ? agent.line : `https://line.me/ti/p/~${agent.line}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group/icon">
-                                                                            <div className="w-14 h-14 rounded-full bg-green-900/20 border border-green-500/20 flex items-center justify-center text-[#06C755] group-hover/icon:bg-[#06C755] group-hover/icon:text-white transition-all duration-300 shadow-sm group-hover/icon:shadow-md group-hover/icon:scale-110">
-                                                                                <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738s-12 4.369-12 9.738c0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975 1.838-1.956 2.548-3.872 2.548-5.968zm-14.621 4.316h-2.193c-.233 0-.422-.189-.422-.422v-4.322c0-.233.189-.422.422-.422h.211c.233 0 .422.189.422.422v3.689h1.56c.233 0 .422.189.422.422v.211c0 .233-.189.422-.422.422zm3.047 0h-.211c-.233 0-.422-.189-.422-.422v-4.322c0-.233.189-.422.422-.422h.211c.233 0 .422.189.422.422v4.322c0 .233-.189.422-.422.422zm5.54 0h-2.109c-.233 0-.422-.189-.422-.422v-4.322c0-.233.189-.422.422-.422h2.109c.233 0 .422.189.422.422v.211c0 .233-.189.422-.422.422h-1.687v1.178h1.687c.233 0 .422.189.422.422v.211c0 .233-.189.422-.422.422h-1.687v1.256h1.687c.233 0 .422.189.422.422v.211c0 .233-.189.422-.422.422zm-2.822 0h-.211c-.236 0-.437-.179-.422-.422l.149-2.316-1.127-1.859c-.11-.18-.088-.422.137-.422h.252c.162 0 .307.094.382.239l.86 1.481.854-1.481c.075-.145.22-.239.382-.239h.252c.225 0 .247.242.137.422l-1.127 1.859.149 2.316c.015.243-.186.422-.422.422z" /></svg>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>LINE</span>
+                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
                                                                             </div>
-                                                                            <span className="text-xs font-semibold text-gray-400 group-hover/icon:text-primary-400 transition-colors">LINE</span>
                                                                         </a>
-                                                                    )}
+
+                                                                        <a href={agent?.facebook || "https://facebook.com/superagent"} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5">
+                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600/10 text-blue-600 group-hover/item:scale-110 transition-transform">
+                                                                                <FiFacebook className="w-5 h-5" />
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Facebook</span>
+                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
+                                                                            </div>
+                                                                        </a>
+                                                                    </div>
+
                                                                 </div>
+
+                                                                {/* Column 2: How We Help You */}
+                                                                <div className="flex flex-col pt-2">
+                                                                    <div className="mb-6">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <div className="w-1 h-6 bg-primary-500 rounded-full"></div>
+                                                                            <h3 className="text-xl font-black" style={{ color: 'var(--menu-text-primary)' }}>Our Services</h3>
+                                                                        </div>
+                                                                        <p className="text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Tailored Property Solutions</p>
+                                                                    </div>
+
+                                                                    <div className="space-y-1">
+                                                                        {[
+                                                                            "Help finding rental homes",
+                                                                            "Assistance buying property",
+                                                                            "Schedule property viewings",
+                                                                            "Recommend areas based on budget",
+                                                                            "Support for expats & foreigners"
+                                                                        ].map((item, idx) => (
+                                                                            <div key={idx} className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-1">
+                                                                                <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-primary-500/10 text-primary-500 transition-colors group-hover/svc:bg-primary-500 group-hover/svc:text-white">
+                                                                                    <FiStar className="w-3.5 h-3.5" />
+                                                                                </div>
+                                                                                <span className="text-[13px] font-bold transition-colors group-hover/svc:text-primary-600" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
                                                             </div>
-                                                        )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -669,45 +885,68 @@ const PublicLayout = () => {
                                         {/* Auth Buttons */}
                                         <div className="flex items-center space-x-4">
                                             {isAuthenticated ? (
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1">
                                                     <Link
                                                         to="/my-bookings"
-                                                        className="flex items-center px-5 py-2 bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg shadow-black/5 active:scale-95"
-                                                        style={{ borderRadius: 'var(--btn-radius)' }}
+                                                        className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
                                                     >
-                                                        <span className="text-sm font-black tracking-wide">Bookings</span>
+                                                        <CalendarDaysIcon className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+                                                        <span className="text-sm font-medium">bookings</span>
+                                                    </Link>
+
+                                                    <Link
+                                                        to="/saved-listings"
+                                                        className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
+                                                    >
+                                                        <CiBookmark className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+                                                        <span className="text-sm font-medium">saved</span>
                                                     </Link>
 
                                                     <div className="relative" ref={userMenuRef}>
                                                         <button
                                                             onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                                            className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1 transition-all duration-500 backdrop-blur-md border ${userMenuOpen
-                                                                ? 'bg-white text-primary-600 border-white shadow-xl scale-105'
-                                                                : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-                                                                }`}
-                                                            style={{ borderRadius: 'var(--menu-radius)' }}
+                                                            className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1 transition-all duration-300 text-white group`}
+                                                            style={{ borderRadius: 'var(--btn-radius)' }}
                                                         >
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-sm shadow-black/10 transition-colors duration-500 ${userMenuOpen ? 'bg-primary-600 text-white' : 'bg-white text-primary-600'}`}>
+                                                            <div
+                                                                className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm transition-all duration-300 text-white group-hover:scale-110`}
+                                                                style={{
+                                                                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    WebkitBackdropFilter: 'blur(10px)',
+                                                                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.1)',
+                                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                                }}
+                                                                onMouseEnter={(e) => {
+                                                                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 255, 255, 0.2)';
+                                                                    e.currentTarget.style.border = '1.5px solid rgba(255, 255, 255, 0.5)';
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.1)';
+                                                                    e.currentTarget.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
+                                                                }}
+                                                            >
                                                                 {user?.first_name?.[0]?.toUpperCase() || <UserCircleIcon className="w-5 h-5" />}
                                                             </div>
                                                             <div className="flex flex-col items-start">
-                                                                <span className={`text-[10px] font-black leading-none mb-0.5 uppercase tracking-wider opacity-60 ${userMenuOpen ? 'text-primary-400' : 'text-white'}`}>Account</span>
-                                                                <span className={`text-sm font-black leading-none max-w-[80px] truncate ${userMenuOpen ? 'text-primary-700' : 'text-white'}`}>
+                                                                <span className={`text-[10px] font-black leading-none mb-0.5 uppercase tracking-wider opacity-60 text-white`}>Account</span>
+                                                                <span className={`text-sm font-black leading-none max-w-[80px] truncate text-white`}>
                                                                     {user?.first_name}
                                                                 </span>
                                                             </div>
-                                                            <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-500 ${userMenuOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`} />
+                                                            <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-500 text-white ${userMenuOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`} />
                                                         </button>
 
                                                         {/* Dropdown Menu */}
                                                         {userMenuOpen && (
-                                                            <div className="absolute right-0 mt-3 w-60 bg-white shadow-xl shadow-blue-900/10 py-2 ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden" style={{ borderRadius: 'var(--menu-radius)' }}>
+                                                            <div className="absolute right-0 mt-3 w-60 shadow-2xl py-2 ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden border" style={{ borderRadius: 'var(--menu-radius)', backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
                                                                 {/* User Header */}
-                                                                <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
-                                                                    <p className="text-sm font-bold text-gray-900 truncate">
+                                                                <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--menu-divider)', backgroundColor: 'rgba(var(--primary-rgb), 0.03)' }}>
+                                                                    <p className="text-sm font-bold truncate" style={{ color: 'var(--menu-text-primary)' }}>
                                                                         {user?.first_name} {user?.last_name}
                                                                     </p>
-                                                                    <p className="text-xs text-gray-500 truncate font-medium mt-0.5">
+                                                                    <p className="text-xs truncate font-medium mt-0.5" style={{ color: 'var(--menu-text-secondary)' }}>
                                                                         {user?.email}
                                                                     </p>
                                                                 </div>
@@ -733,7 +972,7 @@ const PublicLayout = () => {
                                                                                 }
                                                                                 return '/dashboard';
                                                                             })()}
-                                                                            className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
+                                                                            className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
                                                                             onClick={(e) => {
                                                                                 const href = e.currentTarget.getAttribute('href');
                                                                                 if (href.startsWith('http')) {
@@ -743,15 +982,15 @@ const PublicLayout = () => {
                                                                                 setUserMenuOpen(false);
                                                                             }}
                                                                         >
-                                                                            <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
-                                                                                <ChartBarIcon className="w-5 h-5 text-gray-500 group-hover:text-primary-600" />
+                                                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: 'var(--menu-hover-bg)' }}>
+                                                                                <ChartBarIcon className="w-5 h-5" style={{ color: 'var(--menu-text-secondary)' }} />
                                                                             </div>
-                                                                            Dashboard
+                                                                            <span style={{ color: 'var(--menu-text-primary)' }}>Dashboard</span>
                                                                         </Link>
                                                                     )}
                                                                 </div>
 
-                                                                <div className="py-2 px-2 border-t border-gray-50 mt-1">
+                                                                <div className="py-2 px-2 border-t mt-1" style={{ borderColor: 'var(--menu-divider)' }}>
                                                                     <button
                                                                         onClick={() => {
                                                                             logout();

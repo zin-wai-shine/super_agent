@@ -19,6 +19,7 @@ import BannerDetail from './pages/Public/BannerDetail';
 import UserProfile from './pages/Public/UserProfile';
 import BookAppointment from './pages/Public/BookAppointment';
 import MyBookings from './pages/Public/MyBookings';
+import SavedListingsPage from './pages/Public/SavedListingsPage';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -111,11 +112,7 @@ const AppRoutes = () => {
             <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="listings" element={<ListingsPage />} />
-                <Route path="listings/:id" element={<ListingDetailPage />} />
-                <Route
-                    path="listings/:id/book"
-                    element={<BookAppointment />}
-                />
+                <Route path="listings/:id" element={<BookAppointment />} />
                 <Route path="banners/:id" element={<BannerDetail />} />
                 <Route path="search" element={<MobileSearchPage />} />
                 <Route
@@ -131,6 +128,14 @@ const AppRoutes = () => {
                     element={
                         <ProtectedRoute>
                             <MyBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="saved-listings"
+                    element={
+                        <ProtectedRoute>
+                            <SavedListingsPage />
                         </ProtectedRoute>
                     }
                 />

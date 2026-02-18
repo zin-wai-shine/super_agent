@@ -187,6 +187,16 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				banners.DELETE("/:id", bannerController.DeleteBanner)
 			}
 
+			// Saved Listings routes
+			savedListingsController := controllers.NewSavedListingsController(db)
+			savedListings := protected.Group("/saved-listings")
+			{
+				savedListings.POST("", savedListingsController.SaveListing)
+				savedListings.DELETE("/:listingId", savedListingsController.UnsaveListing)
+				savedListings.GET("", savedListingsController.GetSavedListings)
+				savedListings.GET("/check/:listingId", savedListingsController.CheckIfSaved)
+			}
+
 			// Public Banner Route (override protected for fetching)
 			api.GET("/public/banners", bannerController.GetBanners)
 			api.GET("/public/banners/:id", bannerController.GetBanner)

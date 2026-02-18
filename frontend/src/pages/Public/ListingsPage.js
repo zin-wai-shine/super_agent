@@ -11,6 +11,9 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import ListingDetailModal from '../../components/Listings/ListingDetailModal';
+import FilterBar from '../../components/ui/FilterBar';
+import Modal from '../../components/ui/Modal';
 
 import {
     FunnelIcon,
@@ -148,7 +151,29 @@ const ListingsPage = () => {
 
     // Modal States
 
-    const isGoogleMapOpen = searchParams.get('view') === 'map';
+    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
+    const [isMapTransitioning, setIsMapTransitioning] = useState(false);
+    const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
+
+    // Update local state when searchParams change, except during transition
+    useEffect(() => {
+        if (!isMapTransitioning) {
+            setIsGoogleMapOpen(searchParams.get('view') === 'map');
+        }
+    }, [searchParams, isMapTransitioning]);
+
+    // Effect for MapTransitionOverlay switch animation
+    useEffect(() => {
+        if (isMapTransitioning) {
+            const timer = setTimeout(() => {
+                setOverlaySwitchActive(true);
+            }, 50);
+            return () => clearTimeout(timer);
+        } else {
+            setOverlaySwitchActive(false);
+        }
+    }, [isMapTransitioning]);
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
@@ -197,14 +222,30 @@ const ListingsPage = () => {
     }, [isGoogleMapOpen, isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
+        if (isOpen === isGoogleMapOpen || isMapTransitioning) return;
+
+        setIsMapTransitioning(true);
+
+        // Update URL immediately so map/list starts loading in background
         const newParams = new URLSearchParams(searchParams);
         if (isOpen) newParams.set('view', 'map');
         else newParams.delete('view');
         setSearchParams(newParams);
+
+        // Premium transition delay
+        setTimeout(() => {
+            setIsMapTransitioning(false);
+        }, 1200);
     };
 
     const [stations, setStations] = useState([]);
+    const [flatStations, setFlatStations] = useState([]); // Flat options for StyledSelect
+    const [stationsLoaded, setStationsLoaded] = useState(false);
+    const [transitSearchTerm, setTransitSearchTerm] = useState('');
+    const [showTransitResults, setShowTransitResults] = useState(false);
+    const transitSearchRef = useRef(null);
 
+    // Unified Data Fetching
     useEffect(() => {
         const fetchAgentInfo = async () => {
             try {
@@ -224,38 +265,43 @@ const ListingsPage = () => {
             }
         };
 
-        const fetchStations = async () => {
+        fetchAgentInfo();
+    }, [searchParams, user]);
+
+    // Fetch stations once on mount (stations don't change based on URL params)
+    useEffect(() => {
+        const fetchStationsData = async () => {
             try {
                 const response = await publicApi.getStations();
                 const fetchedStations = response.data.stations || [];
+                setStations(fetchedStations); // Flat list for header search
 
-                // Group stations for StyledSelect
-                const groups = fetchedStations.reduce((acc, station) => {
-                    const line = station.line_name || 'Other';
-                    if (!acc[line]) {
-                        acc[line] = {
-                            label: line,
-                            options: []
-                        };
-                    }
-                    acc[line].options.push({
-                        value: station.id,
-                        label: station.name_en,
-                        line_name: station.line_name,
-                        line_color: station.line_color
-                    });
-                    return acc;
-                }, {});
-
-                setStations(Object.values(groups));
+                // Flat options for StyledSelect (avoids react-select grouped options crash)
+                const flat = fetchedStations.map(station => ({
+                    value: station.id,
+                    label: station.name_en,
+                    line_name: station.line_name,
+                    line_color: station.line_color
+                }));
+                setFlatStations(flat);
+                setStationsLoaded(true);
             } catch (error) {
                 console.error('Failed to fetch stations:', error);
             }
         };
+        fetchStationsData();
+    }, []); // Fetch stations only once on mount
 
-        fetchAgentInfo();
-        fetchStations();
-    }, [searchParams, user]);
+    // Close search results on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (transitSearchRef.current && !transitSearchRef.current.contains(event.target)) {
+                setShowTransitResults(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const [showScrollTop, setShowScrollTop] = useState(false);
     useEffect(() => {
@@ -441,11 +487,8 @@ const ListingsPage = () => {
     if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
     if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
     if (filters.station_id) {
-        // Flatten grouped stations to find the label
-        const allStations = stations.reduce((acc, group) => {
-            return [...acc, ...group.options];
-        }, []);
-        const station = allStations.find(s => s.value === filters.station_id);
+        // Use flatStations (already flat option objects) to find the label
+        const station = flatStations.find(s => s && s.value === filters.station_id);
         if (station) activeFiltersList.push({ label: `Station: ${station.label}`, key: 'station_id' });
     }
 
@@ -454,7 +497,7 @@ const ListingsPage = () => {
         return (
             <div className="space-y-6">
                 {/* Active Filters Section */}
-                <Card className="p-4 rounded-[3px]">
+                <div className="p-4 rounded-[3px] border border-gray-100 bg-white">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
                             <FunnelIcon className="w-4 h-4" />
@@ -490,40 +533,45 @@ const ListingsPage = () => {
                         <CheckCircleIcon className="w-4 h-4" />
                         {total} {total === 1 ? 'Property' : 'Properties'} Found
                     </div>
-                </Card>
+                </div>
 
                 {/* Selects */}
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold">Property Type</label>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                    <div className="space-y-2 col-span-2">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Property Type</label>
                         <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
                     </div>
-                    <div className="flex gap-2">
-                        <div className="flex-1 space-y-2">
-                            <label className="text-sm font-bold">Listing Type</label>
-                            <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                            <label className="text-sm font-bold">Bedrooms</label>
-                            <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
-                        </div>
+                    <div className="space-y-2 col-span-2">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Transit Station</label>
+                        {stationsLoaded ? (
+                            <StyledSelect
+                                key={`station-select-${flatStations.length}`}
+                                options={flatStations}
+                                value={flatStations.find(opt => opt && opt.value === filters.station_id) || null}
+                                onChange={opt => handleSelectChange('station_id', opt)}
+                                placeholder="All Stations"
+                                isSearchable={true}
+                            />
+                        ) : (
+                            <div className="h-[38px] bg-gray-50 border border-gray-200 rounded-[3px] flex items-center px-4 text-sm text-gray-400">Loading stations...</div>
+                        )}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold">Search by Station</label>
-                        <StyledSelect
-                            options={stations}
-                            value={getSelectedOption(stations.reduce((acc, g) => [...acc, ...g.options], []), filters.station_id)}
-                            onChange={opt => handleSelectChange('station_id', opt)}
-                            placeholder="Select a BTS/MRT Station"
-                            className="w-full"
-                        />
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Listing Type</label>
+                        <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold">Price Range</label>
-                        <div className="flex gap-2">
-                            <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="Min" className="w-1/2" />
-                            <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="Max" className="w-1/2" />
-                        </div>
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Bedrooms</label>
+                        <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Min Price</label>
+                        <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="0" className="w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Max Price</label>
+                        <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="No limit" className="w-full" />
                     </div>
                 </div>
                 {/* Buttons */}
@@ -559,54 +607,167 @@ const ListingsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 relative">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
+            {/* Map Transition Loading Overlay */}
+            {isMapTransitioning && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-300 animate-in fade-in">
+                    <div className="flex flex-col items-center gap-8">
+                        {/* Map Logo Design */}
+                        <div className="flex flex-col items-center gap-4 mb-2 animate-in fade-in zoom-in duration-700">
+                            <div className="w-20 h-20 bg-primary-50 rounded-[24px] flex items-center justify-center shadow-sm border border-primary-100">
+                                <GlobeAltIcon className="w-12 h-12 text-primary-600 animate-pulse" />
+                            </div>
+                            <div className="w-1.5 h-1.5 bg-primary-600 rounded-full opacity-50" />
+                        </div>
+
+                        {/* Custom Animated Switch Logo */}
+                        <div className="relative w-32 h-16 bg-gray-100 rounded-full p-2 border-2 border-gray-200 shadow-[inner_0_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+                            <div
+                                className="absolute top-2 w-12 h-12 bg-primary-600 rounded-full shadow-lg transition-all duration-700 ease-in-out flex items-center justify-center text-white"
+                                style={{
+                                    left: overlaySwitchActive
+                                        ? (!isGoogleMapOpen ? 'calc(100% - 3.5rem)' : '0.5rem')
+                                        : (!isGoogleMapOpen ? '0.5rem' : 'calc(100% - 3.5rem)')
+                                }}
+                            >
+                                {overlaySwitchActive
+                                    ? (!isGoogleMapOpen ? <MapIcon className="w-7 h-7" /> : <ListBulletIcon className="w-7 h-7" />)
+                                    : (!isGoogleMapOpen ? <ListBulletIcon className="w-7 h-7" /> : <MapIcon className="w-7 h-7" />)
+                                }
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-2 text-center">
+                            <h3 className="text-xl font-black uppercase tracking-[0.2em] text-primary-600">
+                                {!isGoogleMapOpen ? 'Activating Map' : 'Returning to List'}
+                            </h3>
+                            <div className="flex items-center gap-2 text-gray-400 font-bold text-[10px] uppercase tracking-widest pl-1">
+                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                                <span>Generating View</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
             {/* --- SIDEBAR FILTER MENU (SHARED) --- */}
-            <div className={`fixed inset-y-0 md:top-20 md:left-6 md:bottom-6 md:right-6 md:inset-y-auto left-0 z-[70] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0 visible pointer-events-auto' : '-translate-x-full md:-translate-y-full md:translate-x-0 md:opacity-0 invisible pointer-events-none'} w-full md:w-full md:max-w-7xl md:mx-auto flex overflow-hidden md:rounded-[3px]`}>
-                {/* Left Pane: Filters */}
-                <div className="w-80 flex-shrink-0 flex flex-col border-r border-gray-100 bg-white h-full">
-                    {/* Sidebar Header */}
-                    <div className="h-16 px-4 border-b flex items-center justify-between bg-primary-600 text-white flex-shrink-0">
-                        <span className="font-bold text-lg">Filters & Menu</span>
-                        <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors">
-                            <XMarkIcon className="w-6 h-6" />
-                        </button>
+            {/* --- FILTER MODAL (94vw x 94vh) --- */}
+            <Modal
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                size="full"
+                title={null}
+                hideHeader={false}
+                className="!w-[94vw] !h-[94vh] !max-w-[94vw] !max-h-[94vh]"
+                headerExtra={
+                    <div className="flex items-center w-full">
+                        {/* First column header title: Filter Settings (aligned with 400px sidebar) */}
+                        <div className="w-[376px] flex-shrink-0 flex items-center pr-12">
+                            <h3 className="text-lg font-bold text-gray-900">Filter Settings</h3>
+                        </div>
+
+                        <div className="flex items-center gap-6 flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 whitespace-nowrap">Transit Explorer</h3>
+
+                            <div className="flex-1 relative" ref={transitSearchRef}>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={transitSearchTerm}
+                                        onChange={(e) => {
+                                            setTransitSearchTerm(e.target.value);
+                                            setShowTransitResults(true);
+                                        }}
+                                        onFocus={() => setShowTransitResults(true)}
+                                        placeholder="Search transit station..."
+                                        className="block w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-[3px] text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:bg-white transition-all"
+                                    />
+
+                                    {/* Search Results Dropdown */}
+                                    {showTransitResults && transitSearchTerm && (
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[3px] shadow-2xl border border-gray-100 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
+                                            {stations
+                                                .filter(s =>
+                                                    s.name_en?.toLowerCase().includes(transitSearchTerm.toLowerCase()) ||
+                                                    s.id?.toLowerCase().includes(transitSearchTerm.toLowerCase())
+                                                )
+                                                .map(station => (
+                                                    <button
+                                                        key={station.id}
+                                                        onClick={() => {
+                                                            handleStationSelect(station.id);
+                                                            setTransitSearchTerm('');
+                                                            setShowTransitResults(false);
+                                                        }}
+                                                        className="w-full text-left px-5 py-4 hover:bg-primary-50/50 flex items-center justify-between group/item transition-all border-b border-gray-100/50 last:border-0"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-[1px] bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover/item:bg-primary-100 group-hover/item:text-primary-600 transition-colors">
+                                                                {station.id.substring(0, 2)}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-gray-900 leading-tight">{station.name_en}</div>
+                                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{station.id}</div>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-[10px] font-black uppercase tracking-widest transition-opacity translate-x-1 group-hover/item:translate-x-0">Select</span>
+                                                    </button>
+                                                ))
+                                            }
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            >
+                <div className="flex-1 flex overflow-hidden h-full">
+                    {/* Left Pane: Filters (Wider 400px) */}
+                    <div className="w-[400px] flex-shrink-0 flex flex-col border-r border-gray-100 bg-white h-full relative z-10 transition-all duration-500 overflow-hidden">
+                        {/* Sidebar Content (Filters) */}
+                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            {renderFilterContent()}
+                        </div>
+
+                        {/* Sidebar Footer */}
+                        <div className="p-6 border-t bg-gray-50 flex-shrink-0 flex justify-center">
+                            <Button onClick={clearFilters} variant="primary" className="w-full py-4 font-bold tracking-wide uppercase text-xs">Reset All Filters</Button>
+                        </div>
                     </div>
 
-                    {/* Sidebar Content (Filters) */}
-                    <div className="flex-1 overflow-y-auto p-4">
-                        {renderFilterContent()}
-                    </div>
-
-                    {/* Sidebar Footer */}
-                    <div className="p-4 border-t bg-gray-50 flex-shrink-0 flex justify-center">
-                        <Button onClick={clearFilters} variant="primary" className="w-full">Reset Filters</Button>
+                    {/* Right Pane: Content Area (Full Height Map) */}
+                    <div className="flex-1 min-w-0 flex flex-col h-full bg-white relative">
+                        {/* Transit Map - Full Height */}
+                        <div className="flex-1 relative bg-gray-50 overflow-hidden">
+                            <TransitMapFilter
+                                onStationClick={id => {
+                                    handleStationSelect(id);
+                                }}
+                                selectedStation={filters.station_id}
+                                hideHeader={true}
+                                externalStations={stations}
+                                onClose={() => setIsSidebarOpen(false)}
+                            />
+                        </div>
                     </div>
                 </div>
-
-                {/* Right Pane: Transit Map (Desktop Only) */}
-                <div className="hidden md:flex flex-1 flex-col h-full bg-gray-50 animate-fade-in relative">
-                    <div className="flex-1 relative bg-white">
-                        <TransitMapFilter
-                            onStationClick={id => {
-                                handleStationSelect(id);
-                            }}
-                            selectedStation={filters.station_id}
-                            searchable={true}
-                            showTitle={false}
-                            onClose={() => setIsSidebarOpen(false)}
-                        />
-                    </div>
-                </div>
-            </div>
+            </Modal>
 
             {/* Overlay for Sidebar */}
-            {isSidebarOpen && (
-                <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" />
-            )}
+            {
+                isSidebarOpen && (
+                    <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" />
+                )
+            }
 
             {/* --- MAP VIEW LAYOUT (FULL SCREEN) --- */}
-            <div className={`fixed inset-0 z-[60] bg-white transform transition-transform duration-500 ease-in-out ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full shadow-2xl'}`}>
+            <div className={`fixed inset-0 z-[60] bg-white ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex h-screen overflow-hidden relative">
 
 
@@ -745,82 +906,21 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Desktop Filter Bar - Full Width Clean Design */}
-                <div className={`hidden lg:block w-full sticky z-40 transition-all duration-300 bg-white border-b border-gray-200 shadow-sm ${navVisible ? 'top-16' : 'top-0'} ${isScrolled ? 'mb-4 shadow-md' : 'mb-8'}`}>
-                    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                        <div className="flex items-center justify-between gap-4">
-
-                            {/* Search Section */}
-                            <div className="flex-1 max-w-2xl">
-                                <Input
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search location, name..."
-                                    className="w-full shadow-sm"
-                                    style={{ height: '42px' }} // Match design
-                                />
-                            </div>
-
-                            {/* Right Side Actions */}
-                            <div className="flex items-center gap-3">
-                                {/* Inventory Count */}
-                                <div className="flex flex-col items-end mr-4 px-4 border-r border-gray-200">
-                                    <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
-                                    <span className="text-sm font-bold text-gray-900">{total} Results</span>
-                                </div>
-
-                                {/* Filters Button */}
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    className={`gap-2 ${hasActiveFilters ? 'bg-[var(--primary-color)] text-white' : ''}`}
-                                >
-                                    <div className="relative">
-                                        <FunnelIcon className="w-4 h-4" />
-                                        {hasActiveFilters && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span>Filters</span>
-                                </Button>
-
-
-
-                                {/* View Toggles (Grid/List) */}
-                                <div className="flex items-center bg-gray-100 p-1 rounded-[3px] border border-gray-200 ml-2">
-                                    <button
-                                        onClick={() => setViewMode('grid')}
-                                        className={`p-1.5 transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-                                        style={{ borderRadius: 'var(--btn-radius)' }}
-                                    >
-                                        <Squares2X2Icon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('list')}
-                                        className={`p-1.5 transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-                                        style={{ borderRadius: 'var(--btn-radius)' }}
-                                    >
-                                        <ListBulletIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                {/* Map View Switch */}
-                                <div className="flex items-center gap-3 ml-2 pl-4 border-l border-gray-200">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isGoogleMapOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
-                                    <button
-                                        onClick={() => toggleMapView(!isGoogleMapOpen)}
-                                        className={`w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out focus:outline-none pointer-events-auto ${isGoogleMapOpen ? 'bg-primary-600' : 'bg-gray-200'}`}
-                                    >
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-200 ease-in-out shadow-sm ${isGoogleMapOpen ? 'left-6' : 'left-1'}`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Desktop Filter Bar - Component Implementation */}
+                <FilterBar
+                    total={total}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onOpenFilters={() => setIsSidebarOpen(true)}
+                    hasActiveFilters={hasActiveFilters}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    isMapViewOpen={isGoogleMapOpen}
+                    onToggleMapView={toggleMapView}
+                    isMapTransitioning={isMapTransitioning}
+                    navVisible={navVisible}
+                    isScrolled={isScrolled}
+                />
 
                 {/* Main Content */}
                 <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -1040,6 +1140,7 @@ const ListingsPage = () => {
                     </div>
                 )
             }
+            <ListingDetailModal />
         </div >
     );
 };

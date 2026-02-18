@@ -68,25 +68,39 @@ type Agent struct {
 
 // Theme represents agent site customization
 type Theme struct {
-	ID                  uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	AgentID             uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"agent_id"`
-	BackgroundColor     string    `gorm:"size:20;default:'#f5f5f5'" json:"background_color"`
-	PrimaryColor        string    `gorm:"size:20;default:'#1a73e8'" json:"primary_color"`
-	SecondaryColor      string    `gorm:"size:20;default:'#34a853'" json:"secondary_color"`
-	TextColor           string    `gorm:"size:20;default:'#202124'" json:"text_color"`
-	FontFamily          string    `gorm:"size:100;default:'Inter, sans-serif'" json:"font_family"`
-	LogoURL             string    `gorm:"size:500" json:"logo_url,omitempty"`
-	HeaderText          string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
-	FooterText          string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
-	ButtonRadius        string    `gorm:"size:50;default:'0.5rem'" json:"button_radius"` // e.g., 0, 0.25rem, 0.5rem, 9999px, or 4 values
-	CardRadius          string    `gorm:"size:50;default:'1rem'" json:"card_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
-	MenuRadius          string    `gorm:"size:50;default:'1rem'" json:"menu_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
-	ButtonGradient      bool      `gorm:"default:false" json:"button_gradient"`
-	ButtonGradientStyle string    `gorm:"size:255;default:''" json:"button_gradient_style"` // Linear gradient string
-	ShadowStyle         string    `gorm:"size:20;default:'soft'" json:"shadow_style"`       // none, soft, hard
-	CustomCSS           string    `gorm:"type:text" json:"custom_css,omitempty"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
+	ID                   uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID              uuid.UUID `gorm:"type:uuid;uniqueIndex;not null" json:"agent_id"`
+	BackgroundColor      string    `gorm:"size:20;default:'#f5f5f5'" json:"background_color"`
+	PrimaryColor         string    `gorm:"size:20;default:'#1a73e8'" json:"primary_color"`
+	SecondaryColor       string    `gorm:"size:20;default:'#34a853'" json:"secondary_color"`
+	TextColor            string    `gorm:"size:20;default:'#202124'" json:"text_color"`
+	FontFamily           string    `gorm:"size:100;default:'Inter, sans-serif'" json:"font_family"`
+	LogoURL              string    `gorm:"size:500" json:"logo_url,omitempty"`
+	HeaderText           string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
+	FooterText           string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
+	ButtonRadius         string    `gorm:"size:50;default:'0.5rem'" json:"button_radius"` // e.g., 0, 0.25rem, 0.5rem, 9999px, or 4 values
+	CardRadius           string    `gorm:"size:50;default:'1rem'" json:"card_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
+	MenuRadius           string    `gorm:"size:50;default:'1rem'" json:"menu_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
+	MenuBackgroundColor  string    `gorm:"size:20;default:'#ffffff'" json:"menu_background_color"`
+	ButtonGradient       bool      `gorm:"default:false" json:"button_gradient"`
+	ButtonGradientColor2 string    `gorm:"size:20;default:'#34a853'" json:"button_gradient_color2"`
+	ButtonGradientStyle  string    `gorm:"size:255;default:''" json:"button_gradient_style"` // Linear gradient string
+	ShadowStyle          string    `gorm:"size:20;default:'soft'" json:"shadow_style"`       // none, soft, hard
+	ShadowX              int       `gorm:"default:0" json:"shadow_x"`
+	ShadowY              int       `gorm:"default:4" json:"shadow_y"`
+	ShadowBlur           int       `gorm:"default:4" json:"shadow_blur"`
+	ShadowSpread         int       `gorm:"default:0" json:"shadow_spread"`
+	ShadowColor          string    `gorm:"size:20;default:'#000000'" json:"shadow_color"`
+	ShadowOpacity        int       `gorm:"default:25" json:"shadow_opacity"`
+	ButtonShadowX        int       `gorm:"default:0" json:"button_shadow_x"`
+	ButtonShadowY        int       `gorm:"default:4" json:"button_shadow_y"`
+	ButtonShadowBlur     int       `gorm:"default:4" json:"button_shadow_blur"`
+	ButtonShadowSpread   int       `gorm:"default:0" json:"button_shadow_spread"`
+	ButtonShadowColor    string    `gorm:"size:20;default:'#000000'" json:"button_shadow_color"`
+	ButtonShadowOpacity  int       `gorm:"default:25" json:"button_shadow_opacity"`
+	CustomCSS            string    `gorm:"type:text" json:"custom_css,omitempty"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
 }
 
 // Domain type constants
@@ -249,4 +263,20 @@ type Appointment struct {
 	CreatedAt             time.Time      `json:"created_at"`
 	UpdatedAt             time.Time      `json:"updated_at"`
 	DeletedAt             gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+// SavedListing represents a user's saved/bookmarked listing
+type SavedListing struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index" json:"user_id"`
+	ListingID uuid.UUID `gorm:"type:uuid;not null;index" json:"listing_id"`
+	CreatedAt time.Time `json:"created_at"`
+
+	User    *User    `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	Listing *Listing `gorm:"foreignKey:ListingID" json:"listing,omitempty"`
+}
+
+// TableName specifies the table name for SavedListing
+func (SavedListing) TableName() string {
+	return "saved_listings"
 }

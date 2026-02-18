@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import mermaid from 'mermaid';
 import { useParams } from 'react-router-dom';
 import CodeBlock from '../components/Common/CodeBlock';
 
@@ -7,6 +8,7 @@ const WorkflowGuide = () => {
 
     const titles = {
         'dataflow': '📊 End-to-End Data Flow',
+        'mindmap': '🌐 Project Mind Map',
         'add-column': '➕ How to Add a Column',
         'modify-column': '✏️ How to Modify a Column',
         'add-model': '🏗️ How to Add a New Model',
@@ -21,10 +23,104 @@ const WorkflowGuide = () => {
             </div>
 
             {section === 'dataflow' && <DataFlowSection />}
+            {section === 'mindmap' && <MindmapSection />}
             {section === 'add-column' && <AddColumnSection />}
             {section === 'modify-column' && <ModifyColumnSection />}
             {section === 'add-model' && <AddModelSection />}
             {section === 'api-routes' && <ApiRoutesSection />}
+        </div>
+    );
+};
+
+/* ===== MERMAID WRAPPER ===== */
+const Mermaid = ({ chart }) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'Inter, system-ui, sans-serif',
+        });
+        if (ref.current) {
+            mermaid.contentLoaded();
+        }
+    }, [chart]);
+
+    return (
+        <div className="mermaid" ref={ref} style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '12px', border: '1px solid var(--sidebar-border)' }}>
+            {chart}
+        </div>
+    );
+};
+
+/* ===== MINDMAP SECTION ===== */
+const MindmapSection = () => {
+    const chart = `
+graph TD
+    subgraph "🌐 Client Tier (React)"
+        A["🖥️ Browser UI"] --> B["🔌 API Services (Axios)"]
+        B --> C["🗂️ Context Providers (Auth/Theme)"]
+    end
+
+    subgraph "🔐 Security & Routing (Backend)"
+        D["🛣️ Gin Router (routes.go)"]
+        E["🛡️ Middleware Pipeline"]
+        D --> E
+        E --> F["🆔 Auth Middleware (JWT)"]
+        E --> G["🏢 Tenant Middleware (Domain)"]
+        E --> H["👑 Role Middleware"]
+    end
+
+    subgraph "⚙️ Logic Tier (Go Controllers)"
+        I["🎮 Controllers (*_controller.go)"]
+        F & G & H --> I
+        I --> J["📝 Business Logic"]
+    end
+
+    subgraph "💾 Data Tier (GORM + PostgreSQL)"
+        K["🏗️ Models (models.go)"]
+        L["🗃️ PostgreSQL DB"]
+        I --> K
+        K --> L
+    end
+
+    B -- "HTTP Request" --> D
+    L -- "Response Data" --> I
+    I -- "JSON" --> B
+    `;
+
+    return (
+        <div>
+            <div className="card">
+                <div className="card-title">🌐 Project Technical Mind Map</div>
+                <div className="card-subtitle">Visual representation of system architecture and data flow</div>
+                <div style={{ marginTop: '24px' }}>
+                    <Mermaid chart={chart} />
+                </div>
+            </div>
+
+            <div className="card">
+                <div className="card-title">📦 Component Breakdown</div>
+                <div className="role-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginTop: '20px' }}>
+                    <div className="role-card">
+                        <div className="role-card-icon" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>⚛️</div>
+                        <h3>Frontend</h3>
+                        <p>React 19 + Tailwind CSS. Multi-tenant context for branding and JWT for security.</p>
+                    </div>
+                    <div className="role-card">
+                        <div className="role-card-icon" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80' }}>🐹</div>
+                        <h3>Backend</h3>
+                        <p>Go with Gin Framework. High-performance REST API with structured routing.</p>
+                    </div>
+                    <div className="role-card">
+                        <div className="role-card-icon" style={{ background: 'rgba(168,85,247,0.12)', color: '#c084fc' }}>🔗</div>
+                        <h3>Database</h3>
+                        <p>GORM ORM over PostgreSQL. Handles automated migrations and complex relationships.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

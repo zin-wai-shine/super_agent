@@ -59,6 +59,9 @@ services:
         - REACT_APP_MAIN_DOMAIN=superealestate.test
     container_name: super_frontend
     restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:

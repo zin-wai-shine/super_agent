@@ -99,6 +99,11 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		}
 	}
 
+	// Exclude specific ID (usually for "related properties")
+	if excludeID := c.Query("exclude_id"); excludeID != "" {
+		query = query.Where("id <> ?", excludeID)
+	}
+
 	// Sorting
 	sortBy := c.DefaultQuery("sort", "created_at")
 	sortOrder := c.DefaultQuery("order", "desc")

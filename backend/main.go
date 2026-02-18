@@ -46,6 +46,7 @@ func main() {
 		&models.Notification{},
 		&models.Banner{},
 		&models.Appointment{},
+		&models.SavedListing{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}

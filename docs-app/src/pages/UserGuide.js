@@ -9,6 +9,7 @@ const UserGuide = () => {
         'structure': '📂 Project Structure',
         'stack': '🛠️ Technology Stack',
         'roles': '🔐 Roles & Guide',
+        'solutions': '💡 Agent Solutions',
         'features': '📊 Feature Matrix',
         'pages': '📄 All Pages',
         'map-config': '🗺️ Map Configuration',
@@ -24,6 +25,7 @@ const UserGuide = () => {
             {section === 'structure' && <ProjectStructure />}
             {section === 'stack' && <TechStack />}
             {section === 'roles' && <RolesGuide />}
+            {section === 'solutions' && <AgentSolutions />}
             {section === 'features' && <FeatureMatrix />}
             {section === 'pages' && <AllPages />}
             {section === 'map-config' && <MapConfiguration />}
@@ -290,6 +292,69 @@ const RolesGuide = () => (
     </div>
 );
 
+/* ===== AGENT SOLUTIONS ===== */
+const AgentSolutions = () => (
+    <div>
+        <div className="card">
+            <div className="card-title">💡 Solving Agent Problems</div>
+            <div className="card-subtitle">How Super Real Estate empowers agents and solves common industry pain points</div>
+
+            <div className="role-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', marginTop: '20px' }}>
+                <div className="role-card">
+                    <div className="role-card-icon" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>⚡</div>
+                    <h3>Instant Branding</h3>
+                    <p><strong>Problem:</strong> Expensive and slow web development for custom agency sites.</p>
+                    <p><strong>Solution:</strong> Custom-branded portals with real-time theme synchronization, including logo uploads, primary color selection, and modern shadow controls.</p>
+                </div>
+
+                <div className="role-card">
+                    <div className="role-card-icon" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80' }}>📍</div>
+                    <h3>Transit-Oriented Discovery</h3>
+                    <p><strong>Problem:</strong> Customers in busy cities like Bangkok prioritize proximity to BTS/MRT.</p>
+                    <p><strong>Solution:</strong> Integrated SVG Transit Map that allows customers to filter listings by specific stations and lines with a single click.</p>
+                </div>
+
+                <div className="role-card">
+                    <div className="role-card-icon" style={{ background: 'rgba(168,85,247,0.12)', color: '#c084fc' }}>📅</div>
+                    <h3>Seamless Lead Management</h3>
+                    <p><strong>Problem:</strong> Missed inquiries and disorganized viewing schedules.</p>
+                    <p><strong>Solution:</strong> Multi-step booking engine that allows customers to book viewings directly. Agents receive real-time notifications via WebSocket and manage appointments in a dedicated dashboard.</p>
+                </div>
+
+                <div className="role-card">
+                    <div className="role-card-icon" style={{ background: 'rgba(249,115,22,0.12)', color: '#fb923c' }}>💎</div>
+                    <h3>High-Conversion Navigation</h3>
+                    <p><strong>Problem:</strong> Cluttered menus that hide valuable content.</p>
+                    <p><strong>Solution:</strong> Advanced Mega Menus for "Properties" and "Services" that organize dozens of links and promotional content into clean, themed columns.</p>
+                </div>
+            </div>
+        </div>
+
+        <div className="card">
+            <div className="card-title">🚀 Core Capabilities</div>
+            <div className="card-subtitle">Strategic features designed for agent growth</div>
+            <div style={{ padding: '16px' }}>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {[
+                        { title: 'Multi-Tenant Isolation', desc: 'Secure agent subdomains and custom domain support ensures your brand is the hero.' },
+                        { title: 'Rich Media Support', desc: 'Seamlessly upload and manage high-resolution photos and videos for every listing.' },
+                        { title: 'Sub-Agent Teams', desc: 'Scale your agency by adding team members with granular role-based permissions.' },
+                        { title: 'Mobile-First Design', desc: 'A fully responsive experience ensuring customers can browse and book from any device.' }
+                    ].map((item, i) => (
+                        <li key={i} style={{ marginBottom: '16px', display: 'flex', gap: '12px' }}>
+                            <span style={{ color: 'var(--accent)', fontWeight: 800 }}>▸</span>
+                            <div>
+                                <h4 style={{ fontSize: '14px', marginBottom: '2px' }}>{item.title}</h4>
+                                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.desc}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    </div>
+);
+
 /* ===== FEATURE MATRIX ===== */
 const FeatureMatrix = () => (
     <div>
@@ -318,7 +383,8 @@ const FeatureMatrix = () => (
                         <tr><td>Publish/Unpublish Listings</td><td className="cross">—</td><td className="check">✓</td><td className="check">✓</td><td className="cross">—</td></tr>
                         <tr><td>Upload Media</td><td className="cross">—</td><td className="check">✓</td><td className="check">✓</td><td className="cross">—</td></tr>
                         <tr><td>Manage Sub-Agents</td><td className="cross">—</td><td className="check">✓</td><td className="cross">—</td><td className="cross">—</td></tr>
-                        <tr><td>Customize Theme</td><td className="cross">—</td><td className="check">✓</td><td className="cross">—</td><td className="cross">—</td></tr>
+                        <tr><td>Advanced Mega Menus</td><td className="cross">—</td><td className="check">✓</td><td className="check">✓</td><td className="check">✓</td></tr>
+                        <tr><td>Customize Theme (Colors/Shadows)</td><td className="cross">—</td><td className="check">✓</td><td className="cross">—</td><td className="cross">—</td></tr>
                         <tr><td>Agent Settings</td><td className="cross">—</td><td className="check">✓</td><td className="cross">—</td><td className="cross">—</td></tr>
                         <tr><td>Manage Appointments</td><td className="check">✓ (all)</td><td className="check">✓ (own)</td><td className="check">✓ (own)</td><td className="cross">—</td></tr>
                         <tr><td>Create Banners</td><td className="check">✓</td><td className="check">✓</td><td className="cross">—</td><td className="cross">—</td></tr>

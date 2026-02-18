@@ -248,12 +248,13 @@ const StyledSelect = ({
         if (typeof value === 'object' && !Array.isArray(value)) return value;
 
         // Flatten options if they are grouped
-        const allOptions = options?.reduce((acc, opt) => {
-            if (opt.options) {
+        const allOptions = Array.isArray(options) ? options.reduce((acc, opt) => {
+            if (!opt) return acc;
+            if (opt.options && Array.isArray(opt.options)) {
                 return [...acc, ...opt.options];
             }
             return [...acc, opt];
-        }, []) || [];
+        }, []) : [];
 
         // If it's a string or number, find the matching option
         if (typeof value === 'string' || typeof value === 'number') {

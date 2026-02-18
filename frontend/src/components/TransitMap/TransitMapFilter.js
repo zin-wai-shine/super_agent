@@ -3,9 +3,18 @@ import { publicApi } from '../../services/api';
 import { TransitMapSVG } from './transit_map.svg.js';
 import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon, MapIcon } from '@heroicons/react/24/outline';
 
-const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false, showTitle = false, onClose = null }) => {
-    const [stations, setStations] = useState([]);
+const TransitMapFilter = ({
+    onStationClick,
+    selectedStation,
+    searchable = false,
+    showTitle = false,
+    onClose = null,
+    externalStations = null,
+    hideHeader = false
+}) => {
+    const [internalStations, setInternalStations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const stations = externalStations || internalStations;
     const [markerPos, setMarkerPos] = useState(null);
     const [zoom, setZoom] = useState(1.5);
     const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -42,12 +51,16 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Fetch stations on mount
+    // Fetch stations on mount if not provided externally
     useEffect(() => {
+        if (externalStations) {
+            setLoading(false);
+            return;
+        }
         const fetchStations = async () => {
             try {
                 const response = await publicApi.getStations();
-                setStations(response.data.stations || []);
+                setInternalStations(response.data.stations || []);
             } catch (error) {
                 console.error('Failed to fetch stations:', error);
             } finally {
@@ -55,7 +68,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
             }
         };
         fetchStations();
-    }, []);
+    }, [externalStations]);
 
     // Handle SVG Interactions (Click & Hover)
     useEffect(() => {
@@ -202,14 +215,14 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
     return (
         <div className="relative h-full flex flex-col">
             {/* Conditional Header with Integrated Search */}
-            {(showTitle || searchable) && (
-                <div className="h-16 px-4 pr-6 border-b flex items-center bg-white shadow-sm flex-shrink-0 z-[110] relative">
+            {!hideHeader && (showTitle || searchable) && (
+                <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 shadow-md flex-shrink-0 z-[110] relative">
                     {showTitle && (
                         <div className="flex items-center gap-3 flex-shrink-0">
-                            <div className="bg-primary-50 p-2 rounded-[3px]">
-                                <MapIcon className="w-5 h-5 text-primary-600" />
+                            <div className="bg-white/20 p-2 rounded-[3px] backdrop-blur-md">
+                                <MapIcon className="w-5 h-5 text-white" />
                             </div>
-                            <h3 className="font-bold text-gray-900 whitespace-nowrap hidden sm:block">Transit Explorer</h3>
+                            <h3 className="font-bold text-white whitespace-nowrap">Transit Explorer</h3>
                         </div>
                     )}
 
@@ -218,7 +231,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                         <div className={`${showTitle ? 'ml-6' : ''} flex-1 max-w-xl`} ref={searchRef}>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                                    <MagnifyingGlassIcon className="h-5 w-5 text-white/70 group-focus-within:text-white transition-colors" />
                                 </div>
                                 <input
                                     type="text"
@@ -229,7 +242,7 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                                     }}
                                     onFocus={() => setShowResults(true)}
                                     placeholder="Search transit station..."
-                                    className="block w-full pl-12 pr-4 py-3.5 bg-white border border-gray-100 rounded-[3px] text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
+                                    className="block w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-[3px] text-sm font-bold text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/20 transition-all shadow-inner"
                                 />
 
                                 {/* Search Results Dropdown - Relative to Header */}
@@ -273,9 +286,9 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                 </div>
             )}
 
-            {/* Legend - Modern Pill Chips with 3px Radius & Padding */}
-            <div className="px-4 relative z-[100]">
-                <div className="mb-2 md:mb-6 flex flex-wrap gap-2 px-3 py-3 md:px-0 md:py-4 bg-gray-50/30 rounded-[3px] border-b md:border-0 border-gray-100/50 w-full">
+            {/* Legend - Modern Pill Chips with Wrap Support */}
+            <div className="px-6 py-4 relative z-[100] bg-white border-b border-gray-100/80 w-full max-w-full overflow-hidden flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full min-w-0 flex-1">
                     {[
                         { name: 'BTS Sukhumvit', color: '#7FBA00' },
                         { name: 'BTS Silom', color: '#006633' },
@@ -289,13 +302,13 @@ const TransitMapFilter = ({ onStationClick, selectedStation, searchable = false,
                     ].map((line) => (
                         <div
                             key={line.name}
-                            className="flex items-center gap-2 px-3 py-2 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default whitespace-nowrap"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
                         >
                             <div
                                 className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
                                 style={{ backgroundColor: line.color }}
                             />
-                            <span className="text-[11px] text-gray-600 font-bold">{line.name}</span>
+                            <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
                         </div>
                     ))}
                 </div>

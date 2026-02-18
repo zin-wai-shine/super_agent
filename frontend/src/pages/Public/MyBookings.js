@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { appointmentApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import StyledSelect from '../../components/Form/StyledSelect';
+import Button from '../../components/ui/Button';
 import {
     CalendarIcon,
     MapPinIcon,
@@ -77,26 +79,20 @@ const MyBookings = () => {
                         </p>
                     </div>
 
-                    {/* Filter Tabs - Premium Pill (Now Sharp per Site Radius) */}
-                    <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-[3px] border border-slate-200/60 shadow-sm self-start lg:self-auto overflow-x-auto max-w-full no-scrollbar">
-                        {[
-                            { id: 'all', label: 'All', icon: FunnelIcon },
-                            { id: 'pending', label: 'Pending', icon: ClockIcon },
-                            { id: 'confirmed', label: 'Confirmed', icon: CheckCircleIcon },
-                            { id: 'cancelled', label: 'Cancelled', icon: XCircleIcon }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setFilter(tab.id)}
-                                className={`flex items-center gap-2.5 px-6 py-2.5 rounded-[2px] text-sm font-black transition-all duration-500 whitespace-nowrap ${filter === tab.id
-                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20 scale-[1.02]'
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/50'
-                                    }`}
-                            >
-                                <tab.icon className={`w-4 h-4 ${filter === tab.id ? 'text-white' : 'text-slate-400'}`} />
-                                {tab.label}
-                            </button>
-                        ))}
+                    {/* Filter Dropdown - Standardized StyledSelect */}
+                    <div className="w-full lg:w-64">
+                        <StyledSelect
+                            options={[
+                                { value: 'all', label: 'All Bookings' },
+                                { value: 'pending', label: 'Pending' },
+                                { value: 'confirmed', label: 'Confirmed' },
+                                { value: 'cancelled', label: 'Cancelled' }
+                            ]}
+                            value={filter}
+                            onChange={setFilter}
+                            isSearchable={false}
+                            placeholder="Filter by status"
+                        />
                     </div>
                 </div>
 
@@ -138,72 +134,47 @@ const MyBookings = () => {
                                 ? "Excited to find your new home? Your scheduled viewings will appear right here."
                                 : `You don't have any ${filter} bookings at the moment.`}
                         </p>
-                        <Link
-                            to="/listings"
-                            className="inline-flex items-center justify-center px-10 py-4 bg-slate-900 text-white font-bold rounded-[3px] shadow-xl shadow-slate-900/10 hover:bg-slate-800 hover:-translate-y-1 active:scale-95 transition-all duration-300 relative z-10"
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            className="px-10 py-4 !font-black !rounded-[var(--btn-radius)] !shadow-xl !shadow-slate-900/10 hover:-translate-y-1 active:scale-95 transition-all duration-300 relative z-10"
+                            onClick={() => window.location.href = '/listings'}
                         >
                             Explore Listings <ArrowRightIcon className="w-5 h-5 ml-2.5" />
-                        </Link>
+                        </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {filteredAppointments.map((appointment) => {
-                            const date = new Date(appointment.appointment_date);
+                            const date = new Date(appointment.preferred_date);
                             const isPast = date < new Date();
-                            const propertyImage = appointment.listing?.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
 
                             return (
                                 <div
                                     key={appointment.id}
-                                    className={`group bg-white rounded-[3px] border border-slate-200/60 shadow-sm hover:shadow-2xl hover:shadow-primary-600/5 hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col ${isPast ? 'opacity-90' : ''}`}
+                                    className={`group bg-white rounded-[var(--btn-radius)] border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 transition-all duration-300 p-6 md:p-8 ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
                                 >
-                                    {/* Image & Status Area */}
-                                    <div className="relative h-48 sm:h-56 shrink-0 overflow-hidden">
-                                        <img
-                                            src={propertyImage}
-                                            alt={appointment.listing?.title}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                        {/* Glassmorphic Status Badge */}
-                                        <div className="absolute top-4 left-4">
-                                            <div className={`backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/20 text-[11px] font-black uppercase tracking-wider flex items-center gap-2 shadow-sm ${appointment.status === 'confirmed' ? 'bg-emerald-500/80 text-white' :
-                                                appointment.status === 'cancelled' ? 'bg-rose-500/80 text-white' :
-                                                    'bg-amber-500/80 text-white'
-                                                }`}>
-                                                <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-                                                {appointment.status}
-                                            </div>
-                                        </div>
-
-                                        {/* Date Tag */}
-                                        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-[3px] p-2.5 flex items-center gap-3 border border-white/20 shadow-lg">
-                                            <div className="bg-primary-50 w-10 h-10 rounded-[3px] flex flex-col items-center justify-center shrink-0">
-                                                <span className="text-[10px] font-black text-primary-600 leading-none mb-0.5 uppercase">
-                                                    {date.toLocaleDateString('en-US', { month: 'short' })}
+                                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                                        {/* Column 1: Property & Status */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-2 py-0.5 rounded-[2px] border border-slate-100">
+                                                    ID: {appointment.id.slice(0, 8).toUpperCase()}
                                                 </span>
-                                                <span className="text-base font-black text-slate-900 leading-none">
-                                                    {date.getDate()}
-                                                </span>
-                                            </div>
-                                            <div className="pr-2">
-                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Time Slots</div>
-                                                <div className="text-sm font-black text-slate-800 leading-none">{appointment.preferred_time}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Content Area */}
-                                    <div className="p-7 flex flex-col flex-1">
-                                        <div className="mb-6 flex-1">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="w-1.5 h-4 bg-primary-600 rounded-full"></div>
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Booking ID: #{appointment.id.slice(0, 8).toUpperCase()}</span>
+                                                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${appointment.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                                    appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
+                                                        'bg-amber-50 text-amber-600 border border-amber-100'
+                                                    }`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
+                                                        appointment.status === 'cancelled' ? 'bg-rose-500' :
+                                                            'bg-amber-500'
+                                                        }`}></div>
+                                                    {appointment.status}
+                                                </div>
                                             </div>
 
-                                            <Link to={`/listings/${appointment.listing_id}`} className="block">
-                                                <h3 className="text-xl font-black text-slate-900 mb-2 leading-snug hover:text-primary-600 transition-colors line-clamp-2">
+                                            <Link to={`/listings/${appointment.listing_id}`} className="block group/title mb-2">
+                                                <h3 className="text-xl font-black text-slate-900 leading-tight group-hover/title:text-primary-600 transition-colors line-clamp-2">
                                                     {appointment.listing?.title || 'Unknown Property'}
                                                 </h3>
                                             </Link>
@@ -214,24 +185,32 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* Action Area */}
-                                        <div className="pt-6 border-t border-slate-100 mt-auto flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-[3px] bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                                                    {appointment.purpose === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
+                                        {/* Column 2: Date, Time & Action */}
+                                        <div className="flex flex-col justify-between md:text-right md:items-end gap-6 md:min-w-[180px]">
+                                            <div className="flex md:flex-col gap-6 md:gap-3">
+                                                <div className="flex flex-col md:items-end">
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Date</div>
+                                                    <div className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                                        <CalendarIcon className="w-4 h-4 text-slate-400 md:hidden" />
+                                                        {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Booking Type</div>
-                                                    <div className="text-xs font-black text-slate-700 capitalize">{appointment.purpose}</div>
+                                                <div className="flex flex-col md:items-end">
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Time</div>
+                                                    <div className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                                        <ClockIcon className="w-4 h-4 text-slate-400 md:hidden" />
+                                                        {appointment.preferred_time}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <Link
-                                                to={`/listings/${appointment.listing_id}`}
-                                                className="w-12 h-12 bg-slate-900 text-white rounded-[3px] flex items-center justify-center shadow-lg shadow-slate-900/10 hover:bg-primary-600 hover:shadow-primary-600/20 active:scale-90 transition-all duration-300"
+                                            <Button
+                                                variant="primary"
+                                                className="w-full md:w-auto px-6 py-2.5 !font-black !text-xs !rounded-[var(--btn-radius)] !shadow-lg !shadow-slate-900/10 hover:!shadow-primary-600/20 active:scale-95 transition-all duration-300 whitespace-nowrap"
+                                                onClick={() => window.location.href = `/listings/${appointment.listing_id}`}
                                             >
-                                                <ArrowRightIcon className="w-5 h-5" />
-                                            </Link>
+                                                View Property <ArrowRightIcon className="w-3.5 h-3.5 ml-2" />
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>

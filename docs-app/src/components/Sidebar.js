@@ -84,8 +84,11 @@ const Sidebar = () => {
                             <NavLink to="/workflow/dataflow" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
                                 📊 Data Flow
                             </NavLink>
+                            <NavLink to="/workflow/mindmap" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
+                                🌐 Project Mind Map
+                            </NavLink>
                             <NavLink to="/workflow/add-column" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
-                                ➕ Add Column
+                                ➕ How to Add a Column
                             </NavLink>
                             <NavLink to="/workflow/modify-column" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
                                 ✏️ Modify Column
@@ -119,6 +122,9 @@ const Sidebar = () => {
                             </NavLink>
                             <NavLink to="/guide/roles" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
                                 🔐 Roles & Guide
+                            </NavLink>
+                            <NavLink to="/guide/solutions" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
+                                💡 Agent Solutions
                             </NavLink>
                             <NavLink to="/guide/features" className={({ isActive }) => `sidebar-child-link ${isActive ? 'active' : ''}`}>
                                 📊 Feature Matrix

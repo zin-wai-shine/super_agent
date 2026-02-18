@@ -1,13 +1,23 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPinIcon, HomeIcon, ArrowRightIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import {
+    MapPinIcon,
+    BookmarkIcon,
+    LinkIcon
+} from '@heroicons/react/24/outline';
+import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub } from "react-icons/pi";
+import { toast } from 'react-toastify';
+import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
+import PropertyShare from './PropertyShare';
+
 
 const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
+    console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
         title,
@@ -38,9 +48,96 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     if (listingImages.length === 0) listingImages.push(featuredImage);
 
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+    const [isSaved, setIsSaved] = React.useState(false);
+    const [savingListing, setSavingListing] = React.useState(false);
+    const [copied, setCopied] = React.useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated, user } = useAuth();
+
+    // Check if listing is saved on mount
+    React.useEffect(() => {
+        const checkSavedStatus = async () => {
+            if (isAuthenticated && user) {
+                try {
+                    const response = await checkIfSaved(id);
+                    setIsSaved(response.is_saved);
+                } catch (error) {
+                    console.error('Error checking saved status:', error);
+                }
+            }
+        };
+        checkSavedStatus();
+    }, [id, isAuthenticated, user]);
+
+    const handleToggleSave = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!isAuthenticated) {
+            toast.error('Please login to save listings', {
+                onClick: () => navigate('/login')
+            });
+            return;
+        }
+
+        setSavingListing(true);
+        try {
+            if (isSaved) {
+                await unsaveListing(id);
+                setIsSaved(false);
+                toast.success('Property removed from saved listings');
+            } else {
+                await saveListing(id);
+                setIsSaved(true);
+                toast.success('Property saved successfully');
+            }
+        } catch (error) {
+            console.error('Save listing error:', error);
+            toast.error(error.error || error.message || 'Failed to update saved status');
+        } finally {
+            setSavingListing(false);
+        }
+    };
+
+    const handleCopyLink = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const url = `${window.location.origin}/listings?detail=${id}`;
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(url);
+                toast.success('Link copied to clipboard');
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } else {
+                // Fallback for non-secure contexts
+                const textArea = document.createElement("textarea");
+                textArea.value = url;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    toast.success('Link copied to clipboard');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error('Fallback copy failed', err);
+                    toast.error('Failed to copy link');
+                }
+                document.body.removeChild(textArea);
+            }
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            toast.error('Failed to copy link');
+        }
+    };
 
     const handleBookClick = (e) => {
         e.preventDefault();
@@ -55,17 +152,14 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
         }
     };
 
+    const nearestStation = station?.name_en?.split('(')[0] || station_name?.split('(')[0] || '';
+
     // Format price
     const formatPrice = (price) => {
-        if (priceFormat === 'full') {
-            return price.toLocaleString(undefined, { maximumFractionDigits: 0 });
-        }
-
-        if (price >= 1000000) {
-            return `${(price / 1000000).toFixed(1)}M`;
-        }
-        if (price >= 1000) {
-            return `${(price / 1000).toFixed(0)}K`;
+        if (!price) return 'N/A';
+        if (priceFormat === 'short') {
+            if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M';
+            if (price >= 1000) return (price / 1000).toFixed(0) + 'K';
         }
         return price.toLocaleString();
     };
@@ -109,347 +203,256 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     if (isListView) {
         return (
             <Link
-                to={`/listings/${id}`}
-                className="bg-white rounded-[3px] overflow-hidden shadow-sm border border-gray-100 flex flex-row group hover:shadow-md transition-all duration-300 h-[130px] md:h-[220px] animate-fade-in-scale"
+                to={`/listings?detail=${id}`}
+                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
             >
-                {/* Image Section - Fixed width on mobile, percentage on desktop */}
-                <div className="w-[130px] md:w-[40%] h-full relative overflow-hidden flex-none group/slider">
+                {/* Image Section */}
+                <div className="w-[135px] md:w-[35%] h-full relative overflow-hidden flex-none">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
-                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
 
-                    {/* Navigation Buttons - Desktop Only */}
-                    {listingImages.length > 1 && (
-                        <div className="hidden md:block">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentImageIndex((prev) => (prev === 0 ? listingImages.length - 1 : prev - 1));
-                                }}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity z-10"
-                            >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentImageIndex((prev) => (prev === listingImages.length - 1 ? 0 : prev + 1));
-                                }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity z-10"
-                            >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            {/* Dots Indicator */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                                {listingImages.map((_, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`w-1.5 h-1.5 rounded-full shadow-sm transition-all ${idx === currentImageIndex ? 'bg-white scale-125' : 'bg-white/60 hover:bg-white/80'}`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Listing type badge - Mobile: Small Top Left / Desktop: Standard */}
-                    <div
-                        className={`absolute top-2 left-2 md:top-4 md:left-4 text-[9px] md:text-[11px] uppercase font-black px-1.5 py-0.5 md:px-2.5 md:py-1 shadow-sm tracking-wider z-10 ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}
-                        style={{ borderRadius: 'var(--btn-radius)' }}
-                    >
-                        {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
-                    </div>
-
-                    {/* Featured badge - Desktop Only */}
-                    {is_featured && (
+                    {/* Badges Overlay */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
                         <div
-                            className="hidden md:block absolute top-4 right-4 bg-yellow-400 text-white text-[11px] uppercase font-black px-2.5 py-1 shadow-sm tracking-wider z-10"
-                            style={{ borderRadius: 'var(--btn-radius)' }}
+                            className={`text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-sm shadow-sm tracking-tight ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'
+                                }`}
                         >
-                            Featured
+                            {listing_type === 'sale' ? 'Sale' : 'Rent'}
                         </div>
-                    )}
-
-                    {/* Date badge - Desktop Only */}
-                    <div
-                        className="hidden md:flex absolute bottom-4 left-4 bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-2 py-1 shadow-sm tracking-wider items-center gap-1.5 z-10"
-                        style={{ borderRadius: 'var(--btn-radius)' }}
-                    >
-                        <CalendarDaysIcon className="w-3.5 h-3.5 text-primary-500" />
-                        Listed {formatRelativeTime(created_at)}
                     </div>
                 </div>
 
                 {/* Content Section */}
-                <div className="p-3 md:p-4 flex flex-col justify-between flex-1 min-w-0 relative">
-                    <div>
-                        <div className="flex items-start justify-between mb-1">
-                            <span
-                                className={`hidden md:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}
-                                style={{ borderRadius: 'var(--btn-radius)' }}
-                            >
-                                {property_type || 'Property'}
-                            </span>
+                <div className="p-3 md:p-5 flex flex-col justify-between flex-1 min-w-0">
+                    <div className="flex flex-col gap-1 md:gap-2">
+                        <div className="flex items-center justify-between">
                             <div className="flex items-baseline gap-1 text-primary-600">
-                                <span className="text-lg md:text-2xl font-black tracking-tight">{formatPrice(price)}</span>
-                                <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase">{price_unit}</span>
-                                {listing_type === 'rent' && <span className="text-[10px] md:text-xs font-bold text-gray-400">/mo</span>}
+                                <span className="text-xl md:text-2xl font-black tracking-tight text-primary-600">{formatPrice(price)}</span>
+                                <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest">{price_unit}</span>
+                                {listing_type === 'rent' && <span className="text-[9px] md:text-[10px] font-bold text-gray-400">/mo</span>}
                             </div>
+                            <span className="text-[9px] md:text-[10px] text-gray-300 font-mono opacity-60">#{id.slice(0, 5)}</span>
                         </div>
 
-                        <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
-                            {title}
-                        </h3>
-
-                        {/* Information Group */}
-                        <div className="space-y-1 md:space-y-2 mb-0">
-                            {/* Location & Station */}
-                            <div className="space-y-1">
-                                <div className="flex items-center text-gray-500">
-                                    <MapPinIcon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 flex-shrink-0 text-primary-600" />
-                                    <span className="text-xs md:text-sm font-medium truncate">
-                                        {road || district || 'Bangkok'}
-                                    </span>
+                        <div className="min-w-0 py-1">
+                            <h3 className="text-base font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1 mb-1">
+                                {title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-[13px] text-gray-400">
+                                <div className="flex items-center">
+                                    <MapPinIcon className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
+                                    <span className="truncate">{district || 'Bangkok'}</span>
                                 </div>
-
-
-                                {((station_name || station_id) || (station?.name_en || station?.id)) && (
-                                    <div className="flex items-center gap-1.5">
-                                        {/* Train Icon */}
-                                        <TbTrain className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600 flex-shrink-0" />
-
-                                        <span className="text-[10px] md:text-xs text-primary-600 font-bold whitespace-nowrap hidden md:inline">
-                                            {line_name || station?.line_name || 'BTS'}
-                                        </span>
-
-                                        <span className="text-[10px] md:text-xs text-gray-900 font-semibold truncate">
-                                            {station?.name_en?.split('(')[0] || station_name?.split('(')[0]}
-                                        </span>
-
-                                        <span
-                                            className="px-1 py-0.5 text-[8px] md:text-[9px] font-bold text-white tabular-nums"
-                                            style={{ backgroundColor: line_color || station?.line_color || 'var(--primary-color)', borderRadius: 'var(--btn-radius)' }}
-                                        >
-                                            {station?.id || station_id}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Features for List View - Desktop Only / Simplified on Mobile */}
-                            <div className="flex items-center gap-3 md:gap-4 pt-1 md:pt-2">
-                                <div className="flex items-center gap-1 text-gray-600">
-                                    <LiaBedSolid className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600" />
-                                    <span className="text-xs md:text-sm font-medium">{bedrooms} <span className="hidden md:inline">Beds</span></span>
-                                </div>
-                                <div className="flex items-center gap-1 text-gray-600">
-                                    <PiBathtub className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary-600" />
-                                    <span className="text-xs md:text-sm font-medium">{bathrooms} <span className="hidden md:inline">Baths</span></span>
-                                </div>
-                                {area > 0 && (
-                                    <div className="hidden md:flex items-center gap-1 text-gray-600">
-                                        <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                        </svg>
-                                        <span className="text-sm font-medium">{area}m²</span>
-                                    </div>
+                                {nearestStation && (
+                                    <>
+                                        <div className="w-px h-3 bg-gray-200" />
+                                        <div className="flex items-center">
+                                            <TbTrain className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
+                                            <span className="truncate">{nearestStation}</span>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="hidden md:flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
-                        <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest gap-2">
-                            <span className="text-[10px]">ID: #{id.slice(0, 8)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(`/listings/${id}`);
-                                }}
-                                className="px-4 py-2 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all"
-                                style={{ borderRadius: 'var(--btn-radius)' }}
-                            >
-                                View Details
-                            </button>
-                            {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
-                                <button
-                                    onClick={handleBookClick}
-                                    className="bg-primary-600 text-white text-xs font-bold px-4 py-2 hover:bg-primary-700 transition-all shadow-sm"
-                                    style={{ borderRadius: 'var(--btn-radius)' }}
-                                >
-                                    Book Viewing
-                                </button>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
+                        {/* Features Row */}
+                        <div className="flex items-center gap-5">
+                            <div className="flex items-center gap-2">
+                                <LiaBedSolid className="w-[18px] h-[18px] text-gray-400" />
+                                <span className="text-[13px] font-bold text-gray-700">{bedrooms}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <PiBathtub className="w-[18px] h-[18px] text-gray-400" />
+                                <span className="text-[13px] font-bold text-gray-700">{bathrooms}</span>
+                            </div>
+                            {area > 0 && (
+                                <div className="hidden md:flex items-center gap-2">
+                                    <span className="text-[13px] font-bold text-gray-400 leading-none">M²</span>
+                                    <span className="text-[13px] font-bold text-gray-700 tabular-nums leading-none">{area}</span>
+                                </div>
                             )}
+                        </div>
+
+                        {/* Labeled Actions in List View */}
+                        <div className="flex items-center gap-1 md:gap-3">
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-primary-600 disabled:opacity-50"
+                            >
+                                {isSaved ? (
+                                    <BookmarkSolidIcon className="w-4 h-4 text-primary-600" />
+                                ) : (
+                                    <BookmarkIcon className="w-4 h-4" />
+                                )}
+                                <span className="text-[13px] font-bold capitalize">Save</span>
+                            </button>
+
+                            <PropertyShare
+                                property={{
+                                    id, title,
+                                    description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
+                                    image: featuredImage
+                                }}
+                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-gray-900"
+                                showLabel={true}
+                                labelClassName="text-[13px] font-bold capitalize"
+                            />
+
+                            <button
+                                onClick={handleCopyLink}
+                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-gray-900 min-w-[70px] justify-center"
+                            >
+                                {copied && location.pathname === '/listings' ? (
+                                    <span className="text-[13px] font-bold text-emerald-600 capitalize">Link Copied</span>
+                                ) : (
+                                    <>
+                                        <LinkIcon className="w-4 h-4" />
+                                        <span className="text-[13px] font-bold capitalize">Copy link</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
-            </Link >
+            </Link>
         );
     }
 
     return (
         <Link
-            to={`/listings/${id}`}
-            className="listing-card group block bg-white overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-scale"
+            to={`/listings?detail=${id}`}
+            className="group block bg-white overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-fade-in-scale border border-gray-100/50"
             style={{ borderRadius: 'var(--card-radius)' }}
         >
-            {/* Image */}
+            {/* Image Section */}
             <div className="relative aspect-[16/10] overflow-hidden">
                 <img
                     src={featuredImage}
                     alt={title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
                 />
 
-                {/* Featured badge & Date badge - Stacked Top Left */}
-                <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                {/* Badges Overlay */}
+                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
                     {is_featured && (
-                        <div
-                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[11px] uppercase font-black px-1.5 py-0.5 shadow-lg tracking-tight"
-                            style={{ borderRadius: 'var(--btn-radius)' }}
-                        >
+                        <div className="bg-amber-400 text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-sm shadow-md tracking-wider">
                             Featured
                         </div>
                     )}
                     <div
-                        className="bg-white/90 backdrop-blur-md text-gray-700 text-[10px] font-bold uppercase px-1.5 py-0.5 shadow-sm tracking-wider flex items-center gap-1"
-                        style={{ borderRadius: 'var(--btn-radius)' }}
+                        className={`text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-sm shadow-sm tracking-tight ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'
+                            }`}
                     >
-                        <CalendarDaysIcon className="w-3 h-3 text-primary-500" />
-                        {formatRelativeTime(created_at)}
+                        {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                     </div>
                 </div>
 
-                {/* Listing type badge */}
-                <div
-                    className={`absolute top-3 right-3 text-[11px] uppercase font-black px-2 py-0.5 shadow-sm ${listing_type === 'sale' ? 'bg-primary-500 text-white' : 'bg-secondary-500 text-white'
-                        }`}
-                    style={{ borderRadius: 'var(--btn-radius)' }}
-                >
-                    {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
-                </div>
-
-                {/* Price overlay: Light glassmorphism style */}
-                <div
-                    className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 shadow-md border border-white/40"
-                    style={{ borderRadius: 'var(--btn-radius)' }}
-                >
-                    <div className="flex items-center space-x-1.5 text-gray-900">
-                        <span className="text-primary-600 font-bold text-sm">฿</span>
-                        <span className="text-base font-black tracking-tight">{formatPrice(price)}</span>
-                        <span className="text-[12px] font-bold text-gray-500 uppercase">{price_unit}</span>
-                        {listing_type === 'rent' && <span className="text-[12px] font-bold text-gray-500">/mo</span>}
-                    </div>
+                {/* Date Badge - Minimalist bottom right */}
+                <div className="absolute bottom-3 right-3 bg-black/30 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
+                    {formatRelativeTime(created_at)}
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="p-4">
-                {/* Property type & ID */}
-                <div className="flex items-center justify-between mb-1.5">
-                    <span
-                        className={`px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${typeColors[property_type?.toLowerCase().trim()] || 'bg-gray-100 text-gray-800'}`}
-                        style={{ borderRadius: 'var(--btn-radius)' }}
-                    >
-                        {property_type || 'Property'}
-                    </span>
-                    <span className="text-[12px] text-gray-400 font-medium tabular-nums">#{id.slice(0, 5)}</span>
+            {/* Content Section */}
+            <div className="p-4 flex flex-col gap-1.5">
+                {/* Price and ID Row */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-baseline gap-1 text-primary-600">
+                        <span className="text-xl font-black tracking-tight">{formatPrice(price)}</span>
+                        <span className="text-[10px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
+                        {listing_type === 'rent' && <span className="text-[10px] font-bold text-gray-400">/mo</span>}
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-medium font-mono tracking-tighter tabular-nums opacity-60">#{id.slice(0, 5)}</span>
                 </div>
 
-                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1 mb-4">
+                {/* Title */}
+                <h3 className="text-[15px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
                     {title}
                 </h3>
 
-                {/* Information Group Grouped Above Footer */}
-                <div className="space-y-3 mb-4">
-                    {/* Location & Station - Stacked for clarity */}
-                    <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center text-gray-500 text-[13px]">
-                            <MapPinIcon className="w-4 h-4 mr-1.5 flex-shrink-0 text-primary-600" />
-                            <span className="truncate">
-                                {road || district || 'Bangkok'}
-                            </span>
+                {/* Information Rows */}
+                <div className="space-y-1">
+                    {/* Redesigned Info Rows */}
+                    <div className="space-y-1.5 mb-3">
+                        <div className="flex items-center text-[13px] text-gray-400">
+                            <MapPinIcon className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
+                            <span className="truncate">{district || 'Bangkok'}</span>
+                            {nearestStation && (
+                                <>
+                                    <div className="mx-2 w-px h-3 bg-gray-200" />
+                                    <TbTrain className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
+                                    <span className="truncate">{nearestStation}</span>
+                                </>
+                            )}
                         </div>
 
-                        {((station_name || station_id) || (station?.name_en || station?.id)) && (
-                            <div className="flex items-center gap-1.5 ml-0.5">
-                                {/* Train Icon */}
-                                <TbTrain className="w-4 h-4 text-primary-600 flex-shrink-0" />
-
-                                <div className="flex items-baseline gap-1.5 overflow-hidden">
-                                    {/* Line Name */}
-                                    <span className="text-[12px] text-primary-600 font-semibold whitespace-nowrap">
-                                        {line_name || station?.line_name || 'BTS'}
-                                    </span>
-
-                                    {/* Station Name */}
-                                    <span className="text-[13px] text-gray-800 font-medium truncate" title={station?.name_en || station_name}>
-                                        {station?.name_en?.split('(')[0] || station_name?.split('(')[0]}
-                                    </span>
+                        {/* Stats Refined Row */}
+                        <div className="flex items-center gap-6 py-1">
+                            <div className="flex items-center gap-2" title="Bedrooms">
+                                <LiaBedSolid className="w-[18px] h-[18px] text-gray-400" />
+                                <span className="text-[13px] font-bold text-gray-700 tabular-nums">{bedrooms}</span>
+                            </div>
+                            <div className="flex items-center gap-2" title="Bathrooms">
+                                <PiBathtub className="w-[18px] h-[18px] text-gray-400" />
+                                <span className="text-[13px] font-bold text-gray-700 tabular-nums">{bathrooms}</span>
+                            </div>
+                            {area > 0 && (
+                                <div className="flex items-center gap-2" title="Area">
+                                    <span className="text-[13px] font-bold text-gray-300 tracking-tighter w-[18px] text-center">M²</span>
+                                    <span className="text-[13px] font-bold text-gray-700 tabular-nums">{area}</span>
                                 </div>
-
-                                {/* Station ID Badge */}
-                                <span
-                                    className="px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums flex-shrink-0"
-                                    style={{ backgroundColor: line_color || station?.line_color || 'var(--primary-color)', borderRadius: 'var(--btn-radius)' }}
-                                >
-                                    {station?.id || station_id}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Features (Now Grouped Here) */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1" title="Bedrooms">
-                            <LiaBedSolid className="w-4 h-4 text-primary-600" />
-                            <span className="text-[13px] text-gray-500">{bedrooms}</span>
+                            )}
                         </div>
-                        <div className="flex items-center gap-1" title="Bathrooms">
-                            <PiBathtub className="w-4 h-4 text-primary-600" />
-                            <span className="text-[13px] text-gray-500">{bathrooms}</span>
-                        </div>
-                        {area > 0 && (
-                            <div className="flex items-center gap-1" title="Area">
-                                <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                </svg>
-                                <span className="text-[13px] text-gray-500">{area}m²</span>
-                            </div>
-                        )}
                     </div>
                 </div>
 
-                {/* Card Footer */}
-                <div className="flex-1 flex gap-2">
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(`/listings/${id}`);
-                        }}
-                        className="flex-1 py-3 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all"
-                        style={{ borderRadius: 'var(--btn-radius)' }}
-                    >
-                        View Details
-                    </button>
-                    {user?.role !== 'agent' && user?.role !== 'sub_agent' && (
+                {/* Redesigned Footer Action Bar */}
+                <div className="pt-2 mt-1 border-t border-gray-50">
+                    <div className="flex items-center flex-1">
+                        {/* Save Action */}
                         <button
-                            onClick={handleBookClick}
-                            className="flex-1 py-3 bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-all shadow-sm flex items-center justify-center gap-1 group/btn"
-                            style={{ borderRadius: 'var(--btn-radius)' }}
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className="flex-1 flex items-center justify-start gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action disabled:opacity-50"
                         >
-                            <span>Book Viewing</span>
-                            <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                            {isSaved ? (
+                                <BookmarkSolidIcon className="w-4 h-4 text-primary-600 animate-in zoom-in-75 duration-300" />
+                            ) : (
+                                <BookmarkIcon className="w-4 h-4 group-hover/action:scale-110 transition-transform duration-300" />
+                            )}
+                            <span className="text-[10px] font-bold capitalize tracking-wider">{isSaved ? 'Saved' : 'Save'}</span>
                         </button>
-                    )}
+
+                        <PropertyShare
+                            property={{
+                                id,
+                                title,
+                                description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
+                                image: featuredImage
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action"
+                            showLabel={true}
+                            labelClassName="text-[10px] font-bold capitalize tracking-wider group-hover/action:text-primary-600 transition-colors"
+                            iconClassName="w-4 h-4 text-gray-500 group-hover/action:text-primary-600 transition-all duration-300 group-hover/action:scale-110"
+                        />
+
+                        {/* Copy Link Action */}
+                        <button
+                            onClick={handleCopyLink}
+                            className="flex-1 flex items-center justify-end gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action"
+                        >
+                            <LinkIcon className="w-4 h-4 group-hover/action:scale-110 transition-transform duration-300" />
+                            <span className="text-[10px] font-bold capitalize tracking-wider whitespace-nowrap">
+                                {(copied && location.pathname === '/listings') ? 'Link Copied' : 'Copy link'}
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </Link>
