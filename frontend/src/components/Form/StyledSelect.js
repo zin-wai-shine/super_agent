@@ -53,12 +53,30 @@ const getCustomStyles = (isDarkMode) => ({
         backgroundColor: 'transparent',
     }),
     option: (base, state) => {
-        const { data } = state;
+        const { data, isDisabled } = state;
         let activeColor = 'var(--primary-color)'; // Default Blue
         if (data.value === 'pending') activeColor = '#f59e0b'; // Amber/Yellow
         if (data.value === 'confirmed') activeColor = 'var(--primary-color)'; // Blue
         if (data.value === 'completed') activeColor = '#10b981'; // Green
         if (data.value === 'cancelled') activeColor = '#ef4444'; // Red
+
+        if (isDisabled) {
+            return {
+                ...base,
+                backgroundColor: 'transparent',
+                color: isDarkMode ? '#4b5563' : '#d1d5db',
+                cursor: 'not-allowed',
+                padding: '10px 14px',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'none',
+                marginBottom: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                opacity: 0.5,
+            };
+        }
 
         return {
             ...base,
@@ -295,6 +313,7 @@ const StyledSelect = ({
             theme={customTheme}
             className={className}
             classNamePrefix="react-select"
+            isOptionDisabled={(option) => option.disabled}
             formatOptionLabel={(option, { context }) => (
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
