@@ -529,7 +529,7 @@ const ListingsPage = () => {
                         </div>
                     )}
 
-                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-xs font-bold border border-primary-100 flex items-center gap-2 justify-center">
+                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-sm font-bold border border-primary-100 flex items-center gap-2 justify-center">
                         <CheckCircleIcon className="w-4 h-4" />
                         {total} {total === 1 ? 'Property' : 'Properties'} Found
                     </div>
@@ -538,11 +538,11 @@ const ListingsPage = () => {
                 {/* Selects */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-5">
                     <div className="space-y-2 col-span-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Property Type</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Property Type</label>
                         <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
                     </div>
                     <div className="space-y-2 col-span-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Transit Station</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Transit Station</label>
                         {stationsLoaded ? (
                             <StyledSelect
                                 key={`station-select-${flatStations.length}`}
@@ -557,20 +557,20 @@ const ListingsPage = () => {
                         )}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Listing Type</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Listing Type</label>
                         <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Bedrooms</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Bedrooms</label>
                         <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Min Price</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Min Price</label>
                         <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="0" className="w-full" />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-wider text-gray-400">Max Price</label>
+                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Max Price</label>
                         <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="No limit" className="w-full" />
                     </div>
                 </div>
@@ -584,7 +584,7 @@ const ListingsPage = () => {
                             style={{ borderRadius: 'var(--btn-radius)' }}
                         >
                             <Squares2X2Icon className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.15em]">Grid View</span>
+                            <span className="text-xs font-black uppercase tracking-[0.15em]">Grid View</span>
                             {viewMode === 'grid' && (
                                 <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
                             )}
@@ -595,7 +595,7 @@ const ListingsPage = () => {
                             style={{ borderRadius: 'var(--btn-radius)' }}
                         >
                             <ListBulletIcon className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.15em]">List View</span>
+                            <span className="text-xs font-black uppercase tracking-[0.15em]">List View</span>
                             {viewMode === 'list' && (
                                 <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
                             )}
@@ -685,7 +685,7 @@ const ListingsPage = () => {
                                         }}
                                         onFocus={() => setShowTransitResults(true)}
                                         placeholder="Search transit station..."
-                                        className="block w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-[3px] text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:bg-white transition-all"
+                                        className="block w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-[3px] text-base font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:bg-white transition-all"
                                     />
 
                                     {/* Search Results Dropdown */}

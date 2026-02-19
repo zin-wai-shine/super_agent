@@ -37,12 +37,9 @@ const FilterBar = ({
                 <div className="flex items-center justify-between gap-4">
 
                     {/* Search Section */}
-                    <div className="flex-1 max-w-2xl relative group h-[52px] bg-white rounded-[var(--btn-radius)] shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 overflow-hidden">
+                    <div className="flex-1 max-w-full relative group h-[46px] bg-white rounded-[3px] transition-all duration-300 border border-gray-200 focus-within:border-primary-500 overflow-hidden">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                            <div className="flex items-center gap-2 pr-4 border-r border-gray-100">
-                                <Logo className="w-6 h-6 text-primary-600" />
-                            </div>
-                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors ml-3" />
+                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                         </div>
 
                         <Input
@@ -51,26 +48,24 @@ const FilterBar = ({
                             placeholder="Search location, name, neighborhood..."
                             className="w-full relative z-0"
                             style={{
-                                height: '52px',
-                                paddingLeft: '115px',
-                                fontSize: '15px',
+                                height: '46px',
+                                paddingLeft: '48px',
+                                fontSize: '16px',
                                 fontWeight: '500',
-                                borderRadius: 'var(--btn-radius)',
+                                borderRadius: '3px',
                                 backgroundColor: 'transparent',
                                 border: 'none',
                                 boxShadow: 'none'
                             }}
                         />
-
-                        <div className="absolute inset-0 ring-2 ring-primary-500/20 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-all duration-300" />
                     </div>
 
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-3">
                         {showInventory && (
                             <div className="flex flex-col items-end mr-4 px-4 border-r border-gray-200">
-                                <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">Inventory</span>
-                                <span className="text-sm font-bold text-gray-900">{total} Results</span>
+                                <span className="text-xs uppercase font-black tracking-widest text-gray-400">INVENTORY</span>
+                                <span className="text-base font-bold text-gray-900">{total}</span>
                             </div>
                         )}
 
@@ -115,7 +110,7 @@ const FilterBar = ({
                         {/* Map View Switch */}
                         {showMapToggle && (
                             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-gray-200">
-                                <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isMapViewOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
+                                <span className={`text-xs font-black uppercase tracking-widest transition-colors ${isMapViewOpen ? 'text-primary-600' : 'text-gray-400'}`}>Map View</span>
                                 <button
                                     onClick={() => onToggleMapView && onToggleMapView(!isMapViewOpen)}
                                     disabled={isMapTransitioning}

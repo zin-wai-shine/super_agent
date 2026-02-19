@@ -230,8 +230,8 @@ const TransitMapFilter = ({
                     {searchable && (
                         <div className={`${showTitle ? 'ml-6' : ''} flex-1 max-w-xl`} ref={searchRef}>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <MagnifyingGlassIcon className="h-5 w-5 text-white/70 group-focus-within:text-white transition-colors" />
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
                                 </div>
                                 <input
                                     type="text"
@@ -242,7 +242,7 @@ const TransitMapFilter = ({
                                     }}
                                     onFocus={() => setShowResults(true)}
                                     placeholder="Search transit station..."
-                                    className="block w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-[3px] text-sm font-bold text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/20 transition-all shadow-inner"
+                                    className="block w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-[3px] text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
                                 />
 
                                 {/* Search Results Dropdown - Relative to Header */}

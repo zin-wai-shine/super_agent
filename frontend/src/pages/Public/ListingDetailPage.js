@@ -637,7 +637,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
                     >
                         <PhoneIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">contact</span>
+                        <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Contact</span>
                     </button>
 
                     {/* Booking */}
@@ -646,7 +646,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
                     >
                         <CalendarDaysIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">booking</span>
+                        <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Booking</span>
                     </button>
                 </div>
 
@@ -663,8 +663,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         ) : (
                             <BookmarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
                         )}
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">
-                            {isSaved ? 'saved' : 'save'}
+                        <span className="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">
+                            {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
 
@@ -679,6 +679,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         }}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
                         showLabel={true}
+                        labelClassName="text-base font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300"
                     />
                 </div>
 
@@ -1322,25 +1323,25 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
                                         <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
+                                            <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
                                         </div>
                                     </div>
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t md:border-t-0">
                                         <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
+                                            <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
                                         </div>
                                     </div>
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
                                         <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.area || 0} m²</div>
+                                            <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.area || 0} m²</div>
                                         </div>
                                     </div>
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
                                         <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
+                                            <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
                                         </div>
                                     </div>
 
@@ -1349,7 +1350,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                         <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
                                             <div className="text-xl md:text-2xl flex-shrink-0">🏗️</div>
                                             <div>
-                                                <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">Built in {listing.year_built}</div>
+                                                <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">Built in {listing.year_built}</div>
                                             </div>
                                         </div>
                                     )}
@@ -1358,7 +1359,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                         <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
                                             <TbCurrencyBaht className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                             <div>
-                                                <div className="text-sm md:text-base font-medium text-gray-700 leading-tight">
+                                                <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">
                                                     {listing.price && listing.area
                                                         ? `฿${Math.round(listing.price / listing.area).toLocaleString()}/sqm`
                                                         : '-'}
@@ -1370,7 +1371,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t col-span-1 md:col-span-2">
                                         <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
                                         <div>
-                                            <div className="text-sm md:text-base font-medium text-gray-700 truncate leading-tight">
+                                            <div className="text-base md:text-lg font-medium text-gray-700 truncate leading-tight">
                                                 {(listing.station_id || listing.station_name)
                                                     ? `${listing.distance_to_station || 0}m to ${listing.station_name || listing.station?.name_en || 'Station'}`
                                                     : 'Near Transit'}

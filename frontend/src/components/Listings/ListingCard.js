@@ -16,7 +16,7 @@ import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedLi
 import PropertyShare from './PropertyShare';
 
 
-const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
+const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to }) => {
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
@@ -157,10 +157,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     // Format price
     const formatPrice = (price) => {
         if (!price) return 'N/A';
-        if (priceFormat === 'short') {
-            if (price >= 1000000) return (price / 1000000).toFixed(1) + 'M';
-            if (price >= 1000) return (price / 1000).toFixed(0) + 'K';
-        }
+        // Always use full locale string as requested in the design
         return price.toLocaleString();
     };
 
@@ -203,7 +200,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
     if (isListView) {
         return (
             <Link
-                to={`/listings?detail=${id}`}
+                to={to || `/listings?detail=${id}`}
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
             >
                 {/* Image Section */}
@@ -226,72 +223,76 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                 </div>
 
                 {/* Content Section */}
-                <div className="p-3 md:p-5 flex flex-col justify-between flex-1 min-w-0">
-                    <div className="flex flex-col gap-1 md:gap-2">
+                <div className="p-4 md:p-6 flex flex-col flex-1 min-w-0">
+                    <div className="flex flex-col gap-2">
+                        {/* Price Row */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-baseline gap-1 text-primary-600">
-                                <span className="text-xl md:text-2xl font-black tracking-tight text-primary-600">{formatPrice(price)}</span>
-                                <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest">{price_unit}</span>
+                                <span className="text-xl md:text-2xl font-black tracking-tight">{formatPrice(price)}</span>
+                                <span className="text-[10px] md:text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
                                 {listing_type === 'rent' && <span className="text-[9px] md:text-[10px] font-bold text-gray-400">/mo</span>}
                             </div>
-                            <span className="text-[9px] md:text-[10px] text-gray-300 font-mono opacity-60">#{id.slice(0, 5)}</span>
+                            <span className="text-[10px] md:text-[11px] text-gray-300 font-mono">#{id.slice(0, 5)}</span>
                         </div>
 
-                        <div className="min-w-0 py-1">
-                            <h3 className="text-base font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1 mb-1">
-                                {title}
-                            </h3>
-                            <div className="flex items-center gap-2 text-[13px] text-gray-400">
-                                <div className="flex items-center">
-                                    <MapPinIcon className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
-                                    <span className="truncate">{district || 'Bangkok'}</span>
-                                </div>
-                                {nearestStation && (
-                                    <>
-                                        <div className="w-px h-3 bg-gray-200" />
-                                        <div className="flex items-center">
-                                            <TbTrain className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
-                                            <span className="truncate">{nearestStation}</span>
-                                        </div>
-                                    </>
-                                )}
+                        {/* Title - Blue as per design */}
+                        <h3 className="text-base md:text-lg font-bold text-primary-600 group-hover:text-primary-700 transition-colors line-clamp-1">
+                            {title}
+                        </h3>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-gray-400 mb-1">
+                            <div className="flex items-center">
+                                <MapPinIcon className="w-4 h-4 mr-1 text-gray-300 shrink-0" />
+                                <span className="truncate">{district || 'Bangkok'}</span>
                             </div>
+                            {nearestStation && (
+                                <>
+                                    <div className="w-px h-3 bg-gray-200" />
+                                    <div className="flex items-center">
+                                        <TbTrain className="w-4 h-4 mr-1 text-gray-300 shrink-0" />
+                                        <span className="truncate">{nearestStation}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
-                        {/* Features Row */}
-                        <div className="flex items-center gap-5">
-                            <div className="flex items-center gap-2">
-                                <LiaBedSolid className="w-[18px] h-[18px] text-gray-400" />
-                                <span className="text-[13px] font-bold text-gray-700">{bedrooms}</span>
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                        {/* Stats Row */}
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-1.5">
+                                <LiaBedSolid className="w-5 h-5 text-gray-400" />
+                                <span className="text-[14px] font-bold text-gray-700">{bedrooms}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <PiBathtub className="w-[18px] h-[18px] text-gray-400" />
-                                <span className="text-[13px] font-bold text-gray-700">{bathrooms}</span>
+                            <div className="flex items-center gap-1.5">
+                                <PiBathtub className="w-5 h-5 text-gray-400" />
+                                <span className="text-[14px] font-bold text-gray-700">{bathrooms}</span>
                             </div>
                             {area > 0 && (
-                                <div className="hidden md:flex items-center gap-2">
-                                    <span className="text-[13px] font-bold text-gray-400 leading-none">M²</span>
-                                    <span className="text-[13px] font-bold text-gray-700 tabular-nums leading-none">{area}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[13px] font-bold text-gray-400">M²</span>
+                                    <span className="text-[14px] font-bold text-gray-700">{area}</span>
                                 </div>
                             )}
                         </div>
 
-                        {/* Labeled Actions in List View */}
-                        <div className="flex items-center gap-1 md:gap-3">
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-primary-600 disabled:opacity-50"
-                            >
-                                {isSaved ? (
-                                    <BookmarkSolidIcon className="w-4 h-4 text-primary-600" />
-                                ) : (
-                                    <BookmarkIcon className="w-4 h-4" />
-                                )}
-                                <span className="text-[13px] font-bold capitalize">Save</span>
-                            </button>
+                        {/* Actions aligned to right in List View */}
+                        <div className="flex items-center gap-4">
+                            {showSave && (
+                                <button
+                                    onClick={handleToggleSave}
+                                    disabled={savingListing}
+                                    className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+                                >
+                                    {isSaved ? (
+                                        <BookmarkSolidIcon className="w-4 h-4 text-primary-600" />
+                                    ) : (
+                                        <BookmarkIcon className="w-4 h-4" />
+                                    )}
+                                    <span className="text-[13px] font-medium hidden sm:inline">Save</span>
+                                </button>
+                            )}
 
                             <PropertyShare
                                 property={{
@@ -299,23 +300,20 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                     description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
                                     image: featuredImage
                                 }}
-                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-gray-900"
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
                                 showLabel={true}
-                                labelClassName="text-[13px] font-bold capitalize"
+                                labelClassName="text-[13px] font-medium hidden sm:inline"
+                                iconClassName="w-4 h-4"
                             />
 
                             <button
                                 onClick={handleCopyLink}
-                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-all text-gray-400 hover:text-gray-900 min-w-[70px] justify-center"
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors min-w-[30px] sm:min-w-[80px] justify-end"
                             >
-                                {copied && location.pathname === '/listings' ? (
-                                    <span className="text-[13px] font-bold text-emerald-600 capitalize">Link Copied</span>
-                                ) : (
-                                    <>
-                                        <LinkIcon className="w-4 h-4" />
-                                        <span className="text-[13px] font-bold capitalize">Copy link</span>
-                                    </>
-                                )}
+                                <LinkIcon className="w-4 h-4" />
+                                <span className="text-[13px] font-medium hidden sm:inline">
+                                    {copied && location.pathname === '/listings' ? 'Copied' : 'Copy Link'}
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -326,7 +324,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
 
     return (
         <Link
-            to={`/listings?detail=${id}`}
+            to={to || `/listings?detail=${id}`}
             className="group block bg-white overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-fade-in-scale border border-gray-100/50"
             style={{ borderRadius: 'var(--card-radius)' }}
         >
@@ -360,75 +358,75 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
             </div>
 
             {/* Content Section */}
-            <div className="p-4 flex flex-col gap-1.5">
+            <div className="p-5 flex flex-col gap-3">
                 {/* Price and ID Row */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-baseline gap-1 text-primary-600">
-                        <span className="text-xl font-black tracking-tight">{formatPrice(price)}</span>
-                        <span className="text-[10px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                        {listing_type === 'rent' && <span className="text-[10px] font-bold text-gray-400">/mo</span>}
+                        <span className="text-2xl font-black tracking-tight">{formatPrice(price)}</span>
+                        <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
+                        {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
                     </div>
-                    <span className="text-[10px] text-gray-400 font-medium font-mono tracking-tighter tabular-nums opacity-60">#{id.slice(0, 5)}</span>
+                    <span className="text-[11px] text-gray-300 font-mono tracking-tighter opacity-60">#{id.slice(0, 5)}</span>
                 </div>
 
-                {/* Title */}
-                <h3 className="text-[15px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
+                {/* Title - Blue per design */}
+                <h3 className="text-[17px] font-bold text-primary-600 group-hover:text-primary-700 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
                     {title}
                 </h3>
 
                 {/* Information Rows */}
-                <div className="space-y-1">
-                    {/* Redesigned Info Rows */}
-                    <div className="space-y-1.5 mb-3">
-                        <div className="flex items-center text-[13px] text-gray-400">
-                            <MapPinIcon className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
-                            <span className="truncate">{district || 'Bangkok'}</span>
-                            {nearestStation && (
-                                <>
-                                    <div className="mx-2 w-px h-3 bg-gray-200" />
-                                    <TbTrain className="w-[18px] h-[18px] mr-1 text-gray-300 shrink-0" />
-                                    <span className="truncate">{nearestStation}</span>
-                                </>
-                            )}
-                        </div>
+                <div className="space-y-3">
+                    <div className="flex items-center text-[14px] text-gray-400">
+                        <MapPinIcon className="w-5 h-5 mr-1 text-gray-300 shrink-0" />
+                        <span className="truncate">{district || 'Bangkok'}</span>
+                        {nearestStation && (
+                            <>
+                                <div className="mx-2 w-px h-3 bg-gray-200" />
+                                <TbTrain className="w-5 h-5 mr-1 text-gray-300 shrink-0" />
+                                <span className="truncate">{nearestStation}</span>
+                            </>
+                        )}
+                    </div>
 
-                        {/* Stats Refined Row */}
-                        <div className="flex items-center gap-6 py-1">
-                            <div className="flex items-center gap-2" title="Bedrooms">
-                                <LiaBedSolid className="w-[18px] h-[18px] text-gray-400" />
-                                <span className="text-[13px] font-bold text-gray-700 tabular-nums">{bedrooms}</span>
-                            </div>
-                            <div className="flex items-center gap-2" title="Bathrooms">
-                                <PiBathtub className="w-[18px] h-[18px] text-gray-400" />
-                                <span className="text-[13px] font-bold text-gray-700 tabular-nums">{bathrooms}</span>
-                            </div>
-                            {area > 0 && (
-                                <div className="flex items-center gap-2" title="Area">
-                                    <span className="text-[13px] font-bold text-gray-300 tracking-tighter w-[18px] text-center">M²</span>
-                                    <span className="text-[13px] font-bold text-gray-700 tabular-nums">{area}</span>
-                                </div>
-                            )}
+                    {/* Stats Refined Row */}
+                    <div className="flex items-center gap-8 pb-1">
+                        <div className="flex items-center gap-2.5">
+                            <LiaBedSolid className="w-5 h-5 text-gray-400" />
+                            <span className="text-[14px] font-bold text-gray-700">{bedrooms}</span>
                         </div>
+                        <div className="flex items-center gap-2.5">
+                            <PiBathtub className="w-5 h-5 text-gray-400" />
+                            <span className="text-[14px] font-bold text-gray-700">{bathrooms}</span>
+                        </div>
+                        {area > 0 && (
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-[13px] font-bold text-gray-300 tracking-tighter">M²</span>
+                                <span className="text-[14px] font-bold text-gray-700">{area}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Redesigned Footer Action Bar */}
-                <div className="pt-2 mt-1 border-t border-gray-50">
-                    <div className="flex items-center flex-1">
+                <div className="pt-4 mt-1 border-t border-gray-100/60">
+                    <div className="flex items-center justify-between w-full">
                         {/* Save Action */}
-                        <button
-                            onClick={handleToggleSave}
-                            disabled={savingListing}
-                            className="flex-1 flex items-center justify-start gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action disabled:opacity-50"
-                        >
-                            {isSaved ? (
-                                <BookmarkSolidIcon className="w-4 h-4 text-primary-600 animate-in zoom-in-75 duration-300" />
-                            ) : (
-                                <BookmarkIcon className="w-4 h-4 group-hover/action:scale-110 transition-transform duration-300" />
-                            )}
-                            <span className="text-[10px] font-bold capitalize tracking-wider">{isSaved ? 'Saved' : 'Save'}</span>
-                        </button>
+                        {showSave && (
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all disabled:opacity-50"
+                            >
+                                {isSaved ? (
+                                    <BookmarkSolidIcon className="w-[18px] h-[18px] text-primary-600" />
+                                ) : (
+                                    <BookmarkIcon className="w-[18px] h-[18px]" />
+                                )}
+                                <span className="text-[14px] font-medium">Save</span>
+                            </button>
+                        )}
 
+                        {/* Share Action */}
                         <PropertyShare
                             property={{
                                 id,
@@ -436,20 +434,20 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short' }) => {
                                 description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
                                 image: featuredImage
                             }}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action"
+                            className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all"
                             showLabel={true}
-                            labelClassName="text-[10px] font-bold capitalize tracking-wider group-hover/action:text-primary-600 transition-colors"
-                            iconClassName="w-4 h-4 text-gray-500 group-hover/action:text-primary-600 transition-all duration-300 group-hover/action:scale-110"
+                            labelClassName="text-[14px] font-medium"
+                            iconClassName="w-[18px] h-[18px]"
                         />
 
                         {/* Copy Link Action */}
                         <button
                             onClick={handleCopyLink}
-                            className="flex-1 flex items-center justify-end gap-1.5 py-1 rounded-lg transition-all text-gray-500 hover:text-primary-600 group/action"
+                            className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all"
                         >
-                            <LinkIcon className="w-4 h-4 group-hover/action:scale-110 transition-transform duration-300" />
-                            <span className="text-[10px] font-bold capitalize tracking-wider whitespace-nowrap">
-                                {(copied && location.pathname === '/listings') ? 'Link Copied' : 'Copy link'}
+                            <LinkIcon className="w-[18px] h-[18px]" />
+                            <span className="text-[14px] font-medium whitespace-nowrap">
+                                {copied ? 'Copied' : 'Copy Link'}
                             </span>
                         </button>
                     </div>

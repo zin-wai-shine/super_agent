@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSavedListings } from '../../services/savedListingsApi';
 import ListingCard from '../../components/Listings/ListingCard';
+import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import { BookmarkIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const SavedListingsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -81,7 +83,8 @@ const SavedListingsPage = () => {
                             <ListingCard
                                 key={listing.id}
                                 listing={listing}
-                                onClick={() => navigate(`/listings?detail=${listing.id}`)}
+                                showSave={false}
+                                to={`?detail=${listing.id}`}
                             />
                         ))}
                     </div>
@@ -116,6 +119,9 @@ const SavedListingsPage = () => {
                 pauseOnHover
                 theme="light"
             />
+
+            {/* Detail Modal */}
+            <ListingDetailModal />
         </div>
     );
 };

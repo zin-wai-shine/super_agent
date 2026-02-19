@@ -18,6 +18,7 @@ import {
     EnvelopeIcon,
     MapIcon,
     HeartIcon,
+    ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import {
     FiSearch,
@@ -53,6 +54,7 @@ import Logo from '../Common/Logo';
 import { getMediaUrl } from '../../utils/media';
 import { publicApi } from '../../services/api';
 import StyledSelect from '../Form/StyledSelect';
+import CookieConsent from '../Common/CookieConsent';
 
 const PublicLayout = () => {
     const { theme } = useTheme();
@@ -501,7 +503,7 @@ const PublicLayout = () => {
                                                     return (
                                                         <div key={item.name} className="relative group px-1">
                                                             <button
-                                                                className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5`}
+                                                                className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5`}
                                                                 style={{
                                                                     borderRadius: 'var(--btn-radius)',
                                                                     color: 'var(--nav-text)',
@@ -518,141 +520,121 @@ const PublicLayout = () => {
                                                             <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
                                                                 <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
                                                                     <div className="w-full px-12 py-10">
-                                                                        <div className="grid grid-cols-5 gap-12 relative">
+                                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
 
-                                                                            {/* Column 1: Browse Properties */}
-                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 rounded-lg bg-primary-600/20 flex items-center justify-center">
-                                                                                        <FiSearch className="w-4 h-4 text-primary-500" />
-                                                                                    </div>
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3>
+                                                                            {/* Column 1: Promo Card (Redesigned) */}
+                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
+                                                                                    {/* Icon Container (Optional, based on ref image 2 which has text only, but image 1 had icon. User said 'make it like second image design'. Image 2 has no icon above text.) */}
+                                                                                    {/* Leaving out icon for cleaner look matching Image 2 */}
+                                                                                    <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
+                                                                                        Elevate Your Living<br />with Super Real Estate
+                                                                                    </h3>
+                                                                                    <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
+                                                                                        Experience unparalleled luxury with our elite collection of prime real estate.
+                                                                                    </p>
+                                                                                    <Link to="/listings" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
+                                                                                        Explore Now
+                                                                                    </Link>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1">
+                                                                            </div>
+
+                                                                            {/* Column 2: Browse Properties */}
+                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <div className="w-8 h-8 flex items-center justify-center">
+                                                                                        <FiSearch className="w-4 h-4 text-gray-400" />
+                                                                                    </div>
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { name: 'All Properties', href: '/listings', icon: FiSearch },
+                                                                                        { name: 'All Properties', href: '/listings', icon: BuildingOfficeIcon },
                                                                                         { name: 'Properties for Rent', href: '/listings?type=rent', icon: FiKey },
                                                                                         { name: 'Properties for Sale', href: '/listings?type=sale', icon: FiDollarSign },
                                                                                         { name: 'New Listings', href: '/listings?sort=newest', icon: FiPlusCircle },
                                                                                         { name: 'Featured Properties', href: '/listings?featured=true', icon: FiStar },
-                                                                                        { name: 'Ready to Move', href: '/listings', icon: FiClock },
-                                                                                    ].map((link) => (
+                                                                                        { name: 'Ready to Move', href: '/listings?status=ready', icon: FiClock },
+                                                                                    ].map((link, index) => (
                                                                                         <Link
                                                                                             key={link.name}
                                                                                             to={link.href}
-                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
                                                                                         >
-                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
-                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
                                                                                         </Link>
                                                                                     ))}
                                                                                 </div>
                                                                             </div>
 
                                                                             {/* Column 2: Property Types */}
-                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center" style={{ borderColor: 'var(--menu-divider)' }}>
                                                                                 <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 rounded-lg bg-purple-600/20 flex items-center justify-center">
-                                                                                        <HiOutlineHomeModern className="w-4 h-4 text-purple-500" />
+                                                                                    <div className="w-8 h-8 flex items-center justify-center">
+                                                                                        <HiOutlineHomeModern className="w-4 h-4 text-gray-400" />
                                                                                     </div>
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Types</h3>
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Types</h3>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1">
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { name: 'Condo', href: '/listings?category=Condo', icon: HiOutlineBuildingOffice2 },
-                                                                                        { name: 'Apartment', href: '/listings?category=Apartment', icon: HiOutlineHomeModern },
-                                                                                        { name: 'House', href: '/listings?category=House', icon: FiHome },
-                                                                                        { name: 'Townhome', href: '/listings?category=Townhouse', icon: HiOutlineBuildingStorefront },
-                                                                                        { name: 'Commercial', href: '/listings?category=Commercial', icon: FiBriefcase },
-                                                                                        { name: 'Land', href: '/listings?category=Land', icon: HiOutlineGlobeAsiaAustralia },
-                                                                                    ].map((link) => (
+                                                                                        { name: 'Condo', href: '/listings?property_type=condo', icon: BuildingOfficeIcon },
+                                                                                        { name: 'Apartment', href: '/listings?property_type=apartment', icon: HiOutlineBuildingOffice2 },
+                                                                                        { name: 'House', href: '/listings?property_type=house', icon: HomeIcon },
+                                                                                        { name: 'Townhome', href: '/listings?property_type=townhome', icon: HiOutlineHomeModern },
+                                                                                        { name: 'Commercial', href: '/listings?property_type=commercial', icon: HiOutlineBuildingStorefront },
+                                                                                        { name: 'Land', href: '/listings?property_type=land', icon: HiOutlineGlobeAsiaAustralia },
+                                                                                    ].map((link, index) => (
                                                                                         <Link
                                                                                             key={link.name}
                                                                                             to={link.href}
-                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
                                                                                         >
-                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
-                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
                                                                                         </Link>
                                                                                     ))}
                                                                                 </div>
                                                                             </div>
 
                                                                             {/* Column 3: Locations */}
-                                                                            <div className="space-y-8 pr-6 border-r" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center">
                                                                                 <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
-                                                                                        <FiMapPin className="w-4 h-4 text-blue-500" />
+                                                                                    <div className="w-8 h-8 flex items-center justify-center">
+                                                                                        <FiMapPin className="w-4 h-4 text-gray-400" />
                                                                                     </div>
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1">
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { name: 'Sukhumvit Area', href: '/listings?search=Sukhumvit' },
-                                                                                        { name: 'Rama 9 Area', href: '/listings?search=Rama 9' },
-                                                                                        { name: 'Silom / Sathorn', href: '/listings?search=Silom' },
-                                                                                        { name: 'Ladprao / Bangna', href: '/listings?search=Ladprao' },
-                                                                                        { name: 'Near BTS Stations', href: '/listings?transport=bts' },
-                                                                                        { name: 'Near MRT Stations', href: '/listings?transport=mrt' },
-                                                                                    ].map((link) => (
+                                                                                        { name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon },
+                                                                                        { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon },
+                                                                                        { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon },
+                                                                                        { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon },
+                                                                                        { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon },
+                                                                                        { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon },
+                                                                                    ].map((link, index) => (
                                                                                         <Link
                                                                                             key={link.name}
                                                                                             to={link.href}
-                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
+                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
                                                                                         >
-                                                                                            <FiMapPin className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
-                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
+                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
                                                                                         </Link>
                                                                                     ))}
                                                                                 </div>
                                                                             </div>
 
-                                                                            {/* Column 4: Needs */}
-                                                                            <div className="space-y-8 pr-6">
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center">
-                                                                                        <FiZap className="w-4 h-4 text-emerald-500" />
-                                                                                    </div>
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Featured</h3>
-                                                                                </div>
-                                                                                <div className="flex flex-col gap-1">
-                                                                                    {[
-                                                                                        { name: 'Luxury Properties', href: '/listings?min_price=100000', icon: FiHeart },
-                                                                                        { name: 'Pet-Friendly Homes', href: '/listings?tags=pet-friendly', icon: FiZap },
-                                                                                        { name: 'Family Homes', href: '/listings?tags=family', icon: FiUsers },
-                                                                                        { name: 'Students & Faculty', href: '/listings?near=university', icon: FiBookOpen },
-                                                                                        { name: 'Business Centric', href: '/listings?near=business', icon: FiBriefcase },
-                                                                                        { name: 'Budget Friendly', href: '/listings?max_price=20000', icon: FiDollarSign },
-                                                                                    ].map((link) => (
-                                                                                        <Link
-                                                                                            key={link.name}
-                                                                                            to={link.href}
-                                                                                            className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--menu-hover-bg)]"
-                                                                                        >
-                                                                                            <link.icon className="w-4 h-4 transition-all" style={{ color: 'var(--menu-text-muted)' }} />
-                                                                                            <span className="text-[13px] font-bold group-hover/link:translate-x-1 transition-all" style={{ color: 'var(--menu-text-primary)' }}>{link.name}</span>
-                                                                                        </Link>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
 
-                                                                            {/* Column 5: Promo Card */}
-                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-end">
-                                                                                <div className="h-full rounded-[3px] p-8 backdrop-blur-3xl border shadow-md transition-all duration-500 hover:shadow-lg flex flex-col justify-center items-center text-center group-hover/promo:-translate-y-1" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
-                                                                                    <div className="mb-6 p-4 rounded-[3px] bg-primary-500/10 border border-primary-500/20 group-hover/promo:scale-110 transition-transform duration-500">
-                                                                                        <FiZap className="w-8 h-8 text-primary-500" />
-                                                                                    </div>
-                                                                                    <h3 className="text-xl font-black mb-2 leading-tight" style={{ color: 'var(--menu-text-primary)' }}>Elevate Your Living</h3>
-                                                                                    <p className="text-[12px] mb-6 font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
-                                                                                        Experience unparalleled luxury with our elite collection of prime real estate.
-                                                                                    </p>
-                                                                                    <Link to="/listings" className="group/btn relative inline-flex items-center gap-2 px-8 py-3 bg-primary-600 text-white font-black text-[11px] uppercase tracking-widest rounded-[3px] overflow-hidden transition-all hover:pr-10 active:scale-95 shadow-lg shadow-primary-600/20">
-                                                                                        <span className="relative z-10">Explore Now</span>
-                                                                                        <FiZap className="w-4 h-4 relative z-10" />
-                                                                                        <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                                                                                    </Link>
-                                                                                </div>
-                                                                            </div>
+
+
 
                                                                         </div>
                                                                     </div>
@@ -665,7 +647,7 @@ const PublicLayout = () => {
                                                     return (
                                                         <div key={item.name} className="relative group px-1">
                                                             <button
-                                                                className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5`}
+                                                                className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5`}
                                                                 style={{
                                                                     borderRadius: 'var(--btn-radius)',
                                                                     color: 'var(--nav-text)',
@@ -682,77 +664,92 @@ const PublicLayout = () => {
                                                             <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
                                                                 <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
                                                                     <div className="w-full px-12 py-10">
-                                                                        <div className="grid grid-cols-3 gap-16 max-w-7xl mx-auto">
-                                                                            {/* Column 1: Find Your Property */}
-                                                                            <div className="flex flex-col">
-                                                                                <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiSearch className="w-5 h-5 text-primary-500 ml-1" />
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3>
+                                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                            {/* Column 0: Brand Content */}
+                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
+                                                                                    <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
+                                                                                        Expert Services for Your<br />Property Journey
+                                                                                    </h3>
+                                                                                    <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
+                                                                                        From expert property management to strategic investment advice, we provide the support you need.
+                                                                                    </p>
+                                                                                    <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
+                                                                                        Learn More
+                                                                                    </Link>
                                                                                 </div>
-                                                                                <div className="space-y-2">
+                                                                            </div>
+
+                                                                            {/* Column 1: Find Your Property */}
+                                                                            <div className="flex flex-col items-center text-center">
+                                                                                <div className="flex items-center gap-2 mb-6">
+                                                                                    <FiSearch className="w-5 h-5 text-gray-400 ml-1" />
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3>
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { title: 'Find a Rental Home', desc: 'Verified listings based on your budget and lifestyle.', icon: FiHome },
-                                                                                        { title: 'Buy a Property', desc: 'Expert guidance and negotiation support for purchases.', icon: FiSearch },
-                                                                                        { title: 'Schedule a Viewing', desc: 'Book property tours quickly at your convenience.', icon: FiCalendar },
+                                                                                        { title: 'Find a Rental Home', icon: FiHome },
+                                                                                        { title: 'Buy a Property', icon: FiSearch },
+                                                                                        { title: 'Schedule a Viewing', icon: FiCalendar },
                                                                                     ].map((service, idx) => (
-                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
-                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-primary-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
-                                                                                                <service.icon className="w-full h-full" />
-                                                                                            </div>
-                                                                                            <div className="flex flex-col justify-center">
-                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-primary-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
-                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
-                                                                                            </div>
+                                                                                        <div
+                                                                                            key={idx}
+                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                        >
+                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
                                                                             </div>
 
                                                                             {/* Column 2: Owners & Investment */}
-                                                                            <div className="flex flex-col">
+                                                                            <div className="flex flex-col items-center text-center">
                                                                                 <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiBriefcase className="w-5 h-5 text-purple-500 ml-1" />
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Owners & Investors</h3>
+                                                                                    <FiBriefcase className="w-5 h-5 text-gray-400 ml-1" />
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Owners & Investors</h3>
                                                                                 </div>
-                                                                                <div className="space-y-2">
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { title: 'List Your Property', desc: 'Promote your property to qualified tenants and buyers.', icon: FiPlusCircle },
-                                                                                        { title: 'Property Management', desc: 'Rent collection and maintenance coordination.', icon: FiSettings },
-                                                                                        { title: 'Investment Consultation', desc: 'Advice on high-yield locations and rental demand.', icon: FiDollarSign },
+                                                                                        { title: 'List Your Property', icon: FiPlusCircle },
+                                                                                        { title: 'Property Management', icon: FiSettings },
+                                                                                        { title: 'Investment Consultation', icon: FiDollarSign },
                                                                                     ].map((service, idx) => (
-                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
-                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-purple-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
-                                                                                                <service.icon className="w-full h-full" />
-                                                                                            </div>
-                                                                                            <div className="flex flex-col justify-center">
-                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-purple-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
-                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
-                                                                                            </div>
+                                                                                        <div
+                                                                                            key={idx}
+                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                        >
+                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
                                                                             </div>
 
                                                                             {/* Column 3: Extra Support */}
-                                                                            <div className="flex flex-col">
+                                                                            <div className="flex flex-col items-center text-center">
                                                                                 <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiTruck className="w-5 h-5 text-blue-500 ml-1" />
-                                                                                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3>
+                                                                                    <FiTruck className="w-5 h-5 text-gray-400 ml-1" />
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3>
                                                                                 </div>
-                                                                                <div className="space-y-2">
+                                                                                <div className="flex flex-col gap-1 items-center">
                                                                                     {[
-                                                                                        { title: 'Relocation Support', desc: 'Helping expats find homes near BTS and schools.', icon: FiTruck },
-                                                                                        { title: 'Area Recommendations', desc: 'Neighborhood suggestions based on your budget.', icon: FiMapPin },
-                                                                                        { title: 'Legal & Contract Support', desc: 'Rental agreements and property paperwork assistance.', icon: FiFileText },
+                                                                                        { title: 'Relocation Support', icon: FiTruck },
+                                                                                        { title: 'Area Recommendations', icon: FiMapPin },
+                                                                                        { title: 'Legal & Contract Support', icon: FiFileText },
                                                                                     ].map((service, idx) => (
-                                                                                        <div key={idx} className="group/item flex gap-4 p-3 rounded-2xl transition-all hover:bg-[var(--menu-hover-bg)]">
-                                                                                            <div className="w-6 h-6 flex-none flex items-center justify-center text-blue-500 group-hover/item:scale-110 transition-all duration-300 mt-0.5">
-                                                                                                <service.icon className="w-full h-full" />
-                                                                                            </div>
-                                                                                            <div className="flex flex-col justify-center">
-                                                                                                <h4 className="text-[14px] font-black mb-0.5 transition-colors group-hover/item:text-blue-600" style={{ color: 'var(--menu-text-primary)' }}>{service.title}</h4>
-                                                                                                <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--menu-text-secondary)' }}>{service.desc}</p>
-                                                                                            </div>
+                                                                                        <div
+                                                                                            key={idx}
+                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                        >
+                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
+                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
+                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
@@ -769,7 +766,7 @@ const PublicLayout = () => {
                                                     <Link
                                                         key={item.name}
                                                         to={item.href}
-                                                        className={`w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200`}
+                                                        className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200`}
                                                         style={{
                                                             borderRadius: 'var(--btn-radius)',
                                                             color: 'var(--nav-text)',
@@ -786,7 +783,7 @@ const PublicLayout = () => {
                                             {/* Contact Hover Menu */}
                                             <div className="relative group px-1">
                                                 <button
-                                                    className="w-auto flex-none px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-1.5"
+                                                    className="w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5"
                                                     style={{
                                                         borderRadius: 'var(--btn-radius)',
                                                         color: 'var(--nav-text)',
@@ -803,7 +800,7 @@ const PublicLayout = () => {
                                                 <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
                                                     <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
                                                         <div className="w-full px-12 py-10">
-                                                            <div className="grid grid-cols-2 gap-32 max-w-5xl mx-auto">
+                                                            <div className="grid grid-cols-2 gap-32 w-full px-12 items-center">
                                                                 {/* Column 1: Contact Information */}
                                                                 <div className="flex flex-col">
                                                                     <div className="mb-6">
@@ -814,34 +811,53 @@ const PublicLayout = () => {
                                                                     </div>
 
                                                                     <div className="space-y-4 mb-8">
-                                                                        <a href={`tel:${agent?.phone || '062-718-8699'}`} className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all" style={{ backgroundColor: 'var(--menu-hover-bg)' }}>
+                                                                        <a
+                                                                            href={`tel:${agent?.phone || '062-718-8699'}`}
+                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all animate-slide-in-right opacity-0"
+                                                                            style={{ backgroundColor: 'var(--menu-hover-bg)', animationDelay: '0ms', animationFillMode: 'forwards' }}
+                                                                        >
                                                                             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary-500/10 text-primary-500 group-hover/item:scale-110 transition-transform">
                                                                                 <PhoneIcon className="w-5 h-5" />
                                                                             </div>
                                                                             <div className="flex flex-col">
                                                                                 <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Phone</span>
-                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
+                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
                                                                             </div>
+                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
                                                                         </a>
 
-                                                                        <a href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5">
+                                                                        <a
+                                                                            href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5 animate-slide-in-right opacity-0"
+                                                                            style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}
+                                                                        >
                                                                             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 text-green-500 group-hover/item:scale-110 transition-transform">
                                                                                 <FiMessageCircle className="w-5 h-5" />
                                                                             </div>
                                                                             <div className="flex flex-col">
                                                                                 <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>LINE</span>
-                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
+                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
                                                                             </div>
+                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
                                                                         </a>
 
-                                                                        <a href={agent?.facebook || "https://facebook.com/superagent"} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5">
+                                                                        <a
+                                                                            href={agent?.facebook || "https://facebook.com/superagent"}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5 animate-slide-in-right opacity-0"
+                                                                            style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
+                                                                        >
                                                                             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600/10 text-blue-600 group-hover/item:scale-110 transition-transform">
                                                                                 <FiFacebook className="w-5 h-5" />
                                                                             </div>
                                                                             <div className="flex flex-col">
                                                                                 <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Facebook</span>
-                                                                                <span className="text-sm font-bold" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
+                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
                                                                             </div>
+                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
                                                                         </a>
                                                                     </div>
 
@@ -865,11 +881,16 @@ const PublicLayout = () => {
                                                                             "Recommend areas based on budget",
                                                                             "Support for expats & foreigners"
                                                                         ].map((item, idx) => (
-                                                                            <div key={idx} className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-1">
+                                                                            <div
+                                                                                key={idx}
+                                                                                className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-2 animate-slide-in-right opacity-0 cursor-pointer"
+                                                                                style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                            >
                                                                                 <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-primary-500/10 text-primary-500 transition-colors group-hover/svc:bg-primary-500 group-hover/svc:text-white">
                                                                                     <FiStar className="w-3.5 h-3.5" />
                                                                                 </div>
-                                                                                <span className="text-[13px] font-bold transition-colors group-hover/svc:text-primary-600" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
+                                                                                <span className="text-[14px] font-medium transition-colors group-hover/svc:text-primary-600 mr-auto" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
+                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover/svc:translate-x-2 transition-all duration-300" />
                                                                             </div>
                                                                         ))}
                                                                     </div>
@@ -891,7 +912,7 @@ const PublicLayout = () => {
                                                         className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
                                                     >
                                                         <CalendarDaysIcon className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-                                                        <span className="text-sm font-medium">bookings</span>
+                                                        <span className="text-[14px] font-normal">Bookings</span>
                                                     </Link>
 
                                                     <Link
@@ -899,7 +920,7 @@ const PublicLayout = () => {
                                                         className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
                                                     >
                                                         <CiBookmark className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-                                                        <span className="text-sm font-medium">saved</span>
+                                                        <span className="text-[14px] font-normal">Saved</span>
                                                     </Link>
 
                                                     <div className="relative" ref={userMenuRef}>
@@ -1075,6 +1096,8 @@ const PublicLayout = () => {
                     </footer>
                 )
             }
+            {/* Cookie Consent Banner */}
+            <CookieConsent />
         </div >
     );
 };
