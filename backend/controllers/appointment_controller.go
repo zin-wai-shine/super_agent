@@ -62,7 +62,7 @@ func (ac *AppointmentController) CreateAppointment(c *gin.Context) {
 
 	// FINAL CONFLICT VALIDATION (Millisecond-level check)
 	// Check if the slot is still available (not taken by someone else)
-	if !ac.isSlotAvailable(listing.AgentID, preferredDate, input.PreferredTime, input.ID) {
+	if !ac.isSlotAvailable(listing.ID, preferredDate, input.PreferredTime, input.ID) {
 		c.JSON(http.StatusConflict, gin.H{"error": "This slot has just been taken by someone else. Please choose another time."})
 		return
 	}
@@ -136,11 +136,11 @@ func (ac *AppointmentController) GetAvailableSlots(c *gin.Context) {
 		return
 	}
 
-	// Daily Appointment Cap Check
+	// Daily Appointment Cap Check (Property-Level)
 	var dailyCount int64
 	ac.db.Model(&models.Appointment{}).
-		Where("agent_id = ? AND preferred_date = ? AND status IN (?)",
-			listing.AgentID, preferredDate, []string{models.AppointmentConfirmed, models.AppointmentPending}).
+		Where("listing_id = ? AND preferred_date = ? AND status IN (?)",
+			listing.ID, preferredDate, []string{models.AppointmentConfirmed, models.AppointmentPending}).
 		Count(&dailyCount)
 
 	if dailyCount >= MaxDailyAppointments {
@@ -150,7 +150,12 @@ func (ac *AppointmentController) GetAvailableSlots(c *gin.Context) {
 
 	// Generate candidate slots
 	candidates := []string{"09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"}
-	availableSlots := []string{}
+
+	type SlotInfo struct {
+		Time   string `json:"time"`
+		Status string `json:"status"`
+	}
+	var availableSlots []SlotInfo
 
 	for _, timeStr := range candidates {
 		// Lead time check for each slot
@@ -159,9 +164,15 @@ func (ac *AppointmentController) GetAvailableSlots(c *gin.Context) {
 			continue
 		}
 
-		if ac.isSlotAvailable(listing.AgentID, preferredDate, timeStr, "") {
-			availableSlots = append(availableSlots, timeStr)
+		status := "locked"
+		if ac.isSlotAvailable(listing.ID, preferredDate, timeStr, "") {
+			status = "available"
 		}
+
+		availableSlots = append(availableSlots, SlotInfo{
+			Time:   timeStr,
+			Status: status,
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{"slots": availableSlots})
@@ -197,7 +208,7 @@ func (ac *AppointmentController) SoftLockSlot(c *gin.Context) {
 
 	// Re-verify availability, ignoring the user's current lock if provided
 	fmt.Printf("Calling isSlotAvailable with LockID='%s'\n", input.LockID)
-	if !ac.isSlotAvailable(listing.AgentID, preferredDate, input.PreferredTime, input.LockID) {
+	if !ac.isSlotAvailable(listing.ID, preferredDate, input.PreferredTime, input.LockID) {
 		fmt.Printf("isSlotAvailable returned FALSE. Returning 409 Conflict.\n")
 		c.JSON(http.StatusConflict, gin.H{"error": "This slot was just locked by someone else"})
 		return
@@ -256,7 +267,7 @@ func (ac *AppointmentController) SoftLockSlot(c *gin.Context) {
 }
 
 // Helper: isSlotAvailable checks if a slot is available considering buffers and locks
-func (ac *AppointmentController) isSlotAvailable(agentID uuid.UUID, date time.Time, timeStr string, excludeID interface{}) bool {
+func (ac *AppointmentController) isSlotAvailable(listingID uuid.UUID, date time.Time, timeStr string, excludeID interface{}) bool {
 	// 1. Parse slot start time
 	layout := "15:04"
 	slotTime, err := time.Parse(layout, timeStr)
@@ -273,7 +284,7 @@ func (ac *AppointmentController) isSlotAvailable(agentID uuid.UUID, date time.Ti
 	// Our new slot [S_start, S_end] conflicts if it overlaps with [A_start - 15m, A_end + 15m].
 
 	var appointments []models.Appointment
-	query := ac.db.Where("agent_id = ? AND preferred_date = ?", agentID, date)
+	query := ac.db.Where("listing_id = ? AND preferred_date = ?", listingID, date)
 
 	fmt.Printf("\n--- isSlotAvailable Check ---\n")
 	fmt.Printf("Examine excluding ID: %v (Type: %T)\n", excludeID, excludeID)

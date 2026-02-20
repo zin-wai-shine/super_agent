@@ -19,6 +19,7 @@ import {
     MapIcon,
     HeartIcon,
     ChevronRightIcon,
+    BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import {
     FiSearch,
@@ -43,7 +44,8 @@ import {
     FiTruck,
     FiSettings,
 } from 'react-icons/fi';
-import { CiBookmark } from 'react-icons/ci';
+import { BsBookmark } from "react-icons/bs";
+import { CiBookmark, CiCalendar } from "react-icons/ci";
 import {
     HiOutlineBuildingOffice2,
     HiOutlineHomeModern,
@@ -55,6 +57,7 @@ import { getMediaUrl } from '../../utils/media';
 import { publicApi } from '../../services/api';
 import StyledSelect from '../Form/StyledSelect';
 import CookieConsent from '../Common/CookieConsent';
+import buildingBlock from '../../assets/images/building_block.png';
 
 const PublicLayout = () => {
     const { theme } = useTheme();
@@ -188,28 +191,27 @@ const PublicLayout = () => {
         };
     }, []);
 
+    const brandName = theme.headerText || (agent ? (agent.agency_name || agent.name) : 'Super');
+
     return (
-        <div className="min-h-screen flex flex-col" style={{ fontFamily: theme.fontFamily }}>
+        <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: theme.fontFamily }}>
             {/* Mobile Header (Hamburger + Logo) */}
             {!isMapView && (
                 <div
-                    className={`md:hidden border-b border-white/10 sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
-                    style={{ backgroundColor: theme.primaryColor || '#111827' }}
+                    className={`md:hidden sticky top-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                    style={{ backgroundColor: '#ffffff' }}
                 >
                     <div className="px-4 h-16 flex items-center justify-between">
                         <Link to="/" className="flex items-center gap-2">
                             {theme.logoUrl ? (
-                                <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
+                                <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-[50px] h-[50px] object-contain" />
                             ) : (
-                                <Logo className="w-8 h-8 text-white" />
+                                <Logo className="w-[50px] h-[50px]" style={{ color: 'var(--primary-color)' }} />
                             )}
-                            <span className="text-lg font-bold text-white">
-                                {theme.headerText || 'Super Real Estate'}
-                            </span>
                         </Link>
                         <button
                             onClick={() => setMobileMenuOpen(true)}
-                            className="text-white p-1 -mr-1 hover:bg-white/10 rounded-lg transition-colors"
+                            className="text-gray-900 p-1 -mr-1 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <Bars3Icon className="w-6 h-6" />
                         </button>
@@ -455,25 +457,26 @@ const PublicLayout = () => {
             {
                 !isMapView && (
                     <nav
-                        className={`hidden md:block border-b sticky top-0 z-50 transition-all duration-300 shadow-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                        className={`hidden md:block sticky top-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
                         style={{
-                            backgroundColor: theme.primaryColor || '#111827',
-                            borderColor: 'var(--nav-border)'
+                            backgroundColor: '#ffffff',
                         }}
                     >
-                        <div className="w-full px-4 sm:px-6 lg:px-8">
+                        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                             <div className="flex items-center justify-between h-16">
                                 {isNavLoading ? (
                                     <div className="flex items-center justify-between w-full animate-pulse">
-                                        {/* Logo Skeleton */}
-                                        <div className="flex items-center space-x-2">
-                                            <div className="w-8 h-8 bg-white/20 rounded" />
-                                            <div className="w-32 h-6 bg-white/20 rounded" />
-                                        </div>
-                                        {/* Nav Links Skeleton */}
-                                        <div className="flex items-center space-x-1">
-                                            <div className="w-16 h-8 bg-white/10 rounded-lg mx-1" />
-                                            <div className="w-24 h-8 bg-white/10 rounded-lg mx-1" />
+                                        <div className="flex items-center xl:gap-8 lg:gap-6 md:gap-4">
+                                            {/* Logo Skeleton */}
+                                            <div className="flex items-center space-x-2 pr-4 md:pr-8">
+                                                <div className="w-8 h-8 bg-white/20 rounded" />
+                                                <div className="w-32 h-6 bg-white/20 rounded" />
+                                            </div>
+                                            {/* Nav Links Skeleton */}
+                                            <div className="flex items-center space-x-1">
+                                                <div className="w-16 h-8 bg-white/10 rounded-lg mx-1" />
+                                                <div className="w-24 h-8 bg-white/10 rounded-lg mx-1" />
+                                            </div>
                                         </div>
                                         {/* Auth Skeleton */}
                                         <div className="flex items-center space-x-4">
@@ -484,418 +487,407 @@ const PublicLayout = () => {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* Logo */}
-                                        <Link to="/" className="flex items-center space-x-3 group">
-                                            {theme.logoUrl ? (
-                                                <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-8 h-8 object-contain" />
-                                            ) : (
-                                                <Logo className="w-8 h-8" style={{ color: 'var(--nav-text)' }} />
-                                            )}
-                                            <span className="text-xl font-bold group-hover:opacity-90 transition-opacity" style={{ color: 'var(--nav-text)' }}>
-                                                {theme.headerText || 'Super Real Estate'}
-                                            </span>
-                                        </Link>
+                                        <div className="flex items-center xl:gap-8 lg:gap-6 md:gap-4">
+                                            {/* Logo */}
+                                            <Link to="/" className="flex items-center space-x-3 group pr-4 md:pr-8">
+                                                {theme.logoUrl ? (
+                                                    <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-[50px] h-[50px] object-contain" />
+                                                ) : (
+                                                    <Logo className="w-[50px] h-[50px]" style={{ color: 'var(--primary-color)' }} />
+                                                )}
+                                            </Link>
 
-                                        {/* Desktop Navigation Links */}
-                                        <div className="flex items-center space-x-1">
-                                            {navigation.map((item) => {
-                                                if (item.name === 'Properties') {
-                                                    return (
-                                                        <div key={item.name} className="relative group px-1">
-                                                            <button
-                                                                className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5`}
-                                                                style={{
-                                                                    borderRadius: 'var(--btn-radius)',
-                                                                    color: 'var(--nav-text)',
-                                                                    backgroundColor: 'transparent'
-                                                                }}
-                                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                                                            >
-                                                                <span>{item.name}</span>
-                                                                <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
-                                                            </button>
+                                            {/* Desktop Navigation Links */}
+                                            <div className="flex items-center space-x-1">
+                                                {navigation.map((item) => {
+                                                    if (item.name === 'Properties') {
+                                                        return (
+                                                            <div key={item.name} className="relative group px-1">
+                                                                <button
+                                                                    className={`w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 transition-all duration-200 flex items-center gap-1.5 hover:text-[var(--primary-color)]`}
+                                                                    style={{
+                                                                        borderRadius: 'var(--btn-radius)',
+                                                                        backgroundColor: 'transparent'
+                                                                    }}
+                                                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                                >
+                                                                    <span>{item.name}</span>
+                                                                    <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+                                                                </button>
 
-                                                            {/* Mega Menu Dropdown */}
-                                                            <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
-                                                                <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
-                                                                    <div className="w-full px-12 py-10">
-                                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                {/* Mega Menu Dropdown */}
+                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                                    <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                                        <div className="w-full px-12 py-10">
+                                                                            <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
 
-                                                                            {/* Column 1: Promo Card (Redesigned) */}
-                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
-                                                                                <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
-                                                                                    {/* Icon Container (Optional, based on ref image 2 which has text only, but image 1 had icon. User said 'make it like second image design'. Image 2 has no icon above text.) */}
-                                                                                    {/* Leaving out icon for cleaner look matching Image 2 */}
-                                                                                    <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
-                                                                                        Elevate Your Living<br />with Super Real Estate
-                                                                                    </h3>
-                                                                                    <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
-                                                                                        Experience unparalleled luxury with our elite collection of prime real estate.
-                                                                                    </p>
-                                                                                    <Link to="/listings" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
-                                                                                        Explore Now
-                                                                                    </Link>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Column 2: Browse Properties */}
-                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center" style={{ borderColor: 'var(--menu-divider)' }}>
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 flex items-center justify-center">
-                                                                                        <FiSearch className="w-4 h-4 text-gray-400" />
-                                                                                    </div>
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3>
-                                                                                </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { name: 'All Properties', href: '/listings', icon: BuildingOfficeIcon },
-                                                                                        { name: 'Properties for Rent', href: '/listings?type=rent', icon: FiKey },
-                                                                                        { name: 'Properties for Sale', href: '/listings?type=sale', icon: FiDollarSign },
-                                                                                        { name: 'New Listings', href: '/listings?sort=newest', icon: FiPlusCircle },
-                                                                                        { name: 'Featured Properties', href: '/listings?featured=true', icon: FiStar },
-                                                                                        { name: 'Ready to Move', href: '/listings?status=ready', icon: FiClock },
-                                                                                    ].map((link, index) => (
-                                                                                        <Link
-                                                                                            key={link.name}
-                                                                                            to={link.href}
-                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
+                                                                                {/* Column 1: Promo Card (Redesigned) */}
+                                                                                <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                    <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
+                                                                                        {/* Icon Container (Optional, based on ref image 2 which has text only, but image 1 had icon. User said 'make it like second image design'. Image 2 has no icon above text.) */}
+                                                                                        {/* Leaving out icon for cleaner look matching Image 2 */}
+                                                                                        <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
+                                                                                            Elevate Your Living<br />with Super Real Estate
+                                                                                        </h3>
+                                                                                        <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
+                                                                                            Experience unparalleled luxury with our elite collection of prime real estate.
+                                                                                        </p>
+                                                                                        <Link to="/listings" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
+                                                                                            Explore Now
                                                                                         </Link>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Column 2: Property Types */}
-                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center" style={{ borderColor: 'var(--menu-divider)' }}>
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 flex items-center justify-center">
-                                                                                        <HiOutlineHomeModern className="w-4 h-4 text-gray-400" />
                                                                                     </div>
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Types</h3>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { name: 'Condo', href: '/listings?property_type=condo', icon: BuildingOfficeIcon },
-                                                                                        { name: 'Apartment', href: '/listings?property_type=apartment', icon: HiOutlineBuildingOffice2 },
-                                                                                        { name: 'House', href: '/listings?property_type=house', icon: HomeIcon },
-                                                                                        { name: 'Townhome', href: '/listings?property_type=townhome', icon: HiOutlineHomeModern },
-                                                                                        { name: 'Commercial', href: '/listings?property_type=commercial', icon: HiOutlineBuildingStorefront },
-                                                                                        { name: 'Land', href: '/listings?property_type=land', icon: HiOutlineGlobeAsiaAustralia },
-                                                                                    ].map((link, index) => (
-                                                                                        <Link
-                                                                                            key={link.name}
-                                                                                            to={link.href}
-                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
-                                                                                        </Link>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
 
-                                                                            {/* Column 3: Locations */}
-                                                                            <div className="space-y-8 pr-6 flex flex-col items-center text-center">
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <div className="w-8 h-8 flex items-center justify-center">
-                                                                                        <FiMapPin className="w-4 h-4 text-gray-400" />
+                                                                                {/* Column 2: Browse Properties */}
+                                                                                <div className="space-y-8 pr-6 flex flex-col items-start text-left" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                    <div className="flex items-center px-4 mb-2">
+                                                                                        <FiSearch className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3>
                                                                                     </div>
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { name: 'All Properties', href: '/listings', icon: BuildingOfficeIcon },
+                                                                                            { name: 'Properties for Rent', href: '/listings?type=rent', icon: FiKey },
+                                                                                            { name: 'Properties for Sale', href: '/listings?type=sale', icon: FiDollarSign },
+                                                                                            { name: 'New Listings', href: '/listings?sort=newest', icon: FiPlusCircle },
+                                                                                            { name: 'Featured Properties', href: '/listings?featured=true', icon: FiStar },
+                                                                                            { name: 'Ready to Move', href: '/listings?status=ready', icon: FiClock },
+                                                                                        ].map((link, index) => (
+                                                                                            <Link
+                                                                                                key={link.name}
+                                                                                                to={link.href}
+                                                                                                className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
+                                                                                            </Link>
+                                                                                        ))}
+                                                                                    </div>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon },
-                                                                                        { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon },
-                                                                                        { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon },
-                                                                                        { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon },
-                                                                                        { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon },
-                                                                                        { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon },
-                                                                                    ].map((link, index) => (
-                                                                                        <Link
-                                                                                            key={link.name}
-                                                                                            to={link.href}
-                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <link.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{link.name}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/link:translate-x-2 transition-all duration-300" />
-                                                                                        </Link>
-                                                                                    ))}
+
+                                                                                {/* Column 2: Property Types */}
+                                                                                <div className="space-y-8 pr-6 flex flex-col items-start text-left" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                    <div className="flex items-center px-4 mb-2">
+                                                                                        <HiOutlineHomeModern className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Types</h3>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { name: 'Condo', href: '/listings?property_type=condo', icon: BuildingOfficeIcon },
+                                                                                            { name: 'Apartment', href: '/listings?property_type=apartment', icon: HiOutlineBuildingOffice2 },
+                                                                                            { name: 'House', href: '/listings?property_type=house', icon: HomeIcon },
+                                                                                            { name: 'Townhome', href: '/listings?property_type=townhome', icon: HiOutlineHomeModern },
+                                                                                            { name: 'Commercial', href: '/listings?property_type=commercial', icon: HiOutlineBuildingStorefront },
+                                                                                            { name: 'Land', href: '/listings?property_type=land', icon: HiOutlineGlobeAsiaAustralia },
+                                                                                        ].map((link, index) => (
+                                                                                            <Link
+                                                                                                key={link.name}
+                                                                                                to={link.href}
+                                                                                                className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
+                                                                                            </Link>
+                                                                                        ))}
+                                                                                    </div>
                                                                                 </div>
+
+                                                                                {/* Column 3: Locations */}
+                                                                                <div className="space-y-8 pr-6 flex flex-col items-start text-left">
+                                                                                    <div className="flex items-center px-4 mb-2">
+                                                                                        <FiMapPin className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon },
+                                                                                            { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon },
+                                                                                            { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon },
+                                                                                            { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon },
+                                                                                            { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon },
+                                                                                            { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon },
+                                                                                        ].map((link, index) => (
+                                                                                            <Link
+                                                                                                key={link.name}
+                                                                                                to={link.href}
+                                                                                                className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
+                                                                                            </Link>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+
+
+
+
+
                                                                             </div>
-
-
-
-
-
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    );
-                                                }
-                                                if (item.name === 'Services') {
-                                                    return (
-                                                        <div key={item.name} className="relative group px-1">
-                                                            <button
-                                                                className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5`}
-                                                                style={{
-                                                                    borderRadius: 'var(--btn-radius)',
-                                                                    color: 'var(--nav-text)',
-                                                                    backgroundColor: 'transparent'
-                                                                }}
-                                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                                                            >
-                                                                <span>{item.name}</span>
-                                                                <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
-                                                            </button>
+                                                        );
+                                                    }
+                                                    if (item.name === 'Services') {
+                                                        return (
+                                                            <div key={item.name} className="relative group px-1">
+                                                                <button
+                                                                    className={`w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 transition-all duration-200 flex items-center gap-1.5 hover:text-[var(--primary-color)]`}
+                                                                    style={{
+                                                                        borderRadius: 'var(--btn-radius)',
+                                                                        backgroundColor: 'transparent'
+                                                                    }}
+                                                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                                >
+                                                                    <span>{item.name}</span>
+                                                                    <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+                                                                </button>
 
-                                                            {/* Services Mega Menu Dropdown */}
-                                                            <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
-                                                                <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
-                                                                    <div className="w-full px-12 py-10">
-                                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
-                                                                            {/* Column 0: Brand Content */}
-                                                                            <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
-                                                                                <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
-                                                                                    <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
-                                                                                        Expert Services for Your<br />Property Journey
-                                                                                    </h3>
-                                                                                    <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
-                                                                                        From expert property management to strategic investment advice, we provide the support you need.
-                                                                                    </p>
-                                                                                    <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
-                                                                                        Learn More
-                                                                                    </Link>
+                                                                {/* Services Mega Menu Dropdown */}
+                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                                    <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                                        <div className="w-full px-12 py-10">
+                                                                            <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                                {/* Column 0: Brand Content */}
+                                                                                <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                                    <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
+                                                                                        <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
+                                                                                            Expert Services for Your<br />Property Journey
+                                                                                        </h3>
+                                                                                        <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
+                                                                                            From expert property management to strategic investment advice, we provide the support you need.
+                                                                                        </p>
+                                                                                        <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
+                                                                                            Learn More
+                                                                                        </Link>
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
 
-                                                                            {/* Column 1: Find Your Property */}
-                                                                            <div className="flex flex-col items-center text-center">
-                                                                                <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiSearch className="w-5 h-5 text-gray-400 ml-1" />
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3>
+                                                                                {/* Column 1: Find Your Property */}
+                                                                                <div className="flex flex-col items-start text-left">
+                                                                                    <div className="flex items-center px-4 mb-6">
+                                                                                        <FiSearch className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { title: 'Find a Rental Home', icon: FiHome },
+                                                                                            { title: 'Buy a Property', icon: FiSearch },
+                                                                                            { title: 'Schedule a Viewing', icon: FiCalendar },
+                                                                                        ].map((service, idx) => (
+                                                                                            <div
+                                                                                                key={idx}
+                                                                                                className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <service.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{service.title}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { title: 'Find a Rental Home', icon: FiHome },
-                                                                                        { title: 'Buy a Property', icon: FiSearch },
-                                                                                        { title: 'Schedule a Viewing', icon: FiCalendar },
-                                                                                    ].map((service, idx) => (
-                                                                                        <div
-                                                                                            key={idx}
-                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
 
-                                                                            {/* Column 2: Owners & Investment */}
-                                                                            <div className="flex flex-col items-center text-center">
-                                                                                <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiBriefcase className="w-5 h-5 text-gray-400 ml-1" />
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Owners & Investors</h3>
+                                                                                {/* Column 2: Owners & Investment */}
+                                                                                <div className="flex flex-col items-start text-left">
+                                                                                    <div className="flex items-center px-4 mb-6">
+                                                                                        <FiBriefcase className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Owners & Investors</h3>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { title: 'List Your Property', icon: FiPlusCircle },
+                                                                                            { title: 'Property Management', icon: FiSettings },
+                                                                                            { title: 'Investment Consultation', icon: FiDollarSign },
+                                                                                        ].map((service, idx) => (
+                                                                                            <div
+                                                                                                key={idx}
+                                                                                                className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <service.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{service.title}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
                                                                                 </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { title: 'List Your Property', icon: FiPlusCircle },
-                                                                                        { title: 'Property Management', icon: FiSettings },
-                                                                                        { title: 'Investment Consultation', icon: FiDollarSign },
-                                                                                    ].map((service, idx) => (
-                                                                                        <div
-                                                                                            key={idx}
-                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
 
-                                                                            {/* Column 3: Extra Support */}
-                                                                            <div className="flex flex-col items-center text-center">
-                                                                                <div className="flex items-center gap-2 mb-6">
-                                                                                    <FiTruck className="w-5 h-5 text-gray-400 ml-1" />
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3>
-                                                                                </div>
-                                                                                <div className="flex flex-col gap-1 items-center">
-                                                                                    {[
-                                                                                        { title: 'Relocation Support', icon: FiTruck },
-                                                                                        { title: 'Area Recommendations', icon: FiMapPin },
-                                                                                        { title: 'Legal & Contract Support', icon: FiFileText },
-                                                                                    ].map((service, idx) => (
-                                                                                        <div
-                                                                                            key={idx}
-                                                                                            className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <service.icon className="w-5 h-5 text-gray-900 transition-all mr-6" />
-                                                                                            <span className="text-[14px] font-medium text-gray-900 transition-all mr-2">{service.title}</span>
-                                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-900 group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                                        </div>
-                                                                                    ))}
+                                                                                {/* Column 3: Extra Support */}
+                                                                                <div className="flex flex-col items-start text-left">
+                                                                                    <div className="flex items-center px-4 mb-6">
+                                                                                        <FiTruck className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                        <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                                        {[
+                                                                                            { title: 'Relocation Support', icon: FiTruck },
+                                                                                            { title: 'Area Recommendations', icon: FiMapPin },
+                                                                                            { title: 'Legal & Contract Support', icon: FiFileText },
+                                                                                        ].map((service, idx) => (
+                                                                                            <div
+                                                                                                key={idx}
+                                                                                                className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                                style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                            >
+                                                                                                <service.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                                <span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{service.title}</span>
+                                                                                                <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    );
-                                                }
+                                                        );
+                                                    }
 
-                                                return (
-                                                    <Link
-                                                        key={item.name}
-                                                        to={item.href}
-                                                        className={`w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200`}
+                                                    return (
+                                                        <Link
+                                                            key={item.name}
+                                                            to={item.href}
+                                                            className={`w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 hover:text-[var(--primary-color)] transition-all duration-200`}
+                                                            style={{
+                                                                borderRadius: 'var(--btn-radius)',
+                                                                backgroundColor: 'transparent'
+                                                            }}
+                                                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                        >
+                                                            {item.name}
+                                                        </Link>
+                                                    );
+                                                })}
+
+                                                {/* Contact Hover Menu */}
+                                                <div className="relative group px-1">
+                                                    <button
+                                                        className="w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 hover:text-[var(--primary-color)] transition-all duration-200 flex items-center gap-1.5"
                                                         style={{
                                                             borderRadius: 'var(--btn-radius)',
-                                                            color: 'var(--nav-text)',
                                                             backgroundColor: 'transparent'
                                                         }}
-                                                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                                                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                                         onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                                                     >
-                                                        {item.name}
-                                                    </Link>
-                                                );
-                                            })}
+                                                        Contact
+                                                        <ChevronDownIcon className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
+                                                    </button>
 
-                                            {/* Contact Hover Menu */}
-                                            <div className="relative group px-1">
-                                                <button
-                                                    className="w-auto flex-none px-4 py-2 text-[14px] font-normal transition-all duration-200 flex items-center gap-1.5"
-                                                    style={{
-                                                        borderRadius: 'var(--btn-radius)',
-                                                        color: 'var(--nav-text)',
-                                                        backgroundColor: 'transparent'
-                                                    }}
-                                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                                                >
-                                                    Contact
-                                                    <ChevronDownIcon className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
-                                                </button>
-
-                                                {/* Contact Dropdown Content */}
-                                                <div className="fixed left-0 right-0 top-16 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60] w-full">
-                                                    <div className="backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-b" style={{ backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
-                                                        <div className="w-full px-12 py-10">
-                                                            <div className="grid grid-cols-2 gap-32 w-full px-12 items-center">
-                                                                {/* Column 1: Contact Information */}
-                                                                <div className="flex flex-col">
-                                                                    <div className="mb-6">
-                                                                        <h3 className="text-xl font-black mb-2" style={{ color: 'var(--menu-text-primary)' }}>Talk to Our Team</h3>
-                                                                        <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
-                                                                            Our property consultants are ready to help you find the perfect home or investment.
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <div className="space-y-4 mb-8">
-                                                                        <a
-                                                                            href={`tel:${agent?.phone || '062-718-8699'}`}
-                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all animate-slide-in-right opacity-0"
-                                                                            style={{ backgroundColor: 'var(--menu-hover-bg)', animationDelay: '0ms', animationFillMode: 'forwards' }}
-                                                                        >
-                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary-500/10 text-primary-500 group-hover/item:scale-110 transition-transform">
-                                                                                <PhoneIcon className="w-5 h-5" />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Phone</span>
-                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
-                                                                            </div>
-                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                        </a>
-
-                                                                        <a
-                                                                            href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5 animate-slide-in-right opacity-0"
-                                                                            style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}
-                                                                        >
-                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 text-green-500 group-hover/item:scale-110 transition-transform">
-                                                                                <FiMessageCircle className="w-5 h-5" />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>LINE</span>
-                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
-                                                                            </div>
-                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                        </a>
-
-                                                                        <a
-                                                                            href={agent?.facebook || "https://facebook.com/superagent"}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5 animate-slide-in-right opacity-0"
-                                                                            style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
-                                                                        >
-                                                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600/10 text-blue-600 group-hover/item:scale-110 transition-transform">
-                                                                                <FiFacebook className="w-5 h-5" />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[10px] uppercase font-black tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Facebook</span>
-                                                                                <span className="text-[14px] font-bold" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
-                                                                            </div>
-                                                                            <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                        </a>
-                                                                    </div>
-
-                                                                </div>
-
-                                                                {/* Column 2: How We Help You */}
-                                                                <div className="flex flex-col pt-2">
-                                                                    <div className="mb-6">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <div className="w-1 h-6 bg-primary-500 rounded-full"></div>
-                                                                            <h3 className="text-xl font-black" style={{ color: 'var(--menu-text-primary)' }}>Our Services</h3>
+                                                    {/* Contact Dropdown Content */}
+                                                    <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                        <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                            <div className="w-full px-12 py-10">
+                                                                <div className="grid grid-cols-2 gap-32 w-full px-12 items-center">
+                                                                    {/* Column 1: Contact Information */}
+                                                                    <div className="flex flex-col">
+                                                                        <div className="mb-6">
+                                                                            <h3 className="text-xl font-black mb-2" style={{ color: 'var(--menu-text-primary)' }}>Talk to Our Team</h3>
+                                                                            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
+                                                                                Our property consultants are ready to help you find the perfect home or investment.
+                                                                            </p>
                                                                         </div>
-                                                                        <p className="text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Tailored Property Solutions</p>
-                                                                    </div>
 
-                                                                    <div className="space-y-1">
-                                                                        {[
-                                                                            "Help finding rental homes",
-                                                                            "Assistance buying property",
-                                                                            "Schedule property viewings",
-                                                                            "Recommend areas based on budget",
-                                                                            "Support for expats & foreigners"
-                                                                        ].map((item, idx) => (
-                                                                            <div
-                                                                                key={idx}
-                                                                                className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-2 animate-slide-in-right opacity-0 cursor-pointer"
-                                                                                style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                        <div className="space-y-4 mb-8">
+                                                                            <a
+                                                                                href={`tel:${agent?.phone || '062-718-8699'}`}
+                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all animate-slide-in-right opacity-0"
+                                                                                style={{ backgroundColor: 'var(--menu-hover-bg)', animationDelay: '0ms', animationFillMode: 'forwards' }}
                                                                             >
-                                                                                <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-primary-500/10 text-primary-500 transition-colors group-hover/svc:bg-primary-500 group-hover/svc:text-white">
-                                                                                    <FiStar className="w-3.5 h-3.5" />
+                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary-500/10 text-primary-500 group-hover/item:scale-110 transition-transform">
+                                                                                    <PhoneIcon className="w-5 h-5" />
                                                                                 </div>
-                                                                                <span className="text-[14px] font-medium transition-colors group-hover/svc:text-primary-600 mr-auto" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
-                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover/svc:translate-x-2 transition-all duration-300" />
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>Phone</span>
+                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
+                                                                                </div>
+                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                            </a>
 
+                                                                            <a
+                                                                                href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5 animate-slide-in-right opacity-0"
+                                                                                style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}
+                                                                            >
+                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 text-green-500 group-hover/item:scale-110 transition-transform">
+                                                                                    <FiMessageCircle className="w-5 h-5" />
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>LINE</span>
+                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
+                                                                                </div>
+                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                            </a>
+
+                                                                            <a
+                                                                                href={agent?.facebook || "https://facebook.com/superagent"}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5 animate-slide-in-right opacity-0"
+                                                                                style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
+                                                                            >
+                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600/10 text-blue-600 group-hover/item:scale-110 transition-transform">
+                                                                                    <FiFacebook className="w-5 h-5" />
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>Facebook</span>
+                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
+                                                                                </div>
+                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                            </a>
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                    {/* Column 2: How We Help You */}
+                                                                    <div className="flex flex-col pt-2">
+                                                                        <div className="mb-6">
+                                                                            <div className="flex items-center gap-2 mb-2">
+                                                                                <div className="w-1 h-6 bg-primary-500 rounded-full"></div>
+                                                                                <h3 className="text-xl font-black" style={{ color: 'var(--menu-text-primary)' }}>Our Services</h3>
+                                                                            </div>
+                                                                            <p className="text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Tailored Property Solutions</p>
+                                                                        </div>
+
+                                                                        <div className="space-y-1">
+                                                                            {[
+                                                                                "Help finding rental homes",
+                                                                                "Assistance buying property",
+                                                                                "Schedule property viewings",
+                                                                                "Recommend areas based on budget",
+                                                                                "Support for expats & foreigners"
+                                                                            ].map((item, idx) => (
+                                                                                <div
+                                                                                    key={idx}
+                                                                                    className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-2 animate-slide-in-right opacity-0 cursor-pointer"
+                                                                                    style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                >
+                                                                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-primary-500/10 text-primary-500 transition-colors group-hover/svc:bg-primary-500 group-hover/svc:text-white">
+                                                                                        <FiStar className="w-3.5 h-3.5" />
+                                                                                    </div>
+                                                                                    <span className="text-[14px] font-medium transition-colors group-hover/svc:text-primary-600 mr-auto" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
+                                                                                    <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover/svc:translate-x-2 transition-all duration-300" />
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -909,59 +901,55 @@ const PublicLayout = () => {
                                                 <div className="flex items-center gap-1">
                                                     <Link
                                                         to="/my-bookings"
-                                                        className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
+                                                        className="group flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
                                                     >
-                                                        <CalendarDaysIcon className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-                                                        <span className="text-[14px] font-normal">Bookings</span>
+                                                        <CiCalendar className="w-5 h-5 text-gray-500 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
+                                                        <span className="text-[14px] font-medium">Bookings</span>
                                                     </Link>
 
                                                     <Link
                                                         to="/saved-listings"
-                                                        className="group flex items-center gap-2 px-4 py-2 text-white transition-all duration-300"
+                                                        className="group flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
                                                     >
-                                                        <CiBookmark className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-                                                        <span className="text-[14px] font-normal">Saved</span>
+                                                        <CiBookmark className="w-5 h-5 text-gray-500 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
+                                                        <span className="text-[14px] font-medium">Saved</span>
                                                     </Link>
 
                                                     <div className="relative" ref={userMenuRef}>
                                                         <button
                                                             onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                                            className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1 transition-all duration-300 text-white group`}
+                                                            className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1 transition-all duration-300 text-gray-700 hover:text-[var(--primary-color)] group`}
                                                             style={{ borderRadius: 'var(--btn-radius)' }}
                                                         >
                                                             <div
-                                                                className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm transition-all duration-300 text-white group-hover:scale-110`}
+                                                                className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-base transition-all duration-300 text-white bg-primary-600`}
                                                                 style={{
-                                                                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    WebkitBackdropFilter: 'blur(10px)',
-                                                                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
-                                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.1)',
+                                                                    boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.25)',
                                                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                                                 }}
                                                                 onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 255, 255, 0.2)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(255, 255, 255, 0.5)';
+                                                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                                                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(var(--primary-rgb), 0.4)';
                                                                 }}
                                                                 onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.1)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
+                                                                    e.currentTarget.style.transform = 'scale(1)';
+                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(var(--primary-rgb), 0.25)';
                                                                 }}
                                                             >
-                                                                {user?.first_name?.[0]?.toUpperCase() || <UserCircleIcon className="w-5 h-5" />}
+                                                                {user?.first_name?.[0]?.toUpperCase() || <UserCircleIcon className="w-6 h-6" />}
                                                             </div>
-                                                            <div className="flex flex-col items-start">
-                                                                <span className={`text-[10px] font-black leading-none mb-0.5 uppercase tracking-wider opacity-60 text-white`}>Account</span>
-                                                                <span className={`text-sm font-black leading-none max-w-[80px] truncate text-white`}>
+                                                            <div className="flex flex-col items-start translate-x-1">
+                                                                <span className={`text-[10px] font-black leading-none mb-0.5 uppercase tracking-wider opacity-60 text-gray-400`}>Account</span>
+                                                                <span className={`text-sm font-black leading-none max-w-[80px] truncate transition-colors text-primary-600`}>
                                                                     {user?.first_name}
                                                                 </span>
                                                             </div>
-                                                            <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-500 text-white ${userMenuOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`} />
+                                                            <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-500 group-hover:text-[var(--primary-color)] ${userMenuOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`} />
                                                         </button>
 
                                                         {/* Dropdown Menu */}
                                                         {userMenuOpen && (
-                                                            <div className="absolute right-0 mt-3 w-60 shadow-2xl py-2 ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden border" style={{ borderRadius: 'var(--menu-radius)', backgroundColor: 'var(--menu-bg-color)', borderColor: 'var(--menu-border)' }}>
+                                                            <div className="absolute right-0 mt-0 w-60 shadow-xl py-2 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden" style={{ borderRadius: 'var(--menu-radius)', backgroundColor: 'var(--menu-bg-color)' }}>
                                                                 {/* User Header */}
                                                                 <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--menu-divider)', backgroundColor: 'rgba(var(--primary-rgb), 0.03)' }}>
                                                                     <p className="text-sm font-bold truncate" style={{ color: 'var(--menu-text-primary)' }}>
@@ -993,7 +981,7 @@ const PublicLayout = () => {
                                                                                 }
                                                                                 return '/dashboard';
                                                                             })()}
-                                                                            className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50 hover:text-primary-700 font-bold rounded-xl transition-colors group"
+                                                                            className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50 hover:text-[var(--primary-color)] font-bold rounded-xl transition-colors group"
                                                                             onClick={(e) => {
                                                                                 const href = e.currentTarget.getAttribute('href');
                                                                                 if (href.startsWith('http')) {
@@ -1011,7 +999,7 @@ const PublicLayout = () => {
                                                                     )}
                                                                 </div>
 
-                                                                <div className="py-2 px-2 border-t mt-1" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                <div className="py-2 px-2 mt-1" style={{ borderColor: 'var(--menu-divider)' }}>
                                                                     <button
                                                                         onClick={() => {
                                                                             logout();
@@ -1033,11 +1021,11 @@ const PublicLayout = () => {
                                                 <>
                                                     <Link
                                                         to="/login"
-                                                        className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                                                        className="text-[14px] font-medium text-gray-600 hover:text-[var(--primary-color)] transition-colors"
                                                     >
                                                         Sign in
                                                     </Link>
-                                                    <Link to="/register" className="bg-white text-primary-600 px-5 py-2 text-sm font-bold shadow-lg shadow-black/5 hover:bg-gray-50 active:scale-95 transition-all" style={{ borderRadius: 'var(--btn-radius)' }}>
+                                                    <Link to="/register" className="bg-gray-950 text-white px-5 py-2 text-[14px] font-medium shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 active:scale-95 transition-all" style={{ borderRadius: 'var(--btn-radius)' }}>
                                                         Get Started
                                                     </Link>
                                                 </>
@@ -1047,7 +1035,7 @@ const PublicLayout = () => {
                                 )}
                             </div>
                         </div>
-                    </nav>
+                    </nav >
                 )
             }
 
@@ -1060,37 +1048,69 @@ const PublicLayout = () => {
             {/* Footer */}
             {
                 !isMapView && (
-                    <footer className="bg-gray-900 text-gray-400">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                                <div className="col-span-1 md:col-span-2">
-                                    <div className="flex items-center space-x-3 mb-4">
-                                        <Logo className="w-8 h-8 text-white" />
-                                        <span className="text-xl font-bold text-white">Super</span>
+                    <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden">
+                        {/* Background Decoration */}
+                        <div
+                            className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
+                            style={{
+                                backgroundImage: `url(${buildingBlock})`,
+                                backgroundSize: '800px',
+                                backgroundPosition: 'right bottom',
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        />
+                        <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10">
+                            {/* Top Section: Slogan + Links */}
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
+                                <div className="max-w-md">
+                                    <h2 className="text-4xl font-medium tracking-tight leading-[1.1]">
+                                        Experience the future of<br />real estate management
+                                    </h2>
+                                </div>
+                                <div className="flex gap-24 lg:gap-32 pr-4 lg:pr-12">
+                                    <div>
+                                        <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Platform</h4>
+                                        <ul className="space-y-4">
+                                            <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 transition-colors">Features</Link></li>
+                                            <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 transition-colors">Pricing Plans</Link></li>
+                                            <li><Link to="/services" className="text-base font-medium hover:text-primary-600 transition-colors">Services</Link></li>
+                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Get Started</Link></li>
+                                        </ul>
                                     </div>
-                                    <p className="text-sm max-w-md">
-                                        Empowering real estate agents with premium digital tools.
-                                        Create your own branded property portal in minutes.
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-semibold mb-4">Platform</h4>
-                                    <ul className="space-y-2 text-sm">
-                                        <li><Link to="/#features" className="hover:text-white">Features</Link></li>
-                                        <li><Link to="/#plans" className="hover:text-white">Pricing Plans</Link></li>
-                                        <li><Link to="/register" className="hover:text-white">Get Started</Link></li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-semibold mb-4">Support</h4>
-                                    <ul className="space-y-2 text-sm">
-                                        <li><Link to="/login" className="hover:text-white">Agent Login</Link></li>
-                                        <li><Link to="/register" className="hover:text-white">Create Account</Link></li>
-                                    </ul>
+                                    <div>
+                                        <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Support</h4>
+                                        <ul className="space-y-4">
+                                            <li><Link to="/login" className="text-base font-medium hover:text-primary-600 transition-colors">Agent Login</Link></li>
+                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Create Account</Link></li>
+                                            <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 transition-colors">Help Center</Link></li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-                                <p>{theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}</p>
+
+                            {/* Center Section: Massive Typography */}
+                            <div className="mb-24 overflow-hidden">
+                                <h1 className="text-[11vw] lg:text-[9vw] font-bold tracking-[-0.04em] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-gray-950 via-gray-900 to-primary-500 select-none uppercase inline-block pr-8 pb-4 w-fit">
+                                    {brandName}
+                                </h1>
+                            </div>
+
+                            {/* Bottom Section: Logo + Legal */}
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xl font-bold text-gray-900 tracking-tight">
+                                        Super
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-8">
+                                    <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About Super</Link>
+                                    <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Products</Link>
+                                    <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
+                                    <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
+                                </div>
+                                <div className="text-sm font-medium text-gray-400">
+                                    {theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}
+                                </div>
                             </div>
                         </div>
                     </footer>

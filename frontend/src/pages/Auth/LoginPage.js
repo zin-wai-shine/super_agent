@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { BuildingOfficeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import toast from 'react-hot-toast';
+
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +26,6 @@ const LoginPage = () => {
         setLoading(false);
 
         if (result.success) {
-            toast.success('Welcome back!');
             // Redirect based on role
             if (from) {
                 navigate(from, { replace: true });
@@ -51,7 +50,7 @@ const LoginPage = () => {
                 navigate('/');
             }
         } else {
-            toast.error(result.error);
+            console.error('Login failed:', result.error);
         }
     };
 

@@ -112,7 +112,7 @@ const AppRoutes = () => {
             <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="listings" element={<ListingsPage />} />
-                <Route path="listings/:id" element={<BookAppointment />} />
+                <Route path="listings/:id" element={<ListingDetailPage />} />
                 <Route path="banners/:id" element={<BannerDetail />} />
                 <Route path="search" element={<MobileSearchPage />} />
                 <Route

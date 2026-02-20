@@ -80,8 +80,8 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
                 <div className="flex items-center gap-1.5 md:gap-2">
                     <ShareIcon className={iconClassName || "w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-primary-600 transition-colors"} />
                     {showLabel && (
-                        <span className={labelClassName || "text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors lowercase tracking-wide"}>
-                            share
+                        <span className={labelClassName || "text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors tracking-wide"}>
+                            Share
                         </span>
                     )}
                 </div>

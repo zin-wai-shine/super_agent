@@ -8,10 +8,11 @@ import {
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
+import { MdOutlineBookmarkAdded, MdOutlineBookmarkBorder } from "react-icons/md";
 import { TbTrain } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub } from "react-icons/pi";
-import { toast } from 'react-toastify';
+
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import PropertyShare from './PropertyShare';
 
@@ -75,9 +76,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            toast.error('Please login to save listings', {
-                onClick: () => navigate('/login')
-            });
+            navigate('/login', { state: { from: { pathname: location.pathname } } });
             return;
         }
 
@@ -86,15 +85,12 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
             if (isSaved) {
                 await unsaveListing(id);
                 setIsSaved(false);
-                toast.success('Property removed from saved listings');
             } else {
                 await saveListing(id);
                 setIsSaved(true);
-                toast.success('Property saved successfully');
             }
         } catch (error) {
             console.error('Save listing error:', error);
-            toast.error(error.error || error.message || 'Failed to update saved status');
         } finally {
             setSavingListing(false);
         }
@@ -109,7 +105,6 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         try {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(url);
-                toast.success('Link copied to clipboard');
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
             } else {
@@ -124,18 +119,15 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    toast.success('Link copied to clipboard');
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                 } catch (err) {
                     console.error('Fallback copy failed', err);
-                    toast.error('Failed to copy link');
                 }
                 document.body.removeChild(textArea);
             }
         } catch (err) {
             console.error('Failed to copy text: ', err);
-            toast.error('Failed to copy link');
         }
     };
 
@@ -211,12 +203,8 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
 
-                    {/* Badges Overlay */}
                     <div className="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
-                        <div
-                            className={`text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-sm shadow-sm tracking-tight ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'
-                                }`}
-                        >
+                        <div className="text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-[3px] bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
                             {listing_type === 'sale' ? 'Sale' : 'Rent'}
                         </div>
                     </div>
@@ -227,7 +215,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                     <div className="flex flex-col gap-2">
                         {/* Price Row */}
                         <div className="flex items-center justify-between">
-                            <div className="flex items-baseline gap-1 text-primary-600">
+                            <div className="flex items-baseline gap-1 text-gray-900">
                                 <span className="text-xl md:text-2xl font-black tracking-tight">{formatPrice(price)}</span>
                                 <span className="text-[10px] md:text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
                                 {listing_type === 'rent' && <span className="text-[9px] md:text-[10px] font-bold text-gray-400">/mo</span>}
@@ -235,8 +223,8 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             <span className="text-[10px] md:text-[11px] text-gray-300 font-mono">#{id.slice(0, 5)}</span>
                         </div>
 
-                        {/* Title - Blue as per design */}
-                        <h3 className="text-base md:text-lg font-bold text-primary-600 group-hover:text-primary-700 transition-colors line-clamp-1">
+                        {/* Title - Dark text with primary hover */}
+                        <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1">
                             {title}
                         </h3>
 
@@ -283,14 +271,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                                 <button
                                     onClick={handleToggleSave}
                                     disabled={savingListing}
-                                    className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+                                    className="flex items-center gap-1.5 text-gray-500 hover:text-emerald-600 transition-colors"
                                 >
                                     {isSaved ? (
-                                        <BookmarkSolidIcon className="w-4 h-4 text-primary-600" />
+                                        <MdOutlineBookmarkAdded className="w-[24px] h-[24px] text-emerald-500 drop-shadow-md" />
                                     ) : (
-                                        <BookmarkIcon className="w-4 h-4" />
+                                        <MdOutlineBookmarkBorder className="w-[24px] h-[24px] transition-transform duration-300 hover:scale-110" />
                                     )}
-                                    <span className="text-[13px] font-medium hidden sm:inline">Save</span>
+                                    <span className="text-[13px] font-medium hidden sm:inline transition-colors">
+                                        {isSaved ? 'Saved' : 'Save'}
+                                    </span>
                                 </button>
                             )}
 
@@ -339,20 +329,17 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 {/* Badges Overlay */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
                     {is_featured && (
-                        <div className="bg-amber-400 text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-sm shadow-md tracking-wider">
+                        <div className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-[3px] shadow-md tracking-wider">
                             Featured
                         </div>
                     )}
-                    <div
-                        className={`text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-sm shadow-sm tracking-tight ${listing_type === 'sale' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'
-                            }`}
-                    >
+                    <div className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-[3px] bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
                         {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                     </div>
                 </div>
 
                 {/* Date Badge - Minimalist bottom right */}
-                <div className="absolute bottom-3 right-3 bg-black/30 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
+                <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-[3px] tracking-wider border border-white/10">
                     {formatRelativeTime(created_at)}
                 </div>
             </div>
@@ -361,7 +348,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
             <div className="p-5 flex flex-col gap-3">
                 {/* Price and ID Row */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-baseline gap-1 text-primary-600">
+                    <div className="flex items-baseline gap-1 text-gray-900">
                         <span className="text-2xl font-black tracking-tight">{formatPrice(price)}</span>
                         <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
                         {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
@@ -369,20 +356,20 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                     <span className="text-[11px] text-gray-300 font-mono tracking-tighter opacity-60">#{id.slice(0, 5)}</span>
                 </div>
 
-                {/* Title - Blue per design */}
-                <h3 className="text-[17px] font-bold text-primary-600 group-hover:text-primary-700 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
+                {/* Title - Dark with primary hover */}
+                <h3 className="text-[17px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
                     {title}
                 </h3>
 
                 {/* Information Rows */}
                 <div className="space-y-3">
-                    <div className="flex items-center text-[14px] text-gray-400">
-                        <MapPinIcon className="w-5 h-5 mr-1 text-gray-300 shrink-0" />
+                    <div className="flex items-center text-[14px] text-gray-700">
+                        <MapPinIcon className="w-5 h-5 mr-1 text-gray-700 shrink-0" />
                         <span className="truncate">{district || 'Bangkok'}</span>
                         {nearestStation && (
                             <>
                                 <div className="mx-2 w-px h-3 bg-gray-200" />
-                                <TbTrain className="w-5 h-5 mr-1 text-gray-300 shrink-0" />
+                                <TbTrain className="w-5 h-5 mr-1 text-gray-700 shrink-0" />
                                 <span className="truncate">{nearestStation}</span>
                             </>
                         )}
@@ -391,16 +378,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                     {/* Stats Refined Row */}
                     <div className="flex items-center gap-8 pb-1">
                         <div className="flex items-center gap-2.5">
-                            <LiaBedSolid className="w-5 h-5 text-gray-400" />
+                            <LiaBedSolid className="w-5 h-5 text-gray-700" />
                             <span className="text-[14px] font-bold text-gray-700">{bedrooms}</span>
                         </div>
                         <div className="flex items-center gap-2.5">
-                            <PiBathtub className="w-5 h-5 text-gray-400" />
+                            <PiBathtub className="w-5 h-5 text-gray-700" />
                             <span className="text-[14px] font-bold text-gray-700">{bathrooms}</span>
                         </div>
                         {area > 0 && (
                             <div className="flex items-center gap-2.5">
-                                <span className="text-[13px] font-bold text-gray-300 tracking-tighter">M²</span>
+                                <span className="text-[13px] font-bold text-gray-700 tracking-tighter">M²</span>
                                 <span className="text-[14px] font-bold text-gray-700">{area}</span>
                             </div>
                         )}
@@ -415,14 +402,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 text-gray-700 hover:text-emerald-600 transition-all disabled:opacity-50 w-[68px]"
                             >
                                 {isSaved ? (
-                                    <BookmarkSolidIcon className="w-[18px] h-[18px] text-primary-600" />
+                                    <MdOutlineBookmarkAdded className="w-[18px] h-[18px] text-emerald-500" />
                                 ) : (
-                                    <BookmarkIcon className="w-[18px] h-[18px]" />
+                                    <MdOutlineBookmarkBorder className="w-[18px] h-[18px] transition-colors duration-300 hover:scale-110" />
                                 )}
-                                <span className="text-[14px] font-medium">Save</span>
+                                <span className={`text-[12px] font-medium transition-colors ${isSaved ? 'text-emerald-600' : 'text-gray-700'}`}>
+                                    {isSaved ? 'Saved' : 'Save'}
+                                </span>
                             </button>
                         )}
 
@@ -434,19 +423,19 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                                 description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
                                 image: featuredImage
                             }}
-                            className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all"
+                            className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-all w-[68px]"
                             showLabel={true}
-                            labelClassName="text-[14px] font-medium"
-                            iconClassName="w-[18px] h-[18px]"
+                            labelClassName="text-[12px] font-medium"
+                            iconClassName="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors"
                         />
 
                         {/* Copy Link Action */}
                         <button
                             onClick={handleCopyLink}
-                            className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all"
+                            className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-all w-[92px]"
                         >
-                            <LinkIcon className="w-[18px] h-[18px]" />
-                            <span className="text-[14px] font-medium whitespace-nowrap">
+                            <LinkIcon className="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors" />
+                            <span className="text-[12px] font-medium whitespace-nowrap">
                                 {copied ? 'Copied' : 'Copy Link'}
                             </span>
                         </button>

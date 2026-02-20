@@ -67,16 +67,24 @@ const getSelectedOption = (options, value) => {
     return options.find(opt => opt.value === value) || null;
 };
 
-// Skeleton Component moved outside for stability
-const ListingSkeleton = ({ viewMode = 'grid' }) => {
+const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) => {
     const isListView = viewMode === 'list';
+
+    // In: 0 -> 11, Out: 11 -> 0
+    const delay = isExiting ? `${(11 - (index % 12)) * 60}ms` : `${(index % 12) * 100}ms`;
+
+    const skeletonStyle = {
+        borderRadius: 'var(--card-radius)',
+        animation: isExiting ? 'fadeOutDown 0.6s ease-in forwards' : 'fadeInUp 0.6s ease-out forwards',
+        animationDelay: delay,
+        opacity: isExiting ? 1 : 0,
+    };
 
     if (isListView) {
         return (
-            <Card className="flex flex-row animate-pulse h-[130px] md:h-[220px]" style={{ borderRadius: 'var(--card-radius)' }}>
+            <Card className="flex flex-row animate-pulse h-[130px] md:h-[220px]" style={skeletonStyle}>
                 {/* Image Section Skeleton */}
                 <div className="w-[130px] md:w-[40%] h-full bg-gray-200 flex-none relative">
-                    {/* Type Badge Skeleton */}
                     <div className="absolute top-2 left-2 md:top-4 md:left-4 h-4 md:h-6 w-12 md:w-20 bg-gray-300 rounded-[3px]" />
                 </div>
 
@@ -103,17 +111,14 @@ const ListingSkeleton = ({ viewMode = 'grid' }) => {
     }
 
     return (
-        <Card className="animate-pulse" style={{ borderRadius: 'var(--card-radius)' }}>
+        <Card className="animate-pulse" style={skeletonStyle}>
             {/* Image Skeleton */}
             <div className="aspect-[16/10] bg-gray-200 w-full relative">
-                {/* Badge Top Left */}
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                     <div className="h-4 w-16 bg-gray-300 rounded-[3px]" />
                     <div className="h-4 w-20 bg-gray-300 rounded-[3px]" />
                 </div>
-                {/* Badge Top Right */}
                 <div className="absolute top-3 right-3 h-5 w-16 bg-gray-300 rounded-[3px]" />
-                {/* Price Overlay */}
                 <div className="absolute bottom-3 left-3 h-8 w-32 bg-white/60 backdrop-blur-md rounded-[3px]" />
             </div>
 
@@ -145,6 +150,7 @@ const ListingsPage = () => {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [isExiting, setIsExiting] = useState(false);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const observerTarget = useRef(null);
@@ -337,7 +343,8 @@ const ListingsPage = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchTerm !== filters.search) {
-                handleFilterChange('search', searchTerm);
+                // Pass false for shouldScroll to keep focus/position while typing
+                handleFilterChange('search', searchTerm, false);
             }
         }, 500);
         return () => clearTimeout(timer);
@@ -371,11 +378,12 @@ const ListingsPage = () => {
         const fetchListings = async () => {
             // Only show initial skeletons if we are on page 1
             if (page === 1) {
-                // Avoid "flash" in map view. If map is open and we have results, 
-                // we don't clear them or show skeletons while updating for new bounds.
+                // Avoid "flash" in map view OR during typing search.
+                // If map is open OR filters.search is changing, we don't clear results.
                 const isMapBoundsUpdate = isGoogleMapOpen && listings.length > 0;
+                const isSearchTyped = searchTerm !== filters.search && listings.length > 0;
 
-                if (!isMapBoundsUpdate) {
+                if (!isMapBoundsUpdate && !isSearchTyped) {
                     setInitialLoading(true);
                     setListings([]); // Clear listings for fresh fetch on page 1
                 }
@@ -394,10 +402,27 @@ const ListingsPage = () => {
                 if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
                     params.agent_id = user.agent_id;
                 }
-                const response = await publicApi.getListings(params, { signal: controller.signal });
+
+                // Call API and artificial delay in parallel for premium "serial" loading feel
+                const [response] = await Promise.all([
+                    publicApi.getListings(params, { signal: controller.signal }),
+                    new Promise(resolve => setTimeout(resolve, 1500)) // Artificial 1.5s delay as requested
+                ]);
 
                 const data = response.data;
-                setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+
+                if (page === 1 && initialLoading) {
+                    // Trigger exit animation
+                    setIsExiting(true);
+                    // Wait for the longest delay (11 * 60ms) + animation duration (600ms) = ~1260ms
+                    await new Promise(resolve => setTimeout(resolve, 1300));
+                    setListings(data.listings);
+                    setIsExiting(false);
+                    setInitialLoading(false);
+                } else {
+                    setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+                }
+
                 setTotal(data.total || 0);
             } catch (error) {
                 if (axios.isCancel(error)) return;
@@ -405,7 +430,8 @@ const ListingsPage = () => {
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
-                    setInitialLoading(false);
+                    // Only set initialLoading false here if it wasn't handled by the animation block
+                    if (page !== 1) setInitialLoading(false);
                 }
             }
         };
@@ -426,16 +452,19 @@ const ListingsPage = () => {
         return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
     }, [loading, listings.length, total]);
 
-    const handleFilterChange = (key, value) => {
+    const handleFilterChange = (key, value, shouldScroll = true) => {
         const newFilters = { ...filters, [key]: value };
         setFilters(newFilters);
         localStorage.setItem('listing_filters', JSON.stringify(newFilters));
         setPage(1);
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to prevent jump
-        const newParams = new URLSearchParams(searchParams);
-        if (value) newParams.set(key, value);
-        else newParams.delete(key);
-        setSearchParams(newParams);
+
+        if (shouldScroll) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to prevent jump
+            const newParams = new URLSearchParams(searchParams);
+            if (value) newParams.set(key, value);
+            else newParams.delete(key);
+            setSearchParams(newParams);
+        }
     };
 
     const handleSelectChange = (key, option) => {
@@ -499,22 +528,22 @@ const ListingsPage = () => {
                 {/* Active Filters Section */}
                 <div className="p-4 rounded-[3px] border border-gray-100 bg-white">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <FunnelIcon className="w-4 h-4" />
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <FunnelIcon className="w-5 h-5" />
                             Active Filters
                         </h3>
                         {hasActiveFilters && (
-                            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500 hover:text-red-700 p-0 h-auto">Clear All</Button>
+                            <button onClick={clearFilters} className="text-[14px] font-medium text-red-500 hover:text-red-700 transition-colors">Clear All</button>
                         )}
                     </div>
                     {hasActiveFilters ? (
                         <div className="space-y-3">
                             <div className="flex flex-wrap gap-2">
                                 {activeFiltersList.map((filter) => (
-                                    <span key={filter.key} className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100">
+                                    <span key={filter.key} className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-primary-50 text-primary-700 text-[14px] font-bold rounded-full border border-primary-100 shadow-sm leading-none">
                                         {filter.label}
-                                        <button onClick={() => handleFilterChange(filter.key, '')} className="hover:text-primary-900">
-                                            <XMarkIcon className="w-3 h-3" />
+                                        <button onClick={() => handleFilterChange(filter.key, '')} className="hover:text-red-500 transition-colors">
+                                            <XMarkIcon className="w-3.5 h-3.5 stroke-[2]" />
                                         </button>
                                     </span>
                                 ))}
@@ -529,8 +558,8 @@ const ListingsPage = () => {
                         </div>
                     )}
 
-                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-sm font-bold border border-primary-100 flex items-center gap-2 justify-center">
-                        <CheckCircleIcon className="w-4 h-4" />
+                    <div className="mt-6 bg-primary-50 p-3 rounded-[3px] text-primary-800 text-[14px] font-bold border border-primary-100 flex items-center gap-2 justify-center shadow-sm">
+                        <CheckCircleIcon className="w-5 h-5" />
                         {total} {total === 1 ? 'Property' : 'Properties'} Found
                     </div>
                 </div>
@@ -572,34 +601,6 @@ const ListingsPage = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-black uppercase tracking-wider text-gray-400">Max Price</label>
                         <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="No limit" className="w-full" />
-                    </div>
-                </div>
-                {/* Buttons */}
-                <div className="space-y-4 border-t pt-6">
-
-                    <div className="p-1 bg-gray-100 rounded-[3px] flex gap-1 relative h-[52px]">
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`flex-1 relative z-10 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${viewMode === 'grid' ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-gray-600'}`}
-                            style={{ borderRadius: 'var(--btn-radius)' }}
-                        >
-                            <Squares2X2Icon className="w-4 h-4" />
-                            <span className="text-xs font-black uppercase tracking-[0.15em]">Grid View</span>
-                            {viewMode === 'grid' && (
-                                <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`flex-1 relative z-10 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${viewMode === 'list' ? 'text-[var(--primary-color)]' : 'text-gray-400 hover:text-gray-600'}`}
-                            style={{ borderRadius: 'var(--btn-radius)' }}
-                        >
-                            <ListBulletIcon className="w-4 h-4" />
-                            <span className="text-xs font-black uppercase tracking-[0.15em]">List View</span>
-                            {viewMode === 'list' && (
-                                <div className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-[-1] animate-in fade-in zoom-in-95 duration-300" />
-                            )}
-                        </button>
                     </div>
                 </div>
             </div>
@@ -735,10 +736,6 @@ const ListingsPage = () => {
                             {renderFilterContent()}
                         </div>
 
-                        {/* Sidebar Footer */}
-                        <div className="p-6 border-t bg-gray-50 flex-shrink-0 flex justify-center">
-                            <Button onClick={clearFilters} variant="primary" className="w-full py-4 font-bold tracking-wide uppercase text-xs">Reset All Filters</Button>
-                        </div>
                     </div>
 
                     {/* Right Pane: Content Area (Full Height Map) */}
@@ -757,7 +754,7 @@ const ListingsPage = () => {
                         </div>
                     </div>
                 </div>
-            </Modal>
+            </Modal >
 
             {/* Overlay for Sidebar */}
             {
@@ -897,7 +894,7 @@ const ListingsPage = () => {
             </div>
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className={`transform transition-transform duration-500 ease-in-out bg-gray-50 min-h-screen ${isGoogleMapOpen ? 'translate-x-full h-screen overflow-hidden fixed inset-0' : 'translate-x-0 relative'}`}>
+            <div className={`transform transition-transform duration-500 ease-in-out bg-white min-h-screen ${isGoogleMapOpen ? 'translate-x-full h-screen overflow-hidden fixed inset-0' : 'translate-x-0 relative'}`}>
                 {/* Header Mobile */}
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
@@ -906,91 +903,62 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Desktop Filter Bar - Component Implementation */}
-                <FilterBar
-                    total={total}
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    onOpenFilters={() => setIsSidebarOpen(true)}
-                    hasActiveFilters={hasActiveFilters}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    isMapViewOpen={isGoogleMapOpen}
-                    onToggleMapView={toggleMapView}
-                    isMapTransitioning={isMapTransitioning}
-                    navVisible={navVisible}
-                    isScrolled={isScrolled}
-                />
-
                 {/* Main Content */}
-                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <div className="max-w-[1440px] mx-auto px-6 lg:px-12 pb-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
-                        <div className="lg:col-span-4 hidden lg:block transition-all duration-500">
-                            <div className={`sticky space-y-6 ${navVisible ? 'top-40' : 'top-24'}`}>
-                                <ShowcaseBanners agentId={agentId} loading={initialLoading} />
-
-                                <div className="bg-white rounded-[3px] shadow-sm border border-gray-100 p-4">
-                                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                            <FunnelIcon className="w-4 h-4" />
-                                            Active Filters
-                                        </h3>
-                                        <button onClick={clearFilters} className="text-sm text-red-500 font-medium">Clear All</button>
-                                    </div>
-                                    {hasActiveFilters ? (
-                                        <div className="space-y-3">
-                                            <div className="flex flex-wrap gap-2">
-                                                {activeFiltersList.map((filter) => (
-                                                    <span key={filter.key} className="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100">
-                                                        {filter.label}
-                                                        <button onClick={() => handleFilterChange(filter.key, '')} className="hover:text-primary-900">
-                                                            <XMarkIcon className="w-3 h-3" />
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-6">
-                                            <div className="bg-primary-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <SparklesIcon className="w-6 h-6 text-primary-600" />
-                                            </div>
-                                            <p className="text-sm text-gray-500">Find your perfect home with filters</p>
-                                        </div>
-                                    )}
-
-                                    <div className="mt-4 bg-primary-50 p-2 rounded-[3px] text-primary-800 text-xs font-bold border border-primary-100 flex items-center gap-2 justify-center">
-                                        <CheckCircleIcon className="w-4 h-4" />
-                                        {total} {total === 1 ? 'Property' : 'Properties'} Found
-                                    </div>
-                                </div>
+                        <div className="lg:col-span-3 hidden lg:block transition-all duration-500">
+                            <div className={`sticky ${navVisible ? 'top-40' : 'top-24'}`}>
+                                {renderFilterContent()}
                             </div>
                         </div>
 
                         {/* Listings Grid */}
-                        <div className="lg:col-span-8 transition-all duration-500">
+                        <div className="lg:col-span-9 transition-all duration-500 relative">
+                            {/* Desktop Filter Bar - Component Implementation */}
+                            <FilterBar
+                                total={total}
+                                searchTerm={searchTerm}
+                                onSearchChange={setSearchTerm}
+                                onOpenFilters={() => setIsSidebarOpen(true)}
+                                hasActiveFilters={hasActiveFilters}
+                                viewMode={viewMode}
+                                onViewModeChange={setViewMode}
+                                isMapViewOpen={isGoogleMapOpen}
+                                onToggleMapView={toggleMapView}
+                                isMapTransitioning={isMapTransitioning}
+                                navVisible={navVisible}
+                                isScrolled={isScrolled}
+                            />
                             <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
                                 {/* Left Side: Property List */}
                                 <div className="w-full">
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                            {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
+                                            {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
                                         </div>
                                     ) : listings.length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                                {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
+                                                {listings.map((l, i) => (
+                                                    <div
+                                                        key={l.id}
+                                                        className="animate-in fade-in fill-mode-both duration-500"
+                                                        style={{ animationDelay: `${(i % 12) * 50}ms` }}
+                                                    >
+                                                        <ListingCard listing={l} viewMode={viewMode} priceFormat={priceFormat} />
+                                                    </div>
+                                                ))}
                                                 {loading && !initialLoading && (
                                                     <div className="contents">
-                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
+                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
                                                     </div>
                                                 )}
                                             </div>
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-white rounded-[3px] border border-gray-100">
+                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>

@@ -48,7 +48,7 @@ const MyBookings = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div className="min-h-screen pt-24 pb-12 px-6 lg:px-12 max-w-[1440px] mx-auto">
                 <div className="animate-pulse space-y-10">
                     <div className="flex flex-col gap-4">
                         <div className="h-10 bg-gray-200 rounded-[3px] w-48"></div>
@@ -65,8 +65,8 @@ const MyBookings = () => {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 bg-[#f8fafc]">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen pt-24 pb-20 bg-white">
+            <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                 {/* Modern Header Section */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
                     <div className="relative">
@@ -121,12 +121,9 @@ const MyBookings = () => {
                 )}
 
                 {filteredAppointments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[3px] border border-slate-200/60 shadow-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-50 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
-
-                        <div className="w-24 h-24 bg-primary-50 rounded-[3px] flex items-center justify-center mb-8 relative z-10 rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                            <CalendarIcon className="w-12 h-12 text-primary-600" />
+                    <div className="flex flex-col items-center justify-center py-24 group">
+                        <div className="mb-6 relative z-10 transition-transform duration-500">
+                            <CalendarIcon className="w-14 h-14 text-slate-400" />
                         </div>
                         <h3 className="text-2xl font-black text-slate-900 mb-3 relative z-10">No bookings yet</h3>
                         <p className="text-slate-500 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10">
@@ -135,12 +132,12 @@ const MyBookings = () => {
                                 : `You don't have any ${filter} bookings at the moment.`}
                         </p>
                         <Button
-                            variant="primary"
-                            size="lg"
-                            className="px-10 py-4 !font-black !rounded-[var(--btn-radius)] !shadow-xl !shadow-slate-900/10 hover:-translate-y-1 active:scale-95 transition-all duration-300 relative z-10"
+                            variant="ghost"
+                            className="!p-0 !bg-transparent !border-none !shadow-none !text-slate-600 hover:!text-primary-600 !font-black transition-all duration-300 group inline-flex items-center !outline-none !ring-0 !ring-offset-0 w-auto"
                             onClick={() => window.location.href = '/listings'}
                         >
-                            Explore Listings <ArrowRightIcon className="w-5 h-5 ml-2.5" />
+                            <span className="text-lg">Explore Listings</span>
+                            <ArrowRightIcon className="w-6 h-6 ml-3 transition-transform duration-300 group-hover:translate-x-3" />
                         </Button>
                     </div>
                 ) : (
@@ -150,9 +147,10 @@ const MyBookings = () => {
                             const isPast = date < new Date();
 
                             return (
-                                <div
+                                <Link
                                     key={appointment.id}
-                                    className={`group bg-white rounded-[var(--btn-radius)] border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 transition-all duration-300 p-6 md:p-8 ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
+                                    to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
+                                    className={`group block bg-white rounded-[var(--btn-radius)] border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 hover:border-primary-500/50 transition-all duration-300 p-6 md:p-8 ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
                                 >
                                     <div className="flex flex-col md:flex-row justify-between gap-6">
                                         {/* Column 1: Property & Status */}
@@ -173,11 +171,11 @@ const MyBookings = () => {
                                                 </div>
                                             </div>
 
-                                            <Link to={`/listings/${appointment.listing_id}`} className="block group/title mb-2">
-                                                <h3 className="text-xl font-black text-slate-900 leading-tight group-hover/title:text-primary-600 transition-colors line-clamp-2">
+                                            <div className="mb-2">
+                                                <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
                                                     {appointment.listing?.title || 'Unknown Property'}
                                                 </h3>
-                                            </Link>
+                                            </div>
 
                                             <div className="flex items-center text-slate-500 font-bold text-sm">
                                                 <MapPinIcon className="w-4 h-4 mr-2 text-primary-500/70" />
@@ -185,8 +183,8 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* Column 2: Date, Time & Action */}
-                                        <div className="flex flex-col justify-between md:text-right md:items-end gap-6 md:min-w-[180px]">
+                                        {/* Column 2: Date, Time */}
+                                        <div className="flex flex-col justify-center md:text-right md:items-end gap-6 md:min-w-[180px]">
                                             <div className="flex md:flex-col gap-6 md:gap-3">
                                                 <div className="flex flex-col md:items-end">
                                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Date</div>
@@ -203,17 +201,9 @@ const MyBookings = () => {
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <Button
-                                                variant="primary"
-                                                className="w-full md:w-auto px-6 py-2.5 !font-black !text-xs !rounded-[var(--btn-radius)] !shadow-lg !shadow-slate-900/10 hover:!shadow-primary-600/20 active:scale-95 transition-all duration-300 whitespace-nowrap"
-                                                onClick={() => window.location.href = `/listings/${appointment.listing_id}`}
-                                            >
-                                                View Property <ArrowRightIcon className="w-3.5 h-3.5 ml-2" />
-                                            </Button>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>

@@ -13,7 +13,7 @@ import {
     FaFacebookMessenger
 } from 'react-icons/fa';
 import { SiLine } from 'react-icons/si';
-import { toast } from 'react-toastify';
+
 
 
 
@@ -46,7 +46,6 @@ const ShareModal = ({ isOpen, onClose, property }) => {
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error('Copy failed:', err);
-            toast.error('Failed to copy link. Please copy it manually.');
         }
     };
 
@@ -145,7 +144,7 @@ const ShareModal = ({ isOpen, onClose, property }) => {
                     >
                         {copied ? (
                             <>
-                                <CheckIcon className="w-4 h-4 text-emerald-600 animate-in zoom-in duration-300" />
+                                <CheckIcon className="w-4 h-4 text-emerald-600 animate-scale-in" />
                                 <span>copied</span>
                             </>
                         ) : (

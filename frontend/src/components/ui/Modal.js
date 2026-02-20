@@ -83,7 +83,7 @@ const Modal = ({
         >
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${(lockScroll || closeOnBackdropClick) ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in ${(lockScroll || closeOnBackdropClick) ? 'pointer-events-auto' : 'pointer-events-none'}`}
                 onClick={(e) => {
                     if (closeOnBackdropClick) {
                         e.stopPropagation();
@@ -94,7 +94,7 @@ const Modal = ({
 
             {/* Modal Dialog */}
             <div
-                className={`relative transform transition-all w-full flex items-center justify-center p-4 sm:p-0 z-10 pointer-events-auto ${sizes[size]} ${className}`}
+                className={`relative transform animate-scale-in w-full flex items-center justify-center p-4 sm:p-0 z-10 pointer-events-auto ${sizes[size]} ${className}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div

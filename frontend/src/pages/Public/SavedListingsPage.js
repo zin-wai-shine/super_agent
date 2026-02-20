@@ -4,9 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getSavedListings } from '../../services/savedListingsApi';
 import ListingCard from '../../components/Listings/ListingCard';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
-import { BookmarkIcon } from '@heroicons/react/24/outline';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { BsBookmark, BsBookmarks } from "react-icons/bs";
+
 
 const SavedListingsPage = () => {
     const { user } = useAuth();
@@ -30,7 +29,6 @@ const SavedListingsPage = () => {
             const response = await getSavedListings();
             setListings(response.data || []);
         } catch (error) {
-            toast.error('Failed to load saved listings');
             console.error('Error fetching saved listings:', error);
         } finally {
             setLoading(false);
@@ -51,8 +49,8 @@ const SavedListingsPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-white py-12">
+                <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                     <div className="text-center">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                         <p className="mt-4 text-gray-600">Loading saved listings...</p>
@@ -63,12 +61,12 @@ const SavedListingsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-white py-12">
+            <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                        <BookmarkIcon className="w-8 h-8 text-primary-600" />
+                        <BsBookmarks className="w-9 h-9 text-primary-600" />
                         Saved Listings
                     </h1>
                     <p className="mt-2 text-gray-600">
@@ -78,7 +76,7 @@ const SavedListingsPage = () => {
 
                 {/* Listings Grid */}
                 {listings.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {listings.map((listing) => (
                             <ListingCard
                                 key={listing.id}
@@ -91,7 +89,7 @@ const SavedListingsPage = () => {
                 ) : (
                     /* Empty State */
                     <div className="text-center py-16">
-                        <BookmarkIcon className="mx-auto h-16 w-16 text-gray-300" />
+                        <BsBookmarks className="mx-auto h-20 w-20 text-gray-300" />
                         <h3 className="mt-4 text-lg font-medium text-gray-900">No saved listings</h3>
                         <p className="mt-2 text-gray-500">
                             Start saving properties you're interested in to view them here.
@@ -106,19 +104,7 @@ const SavedListingsPage = () => {
                 )}
             </div>
 
-            {/* Toast Container */}
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
+
 
             {/* Detail Modal */}
             <ListingDetailModal />

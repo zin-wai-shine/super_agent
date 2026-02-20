@@ -184,6 +184,8 @@ export const bannerApi = {
 // Appointment API
 export const appointmentApi = {
     // Public (no auth required)
+    getAvailableSlots: (params) => api.get('/public/appointments/slots', { params }),
+    softLockSlot: (data) => api.post('/public/appointments/lock', data),
     createAppointment: (data) => api.post('/public/appointments', data),
     // Protected (User)
     getMyAppointments: () => api.get('/appointments/my'),

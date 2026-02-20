@@ -4,7 +4,7 @@ import { publicApi, appointmentApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
 import {
-    CheckCircleIcon,
+    CheckCircleIcon as SolidCheckCircleIcon,
     ChevronDownIcon,
     ChevronUpIcon,
     MapPinIcon,
@@ -43,6 +43,12 @@ const BookAppointment = () => {
         purpose: 'rent', // Will be updated based on listing type
         message: '',
     });
+
+    const [availableSlots, setAvailableSlots] = useState([]);
+    const [lockId, setLockId] = useState(null);
+    const [expiresAt, setExpiresAt] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(null);
+    const [fetchingSlots, setFetchingSlots] = useState(false);
 
     const [calendarMonth, setCalendarMonth] = useState(new Date());
 
@@ -142,12 +148,83 @@ const BookAppointment = () => {
         return Object.keys(newErrors).length === 0;
     };
 
+    // --- Slot Management ---
+    useEffect(() => {
+        if (form.preferred_date && listing) {
+            const fetchSlots = async () => {
+                setFetchingSlots(true);
+                try {
+                    const response = await appointmentApi.getAvailableSlots({
+                        listing_id: id,
+                        date: form.preferred_date
+                    });
+                    setAvailableSlots(response.data.slots);
+                } catch (error) {
+                    console.error('Failed to fetch slots:', error);
+                } finally {
+                    setFetchingSlots(false);
+                }
+            };
+            fetchSlots();
+        }
+    }, [form.preferred_date, listing, id]);
+
+    const handleTimeSelect = async (time) => {
+        if (form.preferred_time === time) return;
+
+        setForm(prev => ({ ...prev, preferred_time: time }));
+        setErrors(prev => ({ ...prev, submit: null }));
+
+        try {
+            const response = await appointmentApi.softLockSlot({
+                lock_id: lockId,
+                listing_id: id,
+                preferred_date: form.preferred_date,
+                preferred_time: time
+            });
+            setLockId(response.data.lock_id);
+            setExpiresAt(new Date(response.data.expires_at));
+        } catch (error) {
+            setErrors({ submit: error.response?.data?.error || 'Slot is no longer available' });
+            setForm(prev => ({ ...prev, preferred_time: '' }));
+            // Refresh slots
+            if (form.preferred_date) {
+                const resp = await appointmentApi.getAvailableSlots({ listing_id: id, date: form.preferred_date });
+                setAvailableSlots(resp.data.slots);
+            }
+        }
+    };
+
+    // --- Timer logic ---
+    useEffect(() => {
+        if (!expiresAt) return;
+
+        const interval = setInterval(() => {
+            const diff = expiresAt.getTime() - new Date().getTime();
+            if (diff <= 0) {
+                setLockId(null);
+                setExpiresAt(null);
+                setTimeLeft(null);
+                setForm(prev => ({ ...prev, preferred_time: '' }));
+                setErrors({ submit: 'Your session has expired. Please select a time slot again.' });
+                clearInterval(interval);
+            } else {
+                const mins = Math.floor(diff / 1000 / 60);
+                const secs = Math.floor((diff / 1000) % 60);
+                setTimeLeft(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [expiresAt]);
+
     const handleSubmit = async () => {
         if (!validateForm()) return;
 
         setSubmitting(true);
         try {
             const response = await appointmentApi.createAppointment({
+                id: lockId,
                 listing_id: id,
                 ...form,
             });
@@ -172,7 +249,7 @@ const BookAppointment = () => {
             <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
                 <div className="max-w-md w-full bg-white rounded-[var(--btn-radius)] shadow-xl p-8 text-center border border-gray-100">
                     <div className="w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircleIcon className="w-10 h-10 text-secondary-600" />
+                        <SolidCheckCircleIcon className="w-10 h-10 text-secondary-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Appointment Confirmed!</h2>
                     <p className="text-gray-500 mb-8">We've sent the details to {form.email}</p>
@@ -279,19 +356,32 @@ const BookAppointment = () => {
                                                 new Date(form.preferred_date).getMonth() === calendarMonth.getMonth() &&
                                                 new Date(form.preferred_date).getFullYear() === calendarMonth.getFullYear();
 
-                                            const isPast = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day) < new Date(new Date().setHours(0, 0, 0, 0));
+                                            const currentDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+                                            const today = new Date();
+                                            today.setHours(0, 0, 0, 0);
+
+                                            const isPast = currentDay < today;
+
+                                            const horizon = new Date(today);
+                                            horizon.setDate(today.getDate() + 14);
+                                            horizon.setHours(23, 59, 59, 999);
+
+                                            // March 10th should be disabled if today is Feb 20, 2026
+                                            const isOutsideHorizon = currentDay > horizon;
+
+                                            const isDisabled = isPast || isOutsideHorizon;
 
                                             return (
                                                 <button
                                                     key={i}
-                                                    disabled={isPast}
+                                                    disabled={isDisabled}
                                                     onClick={() => handleDateSelect(day)}
                                                     className={`
                                                         w-10 h-10 mx-auto rounded-full text-sm font-semibold flex items-center justify-center transition-all
                                                         ${isSelected
-                                                            ? 'text-white shadow-lg'
-                                                            : isPast
-                                                                ? 'text-gray-300 cursor-not-allowed'
+                                                            ? 'text-white shadow-lg bg-primary-500'
+                                                            : isDisabled
+                                                                ? 'text-gray-300 cursor-not-allowed bg-gray-50'
                                                                 : 'text-gray-700 hover:bg-[var(--primary-color-light)] hover:text-[var(--primary-color)]'}
                                                     `}
                                                     style={isSelected ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
@@ -309,31 +399,64 @@ const BookAppointment = () => {
 
                                 {/* Time Slots Side */}
                                 <div className="flex-1">
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Morning</h4>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex justify-between items-center">
+                                        Morning
+                                        {fetchingSlots && <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>}
+                                    </h4>
                                     <div className="grid grid-cols-2 gap-3 mb-6">
-                                        {morningSlots.map(time => (
-                                            <button
-                                                key={time}
-                                                onClick={() => setForm(prev => ({ ...prev, preferred_time: time }))}
-                                                className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]'}`}
-                                                style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
+                                        {morningSlots.map(time => {
+                                            const slotData = availableSlots.find(s => s.time === time);
+                                            const isAvailable = slotData && slotData.status === 'available';
+                                            const isLocked = slotData && slotData.status === 'locked';
+
+                                            return (
+                                                <button
+                                                    key={time}
+                                                    disabled={(!isAvailable && !isLocked) || isLocked || fetchingSlots}
+                                                    onClick={() => handleTimeSelect(time)}
+                                                    className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all flex flex-col items-center justify-center
+                                                        ${form.preferred_time === time
+                                                            ? 'text-white border-transparent'
+                                                            : isLocked
+                                                                ? 'bg-red-50 text-red-500 border-red-200 cursor-not-allowed opacity-70'
+                                                                : !isAvailable && !fetchingSlots
+                                                                    ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]'}`}
+                                                    style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
+                                                >
+                                                    <span>{time}</span>
+                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">Unavailable</span>}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
 
                                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Afternoon</h4>
                                     <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                        {afternoonSlots.map(time => (
-                                            <button
-                                                key={time}
-                                                onClick={() => setForm(prev => ({ ...prev, preferred_time: time }))}
-                                                className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all ${form.preferred_time === time ? 'bg-[var(--primary-color)] text-white border-primary-600 shadow-md shadow-[var(--primary-color-light)]' : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-[var(--primary-color)]'}`}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
+                                        {afternoonSlots.map(time => {
+                                            const slotData = availableSlots.find(s => s.time === time);
+                                            const isAvailable = slotData && slotData.status === 'available';
+                                            const isLocked = slotData && slotData.status === 'locked';
+
+                                            return (
+                                                <button
+                                                    key={time}
+                                                    disabled={(!isAvailable && !isLocked) || isLocked || fetchingSlots}
+                                                    onClick={() => handleTimeSelect(time)}
+                                                    className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all flex flex-col items-center justify-center
+                                                        ${form.preferred_time === time
+                                                            ? 'bg-[var(--primary-color)] text-white border-primary-600 shadow-md shadow-[var(--primary-color-light)]'
+                                                            : isLocked
+                                                                ? 'bg-red-50 text-red-500 border-red-200 cursor-not-allowed opacity-70'
+                                                                : !isAvailable && !fetchingSlots
+                                                                    ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-[var(--primary-color)]'}`}
+                                                >
+                                                    <span>{time}</span>
+                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">Unavailable</span>}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                     {errors.preferred_time && <p className="text-red-500 text-xs mt-2 text-center font-bold">Please select a time</p>}
 
@@ -490,7 +613,12 @@ const BookAppointment = () => {
                                 </h3>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="w-14 h-14 rounded-[var(--btn-radius)] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md">
+                                    <div className="w-14 h-14 rounded-[var(--btn-radius)] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md relative">
+                                        {timeLeft && (
+                                            <div className="absolute -top-1 -right-1 bg-rose-500 text-[10px] text-white font-black px-1.5 py-0.5 rounded-full animate-pulse z-10 shadow-sm border border-rose-400">
+                                                {timeLeft}
+                                            </div>
+                                        )}
                                         {form.preferred_date ? (
                                             <>
                                                 <span className="text-[10px] items-center text-white/60 uppercase font-bold tracking-wider mb-px">
@@ -566,7 +694,7 @@ const BookAppointment = () => {
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center gap-2 text-emerald-700 bg-emerald-50/50 py-3 rounded-[var(--btn-radius)] border border-emerald-100/50 text-xs font-bold uppercase tracking-wide animate-in fade-in">
-                                            <CheckCircleIcon className="w-4 h-4" />
+                                            <SolidCheckCircleIcon className="w-4 h-4" />
                                             Ready to Book
                                         </div>
                                     )}

@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { bannerApi, publicApi } from '../../services/api';
 import { SparklesIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
-const ShowcaseBanners = ({ agentId, loading: externalLoading }) => {
+const ShowcaseBanners = ({ agentId }) => {
     const navigate = useNavigate();
     const [agentBanners, setAgentBanners] = useState([]);
     const [companyBanners, setCompanyBanners] = useState([]);
     const [internalLoading, setInternalLoading] = useState(true);
 
-    const isLoading = externalLoading || internalLoading;
+    const isLoading = internalLoading;
 
     const API_URL = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:8080';
 

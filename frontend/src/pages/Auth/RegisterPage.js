@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { BuildingOfficeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import toast from 'react-hot-toast';
+
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -31,10 +31,9 @@ const RegisterPage = () => {
         setLoading(false);
 
         if (result.success) {
-            toast.success('Account created successfully!');
             navigate('/');
         } else {
-            toast.error(result.error);
+            console.error('Registration failed:', result.error);
         }
     };
 

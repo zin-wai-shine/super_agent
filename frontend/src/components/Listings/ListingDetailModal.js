@@ -11,9 +11,9 @@ const ListingDetailView = lazy(() => import('../../pages/Public/ListingDetailPag
 const ListingDetailModal = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const listingId = searchParams.get('detail');
+    const bookingId = searchParams.get('bookingId');
     const isOpen = !!listingId;
-
-    const [modalTitle, setModalTitle] = useState("Property Details");
+    const [modalTitle, setModalTitle] = useState(bookingId ? "Appointment Details" : "Property Details");
 
     const handleClose = () => {
         const newParams = new URLSearchParams(searchParams);

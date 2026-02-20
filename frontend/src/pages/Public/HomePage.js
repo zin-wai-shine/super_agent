@@ -12,6 +12,7 @@ import {
     ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { useTenant } from '../../contexts/TenantContext';
+import Logo from '../../components/Common/Logo';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -69,54 +70,53 @@ const HomePage = () => {
     return (
         <div className="bg-white selection:bg-primary-100 selection:text-primary-900">
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
-                {/* mesh background */}
+            <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-32">
+                {/* Background Decoration - Clear Style */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[#fcfcfc]"></div>
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-100/40 rounded-full blur-[120px] animate-mesh"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-100/40 rounded-full blur-[120px] animate-mesh" style={{ animationDelay: '-5s' }}></div>
-                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-50/60 rounded-full blur-[100px] animate-mesh" style={{ animationDelay: '-10s' }}></div>
+                    <div className="absolute top-0 left-0 w-full h-full bg-white"></div>
+                    {/* Perspective Dot Grid */}
+                    <div
+                        className="absolute inset-0 z-0 opacity-[0.15]"
+                        style={{
+                            backgroundImage: 'radial-gradient(circle, #000 0.5px, transparent 0.5px)',
+                            backgroundSize: '32px 32px',
+                            maskImage: 'radial-gradient(circle at center, black, transparent 80%)',
+                            WebkitMaskImage: 'radial-gradient(circle at center, black, transparent 80%)',
+                            transform: 'perspective(1000px) rotateX(20deg) scale(1.2) translateY(-10%)',
+                        }}
+                    ></div>
                 </div>
 
-                {/* Subtle Grid Pattern */}
-                <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-[-5vh]">
+                <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                    {/* Badge */}
                     <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
-                        <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary-100/50 text-primary-700 px-5 py-2.5 rounded-full text-sm font-bold mb-10 shadow-sm ring-4 ring-primary-50/30">
-                            <SparklesIcon className="w-5 h-5 text-primary-500" />
+                        <div className="inline-flex items-center gap-3 bg-gray-50/50 border border-gray-100 px-4 py-1.5 rounded-full text-[13px] font-medium text-gray-600 mb-12 backdrop-blur-sm">
+                            <Logo className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
                             <span className="tracking-tight">
-                                {isMainDomain ? 'The Ultimate Platform for Real Estate Agents' : `Welcome to ${agent?.name || 'Your Property Portal'}`}
+                                {isMainDomain ? 'Google Antigravity' : `Partnered with ${agent?.name || 'Super Real Estate'}`}
                             </span>
                         </div>
                     </div>
 
-                    <h1 className="text-6xl sm:text-8xl font-black text-gray-900 mb-8 leading-[1.05] tracking-tight animate-fade-up" style={{ animationDelay: '0.3s' }}>
+                    <h1 className="text-5xl md:text-[80px] font-medium text-gray-950 mb-10 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
                         {isMainDomain ? (
                             <>
-                                Sell Homes Faster <br className="hidden sm:block" />
-                                <span className="relative inline-block mt-2">
-                                    <span className="relative z-10 bg-gradient-to-r from-primary-600 via-primary-500 to-secondary-500 bg-clip-text text-transparent">
-                                        Personalized Portal
-                                    </span>
-                                    <div className="absolute bottom-4 left-0 w-full h-4 bg-primary-100/50 -z-10 -rotate-1 rounded-full blur-sm"></div>
-                                </span>
+                                Experience liftoff with the <br className="hidden md:block" />
+                                <span className="text-primary-600 font-semibold italic">next-generation</span> real estate
                             </>
                         ) : (
                             <>
-                                Find Your <span className="text-primary-600">Dream Home</span> <br className="hidden sm:block" />
-                                <span className="relative inline-block mt-2">
-                                    With {agent?.name || 'Super Real Estate'}
-                                </span>
+                                Find Your Dream Home <br className="hidden md:block" />
+                                With <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-primary-600 font-bold italic inline-block w-fit pr-2">{agent?.name || 'Super Real Estate'}</span>
                             </>
                         )}
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-up font-medium" style={{ animationDelay: '0.5s' }}>
+                    <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-16 leading-relaxed animate-fade-up font-normal" style={{ animationDelay: '0.3s' }}>
                         {isMainDomain ? (
                             <>
                                 Empowering agents with state-of-the-art property search portals.
-                                Join <span className="text-gray-900 font-bold">500+ professionals</span> building their legacy.
+                                Join <span className="text-gray-900 font-medium">500+ professionals</span> building their legacy.
                             </>
                         ) : (
                             <>
@@ -125,35 +125,51 @@ const HomePage = () => {
                         )}
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-up" style={{ animationDelay: '0.7s' }}>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
                         <Link
                             to="/listings"
-                            className="w-full sm:w-auto px-10 py-5 text-white font-bold shadow-2xl transition-all hover:-translate-y-1.5 active:scale-[0.98] text-lg flex items-center justify-center gap-3"
-                            style={{
-                                backgroundColor: !isMainDomain && agent?.theme?.primary_color ? agent.theme.primary_color : undefined, // Fallback to class if undefined, but we need to remove bg-primary-600 class to avoid conflict? No, inline style overrides.
-                                borderRadius: !isMainDomain && agent?.theme?.button_radius ? agent.theme.button_radius : '0.3rem',
-                                backgroundImage: !isMainDomain && agent?.theme?.button_gradient
-                                    ? (agent.theme.button_gradient_style || `linear-gradient(135deg, ${agent.theme.primary_color || '#2663EB'}, ${agent.theme.secondary_color || '#34a853'})`)
-                                    : 'none',
-                                // Keep raw Tailwind classes for fallback or main domain
-                            }}
+                            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-gray-950 to-primary-600 text-white font-medium rounded-2xl transition-all hover:from-gray-900 hover:to-primary-500 hover:shadow-primary-500/20 active:scale-[0.98] text-[15px] flex items-center justify-center gap-2.5 shadow-xl shadow-gray-200/50"
                         >
-                            {isMainDomain ? 'Get Started Free' : 'View All Properties'}
-                            <ArrowRightIcon className="w-5 h-5" />
+                            <DevicePhoneMobileIcon className="w-5 h-5 opacity-90" />
+                            {isMainDomain ? 'Download for MacOS' : 'View All Properties'}
                         </Link>
-                        {isMainDomain && (
-                            <a href="#plans" className="w-full sm:w-auto px-10 py-5 font-bold text-gray-900 hover:text-primary-600 transition-all flex items-center justify-center gap-2 group text-lg">
-                                View Pricing Plans
-                                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </a>
-                        )}
+                        <Link
+                            to={isMainDomain ? "#plans" : "/services"}
+                            className="w-full sm:w-auto px-8 py-4 bg-gray-100/50 text-gray-600 font-medium rounded-2xl transition-all hover:bg-gray-100 active:scale-[0.98] text-[15px] flex items-center justify-center gap-2.5 backdrop-blur-sm"
+                        >
+                            {isMainDomain ? 'Explore use cases' : 'Our Services'}
+                        </Link>
                     </div>
                 </div>
+            </section>
 
-                {/* Scroll Indicator */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-                    <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center p-1">
-                        <div className="w-1 h-2 bg-gray-400 rounded-full"></div>
+            {/* Feature Section With Video */}
+            <section className="relative w-full bg-white overflow-hidden">
+                <div className="flex flex-col lg:flex-row min-h-[600px] lg:h-[800px]">
+                    {/* Left Text */}
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 sm:p-16 lg:px-24 xl:px-32 bg-white z-10 items-start">
+                        <div className="max-w-[600px]">
+                            <h2 className="text-[32px] md:text-[40px] lg:text-[44px] leading-[1.1] tracking-[-0.02em] font-medium text-gray-950 mb-6">
+                                Higher-level<br />
+                                Abstractions
+                            </h2>
+                            <p className="text-[16px] md:text-[18px] lg:text-[20px] text-gray-600 leading-[1.6] font-normal">
+                                A more intuitive task-based approach to monitoring agent activity, presenting you with essential artifacts and verification results to build trust.
+                            </p>
+                        </div>
+                    </div>
+                    {/* Right Video Background */}
+                    <div className="w-full lg:w-1/2 relative min-h-[400px] lg:min-h-full p-4 lg:py-10 lg:pl-0 lg:pr-0">
+                        <div className="w-full h-full relative rounded-[40px] lg:rounded-r-none overflow-hidden">
+                            <video
+                                className="absolute inset-0 w-full h-full object-cover"
+                                src="/hero_main_background.mp4"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
