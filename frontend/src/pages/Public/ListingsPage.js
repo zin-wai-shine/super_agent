@@ -724,73 +724,87 @@ const ListingsPage = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
-                        <div className="lg:col-span-3 hidden lg:block transition-all duration-500">
+                        <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
                             <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px]' : 'top-[116px]'}`}>
                                 {renderFilterContent()}
                             </div>
                         </div>
 
                         {/* Listings Grid or Map */}
-                        <div className={`lg:col-span-9 transition-all duration-500 relative ${isGoogleMapOpen ? 'h-[75vh]' : ''}`}>
-                            {isGoogleMapOpen ? (
-                                <div className="w-full h-full rounded-2xl overflow-hidden shadow-sm border border-gray-200">
-                                    <GoogleMap
-                                        listings={listings}
-                                        onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
-                                        onBoundsChanged={handleMapBoundsChanged}
-                                    />
-                                    {/* Map Overlays */}
-                                    <div className="absolute top-4 right-4 z-10 hidden lg:block pointer-events-none">
-                                        <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
-                                            <div className="bg-primary-50 p-2 rounded-lg">
-                                                <GlobeAltIcon className="w-5 h-5 text-primary-600" />
+                        <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-9'} transition-all duration-500 relative`}>
+                            <div className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? 'min-h-[calc(100vh-140px)]' : 'min-h-[70vh]'}`}>
+                                {/* Left Side: Property List */}
+                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%]' : ''}`}>
+                                    {initialLoading ? (
+                                        <div className={`grid gap-4 ${viewMode === 'grid' ? (isGoogleMapOpen ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3') : 'grid-cols-1'}`}>
+                                            {[...Array(isGoogleMapOpen ? 8 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
+                                        </div>
+                                    ) : listings.length > 0 ? (
+                                        <>
+                                            <div className={`grid gap-4 ${viewMode === 'grid' ? (isGoogleMapOpen ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3') : 'grid-cols-1'}`}>
+                                                {listings.map((l, i) => (
+                                                    <div
+                                                        key={l.id}
+                                                        className="animate-in fade-in fill-mode-both duration-500"
+                                                        style={{ animationDelay: `${(i % 12) * 50}ms` }}
+                                                    >
+                                                        <ListingCard listing={l} viewMode={viewMode} priceFormat={priceFormat} />
+                                                    </div>
+                                                ))}
+                                                {loading && !initialLoading && (
+                                                    <div className="contents">
+                                                        {[...Array(viewMode === 'grid' ? (isGoogleMapOpen ? 4 : 6) : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div>
-                                                <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
-                                                <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                            <div ref={observerTarget} className="h-20" />
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
+                                            <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                                            <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                            <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
+                                            <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right Side: Map (Desktop/Tablet) */}
+                                {isGoogleMapOpen && (
+                                    <div className={`hidden lg:block w-[55%] sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px] h-[calc(100vh-190px)]' : 'top-[116px] h-[calc(100vh-130px)]'}`}>
+                                        <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
+                                            <GoogleMap
+                                                listings={listings}
+                                                onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
+                                                onBoundsChanged={handleMapBoundsChanged}
+                                            />
+                                            {/* Map Overlays */}
+                                            <div className="absolute top-4 right-4 z-10 pointer-events-none">
+                                                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
+                                                    <div className="bg-primary-50 p-2 rounded-lg">
+                                                        <GlobeAltIcon className="w-5 h-5 text-primary-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
+                                                        <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
-                                    {/* Left Side: Property List */}
-                                    <div className="w-full">
-                                        {initialLoading ? (
-                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                                {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
-                                            </div>
-                                        ) : listings.length > 0 ? (
-                                            <>
-                                                <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                                    {listings.map((l, i) => (
-                                                        <div
-                                                            key={l.id}
-                                                            className="animate-in fade-in fill-mode-both duration-500"
-                                                            style={{ animationDelay: `${(i % 12) * 50}ms` }}
-                                                        >
-                                                            <ListingCard listing={l} viewMode={viewMode} priceFormat={priceFormat} />
-                                                        </div>
-                                                    ))}
-                                                    {loading && !initialLoading && (
-                                                        <div className="contents">
-                                                            {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div ref={observerTarget} className="h-20" />
-                                            </>
-                                        ) : (
-                                            <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
-                                                <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                                <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
-                                                <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                                <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
-                                            </div>
-                                        )}
+                                )}
+
+                                {/* Bottom Map override for Mobile (replaces properties entirely logic fallback) */}
+                                {isGoogleMapOpen && (
+                                    <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
+                                        <GoogleMap
+                                            listings={listings}
+                                            onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_self')}
+                                            onBoundsChanged={handleMapBoundsChanged}
+                                        />
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
