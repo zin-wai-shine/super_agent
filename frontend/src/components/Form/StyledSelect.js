@@ -14,7 +14,7 @@ const getCustomStyles = (isDarkMode) => ({
             borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
         },
         transition: 'all 0.2s ease',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: '500',
     }),
     valueContainer: (base) => ({
@@ -24,41 +24,50 @@ const getCustomStyles = (isDarkMode) => ({
     placeholder: (base) => ({
         ...base,
         color: isDarkMode ? '#9ca3af' : '#9ca3af',
-        fontSize: '13px',
+        fontSize: '14px',
     }),
     singleValue: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '13px',
+        fontSize: '14px',
     }),
     input: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '13px',
+        fontSize: '14px',
     }),
     menu: (base) => ({
         ...base,
         borderRadius: '3px',
-        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
         border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
         backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
         overflow: 'hidden',
-        zIndex: 100,
+        zIndex: 9999,
         padding: '8px',
         animation: 'slideIn 0.2s ease-out',
     }),
     menuList: (base) => ({
         ...base,
+        maxHeight: '180px',
         padding: '0',
         backgroundColor: 'transparent',
+        '&::-webkit-scrollbar': {
+            width: '4px',
+        },
+        '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+            background: isDarkMode ? '#374151' : '#E5E7EB',
+            borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+            background: isDarkMode ? '#4B5563' : '#D1D5DB',
+        },
     }),
     option: (base, state) => {
-        const { data, isDisabled } = state;
-        let activeColor = 'var(--primary-color)'; // Default Blue
-        if (data.value === 'pending') activeColor = '#f59e0b'; // Amber/Yellow
-        if (data.value === 'confirmed') activeColor = 'var(--primary-color)'; // Blue
-        if (data.value === 'completed') activeColor = '#10b981'; // Green
-        if (data.value === 'cancelled') activeColor = '#ef4444'; // Red
+        const { isDisabled } = state;
+        const activeColor = 'var(--primary-color)';
 
         if (isDisabled) {
             return {
@@ -67,7 +76,7 @@ const getCustomStyles = (isDarkMode) => ({
                 color: isDarkMode ? '#4b5563' : '#d1d5db',
                 cursor: 'not-allowed',
                 padding: '10px 14px',
-                fontSize: '12px',
+                fontSize: '14px',
                 fontWeight: '700',
                 textTransform: 'none',
                 marginBottom: '4px',
@@ -92,7 +101,7 @@ const getCustomStyles = (isDarkMode) => ({
                     : (isDarkMode ? '#9ca3af' : '#4b5563'),
             borderRadius: '3px',
             padding: '10px 14px',
-            fontSize: '12px',
+            fontSize: '14px',
             fontWeight: '700',
             textTransform: 'none',
             cursor: 'pointer',
@@ -136,7 +145,7 @@ const getCustomStyles = (isDarkMode) => ({
     multiValueLabel: (base) => ({
         ...base,
         color: isDarkMode ? '#93c5fd' : '#1d4ed8',
-        fontSize: '13px',
+        fontSize: '14px',
         padding: '2px 6px',
     }),
     multiValueRemove: (base) => ({
@@ -309,10 +318,11 @@ const StyledSelect = ({
             isDisabled={isDisabled}
             isMulti={isMulti}
             isLoading={isLoading}
-            styles={finalStyles}
+            styles={{ ...finalStyles, menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             theme={customTheme}
             className={className}
             classNamePrefix="react-select"
+            menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
             isOptionDisabled={(option) => option.disabled}
             formatOptionLabel={(option, { context }) => (
                 <div className="flex items-center justify-between w-full">

@@ -79,7 +79,7 @@ const Modal = ({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[100] overflow-visible flex items-center justify-center pointer-events-none"
+            className="fixed inset-0 z-[1000] overflow-visible flex items-center justify-center pointer-events-none"
         >
             {/* Backdrop */}
             <div

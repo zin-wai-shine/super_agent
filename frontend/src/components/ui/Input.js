@@ -5,6 +5,7 @@ const Input = forwardRef(({
     error,
     helperText,
     className = '',
+    inputClassName = '',
     fullWidth = false,
     ...props
 }, ref) => {
@@ -28,6 +29,7 @@ const Input = forwardRef(({
                         ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
                         : 'focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)]'
                     }
+                    ${inputClassName}
                 `}
                 style={{ borderRadius: 'var(--btn-radius)' }}
                 {...props}

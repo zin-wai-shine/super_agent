@@ -198,7 +198,7 @@ const PublicLayout = () => {
             {/* Mobile Header (Hamburger + Logo) */}
             {!isMapView && (
                 <div
-                    className={`md:hidden sticky top-0 z-50 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                    className={`md:hidden sticky top-0 z-[200] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
                     style={{ backgroundColor: '#ffffff' }}
                 >
                     <div className="px-4 h-16 flex items-center justify-between">
@@ -221,7 +221,7 @@ const PublicLayout = () => {
 
             {/* Navigation Drawer (Mobile) */}
             {mobileMenuOpen && (
-                <div className="fixed inset-0 z-[100] md:hidden">
+                <div className="fixed inset-0 z-[250] md:hidden">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -457,7 +457,7 @@ const PublicLayout = () => {
             {
                 !isMapView && (
                     <nav
-                        className={`hidden md:block sticky top-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                        className={`hidden md:block sticky top-0 z-[150] transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
                         style={{
                             backgroundColor: '#ffffff',
                         }}
@@ -517,7 +517,7 @@ const PublicLayout = () => {
                                                                 </button>
 
                                                                 {/* Mega Menu Dropdown */}
-                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
                                                                     <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                         <div className="w-full px-12 py-10">
                                                                             <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
@@ -654,7 +654,7 @@ const PublicLayout = () => {
                                                                 </button>
 
                                                                 {/* Services Mega Menu Dropdown */}
-                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                                <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
                                                                     <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                         <div className="w-full px-12 py-10">
                                                                             <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
@@ -788,105 +788,76 @@ const PublicLayout = () => {
                                                     </button>
 
                                                     {/* Contact Dropdown Content */}
-                                                    <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] w-full">
+                                                    <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
                                                         <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                             <div className="w-full px-12 py-10">
-                                                                <div className="grid grid-cols-2 gap-32 w-full px-12 items-center">
-                                                                    {/* Column 1: Contact Information */}
-                                                                    <div className="flex flex-col">
-                                                                        <div className="mb-6">
-                                                                            <h3 className="text-xl font-black mb-2" style={{ color: 'var(--menu-text-primary)' }}>Talk to Our Team</h3>
-                                                                            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--menu-text-secondary)' }}>
+                                                                <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                    {/* Column 0: Promo Content */}
+                                                                    <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                        <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
+                                                                            <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">
+                                                                                Talk to Our Team
+                                                                            </h3>
+                                                                            <p className="text-lg mb-8 font-medium leading-tight text-gray-600">
                                                                                 Our property consultants are ready to help you find the perfect home or investment.
                                                                             </p>
+                                                                            <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">
+                                                                                Get in Touch
+                                                                            </Link>
                                                                         </div>
-
-                                                                        <div className="space-y-4 mb-8">
-                                                                            <a
-                                                                                href={`tel:${agent?.phone || '062-718-8699'}`}
-                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all animate-slide-in-right opacity-0"
-                                                                                style={{ backgroundColor: 'var(--menu-hover-bg)', animationDelay: '0ms', animationFillMode: 'forwards' }}
-                                                                            >
-                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary-500/10 text-primary-500 group-hover/item:scale-110 transition-transform">
-                                                                                    <PhoneIcon className="w-5 h-5" />
-                                                                                </div>
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>Phone</span>
-                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>{agent?.phone || '062-718-8699'}</span>
-                                                                                </div>
-                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                            </a>
-
-                                                                            <a
-                                                                                href={agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"}
-                                                                                target="_blank"
-                                                                                rel="noopener noreferrer"
-                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-green-500/5 animate-slide-in-right opacity-0"
-                                                                                style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}
-                                                                            >
-                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 text-green-500 group-hover/item:scale-110 transition-transform">
-                                                                                    <FiMessageCircle className="w-5 h-5" />
-                                                                                </div>
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>LINE</span>
-                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>Available for instant chat</span>
-                                                                                </div>
-                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                            </a>
-
-                                                                            <a
-                                                                                href={agent?.facebook || "https://facebook.com/superagent"}
-                                                                                target="_blank"
-                                                                                rel="noopener noreferrer"
-                                                                                className="flex items-center gap-3 group/item p-3 rounded-2xl transition-all hover:bg-blue-600/5 animate-slide-in-right opacity-0"
-                                                                                style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
-                                                                            >
-                                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600/10 text-blue-600 group-hover/item:scale-110 transition-transform">
-                                                                                    <FiFacebook className="w-5 h-5" />
-                                                                                </div>
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-[10px] uppercase font-black tracking-widest group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-muted)' }}>Facebook</span>
-                                                                                    <span className="text-[14px] font-bold group-hover/item:text-[var(--primary-color)] transition-colors" style={{ color: 'var(--menu-text-primary)' }}>Message us anytime</span>
-                                                                                </div>
-                                                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 ml-auto group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
-                                                                            </a>
-                                                                        </div>
-
                                                                     </div>
 
-                                                                    {/* Column 2: How We Help You */}
-                                                                    <div className="flex flex-col pt-2">
-                                                                        <div className="mb-6">
-                                                                            <div className="flex items-center gap-2 mb-2">
-                                                                                <div className="w-1 h-6 bg-primary-500 rounded-full"></div>
-                                                                                <h3 className="text-xl font-black" style={{ color: 'var(--menu-text-primary)' }}>Our Services</h3>
-                                                                            </div>
-                                                                            <p className="text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--menu-text-muted)' }}>Tailored Property Solutions</p>
+                                                                    {/* Column 1: Contact Links */}
+                                                                    <div className="flex flex-col items-start text-left">
+                                                                        <div className="flex items-center px-4 mb-6">
+                                                                            <PhoneIcon className="w-5 h-5 text-gray-400 mr-6" />
+                                                                            <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Contact Methods</h3>
                                                                         </div>
-
-                                                                        <div className="space-y-1">
+                                                                        <div className="flex flex-col gap-1 items-start">
                                                                             {[
-                                                                                "Help finding rental homes",
-                                                                                "Assistance buying property",
-                                                                                "Schedule property viewings",
-                                                                                "Recommend areas based on budget",
-                                                                                "Support for expats & foreigners"
+                                                                                {
+                                                                                    title: agent?.phone || '062-718-8699',
+                                                                                    label: 'Phone',
+                                                                                    icon: PhoneIcon,
+                                                                                    href: `tel:${agent?.phone || '062-718-8699'}`
+                                                                                },
+                                                                                {
+                                                                                    title: 'Available for instant chat',
+                                                                                    label: 'LINE',
+                                                                                    icon: FiMessageCircle,
+                                                                                    href: agent?.line?.startsWith('http') ? agent.line : agent?.line ? `https://line.me/ti/p/~${agent.line}` : "https://line.me/ti/p/~@superagent"
+                                                                                },
+                                                                                {
+                                                                                    title: 'Message us anytime',
+                                                                                    label: 'Facebook',
+                                                                                    icon: FiFacebook,
+                                                                                    href: agent?.facebook || "https://facebook.com/superagent"
+                                                                                },
                                                                             ].map((item, idx) => (
-                                                                                <div
+                                                                                <a
                                                                                     key={idx}
-                                                                                    className="flex items-center gap-3 p-3 group/svc rounded-xl transition-all hover:translate-x-2 animate-slide-in-right opacity-0 cursor-pointer"
+                                                                                    href={item.href}
+                                                                                    target={item.href.startsWith('http') ? "_blank" : undefined}
+                                                                                    rel={item.href.startsWith('http') ? "noopener noreferrer" : undefined}
+                                                                                    className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer animate-slide-in-right opacity-0 min-w-[320px]"
                                                                                     style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'forwards' }}
                                                                                 >
-                                                                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-primary-500/10 text-primary-500 transition-colors group-hover/svc:bg-primary-500 group-hover/svc:text-white">
-                                                                                        <FiStar className="w-3.5 h-3.5" />
+                                                                                    <item.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                    <div className="flex flex-col mr-2">
+                                                                                        <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mb-0.5">{item.label}</span>
+                                                                                        <span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all">{item.title}</span>
                                                                                     </div>
-                                                                                    <span className="text-[14px] font-medium transition-colors group-hover/svc:text-primary-600 mr-auto" style={{ color: 'var(--menu-text-primary)' }}>{item}</span>
-                                                                                    <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover/svc:translate-x-2 transition-all duration-300" />
-                                                                                </div>
+                                                                                    <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" />
+                                                                                </a>
                                                                             ))}
                                                                         </div>
                                                                     </div>
 
+                                                                    {/* Column 2: Empty for spacing */}
+                                                                    <div className="flex flex-col items-start text-left"></div>
+
+                                                                    {/* Column 3: Empty for spacing */}
+                                                                    <div className="flex flex-col items-start text-left"></div>
                                                                 </div>
                                                             </div>
                                                         </div>

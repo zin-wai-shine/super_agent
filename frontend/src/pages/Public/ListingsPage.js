@@ -14,9 +14,10 @@ import Badge from '../../components/ui/Badge';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import FilterBar from '../../components/ui/FilterBar';
 import Modal from '../../components/ui/Modal';
+import ListingSkeleton from '../../components/ui/ListingSkeleton';
 
 import {
-    FunnelIcon,
+    AdjustmentsHorizontalIcon,
     Squares2X2Icon,
     ListBulletIcon,
     MapIcon,
@@ -67,81 +68,6 @@ const getSelectedOption = (options, value) => {
     return options.find(opt => opt.value === value) || null;
 };
 
-const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) => {
-    const isListView = viewMode === 'list';
-
-    // In: 0 -> 11, Out: 11 -> 0
-    const delay = isExiting ? `${(11 - (index % 12)) * 60}ms` : `${(index % 12) * 100}ms`;
-
-    const skeletonStyle = {
-        borderRadius: 'var(--card-radius)',
-        animation: isExiting ? 'fadeOutDown 0.6s ease-in forwards' : 'fadeInUp 0.6s ease-out forwards',
-        animationDelay: delay,
-        opacity: isExiting ? 1 : 0,
-    };
-
-    if (isListView) {
-        return (
-            <Card className="flex flex-row animate-pulse h-[130px] md:h-[220px]" style={skeletonStyle}>
-                {/* Image Section Skeleton */}
-                <div className="w-[130px] md:w-[40%] h-full bg-gray-200 flex-none relative">
-                    <div className="absolute top-2 left-2 md:top-4 md:left-4 h-4 md:h-6 w-12 md:w-20 bg-gray-300 rounded-[3px]" />
-                </div>
-
-                {/* Content Section Skeleton */}
-                <div className="p-3 md:p-4 flex flex-col justify-between flex-1 min-w-0">
-                    <div>
-                        <div className="flex items-start justify-between mb-1">
-                            <div className="h-4 w-16 bg-gray-100 rounded-[3px]" />
-                            <div className="h-6 md:h-8 w-24 md:w-32 bg-gray-200 rounded-[3px]" />
-                        </div>
-                        <div className="h-5 md:h-7 w-3/4 bg-gray-200 rounded-[3px] mb-2" />
-                        <div className="space-y-2">
-                            <div className="h-4 w-1/2 bg-gray-100 rounded-[3px]" />
-                            <div className="h-4 w-1/3 bg-gray-100 rounded-[3px]" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 md:gap-4 pt-2">
-                        <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
-                        <div className="h-4 w-12 bg-gray-100 rounded-[3px]" />
-                    </div>
-                </div>
-            </Card>
-        );
-    }
-
-    return (
-        <Card className="animate-pulse" style={skeletonStyle}>
-            {/* Image Skeleton */}
-            <div className="aspect-[16/10] bg-gray-200 w-full relative">
-                <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                    <div className="h-4 w-16 bg-gray-300 rounded-[3px]" />
-                    <div className="h-4 w-20 bg-gray-300 rounded-[3px]" />
-                </div>
-                <div className="absolute top-3 right-3 h-5 w-16 bg-gray-300 rounded-[3px]" />
-                <div className="absolute bottom-3 left-3 h-8 w-32 bg-white/60 backdrop-blur-md rounded-[3px]" />
-            </div>
-
-            {/* Content Skeleton */}
-            <div className="p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                    <div className="h-4 w-16 bg-gray-100 rounded-[3px]" />
-                    <div className="h-3 w-10 bg-gray-50 rounded-[3px]" />
-                </div>
-                <div className="h-6 w-full bg-gray-200 rounded-[3px]" />
-                <div className="space-y-3 mt-4">
-                    <div className="h-4 w-2/3 bg-gray-100 rounded-[3px]" />
-                    <div className="h-4 w-1/2 bg-gray-100 rounded-[3px]" />
-                    <div className="h-4 w-1/3 bg-gray-100 rounded-[3px]" />
-                </div>
-                <div className="pt-3 border-t border-gray-100 flex justify-between items-center mt-2">
-                    <div className="h-4 w-20 bg-gray-100 rounded-[3px]" />
-                    <div className="h-5 w-8 bg-gray-100 rounded-[3px]" />
-                </div>
-            </div>
-        </Card>
-    );
-};
 
 const ListingsPage = () => {
     const { user } = useAuth();
@@ -529,7 +455,7 @@ const ListingsPage = () => {
                 <div className="p-4 rounded-[3px] border border-gray-100 bg-white">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <FunnelIcon className="w-5 h-5" />
+                            <AdjustmentsHorizontalIcon className="w-5 h-5" />
                             Active Filters
                         </h3>
                         {hasActiveFilters && (
@@ -566,12 +492,13 @@ const ListingsPage = () => {
 
                 {/* Selects */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-5">
-                    <div className="space-y-2 col-span-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Property Type</label>
-                        <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleSelectChange('type', opt)} />
+                    {/* PROPERTY TYPE */}
+                    <div className="space-y-2">
+                        <label className="text-[14px] font-bold text-gray-500">Property Type</label>
+                        <StyledSelect options={propertyTypeOptions} value={getSelectedOption(propertyTypeOptions, filters.type)} onChange={opt => handleFilterChange('type', opt)} />
                     </div>
                     <div className="space-y-2 col-span-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Transit Station</label>
+                        <label className="text-[14px] font-bold text-gray-500">Transit Station</label>
                         {stationsLoaded ? (
                             <StyledSelect
                                 key={`station-select-${flatStations.length}`}
@@ -586,20 +513,20 @@ const ListingsPage = () => {
                         )}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Listing Type</label>
+                        <label className="text-[14px] font-bold text-gray-500">Listing Type</label>
                         <StyledSelect options={listingTypeOptions} value={getSelectedOption(listingTypeOptions, filters.listing_type)} onChange={opt => handleSelectChange('listing_type', opt)} />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Bedrooms</label>
+                        <label className="text-[14px] font-bold text-gray-500">Bedrooms</label>
                         <StyledSelect options={bedroomOptions} value={getSelectedOption(bedroomOptions, filters.bedrooms)} onChange={opt => handleSelectChange('bedrooms', opt)} />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Min Price</label>
+                        <label className="text-[14px] font-bold text-gray-500">Min Price</label>
                         <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="0" className="w-full" />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-gray-400">Max Price</label>
+                        <label className="text-[14px] font-bold text-gray-500">Max Price</label>
                         <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="No limit" className="w-full" />
                     </div>
                 </div>
@@ -763,138 +690,10 @@ const ListingsPage = () => {
                 )
             }
 
-            {/* --- MAP VIEW LAYOUT (FULL SCREEN) --- */}
-            <div className={`fixed inset-0 z-[60] bg-white ${isGoogleMapOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="flex h-screen overflow-hidden relative">
 
-
-                    {/* Menu Toggle Button (Floating) */}
-
-
-                    {/* Main Content Area (Split: List + Map) - Full Height */}
-                    <div className="flex-1 flex overflow-hidden">
-                        {/* List Section */}
-                        <div className="w-full lg:w-[45%] h-full flex flex-col bg-white border-r relative z-10 transition-all duration-300">
-                            {/* List View Header (Sticky) */}
-                            <div className="px-5 py-3 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-primary-600 to-primary-700 z-20 sticky top-0 shadow-lg backdrop-blur-sm bg-opacity-95 h-16">
-                                {/* Left: Logo & Short Name */}
-                                <Link to="/" className="flex items-center gap-3 select-none hover:opacity-90 transition-opacity">
-                                    <div className="bg-white/20 p-1 rounded-xl backdrop-blur-md shadow-inner transition-transform hover:scale-105 border border-white/20">
-                                        <Logo className="w-8 h-8 text-white drop-shadow-md" />
-                                    </div>
-                                    <div className="flex flex-col justify-center">
-                                        <span className="text-xl font-black tracking-tighter text-white leading-none drop-shadow-sm">SUPER</span>
-                                        <span className="text-[10px] font-bold tracking-[0.2em] text-white/90 uppercase leading-none mt-0.5 ml-0.5 drop-shadow-sm">Real Estate</span>
-                                    </div>
-                                </Link>
-
-                                {/* Right: Controls Group */}
-                                <div className="flex items-center gap-4">
-                                    {/* Filter Button */}
-                                    <button
-                                        onClick={() => setIsSidebarOpen(true)}
-                                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/20 shadow-sm backdrop-blur-md transition-all group active:scale-95"
-                                    >
-                                        <div className="relative">
-                                            <FunnelIcon className={`w-4 h-4 text-white group-hover:scale-110 transition-transform`} />
-                                            {hasActiveFilters && (
-                                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full border border-white" />
-                                            )}
-                                        </div>
-                                        <span className="text-xs font-bold tracking-wide uppercase">Filters</span>
-                                    </button>
-
-                                    {/* Mobile Filter Icon Only */}
-                                    <button
-                                        onClick={() => setIsSidebarOpen(true)}
-                                        className="md:hidden p-2 bg-white/10 text-white rounded-full border border-white/20 active:scale-90 transition-transform"
-                                    >
-                                        <div className="relative">
-                                            <FunnelIcon className="w-5 h-5" />
-                                            {hasActiveFilters && (
-                                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
-                                            )}
-                                        </div>
-                                    </button>
-
-                                    {/* Divider */}
-                                    <div className="w-px h-8 bg-white/10" />
-
-                                    {/* Results Count */}
-                                    <h2 className="hidden sm:block font-bold text-white text-xs tracking-wide bg-white/10 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">{total} Results</h2>
-
-                                    {/* Desktop Map Toggle Switch */}
-                                    <div className="hidden lg:flex items-center gap-3">
-                                        <span className="text-white/80 font-bold text-[10px] uppercase tracking-wider text-shadow-sm">Map View</span>
-                                        <button
-                                            onClick={() => toggleMapView(false)}
-                                            className="w-12 h-7 bg-primary-500/50 hover:bg-primary-500/70 rounded-full relative transition-colors shadow-inner border border-white/20 flex items-center px-1"
-                                        >
-                                            <div className="w-5 h-5 bg-white rounded-full shadow-md absolute right-1 transition-transform" />
-                                        </button>
-                                    </div>
-
-                                    <button onClick={() => toggleMapView(false)} className="lg:hidden text-white/90 font-bold text-sm hover:text-white">Close</button>
-                                </div>
-                            </div>
-
-
-
-                            {/* Scrollable List */}
-                            <div className="flex-1 overflow-y-auto p-4 content-visibility-auto">
-                                {initialLoading ? (
-                                    <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-                                        {[...Array(12)].map((_, i) => <ListingSkeleton key={i} viewMode={viewMode} />)}
-                                    </div>
-                                ) : listings.length > 0 ? (
-                                    <>
-                                        <div className={`grid gap-4 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-                                            {listings.map(l => <ListingCard key={l.id} listing={l} viewMode={viewMode} priceFormat={priceFormat} />)}
-                                            {loading && !initialLoading && (
-                                                <div className="contents">
-                                                    {[...Array(viewMode === 'list' ? 3 : 4)].map((_, i) => <ListingSkeleton key={`more-${i}`} viewMode={viewMode} />)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div ref={observerTarget} className="h-20" />
-                                    </>
-                                ) : (
-                                    <div className="text-center py-20">
-                                        <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
-                                        <button onClick={clearFilters} className="mt-4 text-primary-600 font-bold underline">Clear filters</button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Map Section */}
-                        <div className="hidden lg:block flex-1 h-full relative z-0">
-                            <GoogleMap
-                                listings={listings}
-                                onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
-                                onBoundsChanged={handleMapBoundsChanged}
-                            />
-
-                            {/* Map Overlays */}
-                            <div className="absolute top-4 right-4 z-10 hidden lg:block pointer-events-none">
-                                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
-                                    <div className="bg-primary-50 p-2 rounded-lg">
-                                        <GlobeAltIcon className="w-5 h-5 text-primary-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
-                                        <p className="text-sm font-bold text-gray-900">{total} Properties</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className={`transform transition-transform duration-500 ease-in-out bg-white min-h-screen ${isGoogleMapOpen ? 'translate-x-full h-screen overflow-hidden fixed inset-0' : 'translate-x-0 relative'}`}>
+            <div className="w-full bg-white min-h-screen relative">
                 {/* Header Mobile */}
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
@@ -903,71 +702,95 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Main Content */}
+                {/* Full Width Filter Bar (outside constrained container for background bleed) */}
+                <FilterBar
+                    className="mb-6"
+                    total={total}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onOpenFilters={() => setIsSidebarOpen(true)}
+                    hasActiveFilters={hasActiveFilters}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    isMapViewOpen={isGoogleMapOpen}
+                    onToggleMapView={toggleMapView}
+                    isMapTransitioning={isMapTransitioning}
+                    navVisible={navVisible}
+                    isScrolled={isScrolled}
+                />
+
+                {/* Main Content (Constrained Grid) */}
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 pb-12">
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className="lg:col-span-3 hidden lg:block transition-all duration-500">
-                            <div className={`sticky ${navVisible ? 'top-40' : 'top-24'}`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px]' : 'top-[116px]'}`}>
                                 {renderFilterContent()}
                             </div>
                         </div>
 
-                        {/* Listings Grid */}
-                        <div className="lg:col-span-9 transition-all duration-500 relative">
-                            {/* Desktop Filter Bar - Component Implementation */}
-                            <FilterBar
-                                total={total}
-                                searchTerm={searchTerm}
-                                onSearchChange={setSearchTerm}
-                                onOpenFilters={() => setIsSidebarOpen(true)}
-                                hasActiveFilters={hasActiveFilters}
-                                viewMode={viewMode}
-                                onViewModeChange={setViewMode}
-                                isMapViewOpen={isGoogleMapOpen}
-                                onToggleMapView={toggleMapView}
-                                isMapTransitioning={isMapTransitioning}
-                                navVisible={navVisible}
-                                isScrolled={isScrolled}
-                            />
-                            <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
-                                {/* Left Side: Property List */}
-                                <div className="w-full">
-                                    {initialLoading ? (
-                                        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                            {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
-                                        </div>
-                                    ) : listings.length > 0 ? (
-                                        <>
-                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                                                {listings.map((l, i) => (
-                                                    <div
-                                                        key={l.id}
-                                                        className="animate-in fade-in fill-mode-both duration-500"
-                                                        style={{ animationDelay: `${(i % 12) * 50}ms` }}
-                                                    >
-                                                        <ListingCard listing={l} viewMode={viewMode} priceFormat={priceFormat} />
-                                                    </div>
-                                                ))}
-                                                {loading && !initialLoading && (
-                                                    <div className="contents">
-                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
-                                                    </div>
-                                                )}
+                        {/* Listings Grid or Map */}
+                        <div className={`lg:col-span-9 transition-all duration-500 relative ${isGoogleMapOpen ? 'h-[75vh]' : ''}`}>
+                            {isGoogleMapOpen ? (
+                                <div className="w-full h-full rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+                                    <GoogleMap
+                                        listings={listings}
+                                        onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
+                                        onBoundsChanged={handleMapBoundsChanged}
+                                    />
+                                    {/* Map Overlays */}
+                                    <div className="absolute top-4 right-4 z-10 hidden lg:block pointer-events-none">
+                                        <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
+                                            <div className="bg-primary-50 p-2 rounded-lg">
+                                                <GlobeAltIcon className="w-5 h-5 text-primary-600" />
                                             </div>
-                                            <div ref={observerTarget} className="h-20" />
-                                        </>
-                                    ) : (
-                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
-                                            <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                            <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
-                                            <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                            <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
+                                                <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                            </div>
                                         </div>
-                                    )}
-
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
+                                    {/* Left Side: Property List */}
+                                    <div className="w-full">
+                                        {initialLoading ? (
+                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                                                {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
+                                            </div>
+                                        ) : listings.length > 0 ? (
+                                            <>
+                                                <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                                                    {listings.map((l, i) => (
+                                                        <div
+                                                            key={l.id}
+                                                            className="animate-in fade-in fill-mode-both duration-500"
+                                                            style={{ animationDelay: `${(i % 12) * 50}ms` }}
+                                                        >
+                                                            <ListingCard listing={l} viewMode={viewMode} priceFormat={priceFormat} />
+                                                        </div>
+                                                    ))}
+                                                    {loading && !initialLoading && (
+                                                        <div className="contents">
+                                                            {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div ref={observerTarget} className="h-20" />
+                                            </>
+                                        ) : (
+                                            <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
+                                                <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                                                <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                                <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
+                                                <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1026,7 +849,7 @@ const ListingsPage = () => {
                                 className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_8px_25px_-5px_rgba(0,0,0,0.2)] active:scale-95 transition-all z-10 border-4 border-primary-600"
                             >
                                 <div className="relative">
-                                    <FunnelIcon className="w-7 h-7 text-primary-600 stroke-[2.5]" />
+                                    <AdjustmentsHorizontalIcon className="w-7 h-7 text-primary-600 stroke-[2.5]" />
                                     {hasActiveFilters && (
                                         <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-white shadow-sm" />
                                     )}

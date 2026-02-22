@@ -20,7 +20,7 @@ import {
     PlayIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
-    FunnelIcon,
+    AdjustmentsHorizontalIcon,
     LinkIcon,
     UserGroupIcon,
     ChevronUpIcon,

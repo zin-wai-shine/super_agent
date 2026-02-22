@@ -17,7 +17,7 @@ import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedLi
 import PropertyShare from './PropertyShare';
 
 
-const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to }) => {
+const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false }) => {
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
@@ -49,7 +49,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     if (listingImages.length === 0) listingImages.push(featuredImage);
 
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-    const [isSaved, setIsSaved] = React.useState(false);
+    const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
     const navigate = useNavigate();
@@ -59,17 +59,33 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     // Check if listing is saved on mount
     React.useEffect(() => {
         const checkSavedStatus = async () => {
+            if (initialSaved) return; // Skip if explicitly provided
+
             if (isAuthenticated && user) {
                 try {
                     const response = await checkIfSaved(id);
-                    setIsSaved(response.is_saved);
+                    // Backend returns { saved: true/false }
+                    setIsSaved(response.saved);
                 } catch (error) {
                     console.error('Error checking saved status:', error);
                 }
             }
         };
         checkSavedStatus();
-    }, [id, isAuthenticated, user]);
+    }, [id, isAuthenticated, user, initialSaved]);
+
+    // Listen for global save status changes to sync across components
+    React.useEffect(() => {
+        const handleStatusChange = (event) => {
+            const { listingId, saved } = event.detail;
+            if (String(listingId) === String(id)) {
+                setIsSaved(saved);
+            }
+        };
+
+        window.addEventListener('listing:saved-status-changed', handleStatusChange);
+        return () => window.removeEventListener('listing:saved-status-changed', handleStatusChange);
+    }, [id]);
 
     const handleToggleSave = async (e) => {
         e.preventDefault();
@@ -85,9 +101,21 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
             if (isSaved) {
                 await unsaveListing(id);
                 setIsSaved(false);
+                if (onSaveToggle) onSaveToggle(id, false);
+
+                // Dispatch global event for real-time synchronization
+                window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
+                    detail: { listingId: id, saved: false }
+                }));
             } else {
                 await saveListing(id);
                 setIsSaved(true);
+                if (onSaveToggle) onSaveToggle(id, true);
+
+                // Dispatch global event for real-time synchronization
+                window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
+                    detail: { listingId: id, saved: true }
+                }));
             }
         } catch (error) {
             console.error('Save listing error:', error);
@@ -395,7 +423,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 </div>
 
                 {/* Redesigned Footer Action Bar */}
-                <div className="pt-4 mt-1 border-t border-gray-100/60">
+                <div className="pt-4 px-5 pb-5 mt-1 border-t border-gray-100/60 bg-[#FAFBFC] -mx-5 -mb-5">
                     <div className="flex items-center justify-between w-full">
                         {/* Save Action */}
                         {showSave && (

@@ -330,6 +330,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
         checkSavedStatus();
     }, [listing, user]);
 
+    // Listen for global save status changes to sync across components
+    useEffect(() => {
+        const handleStatusChange = (event) => {
+            const { listingId, saved } = event.detail;
+            if (listing && String(listingId) === String(listing.id)) {
+                setIsSaved(saved);
+            }
+        };
+
+        window.addEventListener('listing:saved-status-changed', handleStatusChange);
+        return () => window.removeEventListener('listing:saved-status-changed', handleStatusChange);
+    }, [listing]);
+
     // Handle save/unsave listing
     const handleToggleSave = async () => {
         if (!user) {
@@ -342,9 +355,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
             if (isSaved) {
                 await unsaveListing(listing.id);
                 setIsSaved(false);
+
+                // Dispatch global event for real-time synchronization
+                window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
+                    detail: { listingId: listing.id, saved: false }
+                }));
             } else {
                 await saveListing(listing.id);
                 setIsSaved(true);
+
+                // Dispatch global event for real-time synchronization
+                window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
+                    detail: { listingId: listing.id, saved: true }
+                }));
             }
         } catch (error) {
             console.error('Save listing error:', error);
@@ -2046,18 +2069,65 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         )}
 
                         {/* Related Listings Section */}
-                        {
-                            !bookingId && relatedListings.length > 0 && (
-                                <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        {relatedListings.map((related) => (
-                                            <ListingCard key={related.id} listing={related} viewMode="grid" />
-                                        ))}
+                        {!bookingId && relatedListings.length > 0 && (
+                            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {relatedListings.map((related) => (
+                                        <ListingCard key={related.id} listing={related} viewMode="grid" />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="bg-white overflow-hidden relative min-h-[400px] flex flex-col justify-center">
+
+                            <div className={`max-w-[1600px] w-full mx-auto ${isModal ? 'px-8 sm:px-12' : 'px-8 sm:px-20 lg:px-32'} py-24 relative z-10`}>
+                                {/* Top Row: Intro & Menus */}
+                                <div className="flex flex-col lg:flex-row justify-between gap-16 mb-24">
+                                    {/* Intro Text */}
+                                    <div className="max-w-md">
+                                        <p className="text-[18px] sm:text-[22px] font-medium text-slate-800 leading-tight tracking-tight">
+                                            Your journey to the perfect property doesn’t end here.
+                                        </p>
+                                    </div>
+
+                                    {/* Menu Columns */}
+                                    <div className="flex gap-12 sm:gap-24">
+                                        {/* EXPLORE Column */}
+                                        <div className="flex flex-col gap-6">
+                                            <h4 className="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">EXPLORE</h4>
+                                            <ul className="flex flex-col gap-3">
+                                                {['Search Map', 'Saved Properties', 'Neighborhood Guides', 'Market Insights'].map(item => (
+                                                    <li key={item}>
+                                                        <a href="#" className="text-[15px] font-semibold text-slate-700 hover:text-primary-600 transition-colors">{item}</a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        {/* SERVICES Column */}
+                                        <div className="flex flex-col gap-6">
+                                            <h4 className="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">SERVICES</h4>
+                                            <ul className="flex flex-col gap-3">
+                                                {['Private Viewings', 'Buyer Representation', 'Concierge Support'].map(item => (
+                                                    <li key={item}>
+                                                        <a href="#" className="text-[15px] font-semibold text-slate-700 hover:text-primary-600 transition-colors">{item}</a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
-                            )
-                        }
+
+                                {/* Bottom Row: Giant Bold Text */}
+                                <div className="flex justify-start">
+                                    <h2 className="text-[60px] sm:text-[100px] lg:text-[140px] font-black text-slate-900 leading-[0.8] tracking-[-0.04em] uppercase">
+                                        DISCOVER<br />WHAT'S NEXT
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Gallery Modal - Lightbox Style */}
                         {

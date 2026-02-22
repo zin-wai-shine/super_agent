@@ -5,7 +5,7 @@ import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import {
     CalendarDaysIcon,
     MagnifyingGlassIcon,
-    FunnelIcon,
+    AdjustmentsHorizontalIcon,
     EyeIcon,
     CheckIcon,
     XMarkIcon,

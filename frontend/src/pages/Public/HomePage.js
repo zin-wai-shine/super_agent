@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTenant } from '../../contexts/TenantContext';
 import Logo from '../../components/Common/Logo';
+import HeroFilter from '../../components/Home/HeroFilter';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -98,7 +99,7 @@ const HomePage = () => {
                         </div>
                     </div>
 
-                    <h1 className="text-5xl md:text-[80px] font-medium text-gray-950 mb-10 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
+                    <h1 className="text-4xl md:text-6xl font-normal text-gray-950 mb-10 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
                         {isMainDomain ? (
                             <>
                                 Experience liftoff with the <br className="hidden md:block" />
@@ -107,10 +108,14 @@ const HomePage = () => {
                         ) : (
                             <>
                                 Find Your Dream Home <br className="hidden md:block" />
-                                With <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-primary-600 font-bold italic inline-block w-fit pr-2">{agent?.name || 'Super Real Estate'}</span>
+                                With <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-primary-600 font-normal inline-block w-fit pr-2">{agent?.name || 'Super Real Estate'}</span>
                             </>
                         )}
                     </h1>
+
+                    <div className="animate-fade-up mb-12" style={{ animationDelay: '0.4s' }}>
+                        <HeroFilter />
+                    </div>
 
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-16 leading-relaxed animate-fade-up font-normal" style={{ animationDelay: '0.3s' }}>
                         {isMainDomain ? (
@@ -124,22 +129,6 @@ const HomePage = () => {
                             </>
                         )}
                     </p>
-
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-                        <Link
-                            to="/listings"
-                            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-gray-950 to-primary-600 text-white font-medium rounded-2xl transition-all hover:from-gray-900 hover:to-primary-500 hover:shadow-primary-500/20 active:scale-[0.98] text-[15px] flex items-center justify-center gap-2.5 shadow-xl shadow-gray-200/50"
-                        >
-                            <DevicePhoneMobileIcon className="w-5 h-5 opacity-90" />
-                            {isMainDomain ? 'Download for MacOS' : 'View All Properties'}
-                        </Link>
-                        <Link
-                            to={isMainDomain ? "#plans" : "/services"}
-                            className="w-full sm:w-auto px-8 py-4 bg-gray-100/50 text-gray-600 font-medium rounded-2xl transition-all hover:bg-gray-100 active:scale-[0.98] text-[15px] flex items-center justify-center gap-2.5 backdrop-blur-sm"
-                        >
-                            {isMainDomain ? 'Explore use cases' : 'Our Services'}
-                        </Link>
-                    </div>
                 </div>
             </section>
 

@@ -26,7 +26,7 @@ import {
     ChevronDoubleRightIcon,
     XMarkIcon,
     ArrowPathIcon,
-    FunnelIcon,
+    AdjustmentsHorizontalIcon,
     PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
