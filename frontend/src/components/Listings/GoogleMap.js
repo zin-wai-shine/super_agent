@@ -171,10 +171,12 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                         <span class="text-[13px] font-bold text-gray-900 leading-tight whitespace-nowrap">${priceFormatted}</span>
                     </div>
                 </div>
-                <!-- Small Triangle Nub -->
-                <svg class="resting-nub flex-none transition-opacity duration-200 pointer-events-none group-hover:opacity-0" width="16" height="8" viewBox="0 0 16 8">
-                    <polygon points="0,0 16,0 8,8" fill="white" stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-linejoin="round"/>
-                    <polygon points="1,0 15,0 8,7" fill="white"/>
+                <!-- Small Triangle Nub: only V-shaped sides drawn, no top border -->
+                <svg class="resting-nub flex-none transition-opacity duration-200 pointer-events-none group-hover:opacity-0" width="18" height="9" viewBox="0 0 18 9">
+                    <!-- White fill covers the interior -->
+                    <polygon points="0,0 18,0 9,9" fill="white"/>
+                    <!-- Only the two diagonal sides are stroked (open path, no top edge) -->
+                    <path d="M0,0 L9,9 L18,0" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
                 <!-- HOVER EXPANDED CARD: Premium Clean Design - flush above nub -->
