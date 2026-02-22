@@ -158,7 +158,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
             </style>
             <div class="marker-group group relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
                 <!-- Resting Pill: Multi-line card with checkmark + address + price -->
-                <div class="resting-pill flex items-center gap-3 pl-3 pr-4 py-2.5 bg-white border border-black/10 rounded-[3px] shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-200 z-10 min-w-[160px]">
+                <div class="resting-pill flex items-center gap-3 pl-3 pr-4 py-2.5 bg-white border border-gray-200 rounded-[3px] transition-all duration-200 z-10 min-w-[160px]">
                     <!-- Checkmark Icon -->
                     <div class="flex-none w-7 h-7 rounded-full border-2 border-black flex items-center justify-center">
                         <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
@@ -177,8 +177,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                     <polygon points="1,0 15,0 8,7" fill="white"/>
                 </svg>
 
-                <!-- HOVER EXPANDED CARD: Premium Clean Design (No tail) -->
-                <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 -translate-y-5 w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border-2 border-black overflow-hidden transition-all duration-300 ease-out group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 z-10">
+                <!-- HOVER EXPANDED CARD: Premium Clean Design - flush above nub -->
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border border-gray-200 overflow-hidden transition-all duration-300 ease-out group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 z-10">
                     <!-- Thumbnail with rounded edges (Site Radius) -->
                     <div class="w-[68px] h-[68px] rounded-[3px] overflow-hidden shadow-sm flex-none bg-gray-100 border border-black/5">
                         <img src="${imageUrl}" class="w-full h-full object-cover" />
