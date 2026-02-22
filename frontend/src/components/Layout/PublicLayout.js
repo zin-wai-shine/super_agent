@@ -64,6 +64,11 @@ const PublicLayout = () => {
     const { isMainDomain, agent, loading: tenantLoading } = useTenant();
     console.log('PublicLayout State:', { isMainDomain, agent, tenantLoading });
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const closeTimeoutRef = useRef(null);
+    const openMenu = (name) => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current); setActiveMenu(name); };
+    const closeMenu = () => { closeTimeoutRef.current = setTimeout(() => setActiveMenu(null), 120); };
+    const keepMenu = () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current); };
     const { isAuthenticated, user, logout } = useAuth();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -455,6 +460,7 @@ const PublicLayout = () => {
             <nav
                 className={`hidden md:block sticky top-0 z-[150] transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
                 style={{ backgroundColor: '#ffffff' }}
+                onMouseLeave={closeMenu}
             >
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                     <div className="flex items-center justify-between h-16">
@@ -510,8 +516,8 @@ const PublicLayout = () => {
                                                             <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
                                                         </button>
 
-                                                        {/* Mega Menu Dropdown — positioned absolute at nav bottom, no gap */}
-                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                                        {/* Properties mega menu content rendered in expanding section below */}
+                                                        <div className={`hidden`}
                                                             style={{ borderTop: '1px solid var(--menu-divider)' }}
                                                         >
                                                             <div className="relative backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
@@ -639,22 +645,22 @@ const PublicLayout = () => {
                                             }
                                             if (item.name === 'Services') {
                                                 return (
-                                                    <div key={item.name} className="relative group px-1">
+                                                    <div key={item.name} className="px-1">
                                                         <button
                                                             className={`w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 transition-all duration-200 flex items-center gap-1.5 hover:text-[var(--primary-color)]`}
                                                             style={{
                                                                 borderRadius: 'var(--btn-radius)',
                                                                 backgroundColor: 'transparent'
                                                             }}
-                                                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                            onMouseEnter={() => openMenu('services')}
+                                                            onMouseLeave={closeMenu}
                                                         >
                                                             <span>{item.name}</span>
-                                                            <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+                                                            <ChevronDownIcon className={`w-4 h-4 opacity-70 transition-transform duration-300 ${activeMenu === 'services' ? 'rotate-180' : ''}`} />
                                                         </button>
 
                                                         {/* Services Mega Menu Dropdown */}
-                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                                        <div className={`hidden`}
                                                             style={{ borderTop: '1px solid var(--menu-divider)' }}
                                                         >
                                                             <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
@@ -775,22 +781,22 @@ const PublicLayout = () => {
                                         })}
 
                                         {/* Contact Hover Menu */}
-                                        <div className="relative group px-1">
+                                        <div className="px-1">
                                             <button
                                                 className="w-auto flex-none px-4 py-2 text-[14px] font-medium text-gray-700 hover:text-[var(--primary-color)] transition-all duration-200 flex items-center gap-1.5"
                                                 style={{
                                                     borderRadius: 'var(--btn-radius)',
                                                     backgroundColor: 'transparent'
                                                 }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                                                onMouseEnter={() => openMenu('contact')}
+                                                onMouseLeave={closeMenu}
                                             >
                                                 Contact
-                                                <ChevronDownIcon className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
+                                                <ChevronDownIcon className={`w-4 h-4 opacity-50 transition-transform duration-300 ${activeMenu === 'contact' ? 'rotate-180' : ''}`} />
                                             </button>
 
                                             {/* Contact Dropdown Content */}
-                                            <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                            <div className={`hidden`}
                                                 style={{ borderTop: '1px solid var(--menu-divider)' }}
                                             >
                                                 <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
