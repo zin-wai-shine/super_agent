@@ -265,49 +265,69 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                                 <span className="font-bold text-gray-700 capitalize">: &nbsp; {property_type || 'Property'} • {listing_type === 'sale' ? 'Sale' : 'Rent'}</span>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="mt-4 pt-1 flex items-center justify-between">
-                        {/* Stats - Original Icons */}
-                        <div className="flex items-center gap-5">
+                        {/* Stats - Moved up above footer */}
+                        <div className="flex items-center gap-5 mt-2 md:mt-3 pt-3 border-t border-gray-100/60">
                             <div className="flex items-center gap-1.5">
-                                <LiaBedSolid className="w-5 h-5 text-gray-400" />
-                                <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{bedrooms}</span>
+                                <LiaBedSolid className="w-5 h-5 text-gray-500 lg:w-6 lg:h-6" />
+                                <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{bedrooms}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <PiBathtub className="w-5 h-5 text-gray-400" />
-                                <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{bathrooms}</span>
+                                <PiBathtub className="w-5 h-5 text-gray-500 lg:w-6 lg:h-6" />
+                                <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{bathrooms}</span>
                             </div>
                             {area > 0 && (
                                 <div className="flex items-center gap-1.5">
-                                    <span className="text-[12px] md:text-[13px] font-bold text-gray-400">M²</span>
-                                    <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{area}</span>
+                                    <span className="text-[13px] md:text-[14px] font-bold text-gray-400">M²</span>
+                                    <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{area}</span>
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        {/* Actions: Save/Copy */}
-                        <div className="flex items-center gap-3 pr-2">
-                            {showSave && (
-                                <button
-                                    onClick={handleToggleSave}
-                                    disabled={savingListing}
-                                    className="text-gray-400 hover:text-emerald-600 transition-colors"
-                                >
-                                    {isSaved ? <BookmarkSolidIcon className="w-5 h-5 text-emerald-500" /> : <BookmarkIcon className="w-5 h-5" />}
-                                </button>
-                            )}
-                            <PropertyShare
-                                property={{
-                                    id, title,
-                                    description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
-                                    image: featuredImage
-                                }}
-                                className="flex text-gray-400 hover:text-primary-600 transition-colors"
-                                showLabel={false}
-                                iconClassName="w-4 h-4"
-                            />
-                        </div>
+                    {/* Footer Actions */}
+                    <div className="mt-3 pt-3 border-t border-gray-100/60 flex items-center justify-start gap-4 sm:gap-6">
+                        {/* Save Action */}
+                        {showSave && (
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-emerald-600 transition-colors"
+                            >
+                                {isSaved ? (
+                                    <MdOutlineBookmarkAdded className="w-[18px] h-[18px] text-emerald-500" />
+                                ) : (
+                                    <MdOutlineBookmarkBorder className="w-[18px] h-[18px]" />
+                                )}
+                                <span className={`text-[13px] font-medium transition-colors ${isSaved ? 'text-emerald-600' : 'text-gray-500'}`}>
+                                    {isSaved ? 'Saved' : 'Save'}
+                                </span>
+                            </button>
+                        )}
+
+                        {/* Share Action */}
+                        <PropertyShare
+                            property={{
+                                id, title,
+                                description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
+                                image: featuredImage
+                            }}
+                            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+                            showLabel={true}
+                            labelClassName="text-[13px] font-medium text-gray-500"
+                            iconClassName="w-[16px] h-[16px] text-gray-500"
+                        />
+
+                        {/* Copy Link Action */}
+                        <button
+                            onClick={handleCopyLink}
+                            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
+                        >
+                            <LinkIcon className="w-[16px] h-[16px] text-gray-500" />
+                            <span className="text-[13px] font-medium text-gray-500">
+                                {copied ? 'Copied' : 'Copy Link'}
+                            </span>
+                        </button>
                     </div>
                 </div>
             </Link>
