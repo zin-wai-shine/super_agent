@@ -1,6 +1,6 @@
-import React, { useMemo, useCallback, useState } from 'react';
 import { GoogleMap, Marker, OverlayView } from '@react-google-maps/api';
 import { getMediaUrl } from '../../utils/media';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const mapContainerStyle = {
     width: '100%',
@@ -67,6 +67,9 @@ const options = {
 };
 
 const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }) => {
+    const { theme } = useTheme();
+    const primaryColor = theme?.primaryColor || '#2663EB';
+
     const markerRef = React.useRef(null);
     const contentRef = React.useRef(null);
     const lastContentRef = React.useRef('');
@@ -160,8 +163,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 <!-- Resting Pill: Multi-line card with checkmark + address + price -->
                 <div class="resting-pill flex items-center gap-3 pl-3 pr-4 py-2.5 bg-white border border-gray-200 rounded-[3px] transition-all duration-200 z-10 min-w-[160px]">
                     <!-- Location Marker Icon (HiOutlineLocationMarker style) -->
-                    <div class="flex-none w-7 h-7 rounded-full border-2 border-[var(--primary-color)] flex items-center justify-center bg-white shadow-sm">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="flex-none w-7 h-7 rounded-full border-2 flex items-center justify-center bg-white shadow-sm" style="border-color: ${primaryColor};">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
