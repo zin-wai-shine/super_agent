@@ -594,22 +594,12 @@ const PublicLayout = () => {
                                                                         </div>
 
                                                                         {/* Column 3: Locations */}
-                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg">
-                                                                            {/* Full-width background image, no hover effect */}
-                                                                            <div
-                                                                                className="absolute inset-0 pointer-events-none"
-                                                                                style={{
-                                                                                    backgroundImage: 'url(/images/train_bg.png)',
-                                                                                    backgroundSize: 'cover',
-                                                                                    backgroundPosition: 'center',
-                                                                                    backgroundRepeat: 'no-repeat',
-                                                                                }}
-                                                                            />
+                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg bg-[#111827]">
                                                                             {/* Content */}
                                                                             <div className="relative z-10 p-8 h-full flex flex-col items-start text-left">
                                                                                 <div className="flex items-center mb-6">
-                                                                                    <FiMapPin className="w-5 h-5 text-white mr-6" />
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] text-white">Locations</h3>
+                                                                                    <FiMapPin className="w-5 h-5 text-white/60 mr-6" />
+                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/60">Locations</h3>
                                                                                 </div>
                                                                                 <div className="flex flex-col gap-1 items-start">
                                                                                     {[
