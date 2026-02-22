@@ -454,9 +454,7 @@ const PublicLayout = () => {
             {/* Desktop Navigation */}
             <nav
                 className={`hidden md:block sticky top-0 z-[150] transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
-                style={{
-                    backgroundColor: '#ffffff',
-                }}
+                style={{ backgroundColor: '#ffffff' }}
             >
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                     <div className="flex items-center justify-between h-16">
@@ -512,9 +510,11 @@ const PublicLayout = () => {
                                                             <ChevronDownIcon className="w-4 h-4 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
                                                         </button>
 
-                                                        {/* Mega Menu Dropdown */}
-                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
-                                                            <div className="relative backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                        {/* Mega Menu Dropdown — positioned absolute at nav bottom, no gap */}
+                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                                            style={{ borderTop: '1px solid var(--menu-divider)' }}
+                                                        >
+                                                            <div className="relative backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                 {/* Decorative bg image - right-aligned, reduced opacity */}
                                                                 <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-[0.15]"
                                                                     style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% 80%', backgroundRepeat: 'no-repeat' }}
@@ -654,8 +654,10 @@ const PublicLayout = () => {
                                                         </button>
 
                                                         {/* Services Mega Menu Dropdown */}
-                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
-                                                            <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                        <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                                            style={{ borderTop: '1px solid var(--menu-divider)' }}
+                                                        >
+                                                            <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                 <div className="w-full px-12 py-10">
                                                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
                                                                         {/* Column 0: Brand Content */}
@@ -788,8 +790,10 @@ const PublicLayout = () => {
                                             </button>
 
                                             {/* Contact Dropdown Content */}
-                                            <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
-                                                <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                            <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full shadow-xl"
+                                                style={{ borderTop: '1px solid var(--menu-divider)' }}
+                                            >
+                                                <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                     <div className="w-full px-12 py-10">
                                                         <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
                                                             {/* Column 0: Promo Content */}
