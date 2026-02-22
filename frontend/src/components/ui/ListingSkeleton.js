@@ -19,7 +19,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
         return (
             <div className="flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 animate-pulse px-2 -mx-2" style={skeletonStyle}>
                 {/* Image Section Skeleton */}
-                <div className="w-[140px] md:w-[200px] aspect-[4/3] bg-[#f8fafb] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
+                <div className="w-[160px] md:w-[240px] aspect-[4/3] bg-[#f8fafb] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
                     <div className="absolute top-2 left-2 h-6 w-20 bg-[#e2e8f0] rounded-[3px]" />
                 </div>
 

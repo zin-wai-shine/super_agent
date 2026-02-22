@@ -225,7 +225,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 className="group flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors duration-300 px-2 -mx-2 rounded-xl"
             >
                 {/* Image Section */}
-                <div className="w-[140px] md:w-[200px] aspect-[4/3] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
+                <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
@@ -266,19 +266,18 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             </div>
                         </div>
 
-                        {/* Stats Row - Consolidated above footer */}
                         <div className="flex items-center gap-5 md:gap-8 mt-2.5 md:mt-4">
                             <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                <span className="font-medium text-gray-400 uppercase tracking-tight">beds</span>
+                                <span className="font-medium text-gray-400 tracking-tight">beds</span>
                                 <span className="font-bold text-gray-700">: {bedrooms}</span>
                             </div>
                             <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                <span className="font-medium text-gray-400 uppercase tracking-tight">baths</span>
+                                <span className="font-medium text-gray-400 tracking-tight">baths</span>
                                 <span className="font-bold text-gray-700">: {bathrooms}</span>
                             </div>
                             {area > 0 && (
                                 <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                    <span className="font-medium text-gray-400 uppercase tracking-tight">m²</span>
+                                    <span className="font-medium text-gray-400 tracking-tight">m²</span>
                                     <span className="font-bold text-gray-700">: {area}</span>
                                 </div>
                             )}
