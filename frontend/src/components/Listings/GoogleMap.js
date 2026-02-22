@@ -153,7 +153,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; transition: all 0.2s ease; }
                 .marker-group.hovered .resting-nub { opacity: 0; transition: opacity 0.2s ease; }
 
-                .marker-group.hovered .expanded-card { width: 265px; height: 170px; opacity: 1; padding: 0; }
+                .marker-group.hovered .expanded-card { width: 265px; height: 119px; opacity: 1; padding: 0; }
                 .marker-group.hovered .expanded-content { opacity: 1; }
             </style>
             <div class="marker-group group relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
@@ -180,7 +180,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 </svg>
 
                 <!-- HOVER EXPANDED CARD: Reference-style premium card -->
-                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[12px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-gray-100 overflow-hidden transition-all duration-300 ease-out group-hover:w-[265px] group-hover:h-[170px] group-hover:opacity-100 flex z-10">
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[12px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-gray-100 overflow-hidden transition-all duration-300 ease-out group-hover:w-[265px] group-hover:h-[119px] group-hover:opacity-100 flex z-10">
 
                     <!-- Left: Square image -->
                     <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[110px] flex-none relative">
@@ -198,11 +198,11 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                             <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
                                 <path d="M5 0C2.79 0 1 1.79 1 4c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4zm0 5.5c-.83 0-1.5-.67-1.5-1.5S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#9CA3AF"/>
                             </svg>
-                            <span class="text-[10px] text-gray-500 truncate">${property.district || property.road || 'No address'}</span>
+                            <span class="text-[11px] text-gray-500 truncate">${property.district || property.road || 'No address'}</span>
                         </div>
 
                         <!-- Text stats row: area, beds, baths -->
-                        <div class="flex items-center gap-2 mt-1.5 text-[10px] text-gray-600">
+                        <div class="flex items-center gap-2 mt-1 text-[12px] text-gray-600">
                             <span>${property.area ?? '—'} m²</span>
                             <span class="text-gray-300">·</span>
                             <span>${property.bedrooms ?? '—'} beds</span>
