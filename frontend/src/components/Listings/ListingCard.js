@@ -268,16 +268,16 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
 
                         {/* Stats Row - Consolidated above footer */}
                         <div className="flex items-center gap-5 md:gap-8 mt-2.5 md:mt-4">
-                            <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                            <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
                                 <span className="font-medium text-gray-400 uppercase tracking-tight">beds</span>
                                 <span className="font-bold text-gray-700">: {bedrooms}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                            <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
                                 <span className="font-medium text-gray-400 uppercase tracking-tight">baths</span>
                                 <span className="font-bold text-gray-700">: {bathrooms}</span>
                             </div>
                             {area > 0 && (
-                                <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                                <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
                                     <span className="font-medium text-gray-400 uppercase tracking-tight">m²</span>
                                     <span className="font-bold text-gray-700">: {area}</span>
                                 </div>
