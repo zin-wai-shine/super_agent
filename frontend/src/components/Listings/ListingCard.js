@@ -216,6 +216,103 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     };
 
     const isListView = viewMode === 'list';
+    const isMapListView = viewMode === 'map-list';
+
+    if (isMapListView) {
+        return (
+            <Link
+                to={to || `/listings?detail=${id}`}
+                className="group flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors duration-300 px-2 -mx-2 rounded-xl"
+            >
+                {/* Image Section */}
+                <div className="w-[140px] md:w-[200px] aspect-[4/3] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
+                    <img
+                        src={listingImages[currentImageIndex]}
+                        alt={title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                    />
+
+                    {/* Price Badge in Image (Like reference) */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-1 items-start z-10">
+                        <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded shadow-sm border border-gray-100/80">
+                            <span className="text-gray-900 font-bold text-[13px] md:text-[14px] tracking-tight">{formatPrice(price)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 md:py-1">
+                    <div className="flex flex-col gap-1.5 md:gap-2">
+                        {/* Title */}
+                        <h3 className="text-sm md:text-[15px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
+                            {title}
+                        </h3>
+
+                        {/* Location / Information (Vertical stack like reference) */}
+                        <div className="flex flex-col gap-1.5 mt-1 md:mt-2">
+                            <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
+                                <span className="font-medium text-gray-400 w-24">Location</span>
+                                <span className="font-bold text-gray-700 truncate">: &nbsp; {district || 'Bangkok'}</span>
+                            </div>
+                            {nearestStation && (
+                                <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
+                                    <span className="font-medium text-gray-400 w-24">Station</span>
+                                    <span className="font-bold text-gray-700 truncate">: &nbsp; {nearestStation}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
+                                <span className="font-medium text-gray-400 w-24">Type</span>
+                                <span className="font-bold text-gray-700 capitalize">: &nbsp; {property_type || 'Property'} • {listing_type === 'sale' ? 'Sale' : 'Rent'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 pt-1 flex items-center justify-between">
+                        {/* Stats - Original Icons */}
+                        <div className="flex items-center gap-5">
+                            <div className="flex items-center gap-1.5">
+                                <LiaBedSolid className="w-5 h-5 text-gray-400" />
+                                <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{bedrooms}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <PiBathtub className="w-5 h-5 text-gray-400" />
+                                <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{bathrooms}</span>
+                            </div>
+                            {area > 0 && (
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[12px] md:text-[13px] font-bold text-gray-400">M²</span>
+                                    <span className="text-[13px] md:text-[14px] font-bold text-gray-700">{area}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Actions: Save/Copy */}
+                        <div className="flex items-center gap-3 pr-2">
+                            {showSave && (
+                                <button
+                                    onClick={handleToggleSave}
+                                    disabled={savingListing}
+                                    className="text-gray-400 hover:text-emerald-600 transition-colors"
+                                >
+                                    {isSaved ? <BookmarkSolidIcon className="w-5 h-5 text-emerald-500" /> : <BookmarkIcon className="w-5 h-5" />}
+                                </button>
+                            )}
+                            <PropertyShare
+                                property={{
+                                    id, title,
+                                    description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
+                                    image: featuredImage
+                                }}
+                                className="flex text-gray-400 hover:text-primary-600 transition-colors"
+                                showLabel={false}
+                                iconClassName="w-4 h-4"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
 
     if (isListView) {
         return (
