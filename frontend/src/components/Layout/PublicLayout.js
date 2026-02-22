@@ -1019,11 +1019,16 @@ const PublicLayout = () => {
 
                 {/* ===== Expanding Mega Menu Panel — navbar grows on hover ===== */}
                 <div
-                    style={{ maxHeight: activeMenu ? '600px' : '0px', overflow: 'hidden', transition: 'max-height 0.45s cubic-bezier(0.4,0,0.2,1)' }}
+                    style={{
+                        maxHeight: activeMenu ? '600px' : '0px',
+                        opacity: activeMenu ? 1 : 0,
+                        overflow: 'hidden',
+                        transition: 'max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease'
+                    }}
                     onMouseEnter={keepMenu}
                     onMouseLeave={closeMenu}
                 >
-                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                    <div>
                         {/* Properties */}
                         {activeMenu === 'properties' && (
                             <div className="relative" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
@@ -1039,7 +1044,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-4"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Browse</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{name:'All Properties',href:'/listings',icon:BuildingOfficeIcon},{name:'Properties for Rent',href:'/listings?type=rent',icon:FiKey},{name:'Properties for Sale',href:'/listings?type=sale',icon:FiDollarSign},{name:'New Listings',href:'/listings?sort=newest',icon:FiPlusCircle},{name:'Featured Properties',href:'/listings?featured=true',icon:FiStar},{name:'Ready to Move',href:'/listings?status=ready',icon:FiClock}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]">
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1051,7 +1056,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-4"><HiOutlineHomeModern className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Types</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{name:'Condo',href:'/listings?property_type=condo',icon:BuildingOfficeIcon},{name:'Apartment',href:'/listings?property_type=apartment',icon:HiOutlineBuildingOffice2},{name:'House',href:'/listings?property_type=house',icon:HomeIcon},{name:'Townhome',href:'/listings?property_type=townhome',icon:HiOutlineHomeModern},{name:'Commercial',href:'/listings?property_type=commercial',icon:HiOutlineBuildingStorefront},{name:'Land',href:'/listings?property_type=land',icon:HiOutlineGlobeAsiaAustralia}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]">
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1063,7 +1068,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-4"><FiMapPin className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Locations</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{name:'Sukhumvit Area',href:'/listings?district=sukhumvit',icon:MapPinIcon},{name:'Rama 9 Area',href:'/listings?district=rama9',icon:MapPinIcon},{name:'Silom / Sathorn',href:'/listings?district=silom',icon:MapPinIcon},{name:'Ladprao / Bangna',href:'/listings?district=ladprao',icon:MapPinIcon},{name:'Near BTS Stations',href:'/listings?near=bts',icon:MapPinIcon},{name:'Near MRT Stations',href:'/listings?near=mrt',icon:MapPinIcon}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]">
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1089,7 +1094,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-6"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Find Property</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{title:'Find a Rental Home',icon:FiHome},{title:'Buy a Property',icon:FiSearch},{title:'Schedule a Viewing',icon:FiCalendar}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
@@ -1097,7 +1102,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-6"><FiBriefcase className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Owners &amp; Investors</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{title:'List Your Property',icon:FiPlusCircle},{title:'Property Management',icon:FiSettings},{title:'Investment Consultation',icon:FiDollarSign}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
@@ -1105,7 +1110,7 @@ const PublicLayout = () => {
                                             <div className="flex items-center px-4 mb-6"><FiTruck className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Assistance</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 {[{title:'Relocation Support',icon:FiTruck},{title:'Area Recommendations',icon:FiMapPin},{title:'Legal & Contract Support',icon:FiFileText}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
@@ -1133,7 +1138,7 @@ const PublicLayout = () => {
                                         <div className="flex flex-col items-start text-left">
                                             <div className="flex items-center px-4 mb-6"><MapIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Visit Us</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                <Link to="/contact" className="group/item flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><MapPinIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">View Office Location</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></Link>
+                                                <Link to="/contact" className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><MapPinIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">View Office Location</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></Link>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
