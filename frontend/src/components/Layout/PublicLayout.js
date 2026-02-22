@@ -526,7 +526,7 @@ const PublicLayout = () => {
                                                                     style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% 80%', backgroundRepeat: 'no-repeat' }}
                                                                 />
                                                                 <div className="w-full px-12 py-10">
-                                                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
 
                                                                         {/* Column 1: Promo Card (Redesigned) */}
                                                                         <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
@@ -665,7 +665,7 @@ const PublicLayout = () => {
                                                         >
                                                             <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                 <div className="w-full px-12 py-10">
-                                                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
                                                                         {/* Column 0: Brand Content */}
                                                                         <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
                                                                             <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
@@ -801,7 +801,7 @@ const PublicLayout = () => {
                                             >
                                                 <div className="backdrop-blur-3xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                     <div className="w-full px-12 py-10">
-                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                                        <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
                                                             {/* Column 0: Promo Content */}
                                                             <div className="relative group/promo h-full min-h-[250px] flex flex-col justify-center pr-6" style={{ borderColor: 'var(--menu-divider)' }}>
                                                                 <div className="h-full rounded-[3px] p-0 flex flex-col justify-center items-start text-left">
@@ -1034,7 +1034,7 @@ const PublicLayout = () => {
                             <div className="relative" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                 <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-[0.15]" style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% 80%', backgroundRepeat: 'no-repeat' }} />
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
-                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
                                             <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Elevate Your Living<br />with Super Real Estate</h3>
                                             <p className="text-lg mb-8 font-medium leading-tight text-gray-600">Experience unparalleled luxury with our elite collection of prime real estate.</p>
@@ -1084,7 +1084,7 @@ const PublicLayout = () => {
                         {activeMenu === 'services' && (
                             <div style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
-                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
                                             <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Expert Services for Your<br />Property Journey</h3>
                                             <p className="text-lg mb-8 font-medium leading-tight text-gray-600">From expert property management to strategic investment advice, we provide the support you need.</p>
@@ -1122,7 +1122,7 @@ const PublicLayout = () => {
                         {activeMenu === 'contact' && (
                             <div style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
-                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
+                                    <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-start">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
                                             <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Talk to Our Team</h3>
                                             <p className="text-lg mb-8 font-medium leading-tight text-gray-600">Our property consultants are ready to help you find the perfect home or investment.</p>
