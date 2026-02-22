@@ -595,17 +595,6 @@ const PublicLayout = () => {
 
                                                                         {/* Column 3: Locations with Background Image */}
                                                                         <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg bg-[#111827]">
-                                                                            {/* Background Image Container - Small, faded, right-positioned watermark */}
-                                                                            <div
-                                                                                className="absolute -right-10 -bottom-10 w-full h-full opacity-[0.15] transition-transform duration-1000 group-hover/locations-box:scale-110 pointer-events-none"
-                                                                                style={{
-                                                                                    backgroundImage: 'url(/images/train_bg.png)',
-                                                                                    backgroundSize: 'contain',
-                                                                                    backgroundPosition: 'right bottom',
-                                                                                    backgroundRepeat: 'no-repeat'
-                                                                                }}
-                                                                            />
-
                                                                             {/* Content */}
                                                                             <div className="relative z-10 p-8 h-full flex flex-col items-start text-left">
                                                                                 <div className="flex items-center mb-6">
