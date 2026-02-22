@@ -1032,19 +1032,19 @@ const PublicLayout = () => {
                         {/* Properties */}
                         {activeMenu === 'properties' && (
                             <div className="relative" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
-                                <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-[0.15]" style={{ backgroundImage:'url(/images/train_bg.png)', backgroundSize:'contain', backgroundPosition:'120% 80%', backgroundRepeat:'no-repeat' }} />
+                                <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-[0.15]" style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% 80%', backgroundRepeat: 'no-repeat' }} />
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
-                                            <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Elevate Your Living<br/>with Super Real Estate</h3>
+                                            <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Elevate Your Living<br />with Super Real Estate</h3>
                                             <p className="text-lg mb-8 font-medium leading-tight text-gray-600">Experience unparalleled luxury with our elite collection of prime real estate.</p>
                                             <Link to="/listings" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">Explore Now</Link>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-4"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Browse</h3></div>
+                                            <div className="flex items-center px-4 mb-4"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Browse</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{name:'All Properties',href:'/listings',icon:BuildingOfficeIcon},{name:'Properties for Rent',href:'/listings?type=rent',icon:FiKey},{name:'Properties for Sale',href:'/listings?type=sale',icon:FiDollarSign},{name:'New Listings',href:'/listings?sort=newest',icon:FiPlusCircle},{name:'Featured Properties',href:'/listings?featured=true',icon:FiStar},{name:'Ready to Move',href:'/listings?status=ready',icon:FiClock}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
+                                                {[{ name: 'All Properties', href: '/listings', icon: BuildingOfficeIcon }, { name: 'Properties for Rent', href: '/listings?type=rent', icon: FiKey }, { name: 'Properties for Sale', href: '/listings?type=sale', icon: FiDollarSign }, { name: 'New Listings', href: '/listings?sort=newest', icon: FiPlusCircle }, { name: 'Featured Properties', href: '/listings?featured=true', icon: FiStar }, { name: 'Ready to Move', href: '/listings?status=ready', icon: FiClock }].map((link, i) => (
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{ animationDelay: `${i * 60}ms` }}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1053,10 +1053,10 @@ const PublicLayout = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-4"><HiOutlineHomeModern className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Types</h3></div>
+                                            <div className="flex items-center px-4 mb-4"><HiOutlineHomeModern className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Types</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{name:'Condo',href:'/listings?property_type=condo',icon:BuildingOfficeIcon},{name:'Apartment',href:'/listings?property_type=apartment',icon:HiOutlineBuildingOffice2},{name:'House',href:'/listings?property_type=house',icon:HomeIcon},{name:'Townhome',href:'/listings?property_type=townhome',icon:HiOutlineHomeModern},{name:'Commercial',href:'/listings?property_type=commercial',icon:HiOutlineBuildingStorefront},{name:'Land',href:'/listings?property_type=land',icon:HiOutlineGlobeAsiaAustralia}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
+                                                {[{ name: 'Condo', href: '/listings?property_type=condo', icon: BuildingOfficeIcon }, { name: 'Apartment', href: '/listings?property_type=apartment', icon: HiOutlineBuildingOffice2 }, { name: 'House', href: '/listings?property_type=house', icon: HomeIcon }, { name: 'Townhome', href: '/listings?property_type=townhome', icon: HiOutlineHomeModern }, { name: 'Commercial', href: '/listings?property_type=commercial', icon: HiOutlineBuildingStorefront }, { name: 'Land', href: '/listings?property_type=land', icon: HiOutlineGlobeAsiaAustralia }].map((link, i) => (
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{ animationDelay: `${i * 60}ms` }}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1065,10 +1065,10 @@ const PublicLayout = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-4"><FiMapPin className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Locations</h3></div>
+                                            <div className="flex items-center px-4 mb-4"><FiMapPin className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{name:'Sukhumvit Area',href:'/listings?district=sukhumvit',icon:MapPinIcon},{name:'Rama 9 Area',href:'/listings?district=rama9',icon:MapPinIcon},{name:'Silom / Sathorn',href:'/listings?district=silom',icon:MapPinIcon},{name:'Ladprao / Bangna',href:'/listings?district=ladprao',icon:MapPinIcon},{name:'Near BTS Stations',href:'/listings?near=bts',icon:MapPinIcon},{name:'Near MRT Stations',href:'/listings?near=mrt',icon:MapPinIcon}].map((link,i)=>(
-                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{animationDelay:`${i*60}ms`}}>
+                                                {[{ name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon }, { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon }, { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon }, { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon }, { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon }, { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon }].map((link, i) => (
+                                                    <Link key={link.name} to={link.href} className="group/link menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]" style={{ animationDelay: `${i * 60}ms` }}>
                                                         <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
                                                         <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
                                                         <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
@@ -1082,35 +1082,35 @@ const PublicLayout = () => {
                         )}
                         {/* Services */}
                         {activeMenu === 'services' && (
-                            <div style={{ backgroundColor:'var(--menu-bg-color)' }}>
+                            <div style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
-                                            <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Expert Services for Your<br/>Property Journey</h3>
+                                            <h3 className="text-3xl font-semibold mb-4 leading-tight text-gray-900">Expert Services for Your<br />Property Journey</h3>
                                             <p className="text-lg mb-8 font-medium leading-tight text-gray-600">From expert property management to strategic investment advice, we provide the support you need.</p>
                                             <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">Learn More</Link>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Find Property</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><FiSearch className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Find Property</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{title:'Find a Rental Home',icon:FiHome},{title:'Buy a Property',icon:FiSearch},{title:'Schedule a Viewing',icon:FiCalendar}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                {[{ title: 'Find a Rental Home', icon: FiHome }, { title: 'Buy a Property', icon: FiSearch }, { title: 'Schedule a Viewing', icon: FiCalendar }].map((s, idx) => (
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{ animationDelay: `${idx * 60}ms` }}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><FiBriefcase className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Owners &amp; Investors</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><FiBriefcase className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Owners &amp; Investors</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{title:'List Your Property',icon:FiPlusCircle},{title:'Property Management',icon:FiSettings},{title:'Investment Consultation',icon:FiDollarSign}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                {[{ title: 'List Your Property', icon: FiPlusCircle }, { title: 'Property Management', icon: FiSettings }, { title: 'Investment Consultation', icon: FiDollarSign }].map((s, idx) => (
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{ animationDelay: `${idx * 60}ms` }}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><FiTruck className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Assistance</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><FiTruck className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Assistance</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{title:'Relocation Support',icon:FiTruck},{title:'Area Recommendations',icon:FiMapPin},{title:'Legal & Contract Support',icon:FiFileText}].map((s,idx)=>(
-                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
+                                                {[{ title: 'Relocation Support', icon: FiTruck }, { title: 'Area Recommendations', icon: FiMapPin }, { title: 'Legal & Contract Support', icon: FiFileText }].map((s, idx) => (
+                                                    <div key={idx} className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{ animationDelay: `${idx * 60}ms` }}><s.icon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">{s.title}</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></div>
                                                 ))}
                                             </div>
                                         </div>
@@ -1120,7 +1120,7 @@ const PublicLayout = () => {
                         )}
                         {/* Contact */}
                         {activeMenu === 'contact' && (
-                            <div style={{ backgroundColor:'var(--menu-bg-color)' }}>
+                            <div style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-10">
                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
                                         <div className="h-full min-h-[250px] flex flex-col justify-center pr-6">
@@ -1129,22 +1129,22 @@ const PublicLayout = () => {
                                             <Link to="/contact" className="inline-flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-900 font-medium text-[14px] rounded-full transition-all hover:bg-gray-200">Get in Touch</Link>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><PhoneIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Contact Methods</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><PhoneIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Contact Methods</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
                                                 <button type="button" className="group/item flex items-center w-full px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><PhoneIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all">{agent?.phone || '062-718-8699'}</span></button>
                                                 <button type="button" className="group/item flex items-center w-full px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]"><EnvelopeIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all">{agent?.email || 'hello@superrealestate.com'}</span></button>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><MapIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Visit Us</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><MapIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Visit Us</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                <Link to="/contact" className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{animationDelay:`${idx*60}ms`}}><MapPinIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">View Office Location</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></Link>
+                                                <Link to="/contact" className="group/item menu-item-animate flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer min-w-[280px]" style={{ animationDelay: '0ms' }}><MapPinIcon className="w-[18px] h-[18px] text-gray-700 group-hover/item:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all mr-2">View Office Location</span><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300" /></Link>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-start text-left">
-                                            <div className="flex items-center px-4 mb-6"><HeartIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color:'var(--menu-text-muted)' }}>Quick Links</h3></div>
+                                            <div className="flex items-center px-4 mb-6"><HeartIcon className="w-5 h-5 text-gray-400 mr-6" /><h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Quick Links</h3></div>
                                             <div className="flex flex-col gap-1 items-start">
-                                                {[{name:'About Us',href:'/about'},{name:'Join Our Team',href:'/careers'},{name:'Customer Reviews',href:'/reviews'}].map((l)=>(
+                                                {[{ name: 'About Us', href: '/about' }, { name: 'Join Our Team', href: '/careers' }, { name: 'Customer Reviews', href: '/reviews' }].map((l) => (
                                                     <Link key={l.name} to={l.href} className="group/item flex items-center px-4 py-3 rounded-xl transition-all min-w-[280px]"><ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-[var(--primary-color)] group-hover/item:translate-x-2 transition-all duration-300 mr-4" /><span className="text-[13px] font-semibold text-gray-800 group-hover/item:text-[var(--primary-color)] transition-all">{l.name}</span></Link>
                                                 ))}
                                             </div>
