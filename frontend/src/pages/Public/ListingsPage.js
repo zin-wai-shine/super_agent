@@ -785,9 +785,9 @@ const ListingsPage = () => {
 
                         {/* Listings Grid or Map */}
                         <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-9'} transition-all duration-500 relative`}>
-                            <div className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? 'min-h-[calc(100vh-140px)]' : 'min-h-[70vh]'}`}>
+                            <div className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? `h-[calc(100vh-${navVisible ? '190' : '130'}px)]` : 'min-h-[70vh]'}`}>
                                 {/* Left Side: Property List */}
-                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 lg:overflow-y-auto lg:h-[calc(100vh-190px)] custom-scrollbar' : ''}`}>
+                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 overflow-y-auto h-full custom-scrollbar' : ''}`}>
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
@@ -824,7 +824,7 @@ const ListingsPage = () => {
 
                                 {/* Right Side: Map (Desktop/Tablet) */}
                                 {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className={`hidden lg:block w-[55%] sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px] h-[calc(100vh-190px)]' : 'top-[116px] h-[calc(100vh-130px)]'}`}>
+                                    <div className={`hidden lg:flex lg:flex-col w-[55%] h-full`}>
                                         <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
