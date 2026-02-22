@@ -302,6 +302,13 @@ const ListingsPage = () => {
     useEffect(() => {
         const controller = new AbortController();
         const fetchListings = async () => {
+            // Optimistic loading: If map is open but bounds aren't ready, wait.
+            // This prevents "showing all properties" flash on reload in Map View.
+            if (isGoogleMapOpen && !mapBounds) {
+                if (initialLoading) setLoading(true);
+                return;
+            }
+
             // Only show initial skeletons if we are on page 1
             if (page === 1) {
                 // Avoid "flash" in map view OR during typing search.
