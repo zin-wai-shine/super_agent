@@ -178,6 +178,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const transitWrapperRef = useRef(null);
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
+
+    // Optimized Map Props
+    const mapCenter = useMemo(() => (listing?.latitude && listing?.longitude ? {
+        lat: parseFloat(listing.latitude),
+        lng: parseFloat(listing.longitude)
+    } : undefined), [listing?.latitude, listing?.longitude]);
+
+    const mapOptions = useMemo(() => ({ gestureHandling: 'cooperative' }), []);
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
     const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -1883,13 +1891,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                                 <div className="w-full h-full animate-in fade-in duration-700">
                                                     <GoogleMapComponent
                                                         listings={[listing]}
-                                                        center={useMemo(() => (listing.latitude && listing.longitude ? {
-                                                            lat: parseFloat(listing.latitude),
-                                                            lng: parseFloat(listing.longitude)
-                                                        } : undefined), [listing.latitude, listing.longitude])}
+                                                        center={mapCenter}
                                                         zoom={15}
                                                         onMarkerClick={() => { }}
-                                                        options={useMemo(() => ({ gestureHandling: 'cooperative' }), [])}
+                                                        options={mapOptions}
                                                     />
                                                 </div>
                                             ) : (
