@@ -32,7 +32,7 @@ func (ac *AgentController) GetListings(c *gin.Context) {
 	}
 
 	var listings []models.Listing
-	query := ac.db.Preload("Media").Where("agent_id = ?", agentID)
+	query := ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").Where("agent_id = ?", agentID)
 
 	// Filter by published status
 	if status := c.Query("status"); status != "" {
@@ -84,6 +84,7 @@ func (ac *AgentController) CreateListing(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create listing"})
 		return
 	}
+	ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").First(&listing, "id = ?", listing.ID)
 
 	c.JSON(http.StatusCreated, listing)
 }
@@ -99,7 +100,7 @@ func (ac *AgentController) GetListing(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	if err := ac.db.Preload("Media").Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
+	if err := ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
 		return
 	}
@@ -133,7 +134,7 @@ func (ac *AgentController) UpdateListing(c *gin.Context) {
 		return
 	}
 
-	ac.db.Preload("Media").First(&listing, "id = ?", id)
+	ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").First(&listing, "id = ?", id)
 	c.JSON(http.StatusOK, listing)
 }
 

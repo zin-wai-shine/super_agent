@@ -19,6 +19,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
 	appointmentController := controllers.NewAppointmentController(db)
+	developerController := controllers.NewDeveloperController(db)
 
 	// Apply tenant middleware globally
 	router.Use(middleware.TenantMiddleware(db, cfg))
@@ -153,7 +154,27 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				{
 					users.GET("", agentController.GetUsers)
 					users.PUT("/:id/toggle", agentController.ToggleUserStatus)
-					users.DELETE("/:id", agentController.DeleteUser)
+					agent.DELETE("/users/:id", agentController.DeleteUser)
+				}
+
+				// Developer management (Agent only)
+				developers := agent.Group("/developers")
+				developers.Use(middleware.RoleMiddleware(models.RoleAgent))
+				{
+					developers.GET("", developerController.GetDevelopers)
+					developers.POST("", developerController.CreateDeveloper)
+					developers.PUT("/:id", developerController.UpdateDeveloper)
+					developers.DELETE("/:id", developerController.DeleteDeveloper)
+				}
+
+				// Project management (Agent only)
+				projects := agent.Group("/projects")
+				projects.Use(middleware.RoleMiddleware(models.RoleAgent))
+				{
+					projects.GET("", developerController.GetProjects)
+					projects.POST("", developerController.CreateProject)
+					projects.PUT("/:id", developerController.UpdateProject)
+					projects.DELETE("/:id", developerController.DeleteProject)
 				}
 			}
 

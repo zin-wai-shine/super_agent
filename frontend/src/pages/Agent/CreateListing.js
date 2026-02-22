@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi, uploadApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi, developerApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
@@ -28,6 +28,7 @@ const availabilityOptions = [
 const CreateListing = () => {
     const [loading, setLoading] = useState(false);
     const [stations, setStations] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [selectedImages, setSelectedImages] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [walkingTime, setWalkingTime] = useState('');
@@ -101,6 +102,17 @@ const CreateListing = () => {
             }
         };
         fetchStations();
+
+        // Fetch projects
+        const fetchProjects = async () => {
+            try {
+                const response = await developerApi.getProjects();
+                setProjects(response.data?.projects || []);
+            } catch (error) {
+                console.error('Failed to fetch projects:', error);
+            }
+        };
+        fetchProjects();
     }, []);
 
     const onSubmit = async (data) => {
@@ -126,6 +138,7 @@ const CreateListing = () => {
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
                 year_built: parseInt(data.year_built) || 0,
+                project_id: data.project_id?.value || data.project_id || null,
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
                     ...(data.building_features || []),
@@ -379,6 +392,39 @@ const CreateListing = () => {
                                     <p className="text-sm text-red-500 mt-1">{errors.listing_type.message}</p>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Project Selector */}
+                        <div>
+                            <label className="input-label">
+                                Project {(fieldValues.listing_type?.value || fieldValues.listing_type) === 'sale' ? '*' : '(Optional)'}
+                            </label>
+                            <Controller
+                                name="project_id"
+                                control={control}
+                                rules={{
+                                    validate: (value) => {
+                                        const lt = fieldValues.listing_type?.value || fieldValues.listing_type;
+                                        if (lt === 'sale' && !value) return 'Project is required for sale listings';
+                                        return true;
+                                    }
+                                }}
+                                render={({ field }) => (
+                                    <StyledSelect
+                                        {...field}
+                                        options={projects.map(p => ({
+                                            value: p.id,
+                                            label: `${p.name} — ${p.developer?.name || 'Unknown'}`,
+                                        }))}
+                                        placeholder="Select project..."
+                                        error={!!errors.project_id}
+                                        isClearable
+                                    />
+                                )}
+                            />
+                            {errors.project_id && (
+                                <p className="text-sm text-red-500 mt-1">{errors.project_id.message}</p>
+                            )}
                         </div>
 
                         <div>

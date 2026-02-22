@@ -134,12 +134,39 @@ type Subscription struct {
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+// Developer represents a property developer company
+type Developer struct {
+	ID        uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
+	Name      string         `gorm:"size:255;not null" json:"name"`
+	Logo      string         `gorm:"size:500" json:"logo,omitempty"`
+	Website   string         `gorm:"size:500" json:"website,omitempty"`
+	Projects  []Project      `gorm:"foreignKey:DeveloperID" json:"projects,omitempty"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+// Project represents a property development project
+type Project struct {
+	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID     uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
+	DeveloperID uuid.UUID      `gorm:"type:uuid;not null" json:"developer_id"`
+	Developer   *Developer     `gorm:"foreignKey:DeveloperID" json:"developer,omitempty"`
+	Name        string         `gorm:"size:255;not null" json:"name"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 // Listing represents a property listing
 type Listing struct {
 	ID                 uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	AgentID            uuid.UUID      `gorm:"type:uuid;not null" json:"agent_id"`
 	Agent              *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
 	CreatedBy          uuid.UUID      `gorm:"type:uuid;not null" json:"created_by"`
+	ProjectID          *uuid.UUID     `gorm:"type:uuid;index" json:"project_id,omitempty"`
+	Project            *Project       `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
 	Title              string         `gorm:"size:255;not null" json:"title"`
 	Description        string         `gorm:"type:text" json:"description,omitempty"`
 	PropertyType       string         `gorm:"size:50" json:"property_type"` // condo, house, land, etc.

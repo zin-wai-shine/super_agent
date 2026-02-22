@@ -124,6 +124,18 @@ export const agentApi = {
     },
 };
 
+// Developer & Project API
+export const developerApi = {
+    getDevelopers: () => api.get('/agent/developers'),
+    createDeveloper: (data) => api.post('/agent/developers', data),
+    updateDeveloper: (id, data) => api.put(`/agent/developers/${id}`, data),
+    deleteDeveloper: (id) => api.delete(`/agent/developers/${id}`),
+    getProjects: (params) => api.get('/agent/projects', { params }),
+    createProject: (data) => api.post('/agent/projects', data),
+    updateProject: (id, data) => api.put(`/agent/projects/${id}`, data),
+    deleteProject: (id) => api.delete(`/agent/projects/${id}`),
+};
+
 // Super Admin API
 export const adminApi = {
     getStats: () => api.get('/admin/stats'),

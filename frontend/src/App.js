@@ -31,6 +31,8 @@ import ThemeSettings from './pages/Agent/ThemeSettings';
 import AgentSettings from './pages/Agent/AgentSettings';
 import AppointmentManagement from './pages/Agent/AppointmentManagement';
 import Users from './pages/Agent/Users';
+import DeveloperManagement from './pages/Agent/DeveloperManagement';
+import ProjectManagement from './pages/Agent/ProjectManagement';
 
 // Super Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -175,6 +177,8 @@ const AppRoutes = () => {
                 <Route path="appointments" element={<AppointmentManagement />} />
                 <Route path="sub-agents" element={<SubAgents />} />
                 <Route path="users" element={<Users />} />
+                <Route path="developers" element={<DeveloperManagement />} />
+                <Route path="projects" element={<ProjectManagement />} />
                 <Route path="theme" element={<ThemeSettings />} />
                 <Route path="settings" element={<AgentSettings />} />
                 <Route path="notifications" element={<NotificationCenter />} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi, uploadApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi, developerApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
@@ -33,6 +33,7 @@ const EditListing = () => {
     const [saving, setSaving] = useState(false);
     const [stations, setStations] = useState([]);
     const [media, setMedia] = useState([]);
+    const [projects, setProjects] = useState([]);
 
     const [uploading, setUploading] = useState(false);
     const [walkingTime, setWalkingTime] = useState('');
@@ -114,16 +115,19 @@ const EditListing = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const [listingRes, stationsRes] = await Promise.all([
+            const [listingRes, stationsRes, projectsRes] = await Promise.all([
                 agentApi.getListing(id),
                 publicApi.getStations(),
+                developerApi.getProjects(),
             ]);
             const listing = listingRes.data;
             const stationData = Array.isArray(stationsRes.data)
                 ? stationsRes.data
                 : (stationsRes.data.stations || []);
+            const projectsData = projectsRes.data?.projects || [];
 
             setStations(stationData);
+            setProjects(projectsData);
 
             // Reset form with listing data
             reset({
@@ -185,6 +189,17 @@ const EditListing = () => {
                 }
             }
 
+            // Set project
+            if (listing.project_id) {
+                const proj = projectsData.find(p => p.id === listing.project_id);
+                if (proj) {
+                    setValue('project_id', {
+                        value: proj.id,
+                        label: `${proj.name} — ${proj.developer?.name || 'Unknown'}`,
+                    });
+                }
+            }
+
             if (listing.distance_to_station) {
                 setWalkingTime(Math.round(listing.distance_to_station / WALKING_SPEED_MPM));
             }
@@ -238,6 +253,7 @@ const EditListing = () => {
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
                 year_built: parseInt(data.year_built) || 0,
+                project_id: data.project_id?.value || data.project_id || null,
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
                     ...(data.building_features || []),
@@ -453,6 +469,39 @@ const EditListing = () => {
                                     )}
                                 />
                             </div>
+                        </div>
+
+                        {/* Project Selector */}
+                        <div>
+                            <label className="input-label">
+                                Project {(fieldValues.listing_type?.value || fieldValues.listing_type) === 'sale' ? '*' : '(Optional)'}
+                            </label>
+                            <Controller
+                                name="project_id"
+                                control={control}
+                                rules={{
+                                    validate: (value) => {
+                                        const lt = fieldValues.listing_type?.value || fieldValues.listing_type;
+                                        if (lt === 'sale' && !value) return 'Project is required for sale listings';
+                                        return true;
+                                    }
+                                }}
+                                render={({ field }) => (
+                                    <StyledSelect
+                                        {...field}
+                                        options={projects.map(p => ({
+                                            value: p.id,
+                                            label: `${p.name} — ${p.developer?.name || 'Unknown'}`,
+                                        }))}
+                                        placeholder="Select project..."
+                                        error={!!errors.project_id}
+                                        isClearable
+                                    />
+                                )}
+                            />
+                            {errors.project_id && (
+                                <p className="text-sm text-red-500 mt-1">{errors.project_id.message}</p>
+                            )}
                         </div>
 
                         <div>

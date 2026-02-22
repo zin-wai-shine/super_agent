@@ -47,6 +47,8 @@ func main() {
 		&models.Banner{},
 		&models.Appointment{},
 		&models.SavedListing{},
+		&models.Developer{},
+		&models.Project{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -55,6 +57,9 @@ func main() {
 
 	// Seed initial data
 	seedInitialData(db)
+
+	// Seed developers and projects
+	seedDevelopersAndProjects(db)
 
 	// Seed fake data (agents and listings) if needed
 	utils.SeedFakeData(db)
@@ -360,4 +365,66 @@ func seedTransitStations(db *gorm.DB) {
 	}
 
 	log.Printf("Seeded %d transit stations", len(stations))
+}
+
+func seedDevelopersAndProjects(db *gorm.DB) {
+	// Only seed if no developers exist yet
+	var count int64
+	db.Model(&models.Developer{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	// Find agent to associate with
+	var agent models.Agent
+	if err := db.First(&agent).Error; err != nil {
+		log.Println("No agent found, skipping developer/project seeding")
+		return
+	}
+
+	log.Println("Seeding developers and projects...")
+
+	type devProject struct {
+		dev     string
+		project string
+	}
+
+	data := []devProject{
+		{"Sansiri", "Life Asoke"},
+		{"Sansiri", "The Base Rama 9"},
+		{"AP Thailand", "Aspire Erawan Prime"},
+		{"AP Thailand", "Rhythm Asoke 2"},
+		{"Origin Property", "KnightsBridge Prime Sathorn"},
+		{"Supalai", "Supalai Veranda Rama 9"},
+		{"LPN Development", "Lumpini Park Rama 9 \u2013 Ratchada"},
+		{"Noble Development", "Noble Ploenchit"},
+		{"Ananda Development", "Ideo Mobi Sukhumvit Eastgate"},
+		{"Magnolia Quality Development Corporation", "The Residences at Mandarin Oriental"},
+	}
+
+	// Collect unique developers
+	devMap := make(map[string]*models.Developer)
+	for _, dp := range data {
+		if _, exists := devMap[dp.dev]; !exists {
+			dev := &models.Developer{
+				AgentID: agent.ID,
+				Name:    dp.dev,
+			}
+			db.Create(dev)
+			devMap[dp.dev] = dev
+		}
+	}
+
+	// Create projects
+	for _, dp := range data {
+		dev := devMap[dp.dev]
+		project := models.Project{
+			AgentID:     agent.ID,
+			DeveloperID: dev.ID,
+			Name:        dp.project,
+		}
+		db.Create(&project)
+	}
+
+	log.Printf("Seeded %d developers and %d projects", len(devMap), len(data))
 }
