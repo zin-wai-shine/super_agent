@@ -517,7 +517,7 @@ const PublicLayout = () => {
                                                             <div className="relative backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
                                                                 {/* Decorative bg image - right-aligned, reduced opacity */}
                                                                 <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-[0.15]"
-                                                                    style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% center', backgroundRepeat: 'no-repeat' }}
+                                                                    style={{ backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'contain', backgroundPosition: '120% 80%', backgroundRepeat: 'no-repeat' }}
                                                                 />
                                                                 <div className="w-full px-12 py-10">
                                                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
