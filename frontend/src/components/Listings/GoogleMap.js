@@ -154,7 +154,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 .marker-group.hovered .resting-pointer { opacity: 0; transform: translateX(-50%) translateY(-0.5rem); }
                 .marker-group.hovered .resting-dot { opacity: 0; scale: 0; }
                 
-                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 100; padding: 0.875rem; transform: translateX(-50%) translateY(-1.5rem); }
+                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 100; padding: 0.875rem; }
                 .marker-group.hovered .expanded-content { opacity: 1; }
             </style>
             <div class="marker-group group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
@@ -170,9 +170,9 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 <div class="resting-dot absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rounded-full pointer-events-none z-20 group-hover:scale-0 group-hover:opacity-0"></div>
 
                 <!-- HOVER EXPANDED CARD: Premium Clean Design (No tail) -->
-                <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 w-0 h-0 opacity-0 bg-white rounded-[24px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border-2 border-black overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 group-hover:-translate-y-6 z-10">
-                    <!-- Thumbnail with rounded edges -->
-                    <div class="w-[68px] h-[68px] rounded-[18px] overflow-hidden shadow-sm flex-none bg-gray-100">
+                <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 -translate-y-5 w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border-2 border-black overflow-hidden transition-all duration-300 ease-out group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 z-10">
+                    <!-- Thumbnail with rounded edges (Site Radius) -->
+                    <div class="w-[68px] h-[68px] rounded-[3px] overflow-hidden shadow-sm flex-none bg-gray-100 border border-black/5">
                         <img src="${imageUrl}" class="w-full h-full object-cover" />
                     </div>
                     
