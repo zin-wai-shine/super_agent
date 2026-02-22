@@ -785,7 +785,10 @@ const ListingsPage = () => {
 
                         {/* Listings Grid or Map */}
                         <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-9'} transition-all duration-500 relative`}>
-                            <div className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? `h-[calc(100vh-${navVisible ? '190' : '130'}px)]` : 'min-h-[70vh]'}`}>
+                            <div
+                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? '' : 'min-h-[70vh]'}`}
+                                style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 190 : 130}px)` } : undefined}
+                            >
                                 {/* Left Side: Property List */}
                                 <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 overflow-y-auto h-full custom-scrollbar' : ''}`}>
                                     {initialLoading ? (
@@ -824,8 +827,8 @@ const ListingsPage = () => {
 
                                 {/* Right Side: Map (Desktop/Tablet) */}
                                 {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className={`hidden lg:flex lg:flex-col w-[55%] h-full`}>
-                                        <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
+                                    <div className="hidden lg:flex lg:flex-col w-[55%] h-full">
+                                        <div className="relative w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
                                                 onMarkerClick={(property) => {
