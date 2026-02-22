@@ -194,7 +194,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
         lng: parseFloat(listing.longitude)
     } : undefined), [listing?.latitude, listing?.longitude]);
 
-    const mapOptions = useMemo(() => ({ gestureHandling: 'greedy' }), []);
+    const mapOptions = useMemo(() => ({
+        gestureHandling: 'cooperative',
+        disableDefaultUI: false,
+        styles: [] // Remove custom grey map styles for detail page
+    }), []);
 
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
     const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
@@ -1906,6 +1910,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                                         zoom={15}
                                                         onMarkerClick={() => { }}
                                                         options={mapOptions}
+                                                        useDefaultMarkers={true}
                                                     />
                                                 </div>
                                             ) : (

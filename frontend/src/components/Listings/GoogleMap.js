@@ -160,8 +160,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 <!-- Resting Pill: Multi-line card with checkmark + address + price -->
                 <div class="resting-pill flex items-center gap-3 pl-3 pr-4 py-2.5 bg-white border border-gray-200 rounded-[3px] transition-all duration-200 z-10 min-w-[160px]">
                     <!-- Location Marker Icon (HiOutlineLocationMarker style) -->
-                    <div class="flex-none w-7 h-7 rounded-full border-2 border-black flex items-center justify-center">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="flex-none w-7 h-7 rounded-full border-2 border-[var(--primary-color)] flex items-center justify-center bg-white shadow-sm">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
