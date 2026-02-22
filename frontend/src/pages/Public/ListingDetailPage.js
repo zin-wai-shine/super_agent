@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi, appointmentApi } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
@@ -179,13 +180,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
 
-    // Optimized Map Props
+    // 1. Initialize Map Loader first (Hook)
+    const { isLoaded: isMapScriptLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+        libraries: ['places', 'marker'],
+        version: 'weekly'
+    });
+
+    // 2. Optimized Map Props (Hooks)
     const mapCenter = useMemo(() => (listing?.latitude && listing?.longitude ? {
         lat: parseFloat(listing.latitude),
         lng: parseFloat(listing.longitude)
     } : undefined), [listing?.latitude, listing?.longitude]);
 
-    const mapOptions = useMemo(() => ({ gestureHandling: 'cooperative' }), []);
+    const mapOptions = useMemo(() => ({ gestureHandling: 'greedy' }), []);
+
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
     const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -1890,6 +1900,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                             {activeMapTab === 'google' ? (
                                                 <div className="w-full h-full animate-in fade-in duration-700">
                                                     <GoogleMapComponent
+                                                        isLoaded={isMapScriptLoaded}
                                                         listings={[listing]}
                                                         center={mapCenter}
                                                         zoom={15}
