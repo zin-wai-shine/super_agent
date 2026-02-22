@@ -193,13 +193,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                         <!-- Title (multi-line, wraps) -->
                         <div class="text-[13px] font-bold text-gray-900 leading-[1.3] line-clamp-2">${property.title}</div>
 
-                        <!-- Address with pin icon -->
-                        <div class="flex items-center gap-1 mt-1">
-                            <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-                                <path d="M5 0C2.79 0 1 1.79 1 4c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4zm0 5.5c-.83 0-1.5-.67-1.5-1.5S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#9CA3AF"/>
-                            </svg>
-                            <span class="text-[11px] text-gray-500 truncate">${property.district || property.road || 'No address'}</span>
-                        </div>
+
 
                         <!-- Text stats row: area, beds, baths -->
                         <div class="flex items-center gap-2 mt-1 text-[12px] text-gray-600">
