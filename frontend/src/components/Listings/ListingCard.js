@@ -244,7 +244,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 md:py-1">
                     <div className="flex flex-col gap-1.5 md:gap-2">
                         {/* Title */}
-                        <h3 className="text-sm md:text-[15px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
+                        <h3 className="text-sm md:text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
                             {title}
                         </h3>
 
