@@ -266,27 +266,27 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             </div>
                         </div>
 
-                        {/* Stats - Moved up above footer */}
-                        <div className="flex items-center gap-5 mt-2 md:mt-3 pt-3 border-t border-gray-100/60">
-                            <div className="flex items-center gap-1.5">
-                                <LiaBedSolid className="w-5 h-5 text-gray-500 lg:w-6 lg:h-6" />
-                                <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{bedrooms}</span>
+                        {/* Stats Row - Consolidated above footer */}
+                        <div className="flex items-center gap-5 md:gap-8 mt-2.5 md:mt-4">
+                            <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                                <span className="font-medium text-gray-400 uppercase tracking-tight">beds</span>
+                                <span className="font-bold text-gray-700">: {bedrooms}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <PiBathtub className="w-5 h-5 text-gray-500 lg:w-6 lg:h-6" />
-                                <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{bathrooms}</span>
+                            <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                                <span className="font-medium text-gray-400 uppercase tracking-tight">baths</span>
+                                <span className="font-bold text-gray-700">: {bathrooms}</span>
                             </div>
                             {area > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[13px] md:text-[14px] font-bold text-gray-400">M²</span>
-                                    <span className="text-[14px] md:text-[16px] font-bold text-[#2f3e46]">{area}</span>
+                                <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-[#2F3E46]">
+                                    <span className="font-medium text-gray-400 uppercase tracking-tight">m²</span>
+                                    <span className="font-bold text-gray-700">: {area}</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="mt-3 pt-3 border-t border-gray-100/60 flex items-center justify-start gap-4 sm:gap-6">
+                    {/* Footer Actions - Only Actions Here */}
+                    <div className="mt-3 pt-3 border-t border-gray-100/60 flex items-center justify-start gap-5 sm:gap-8">
                         {/* Save Action */}
                         {showSave && (
                             <button

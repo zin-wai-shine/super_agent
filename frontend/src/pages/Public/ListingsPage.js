@@ -737,7 +737,7 @@ const ListingsPage = () => {
                                 <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 lg:overflow-y-auto lg:h-[calc(100vh-190px)] custom-scrollbar' : ''}`}>
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                            {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'list' : viewMode} isExiting={isExiting} />)}
+                                            {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
                                     ) : listings.length > 0 ? (
                                         <>
@@ -748,12 +748,12 @@ const ListingsPage = () => {
                                                         className="animate-in fade-in fill-mode-both duration-500"
                                                         style={{ animationDelay: `${(i % 12) * 50}ms` }}
                                                     >
-                                                        <ListingCard listing={l} viewMode={isGoogleMapOpen ? 'list' : viewMode} priceFormat={priceFormat} />
+                                                        <ListingCard listing={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
                                                     </div>
                                                 ))}
                                                 {loading && !initialLoading && (
                                                     <div className="contents">
-                                                        {[...Array(viewMode === 'grid' ? (isGoogleMapOpen ? 3 : 6) : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={isGoogleMapOpen ? 'list' : viewMode} />)}
+                                                        {[...Array(viewMode === 'grid' ? (isGoogleMapOpen ? 3 : 6) : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} />)}
                                                     </div>
                                                 )}
                                             </div>
