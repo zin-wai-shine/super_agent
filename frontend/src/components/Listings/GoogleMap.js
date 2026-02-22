@@ -150,24 +150,32 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
 
         const newInnerHTML = `
             <style>
-                .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; }
-                .marker-group.hovered .resting-pointer { opacity: 0; transform: translateX(-50%) translateY(-0.5rem); }
-                .marker-group.hovered .resting-dot { opacity: 0; scale: 0; }
-                
-                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 100; padding: 0.875rem; }
+                .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; transition: all 0.2s ease; }
+                .marker-group.hovered .resting-nub { opacity: 0; transition: opacity 0.2s ease; }
+
+                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 1; padding: 0.875rem; }
                 .marker-group.hovered .expanded-content { opacity: 1; }
             </style>
-            <div class="marker-group group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
-                <div class="resting-pill flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 z-10 group-hover:scale-0 group-hover:opacity-0">
-                    <span class="text-black font-extrabold text-[13px] whitespace-nowrap tracking-tight">${priceFormatted}</span>
+            <div class="marker-group group relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
+                <!-- Resting Pill: Multi-line card with checkmark + address + price -->
+                <div class="resting-pill flex items-center gap-3 pl-3 pr-4 py-2.5 bg-white border border-black/10 rounded-[3px] shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-200 z-10 min-w-[160px]">
+                    <!-- Checkmark Icon -->
+                    <div class="flex-none w-7 h-7 rounded-full border-2 border-black flex items-center justify-center">
+                        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                            <path d="M1 5L4.5 8.5L11 1.5" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <!-- Text block -->
+                    <div class="flex flex-col">
+                        <span class="text-[11px] text-gray-500 font-medium leading-tight whitespace-nowrap">${property.road || property.district || property.title || 'Property'}</span>
+                        <span class="text-[13px] font-bold text-gray-900 leading-tight whitespace-nowrap">${priceFormatted}</span>
+                    </div>
                 </div>
-                <!-- Smooth Resting Pointer (Droplet style) -->
-                <svg class="resting-pointer absolute -bottom-2 left-1/2 w-10 h-5 transition-all duration-300 pointer-events-none group-hover:opacity-0 group-hover:-translate-y-2" style="transform: translateX(-50%);" viewBox="0 0 40 20">
-                    <path d="M4 0 C 4 8, 15 18, 20 20 C 25 18, 36 8, 36 0" fill="white" stroke="black" stroke-width="2.5" stroke-linecap="round" />
-                    <rect x="5.5" y="-1" width="29" height="3" fill="white" />
+                <!-- Small Triangle Nub -->
+                <svg class="resting-nub flex-none transition-opacity duration-200 pointer-events-none group-hover:opacity-0" width="16" height="8" viewBox="0 0 16 8">
+                    <polygon points="0,0 16,0 8,8" fill="white" stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-linejoin="round"/>
+                    <polygon points="1,0 15,0 8,7" fill="white"/>
                 </svg>
-                <!-- Resting Target Dot -->
-                <div class="resting-dot absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rounded-full pointer-events-none z-20 group-hover:scale-0 group-hover:opacity-0"></div>
 
                 <!-- HOVER EXPANDED CARD: Premium Clean Design (No tail) -->
                 <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 -translate-y-5 w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border-2 border-black overflow-hidden transition-all duration-300 ease-out group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 z-10">
@@ -177,7 +185,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                     </div>
                     
                     <!-- Content area -->
-                    <div class="expanded-content flex flex-col min-w-0 flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform">
+                    <div class="expanded-content flex flex-col min-w-0 flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <span class="text-[10px] font-black uppercase text-primary-500 tracking-[0.2em] mb-1 leading-none">${property.property_type || 'Property'}</span>
                         <div class="text-[14px] font-bold text-gray-900 truncate leading-tight mb-1">${property.title}</div>
                         <div class="flex items-center gap-2">
@@ -187,8 +195,6 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                         </div>
                     </div>
                 </div>
-
-                <div class="absolute inset-0 bg-black/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </div>
         `;
 
