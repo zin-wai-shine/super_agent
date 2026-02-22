@@ -195,13 +195,22 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
 
 
 
-                        <!-- Text stats row: area, beds, baths -->
-                        <div class="flex items-center gap-2 mt-1 text-[12px] text-gray-600">
-                            <span>${property.area ?? '—'} m²</span>
-                            <span class="text-gray-300">·</span>
-                            <span>${property.bedrooms ?? '—'} beds</span>
-                            <span class="text-gray-300">·</span>
-                            <span>${property.bathrooms ?? '—'} baths</span>
+                        <!-- Stacked stats row: area, beds, baths centered -->
+                        <div class="flex items-center gap-4 mt-1 text-[11px] text-gray-600 leading-tight">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[13px] font-bold text-gray-900">${property.area ?? '—'}</span>
+                                <span class="text-gray-400">m²</span>
+                            </div>
+                            <span class="text-gray-300 self-center">·</span>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[13px] font-bold text-gray-900">${property.bedrooms ?? '—'}</span>
+                                <span class="text-gray-400 text-[10px]">beds</span>
+                            </div>
+                            <span class="text-gray-300 self-center">·</span>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[13px] font-bold text-gray-900">${property.bathrooms ?? '—'}</span>
+                                <span class="text-gray-400 text-[10px]">baths</span>
+                            </div>
                         </div>
 
                         <!-- Price (large, prominent) -->
