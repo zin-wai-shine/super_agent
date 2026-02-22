@@ -153,7 +153,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; transition: all 0.2s ease; }
                 .marker-group.hovered .resting-nub { opacity: 0; transition: opacity 0.2s ease; }
 
-                .marker-group.hovered .expanded-card { width: 310px; height: 130px; opacity: 1; padding: 0; }
+                .marker-group.hovered .expanded-card { width: 290px; height: 170px; opacity: 1; padding: 0; }
                 .marker-group.hovered .expanded-content { opacity: 1; }
             </style>
             <div class="marker-group group relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
@@ -179,50 +179,60 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                     <path d="M0,0 L9,9 L18,0" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
-                <!-- HOVER EXPANDED CARD: Two-column layout with image + details -->
-                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden transition-all duration-300 ease-out group-hover:w-[310px] group-hover:h-[130px] group-hover:opacity-100 flex z-10">
+                <!-- HOVER EXPANDED CARD: Reference-style premium card -->
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[12px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-gray-100 overflow-hidden transition-all duration-300 ease-out group-hover:w-[290px] group-hover:h-[170px] group-hover:opacity-100 flex z-10">
 
-                    <!-- Left: Image -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[90px] flex-none">
+                    <!-- Left: Square image -->
+                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[110px] flex-none relative">
                         <img src="${imageUrl}" class="w-full h-full object-cover" />
                     </div>
 
-                    <!-- Right: Info -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between flex-1 min-w-0 px-3 py-2.5">
+                    <!-- Right: Info panel -->
+                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col flex-1 min-w-0 px-3 pt-3 pb-3 justify-between">
 
-                        <!-- Title + Price -->
-                        <div>
-                            <div class="flex items-center justify-between gap-1 mb-1.5">
-                                <div class="text-[11px] font-bold text-gray-900 truncate leading-tight">${property.title}</div>
-                                <div class="text-[11px] font-black text-gray-900 whitespace-nowrap ml-1">${priceFormatted}</div>
+                        <!-- Title (multi-line, wraps) -->
+                        <div class="text-[13px] font-bold text-gray-900 leading-[1.3] line-clamp-2">${property.title}</div>
+
+                        <!-- Address with pin icon -->
+                        <div class="flex items-center gap-1 mt-1">
+                            <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                                <path d="M5 0C2.79 0 1 1.79 1 4c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4zm0 5.5c-.83 0-1.5-.67-1.5-1.5S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#9CA3AF"/>
+                            </svg>
+                            <span class="text-[10px] text-gray-500 truncate">${property.district || property.road || 'No address'}</span>
+                        </div>
+
+                        <!-- Icon stats row: area, beds, baths -->
+                        <div class="flex items-center gap-2.5 mt-1.5">
+                            <!-- Area -->
+                            <div class="flex items-center gap-1">
+                                <svg width="11" height="10" viewBox="0 0 11 10" fill="none">
+                                    <path d="M1 1h3v3H1zM7 1h3v3H7zM1 6h3v3H1zM7 6h3v3H7z" stroke="#9CA3AF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span class="text-[10px] text-gray-500">${property.area ?? '—'} m²</span>
                             </div>
-
-                            <!-- Info rows -->
-                            <div class="flex flex-col gap-[2px]">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Location</span>
-                                    <span class="text-[9px] text-gray-300">:</span>
-                                    <span class="text-[9px] font-semibold text-gray-600 truncate">${property.district || '—'}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Station</span>
-                                    <span class="text-[9px] text-gray-300">:</span>
-                                    <span class="text-[9px] font-semibold text-gray-600 truncate">${property.station_name || property.station || '—'}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Type</span>
-                                    <span class="text-[9px] text-gray-300">:</span>
-                                    <span class="text-[9px] font-semibold text-gray-600 capitalize truncate">${property.property_type || '—'} • ${property.listing_type || '—'}</span>
-                                </div>
+                            <!-- Beds -->
+                            <div class="flex items-center gap-1">
+                                <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                    <rect x="1" y="4" width="10" height="5" rx="1" stroke="#9CA3AF" stroke-width="1"/>
+                                    <path d="M1 5V2a1 1 0 011-1h8a1 1 0 011 1v3" stroke="#9CA3AF" stroke-width="1"/>
+                                    <rect x="2.5" y="2.5" width="2.5" height="2" rx="0.5" stroke="#9CA3AF" stroke-width="0.8"/>
+                                    <rect x="7" y="2.5" width="2.5" height="2" rx="0.5" stroke="#9CA3AF" stroke-width="0.8"/>
+                                </svg>
+                                <span class="text-[10px] text-gray-500">${property.bedrooms ?? '—'}</span>
+                            </div>
+                            <!-- Baths -->
+                            <div class="flex items-center gap-1">
+                                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                                    <path d="M2 5h7v3a3 3 0 01-3 3H5a3 3 0 01-3-3V5z" stroke="#9CA3AF" stroke-width="1"/>
+                                    <path d="M2 5V3a1.5 1.5 0 013 0" stroke="#9CA3AF" stroke-width="1" stroke-linecap="round"/>
+                                </svg>
+                                <span class="text-[10px] text-gray-500">${property.bathrooms ?? '—'}</span>
                             </div>
                         </div>
 
-                        <!-- Bottom stats: Beds / Baths / m² -->
-                        <div class="flex items-center gap-3 pt-1.5 border-t border-gray-100 mt-1">
-                            <span class="text-[9px] text-gray-400">Beds <span class="font-bold text-gray-700">${property.bedrooms ?? '—'}</span></span>
-                            <span class="text-[9px] text-gray-400">Baths <span class="font-bold text-gray-700">${property.bathrooms ?? '—'}</span></span>
-                            <span class="text-[9px] text-gray-400">m² <span class="font-bold text-gray-700">${property.area ?? '—'}</span></span>
-                        </div>
+                        <!-- Price (large, prominent) -->
+                        <div class="text-[15px] font-black text-gray-900 mt-1.5">${priceFormatted}</div>
+
                     </div>
 
                 </div>
