@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, OverlayView } from '@react-google-maps/api';
+import { GoogleMap, Marker, OverlayView } from '@react-google-maps/api';
 import { getMediaUrl } from '../../utils/media';
 
 const mapContainerStyle = {
@@ -203,13 +203,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
     );
 });
 
-const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false }) => {
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
-        libraries: ['places', 'marker'],
-        version: 'weekly'
-    });
+const GoogleMapComponent = ({ isLoaded, listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false }) => {
+
 
     const [map, setMap] = useState(null);
     const boundsTimeoutRef = React.useRef(null);

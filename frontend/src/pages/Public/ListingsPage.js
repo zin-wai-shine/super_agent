@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
@@ -68,6 +69,51 @@ const getSelectedOption = (options, value) => {
     return options.find(opt => opt.value === value) || null;
 };
 
+const MapTransitionOverlay = ({ active, switchActive }) => {
+    return (
+        <div className={`fixed inset-0 z-[200] flex items-center justify-center transition-all duration-700 ease-in-out ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {/* Background: Glassmorphism + Map Blur Effect */}
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-2xl" />
+
+            {/* Subtle Gradient Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] animate-pulse" />
+
+            {/* Content Container */}
+            <div className="relative flex flex-col items-center gap-8">
+                {/* Globe Icon Container */}
+                <div className="w-20 h-20 bg-white/80 backdrop-blur-lg rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 flex items-center justify-center animate-bounce-subtle">
+                    <GlobeAltIcon className="w-10 h-10 text-gray-400" />
+                </div>
+
+                {/* Visual Dot */}
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+
+                {/* Animated Toggle Icon (Shuttle style) */}
+                <div className="relative w-16 h-8 bg-gray-200/50 rounded-full border border-gray-200/50 p-1 backdrop-blur-sm">
+                    <div className={`w-6 h-6 bg-black rounded-full shadow-lg flex items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${switchActive ? 'translate-x-8' : 'translate-x-0'}`}>
+                        <MapIcon className="w-3.5 h-3.5 text-white" />
+                    </div>
+                </div>
+
+                {/* Text Group */}
+                <div className="flex flex-col items-center gap-3">
+                    <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-gray-900 animate-fade-in-up">
+                        Activating Map
+                    </h2>
+                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">
+                        <span className="flex gap-1">
+                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0s' }} />
+                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }} />
+                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }} />
+                        </span>
+                        Generating View
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const ListingsPage = () => {
     const { user } = useAuth();
@@ -86,6 +132,13 @@ const ListingsPage = () => {
     const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
     const [isMapTransitioning, setIsMapTransitioning] = useState(false);
     const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
+
+    const { isLoaded: isMapLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+        libraries: ['places', 'marker'],
+        version: 'weekly'
+    });
 
     // Update local state when searchParams change, except during transition
     useEffect(() => {
@@ -777,10 +830,11 @@ const ListingsPage = () => {
                                 </div>
 
                                 {/* Right Side: Map (Desktop/Tablet) */}
-                                {isGoogleMapOpen && (
+                                {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
                                     <div className={`hidden lg:block w-[55%] sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px] h-[calc(100vh-190px)]' : 'top-[116px] h-[calc(100vh-130px)]'}`}>
                                         <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
+                                                isLoaded={isMapLoaded}
                                                 listings={listings}
                                                 onMarkerClick={(property) => {
                                                     const newParams = new URLSearchParams(searchParams);
@@ -806,9 +860,10 @@ const ListingsPage = () => {
                                 )}
 
                                 {/* Bottom Map override for Mobile (replaces properties entirely logic fallback) */}
-                                {isGoogleMapOpen && (
+                                {(isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
                                     <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
                                         <GoogleMap
+                                            isLoaded={isMapLoaded}
                                             listings={listings}
                                             onMarkerClick={(property) => {
                                                 const newParams = new URLSearchParams(searchParams);
@@ -902,7 +957,7 @@ const ListingsPage = () => {
 
             {/* Google Maps Modal (Mobile Only) */}
             {
-                isGoogleMapOpen && (
+                (isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
                     <div className="fixed inset-0 z-[120] bg-white flex flex-col items-center lg:!hidden pointer-events-auto lg:pointer-events-none lg:opacity-0">
                         <div className="w-full bg-white border-b px-4 py-4 flex items-center justify-between shadow-sm z-10 transition-all duration-300">
                             <div className="flex items-center gap-4">
@@ -962,6 +1017,9 @@ const ListingsPage = () => {
                     </div>
                 )
             }
+            {/* Status Overlays */}
+            <MapTransitionOverlay active={isMapTransitioning} switchActive={overlaySwitchActive} />
+
             <ListingDetailModal />
         </div >
     );
