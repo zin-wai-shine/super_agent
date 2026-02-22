@@ -514,7 +514,7 @@ const PublicLayout = () => {
 
                                                         {/* Mega Menu Dropdown */}
                                                         <div className="fixed left-0 right-0 top-[4rem] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[160] w-full">
-                                                            <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)' }}>
+                                                            <div className="backdrop-blur-3xl shadow-xl" style={{ backgroundColor: 'var(--menu-bg-color)', backgroundImage: 'url(/images/train_bg.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
                                                                 <div className="w-full px-12 py-10">
                                                                     <div className="grid grid-cols-4 gap-12 relative w-full px-12 items-center">
 
