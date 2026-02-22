@@ -3,6 +3,7 @@ import Card from './Card';
 
 const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) => {
     const isListView = viewMode === 'list';
+    const isMapListView = viewMode === 'map-list';
 
     // Entry: 0 -> 11, Exit: 0 -> 11 (start from first card)
     const delay = isExiting ? `${(index % 12) * 60}ms` : `${(index % 12) * 100}ms`;
@@ -13,6 +14,55 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
         animationDelay: delay,
         opacity: isExiting ? 1 : 0,
     };
+
+    if (isMapListView) {
+        return (
+            <div className="flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 animate-pulse px-2 -mx-2" style={skeletonStyle}>
+                {/* Image Section Skeleton */}
+                <div className="w-[140px] md:w-[200px] aspect-[4/3] bg-[#f8fafb] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
+                    <div className="absolute top-2 left-2 h-6 w-20 bg-[#e2e8f0] rounded-[3px]" />
+                </div>
+
+                {/* Content Section Skeleton */}
+                <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 md:py-1">
+                    <div className="flex flex-col gap-3">
+                        {/* Title Skeleton */}
+                        <div className="h-5 w-[90%] bg-[#e2e8f0] rounded-[3px]" />
+
+                        {/* Property Info Skeleton */}
+                        <div className="space-y-2 mt-1">
+                            <div className="flex items-center gap-4">
+                                <div className="h-3.5 w-16 bg-[#f1f5f9] rounded-[2px]" />
+                                <div className="h-3.5 w-32 bg-[#e2e8f0] rounded-[2px]" />
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-3.5 w-16 bg-[#f1f5f9] rounded-[2px]" />
+                                <div className="h-3.5 w-40 bg-[#e2e8f0] rounded-[2px]" />
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-3.5 w-16 bg-[#f1f5f9] rounded-[2px]" />
+                                <div className="h-3.5 w-24 bg-[#e2e8f0] rounded-[2px]" />
+                            </div>
+                        </div>
+
+                        {/* Stats Skeleton */}
+                        <div className="flex items-center gap-6 mt-1.5 pt-3 border-t border-gray-100/60">
+                            <div className="h-4 w-14 bg-[#f1f5f9] rounded-[2px]" />
+                            <div className="h-4 w-14 bg-[#f1f5f9] rounded-[2px]" />
+                            <div className="h-4 w-16 bg-[#f1f5f9] rounded-[2px]" />
+                        </div>
+                    </div>
+
+                    {/* Footer Actions Skeleton */}
+                    <div className="mt-3 pt-3 border-t border-gray-100/60 flex items-center justify-start gap-6">
+                        <div className="h-4 w-12 bg-[#f1f5f9] rounded-[2px]" />
+                        <div className="h-4 w-12 bg-[#f1f5f9] rounded-[2px]" />
+                        <div className="h-4 w-20 bg-[#f1f5f9] rounded-[2px]" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (isListView) {
         return (
