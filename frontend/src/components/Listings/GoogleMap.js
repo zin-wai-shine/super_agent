@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, OverlayView } from '@react-google-maps/api';
+import { getMediaUrl } from '../../utils/media';
 
 const mapContainerStyle = {
     width: '100%',
@@ -77,7 +78,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
         let markerContent = null;
         if (!useDefaultMarkers) {
             const content = document.createElement('div');
-            content.className = 'group cursor-pointer transition-transform hover:scale-110 active:scale-95';
+            // Ensure the container itself can show overflow for the card
+            content.className = 'marker-container relative';
             contentRef.current = content;
             markerContent = content;
         }
@@ -120,13 +122,41 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
             maximumFractionDigits: 0,
         }).format(property.price);
 
+        // Get first image
+        const imageUrl = getMediaUrl(property.media?.find(m => m.type === 'image')?.url);
+
         const newInnerHTML = `
-            <div class="px-4 py-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white text-white font-black text-xs whitespace-nowrap flex items-center gap-2 transform transition-all duration-300 group-hover:shadow-2xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}">
-                <span class="tracking-tight">${priceFormatted}</span>
-                <div class="w-px h-3 bg-white/30"></div>
-                <span class="uppercase text-[9px] tracking-widest font-black opacity-80">${property.listing_type}</span>
+            <div class="group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
+                <!-- RESTING STATE: Professional Pill Design -->
+                <div class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-primary-600 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-0 group-hover:opacity-0 group-hover:pointer-events-none">
+                    <span class="text-primary-600 font-extrabold text-[13px] whitespace-nowrap tracking-tight">${priceFormatted}</span>
+                </div>
+
+                <!-- HOVER EXPANDED CARD: Modern Summary -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 w-0 h-0 opacity-0 bg-white rounded-[24px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.25),0_18px_36px_-18px_rgba(0,0,0,0.3)] border border-gray-100/50 overflow-hidden transition-all duration-600 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 group-hover:-translate-y-4">
+                    <!-- Thumbnail with subtle zoom and rounded edges -->
+                    <div class="w-[68px] h-[68px] rounded-[18px] overflow-hidden shadow-sm flex-none bg-gray-100">
+                        <img src="${imageUrl}" class="w-full h-full object-cover transition-all duration-1000 delay-100 group-hover:scale-110" />
+                    </div>
+                    
+                    <!-- Content area with "Small to Large" text animation -->
+                    <div class="flex flex-col min-w-0 flex-1 transition-all duration-500 delay-100 transform scale-50 group-hover:scale-100 origin-left">
+                        <span class="text-[10px] font-black uppercase text-primary-500 tracking-[0.2em] mb-1 leading-none">${property.property_type || 'Property'}</span>
+                        <div class="text-[14px] font-bold text-gray-900 truncate leading-tight mb-1">${property.title}</div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[16px] font-black text-gray-900">${priceFormatted}</span>
+                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                            <span class="text-[11px] font-bold text-gray-500 capitalize opacity-80">${property.listing_type}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Expanded shadow overlay for depth -->
+                <div class="absolute inset-0 bg-primary-600/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                
+                <!-- Bottom Pointer (Arrow) -->
+                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 border-r-2 border-b-2 border-primary-600 bg-white transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-2"></div>
             </div>
-            <div class="w-4 h-4 rotate-45 mx-auto -mt-2 border-r-2 border-b-2 border-white shadow-xl ${property.listing_type === 'sale' ? 'bg-orange-600' : 'bg-primary-600'}"></div>
         `;
 
         // Only update DOM if content actually changed
@@ -134,6 +164,14 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
             contentRef.current.innerHTML = newInnerHTML;
             lastContentRef.current = newInnerHTML;
         }
+
+        // Raise z-index on hover to ensure expanded card is never clipped by other markers
+        const hoverListener = markerRef.current.addListener('mouseover', () => {
+            markerRef.current.zIndex = 1000;
+        });
+        const outListener = markerRef.current.addListener('mouseout', () => {
+            markerRef.current.zIndex = 1;
+        });
 
         // Update position if it changed
         const newPos = {
@@ -144,7 +182,12 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
         if (markerRef.current.position.lat !== newPos.lat || markerRef.current.position.lng !== newPos.lng) {
             markerRef.current.position = newPos;
         }
-    }, [property.price, property.listing_type, property.latitude, property.longitude, useDefaultMarkers]);
+
+        return () => {
+            hoverListener.remove();
+            outListener.remove();
+        };
+    }, [property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, useDefaultMarkers]);
 
     return null;
 }, (prevProps, nextProps) => {
