@@ -594,14 +594,17 @@ const PublicLayout = () => {
                                                                         </div>
 
                                                                         {/* Column 3: Locations with Background Image */}
-                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg">
-                                                                            {/* Background Image Container */}
+                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg bg-[#111827]">
+                                                                            {/* Background Image Container - Small, faded, right-positioned watermark */}
                                                                             <div
-                                                                                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover/locations-box:scale-110"
-                                                                                style={{ backgroundImage: 'url(/images/train_bg.png)' }}
+                                                                                className="absolute -right-10 -bottom-10 w-full h-full opacity-[0.15] transition-transform duration-1000 group-hover/locations-box:scale-110 pointer-events-none"
+                                                                                style={{
+                                                                                    backgroundImage: 'url(/images/train_bg.png)',
+                                                                                    backgroundSize: 'contain',
+                                                                                    backgroundPosition: 'right bottom',
+                                                                                    backgroundRepeat: 'no-repeat'
+                                                                                }}
                                                                             />
-                                                                            {/* Overlay for readability */}
-                                                                            <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/50 to-transparent" />
 
                                                                             {/* Content */}
                                                                             <div className="relative z-10 p-8 h-full flex flex-col items-start text-left">
