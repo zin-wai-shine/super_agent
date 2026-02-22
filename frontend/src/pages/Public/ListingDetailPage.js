@@ -160,6 +160,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [listing, setListing] = useState(null);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
+    const isMapView = searchParams.get('view') === 'map';
     const [viewedBooking, setViewedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -1879,18 +1880,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                         {/* Map Content */}
                                         <div className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
                                             {activeMapTab === 'google' ? (
-                                                <GoogleMapComponent
-                                                    listings={[listing]}
-                                                    center={listing.latitude && listing.longitude ? {
-                                                        lat: parseFloat(listing.latitude),
-                                                        lng: parseFloat(listing.longitude)
-                                                    } : undefined}
-                                                    zoom={15}
-                                                    onMarkerClick={() => { }}
-                                                    options={{ gestureHandling: 'cooperative' }}
-                                                />
+                                                <div className="w-full h-full animate-in fade-in duration-700">
+                                                    <GoogleMapComponent
+                                                        listings={[listing]}
+                                                        center={useMemo(() => (listing.latitude && listing.longitude ? {
+                                                            lat: parseFloat(listing.latitude),
+                                                            lng: parseFloat(listing.longitude)
+                                                        } : undefined), [listing.latitude, listing.longitude])}
+                                                        zoom={15}
+                                                        onMarkerClick={() => { }}
+                                                        options={useMemo(() => ({ gestureHandling: 'cooperative' }), [])}
+                                                    />
+                                                </div>
                                             ) : (
-                                                <div className="relative w-full h-full bg-slate-50 flex flex-col">
+                                                <div className="relative w-full h-full bg-slate-50 flex flex-col animate-in fade-in duration-700">
                                                     {/* Legend Overlay */}
                                                     <div className="absolute top-4 left-4 z-40 hidden md:flex flex-wrap gap-1.5 max-w-[300px]">
                                                         {[
@@ -2072,9 +2075,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         {!bookingId && relatedListings.length > 0 && (
                             <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-4 gap-6'}`}>
                                     {relatedListings.map((related) => (
-                                        <ListingCard key={related.id} listing={related} viewMode="grid" />
+                                        <ListingCard
+                                            key={related.id}
+                                            listing={related}
+                                            viewMode={isMapView ? 'map-list' : 'grid'}
+                                        />
                                     ))}
                                 </div>
                             </div>
