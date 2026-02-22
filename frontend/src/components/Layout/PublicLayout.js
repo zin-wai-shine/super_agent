@@ -594,34 +594,31 @@ const PublicLayout = () => {
                                                                         </div>
 
                                                                         {/* Column 3: Locations */}
-                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box">
-                                                                            {/* Content */}
-                                                                            <div className="relative z-10 p-8 h-full flex flex-col items-start text-left">
-                                                                                <div className="flex items-center mb-6">
-                                                                                    <FiMapPin className="w-5 h-5 text-gray-400 mr-6" />
-                                                                                    <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
-                                                                                </div>
-                                                                                <div className="flex flex-col gap-1 items-start">
-                                                                                    {[
-                                                                                        { name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon },
-                                                                                        { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon },
-                                                                                        { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon },
-                                                                                        { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon },
-                                                                                        { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon },
-                                                                                        { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon },
-                                                                                    ].map((link, index) => (
-                                                                                        <Link
-                                                                                            key={link.name}
-                                                                                            to={link.href}
-                                                                                            className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
-                                                                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-                                                                                        >
-                                                                                            <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
-                                                                                            <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
-                                                                                            <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300 ml-auto" />
-                                                                                        </Link>
-                                                                                    ))}
-                                                                                </div>
+                                                                        <div className="space-y-8 pr-6 flex flex-col items-start text-left" style={{ borderColor: 'var(--menu-divider)' }}>
+                                                                            <div className="flex items-center px-4 mb-2">
+                                                                                <FiMapPin className="w-5 h-5 text-gray-400 mr-6" />
+                                                                                <h3 className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--menu-text-muted)' }}>Locations</h3>
+                                                                            </div>
+                                                                            <div className="flex flex-col gap-1 items-start">
+                                                                                {[
+                                                                                    { name: 'Sukhumvit Area', href: '/listings?district=sukhumvit', icon: MapPinIcon },
+                                                                                    { name: 'Rama 9 Area', href: '/listings?district=rama9', icon: MapPinIcon },
+                                                                                    { name: 'Silom / Sathorn', href: '/listings?district=silom', icon: MapPinIcon },
+                                                                                    { name: 'Ladprao / Bangna', href: '/listings?district=ladprao', icon: MapPinIcon },
+                                                                                    { name: 'Near BTS Stations', href: '/listings?near=bts', icon: MapPinIcon },
+                                                                                    { name: 'Near MRT Stations', href: '/listings?near=mrt', icon: MapPinIcon },
+                                                                                ].map((link, index) => (
+                                                                                    <Link
+                                                                                        key={link.name}
+                                                                                        to={link.href}
+                                                                                        className="group/link flex items-center px-4 py-3 rounded-xl transition-all animate-slide-in-right opacity-0 min-w-[280px]"
+                                                                                        style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+                                                                                    >
+                                                                                        <link.icon className="w-[18px] h-[18px] text-gray-700 group-hover/link:text-[var(--primary-color)] transition-all mr-5 stroke-[1.5]" />
+                                                                                        <span className="text-[13px] font-semibold text-gray-800 group-hover/link:text-[var(--primary-color)] transition-all mr-2">{link.name}</span>
+                                                                                        <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 group-hover/link:text-[var(--primary-color)] group-hover/link:translate-x-2 transition-all duration-300" />
+                                                                                    </Link>
+                                                                                ))}
                                                                             </div>
                                                                         </div>
 
