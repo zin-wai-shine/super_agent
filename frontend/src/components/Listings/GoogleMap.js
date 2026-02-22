@@ -153,7 +153,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; transition: all 0.2s ease; }
                 .marker-group.hovered .resting-nub { opacity: 0; transition: opacity 0.2s ease; }
 
-                .marker-group.hovered .expanded-card { width: 300px; height: 180px; opacity: 1; padding: 0.875rem; }
+                .marker-group.hovered .expanded-card { width: 310px; height: 130px; opacity: 1; padding: 0; }
                 .marker-group.hovered .expanded-content { opacity: 1; }
             </style>
             <div class="marker-group group relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
@@ -179,39 +179,50 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                     <path d="M0,0 L9,9 L18,0" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
-                <!-- HOVER EXPANDED CARD: Full Property Info -->
-                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden transition-all duration-300 ease-out group-hover:w-[300px] group-hover:h-[180px] group-hover:opacity-100 group-hover:p-3.5 flex flex-col gap-2 z-10">
+                <!-- HOVER EXPANDED CARD: Two-column layout with image + details -->
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden transition-all duration-300 ease-out group-hover:w-[310px] group-hover:h-[130px] group-hover:opacity-100 flex z-10">
 
-                    <!-- Header: title + price -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-start justify-between gap-2">
-                        <div class="text-[13px] font-bold text-gray-900 truncate leading-tight flex-1">${property.title}</div>
-                        <div class="text-[13px] font-black text-gray-900 whitespace-nowrap">${priceFormatted}</div>
+                    <!-- Left: Image -->
+                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[90px] flex-none">
+                        <img src="${imageUrl}" class="w-full h-full object-cover" />
                     </div>
 
-                    <!-- Info rows: Location / Station / Type -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col gap-0.5">
-                        <div class="flex items-center gap-1">
-                            <span class="text-[10px] text-gray-400 w-[52px] flex-none">Location</span>
-                            <span class="text-[10px] text-gray-300">:</span>
-                            <span class="text-[10px] font-semibold text-gray-700">${property.district || '—'}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-[10px] text-gray-400 w-[52px] flex-none">Station</span>
-                            <span class="text-[10px] text-gray-300">:</span>
-                            <span class="text-[10px] font-semibold text-gray-700">${property.station_name || property.station || '—'}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-[10px] text-gray-400 w-[52px] flex-none">Type</span>
-                            <span class="text-[10px] text-gray-300">:</span>
-                            <span class="text-[10px] font-semibold text-gray-700 capitalize">${property.property_type || '—'} • ${property.listing_type || '—'}</span>
-                        </div>
-                    </div>
+                    <!-- Right: Info -->
+                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between flex-1 min-w-0 px-3 py-2.5">
 
-                    <!-- Stats row: Beds / Baths / m² -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-3 pt-1 border-t border-gray-100">
-                        <span class="text-[10px] text-gray-500">Beds <span class="font-bold text-gray-800">${property.bedrooms ?? '—'}</span></span>
-                        <span class="text-[10px] text-gray-500">Baths <span class="font-bold text-gray-800">${property.bathrooms ?? '—'}</span></span>
-                        <span class="text-[10px] text-gray-500">m² <span class="font-bold text-gray-800">${property.area ?? '—'}</span></span>
+                        <!-- Title + Price -->
+                        <div>
+                            <div class="flex items-center justify-between gap-1 mb-1.5">
+                                <div class="text-[11px] font-bold text-gray-900 truncate leading-tight">${property.title}</div>
+                                <div class="text-[11px] font-black text-gray-900 whitespace-nowrap ml-1">${priceFormatted}</div>
+                            </div>
+
+                            <!-- Info rows -->
+                            <div class="flex flex-col gap-[2px]">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Location</span>
+                                    <span class="text-[9px] text-gray-300">:</span>
+                                    <span class="text-[9px] font-semibold text-gray-600 truncate">${property.district || '—'}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Station</span>
+                                    <span class="text-[9px] text-gray-300">:</span>
+                                    <span class="text-[9px] font-semibold text-gray-600 truncate">${property.station_name || property.station || '—'}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] text-gray-400 w-[42px] flex-none tracking-wide">Type</span>
+                                    <span class="text-[9px] text-gray-300">:</span>
+                                    <span class="text-[9px] font-semibold text-gray-600 capitalize truncate">${property.property_type || '—'} • ${property.listing_type || '—'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom stats: Beds / Baths / m² -->
+                        <div class="flex items-center gap-3 pt-1.5 border-t border-gray-100 mt-1">
+                            <span class="text-[9px] text-gray-400">Beds <span class="font-bold text-gray-700">${property.bedrooms ?? '—'}</span></span>
+                            <span class="text-[9px] text-gray-400">Baths <span class="font-bold text-gray-700">${property.bathrooms ?? '—'}</span></span>
+                            <span class="text-[9px] text-gray-400">m² <span class="font-bold text-gray-700">${property.area ?? '—'}</span></span>
+                        </div>
                     </div>
 
                 </div>
