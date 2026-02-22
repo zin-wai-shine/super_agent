@@ -150,57 +150,21 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
 
         const newInnerHTML = `
             <style>
-                .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; }
-                .marker-group.hovered .resting-pointer { opacity: 0; transform: translateX(-50%) translateY(-0.5rem); }
-                .marker-group.hovered .resting-dot { opacity: 0; scale: 0; }
-                
-                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 100; padding: 0.875rem; transform: translateX(-50%) translateY(-2rem); }
-                .marker-group.hovered .expanded-content { opacity: 1; }
-                .marker-group.hovered .expanded-pointer { opacity: 1; transform: translateX(-50%) translateY(-2rem); }
-                .marker-group.hovered .expanded-dot { opacity: 1; scale: 1; }
+                .marker-group.hovered .resting-pill { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+                .marker-group.hovered .resting-pointer path { stroke: #3b82f6; }
             </style>
             <div class="marker-group group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
-                <div class="resting-pill flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-0 group-hover:opacity-0 group-hover:pointer-events-none z-10">
+                <div class="resting-pill flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 z-10">
                     <span class="text-black font-extrabold text-[13px] whitespace-nowrap tracking-tight">${priceFormatted}</span>
                 </div>
                 <!-- Smooth Resting Pointer (Droplet style) -->
-                <svg class="resting-pointer absolute -bottom-2 left-1/2 w-10 h-5 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-2 pointer-events-none" style="transform: translateX(-50%);" viewBox="0 0 40 20">
+                <svg class="resting-pointer absolute -bottom-2 left-1/2 w-10 h-5 transition-all duration-300 pointer-events-none" style="transform: translateX(-50%);" viewBox="0 0 40 20">
                     <path d="M4 0 C 4 8, 15 18, 20 20 C 25 18, 36 8, 36 0" fill="white" stroke="black" stroke-width="2.5" stroke-linecap="round" />
-                    <!-- Seamless transition to pill -->
                     <rect x="5.5" y="-1" width="29" height="3" fill="white" />
                 </svg>
                 <!-- Resting Target Dot -->
-                <div class="resting-dot absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rounded-full transition-all duration-300 group-hover:scale-0 group-hover:opacity-0 pointer-events-none z-20"></div>
+                <div class="resting-dot absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rounded-full pointer-events-none z-20"></div>
 
-                <!-- HOVER EXPANDED CARD: Premium Glass Design -->
-                <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 w-0 h-0 opacity-0 bg-white/90 backdrop-blur-lg rounded-[24px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.3),0_18px_36px_-18px_rgba(0,0,0,0.4)] border-2 border-black overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 group-hover:-translate-y-8 z-10">
-                    <!-- Thumbnail with rounded edges -->
-                    <div class="w-[68px] h-[68px] rounded-[18px] overflow-hidden shadow-sm flex-none bg-gray-100">
-                        <img src="${imageUrl}" class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" />
-                    </div>
-                    
-                    <!-- Content area -->
-                    <div class="expanded-content flex flex-col min-w-0 flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform">
-                        <span class="text-[10px] font-black uppercase text-primary-500 tracking-[0.2em] mb-1 leading-none">${property.property_type || 'Property'}</span>
-                        <div class="text-[14px] font-bold text-gray-900 truncate leading-tight mb-1">${property.title}</div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[16px] font-black text-gray-900">${priceFormatted}</span>
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                            <span class="text-[11px] font-bold text-gray-500 capitalize opacity-80">${property.listing_type}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Premium Integrated Expanded Pointer (Flows from card) -->
-                <svg class="expanded-pointer absolute -bottom-2 left-1/2 w-14 h-8 opacity-0 group-hover:opacity-100 transition-all duration-400 group-hover:-translate-y-8 pointer-events-none" style="transform: translateX(-50%);" viewBox="0 0 56 32">
-                    <path d="M4 0 C 4 12, 22 28, 28 32 C 34 28, 52 12, 52 0" fill="rgba(255,255,255,0.95)" stroke="black" stroke-width="2.5" stroke-linecap="round" />
-                    <!-- Seamless transition to card -->
-                    <rect x="5.5" y="-1" width="45" height="4" fill="rgba(255,255,255,0.95)" />
-                </svg>
-                
-                <!-- Expanded Target Dot (Precise Location) -->
-                <div class="expanded-dot absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-black border-2 border-white rounded-full opacity-0 group-hover:opacity-100 scale-0 group-hover:scale-100 transition-all duration-500 delay-150 z-20 shadow-sm"></div>
-                
                 <div class="absolute inset-0 bg-black/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </div>
         `;
