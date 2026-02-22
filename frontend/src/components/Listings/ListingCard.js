@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
     MapPinIcon,
     BookmarkIcon,
@@ -52,6 +52,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated, user } = useAuth();
@@ -219,9 +220,11 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     const isMapListView = viewMode === 'map-list';
 
     if (isMapListView) {
+        const detailParams = new URLSearchParams(searchParams);
+        detailParams.set('detail', id);
         return (
             <Link
-                to={to || `/listings?detail=${id}`}
+                to={to || `/listings?${detailParams.toString()}`}
                 className="group flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors duration-300 px-2 -mx-2 rounded-xl"
             >
                 {/* Image Section */}
@@ -334,9 +337,11 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     }
 
     if (isListView) {
+        const detailParams = new URLSearchParams(searchParams);
+        detailParams.set('detail', id);
         return (
             <Link
-                to={to || `/listings?detail=${id}`}
+                to={to || `/listings?${detailParams.toString()}`}
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
             >
                 {/* Image Section */}

@@ -782,7 +782,11 @@ const ListingsPage = () => {
                                         <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
-                                                onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_blank')}
+                                                onMarkerClick={(property) => {
+                                                    const newParams = new URLSearchParams(searchParams);
+                                                    newParams.set('detail', property.id);
+                                                    setSearchParams(newParams);
+                                                }}
                                                 onBoundsChanged={handleMapBoundsChanged}
                                             />
                                             {/* Map Overlays */}
@@ -806,7 +810,11 @@ const ListingsPage = () => {
                                     <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
                                         <GoogleMap
                                             listings={listings}
-                                            onMarkerClick={(property) => window.open(`/listings/${property.id}`, '_self')}
+                                            onMarkerClick={(property) => {
+                                                const newParams = new URLSearchParams(searchParams);
+                                                newParams.set('detail', property.id);
+                                                setSearchParams(newParams);
+                                            }}
                                             onBoundsChanged={handleMapBoundsChanged}
                                         />
                                     </div>
@@ -919,7 +927,9 @@ const ListingsPage = () => {
                             <GoogleMap
                                 listings={listings}
                                 onMarkerClick={(property) => {
-                                    window.open(`/listings/${property.id}`, '_blank');
+                                    const newParams = new URLSearchParams(searchParams);
+                                    newParams.set('detail', property.id);
+                                    setSearchParams(newParams);
                                 }}
                                 onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
                             />
