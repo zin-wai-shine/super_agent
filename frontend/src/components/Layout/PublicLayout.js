@@ -594,10 +594,10 @@ const PublicLayout = () => {
                                                                         </div>
 
                                                                         {/* Column 3: Locations */}
-                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg bg-[#111827]">
-                                                                            {/* Small decorative image at bottom-right, original colors */}
+                                                                        <div className="relative rounded-2xl overflow-hidden min-h-[420px] group/locations-box shadow-lg">
+                                                                            {/* Full-width background image, no hover effect */}
                                                                             <div
-                                                                                className="absolute bottom-0 right-0 w-[55%] h-[45%] transition-transform duration-1000 group-hover/locations-box:scale-105 pointer-events-none"
+                                                                                className="absolute inset-0 pointer-events-none"
                                                                                 style={{
                                                                                     backgroundImage: 'url(/images/train_bg.png)',
                                                                                     backgroundSize: 'cover',
@@ -605,10 +605,8 @@ const PublicLayout = () => {
                                                                                     backgroundRepeat: 'no-repeat',
                                                                                 }}
                                                                             />
-                                                                            {/* Gradient fade from the card background into the image */}
-                                                                            <div className="absolute bottom-0 right-0 w-[55%] h-[45%] pointer-events-none"
-                                                                                style={{ background: 'linear-gradient(to bottom right, #111827 0%, transparent 50%)' }}
-                                                                            />
+                                                                            {/* Dark overlay for readability */}
+                                                                            <div className="absolute inset-0 bg-black/60 pointer-events-none" />
                                                                             {/* Content */}
                                                                             <div className="relative z-10 p-8 h-full flex flex-col items-start text-left">
                                                                                 <div className="flex items-center mb-6">
