@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
-import { useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
 import ListingCard from '../../components/Listings/ListingCard';
@@ -133,12 +132,6 @@ const ListingsPage = () => {
     const [isMapTransitioning, setIsMapTransitioning] = useState(false);
     const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
 
-    const { isLoaded: isMapLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
-        libraries: ['places', 'marker'],
-        version: 'weekly'
-    });
 
     // Update local state when searchParams change, except during transition
     useEffect(() => {
@@ -834,7 +827,6 @@ const ListingsPage = () => {
                                     <div className={`hidden lg:block w-[55%] sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px] h-[calc(100vh-190px)]' : 'top-[116px] h-[calc(100vh-130px)]'}`}>
                                         <div className="w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
-                                                isLoaded={isMapLoaded}
                                                 listings={listings}
                                                 onMarkerClick={(property) => {
                                                     const newParams = new URLSearchParams(searchParams);
@@ -863,7 +855,6 @@ const ListingsPage = () => {
                                 {(isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
                                     <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
                                         <GoogleMap
-                                            isLoaded={isMapLoaded}
                                             listings={listings}
                                             onMarkerClick={(property) => {
                                                 const newParams = new URLSearchParams(searchParams);

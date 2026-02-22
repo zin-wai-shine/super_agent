@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { GoogleMap, Marker, OverlayView } from '@react-google-maps/api';
+import { GoogleMap, Marker, OverlayView, useJsApiLoader } from '@react-google-maps/api';
 import { getMediaUrl } from '../../utils/media';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -273,7 +273,13 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
     );
 });
 
-const GoogleMapComponent = ({ isLoaded, listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false }) => {
+const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false }) => {
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+        libraries: ['places', 'marker'],
+        version: 'weekly'
+    });
 
 
     const [map, setMap] = useState(null);

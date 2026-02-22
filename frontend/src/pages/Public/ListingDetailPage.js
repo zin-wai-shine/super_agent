@@ -180,13 +180,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
 
-    // 1. Initialize Map Loader first (Hook)
-    const { isLoaded: isMapScriptLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
-        libraries: ['places', 'marker'],
-        version: 'weekly'
-    });
 
     // 2. Optimized Map Props (Hooks)
     const mapCenter = useMemo(() => (listing?.latitude && listing?.longitude ? {
@@ -1904,7 +1897,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                             {activeMapTab === 'google' ? (
                                                 <div className="w-full h-full animate-in fade-in duration-700">
                                                     <GoogleMapComponent
-                                                        isLoaded={isMapScriptLoaded}
                                                         listings={[listing]}
                                                         center={mapCenter}
                                                         zoom={15}
