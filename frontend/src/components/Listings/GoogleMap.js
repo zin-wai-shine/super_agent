@@ -98,6 +98,24 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
             onClick(property);
         });
 
+        const handleMouseEnter = () => {
+            if (markerRef.current) {
+                markerRef.current.zIndex = 10000;
+                if (contentRef.current) contentRef.current.style.zIndex = "10000";
+            }
+        };
+
+        const handleMouseLeave = () => {
+            if (markerRef.current) {
+                markerRef.current.zIndex = 1;
+                if (contentRef.current) contentRef.current.style.zIndex = "1";
+            }
+        };
+
+        const content = contentRef.current;
+        content.querySelector('.marker-group')?.addEventListener('mouseenter', handleMouseEnter);
+        content.querySelector('.marker-group')?.addEventListener('mouseleave', handleMouseLeave);
+
         markerRef.current = marker;
 
         return () => {
@@ -107,6 +125,11 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
             }
             if (listener) {
                 listener.remove();
+            }
+            if (content) {
+                const group = content.querySelector('.marker-group');
+                group?.removeEventListener('mouseenter', handleMouseEnter);
+                group?.removeEventListener('mouseleave', handleMouseLeave);
             }
         };
     }, [map, useDefaultMarkers]); // Re-run if useDefaultMarkers changes drastically (though unlikely)
@@ -126,21 +149,27 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
         const imageUrl = getMediaUrl(property.media?.find(m => m.type === 'image')?.url);
 
         const newInnerHTML = `
-            <div class="group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
+            <style>
+                .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; }
+                .marker-group.hovered .expanded-card { width: 280px; height: 96px; opacity: 100; padding: 0.875rem; transform: translateX(-50%) translateY(-1.25rem); }
+                .marker-group.hovered .expanded-content { opacity: 1; }
+                .marker-group.hovered .expanded-pointer { opacity: 1; transform: translateX(-50%) translateY(-1.125rem); }
+            </style>
+            <div class="marker-group group relative cursor-pointer flex items-center justify-center" style="transform: translate(-50%, -100%);">
                 <!-- RESTING STATE: Professional Pill Design -->
-                <div class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-primary-600 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-0 group-hover:opacity-0 group-hover:pointer-events-none">
-                    <span class="text-primary-600 font-extrabold text-[13px] whitespace-nowrap tracking-tight">${priceFormatted}</span>
+                <div class="resting-pill flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-0 group-hover:opacity-0 group-hover:pointer-events-none">
+                    <span class="text-black font-extrabold text-[13px] whitespace-nowrap tracking-tight">${priceFormatted}</span>
                 </div>
 
                 <!-- HOVER EXPANDED CARD: Modern Summary -->
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 w-0 h-0 opacity-0 bg-white rounded-[24px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.25),0_18px_36px_-18px_rgba(0,0,0,0.3)] border border-gray-100/50 overflow-hidden transition-all duration-600 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 group-hover:-translate-y-4">
-                    <!-- Thumbnail with subtle zoom and rounded edges -->
+                <div class="expanded-card absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 w-0 h-0 opacity-0 bg-white rounded-[24px] shadow-[0_30px_60px_-12px_rgba(50,50,93,0.25),0_18px_36px_-18px_rgba(0,0,0,0.3)] border-2 border-black overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[280px] group-hover:h-[96px] group-hover:opacity-100 group-hover:p-3.5 flex items-center gap-4 group-hover:-translate-y-5">
+                    <!-- Thumbnail with rounded edges -->
                     <div class="w-[68px] h-[68px] rounded-[18px] overflow-hidden shadow-sm flex-none bg-gray-100">
-                        <img src="${imageUrl}" class="w-full h-full object-cover transition-all duration-1000 delay-100 group-hover:scale-110" />
+                        <img src="${imageUrl}" class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" />
                     </div>
                     
-                    <!-- Content area with "Small to Large" text animation -->
-                    <div class="flex flex-col min-w-0 flex-1 transition-all duration-500 delay-100 transform scale-50 group-hover:scale-100 origin-left">
+                    <!-- Content area -->
+                    <div class="expanded-content flex flex-col min-w-0 flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform">
                         <span class="text-[10px] font-black uppercase text-primary-500 tracking-[0.2em] mb-1 leading-none">${property.property_type || 'Property'}</span>
                         <div class="text-[14px] font-bold text-gray-900 truncate leading-tight mb-1">${property.title}</div>
                         <div class="flex items-center gap-2">
@@ -152,10 +181,13 @@ const PropertyMarker = React.memo(({ map, property, onClick, useDefaultMarkers }
                 </div>
                 
                 <!-- Expanded shadow overlay for depth -->
-                <div class="absolute inset-0 bg-primary-600/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                <div class="absolute inset-0 bg-black/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                 
-                <!-- Bottom Pointer (Arrow) -->
-                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 border-r-2 border-b-2 border-primary-600 bg-white transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-2"></div>
+                <!-- Expanded Card Pointer (Stronger solid black pin point) -->
+                <div class="expanded-pointer absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 rotate-45 bg-black opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-4 shadow-[2px_2px_10px_rgba(0,0,0,0.2)]"></div>
+                
+                <!-- Bottom Pointer (Arrow) for resting state -->
+                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 border-r-2 border-b-2 border-black bg-white transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-2"></div>
             </div>
         `;
 
