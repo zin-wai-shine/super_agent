@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { developerApi } from '../../services/api';
+import { developerApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
     BuildingOfficeIcon,
@@ -14,6 +14,7 @@ import {
     ChevronRightIcon,
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
+    PhotoIcon,
 } from '@heroicons/react/24/outline';
 import {
     useReactTable,
@@ -40,6 +41,13 @@ const ProjectManagement = () => {
     // Form state
     const [formName, setFormName] = useState('');
     const [formDeveloperId, setFormDeveloperId] = useState('');
+    const [formDescription, setFormDescription] = useState('');
+    const [formStatus, setFormStatus] = useState('');
+    const [formProjectType, setFormProjectType] = useState('');
+    const [formDistrict, setFormDistrict] = useState('');
+    const [formStationId, setFormStationId] = useState('');
+    const [formCoverImage, setFormCoverImage] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [formError, setFormError] = useState('');
 
     const fetchData = async () => {
@@ -73,12 +81,24 @@ const ProjectManagement = () => {
     const handleOpenForm = (project = null) => {
         if (project) {
             setEditingProject(project);
-            setFormName(project.name);
-            setFormDeveloperId(project.developer_id);
+            setFormName(project.name || '');
+            setFormDeveloperId(project.developer_id || '');
+            setFormDescription(project.description || '');
+            setFormStatus(project.status || '');
+            setFormProjectType(project.project_type || '');
+            setFormDistrict(project.district || '');
+            setFormStationId(project.station_id || '');
+            setFormCoverImage(project.cover_image || '');
         } else {
             setEditingProject(null);
             setFormName('');
             setFormDeveloperId('');
+            setFormDescription('');
+            setFormStatus('');
+            setFormProjectType('');
+            setFormDistrict('');
+            setFormStationId('');
+            setFormCoverImage('');
         }
         setFormError('');
         setShowForm(true);
@@ -89,7 +109,30 @@ const ProjectManagement = () => {
         setEditingProject(null);
         setFormName('');
         setFormDeveloperId('');
+        setFormDescription('');
+        setFormStatus('');
+        setFormProjectType('');
+        setFormDistrict('');
+        setFormStationId('');
+        setFormCoverImage('');
         setFormError('');
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        try {
+            // Reusing banner upload endpoint which takes a generic image and returns a URL
+            const res = await uploadApi.uploadBanner(file);
+            setFormCoverImage(res.data.url);
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            toast.error('Failed to upload image');
+        } finally {
+            setUploadingImage(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -97,7 +140,16 @@ const ProjectManagement = () => {
         if (!formName.trim()) { setFormError('Project name is required'); return; }
         if (!formDeveloperId) { setFormError('Developer is required'); return; }
         try {
-            const data = { name: formName.trim(), developer_id: formDeveloperId };
+            const data = {
+                name: formName.trim(),
+                developer_id: formDeveloperId,
+                description: formDescription,
+                status: formStatus,
+                project_type: formProjectType,
+                district: formDistrict,
+                station_id: formStationId,
+                cover_image: formCoverImage
+            };
             if (editingProject) {
                 await developerApi.updateProject(editingProject.id, data);
                 toast.success('Project updated!');
@@ -362,30 +414,110 @@ const ProjectManagement = () => {
                                 <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="input-label">Developer *</label>
-                                <StyledSelect
-                                    options={developerOptions}
-                                    value={formDeveloperId}
-                                    onChange={(val) => setFormDeveloperId(val)}
-                                    placeholder="Select developer..."
-                                />
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="input-label">Cover Image</label>
+                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-[3px] bg-gray-50 dark:bg-gray-800/50 relative overflow-hidden">
+                                        {formCoverImage ? (
+                                            <div className="relative w-full h-40">
+                                                <img src={formCoverImage} alt="Cover" className="w-full h-full object-cover rounded-[3px]" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormCoverImage('')}
+                                                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1 transition-colors"
+                                                >
+                                                    <XMarkIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1 text-center">
+                                                <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                                <div className="flex text-sm text-gray-600 dark:text-gray-400 justify-center">
+                                                    <label htmlFor="file-upload" className="relative cursor-pointer rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none">
+                                                        <span>Upload a file</span>
+                                                        <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                                                    </label>
+                                                </div>
+                                                <p className="text-xs text-gray-500">{uploadingImage ? 'Uploading...' : 'PNG, JPG, WEBP up to 5MB'}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="input-label">Project Name *</label>
+                                    <input
+                                        type="text"
+                                        value={formName}
+                                        onChange={(e) => setFormName(e.target.value)}
+                                        className={`input-field ${formError && !formName ? 'border-red-300' : ''}`}
+                                        placeholder="e.g., Life Asoke"
+                                    />
+                                    {formError && !formName && <p className="text-red-500 text-xs mt-1">{formError}</p>}
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="input-label">Description</label>
+                                    <textarea
+                                        value={formDescription}
+                                        onChange={(e) => setFormDescription(e.target.value)}
+                                        className="input-field min-h-[80px]"
+                                        placeholder="Brief description about the project..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">Developer *</label>
+                                    <StyledSelect
+                                        options={developerOptions}
+                                        value={formDeveloperId}
+                                        onChange={(val) => setFormDeveloperId(val)}
+                                        placeholder="Select developer..."
+                                    />
+                                    {formError && !formDeveloperId && <p className="text-red-500 text-xs mt-1">{formError}</p>}
+                                </div>
+                                <div>
+                                    <label className="input-label">Project Type</label>
+                                    <StyledSelect
+                                        options={[
+                                            { value: 'condominium', label: 'Condominium' },
+                                            { value: 'housing_estate', label: 'Housing Estate' },
+                                            { value: 'townhome', label: 'Townhome' },
+                                            { value: 'mixed_use', label: 'Mixed-Use' },
+                                            { value: 'commercial', label: 'Commercial' },
+                                        ]}
+                                        value={formProjectType}
+                                        onChange={setFormProjectType}
+                                        placeholder="e.g., Condominium"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">Status</label>
+                                    <StyledSelect
+                                        options={[
+                                            { value: 'pre_sales', label: 'Pre-Sales' },
+                                            { value: 'new_launch', label: 'New Launch' },
+                                            { value: 'under_construction', label: 'Under Construction' },
+                                            { value: 'ready_to_move', label: 'Ready to Move' },
+                                            { value: 'sold_out', label: 'Sold Out' },
+                                        ]}
+                                        value={formStatus}
+                                        onChange={setFormStatus}
+                                        placeholder="Current status"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">District / Zone</label>
+                                    <input
+                                        type="text"
+                                        value={formDistrict}
+                                        onChange={(e) => setFormDistrict(e.target.value)}
+                                        className="input-field"
+                                        placeholder="e.g., Sukhumvit, Rama 9"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="input-label">Project Name *</label>
-                                <input
-                                    type="text"
-                                    value={formName}
-                                    onChange={(e) => setFormName(e.target.value)}
-                                    className={`input-field ${formError ? 'border-red-300' : ''}`}
-                                    placeholder="e.g., Life Asoke"
-                                />
-                                {formError && <p className="text-red-500 text-xs mt-1">{formError}</p>}
-                            </div>
-                            <div className="flex justify-end space-x-3 pt-4">
+                            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-700 mt-6">
                                 <button type="button" onClick={handleCloseForm} className="btn-secondary">Cancel</button>
-                                <button type="submit" className="btn-primary px-6">{editingProject ? 'Update' : 'Create'}</button>
+                                <button type="submit" disabled={uploadingImage} className="btn-primary px-6 disabled:opacity-50">{editingProject ? 'Update' : 'Create'}</button>
                             </div>
                         </form>
                     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi } from '../../services/api';
-import ListingCard from '../../components/Listings/ListingCard';
+import ProjectCard from '../../components/Listings/ProjectCard';
 import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import StyledSelect from '../../components/Form/StyledSelect';
@@ -36,32 +36,23 @@ import {
 } from '@heroicons/react/24/solid';
 import Logo from '../../components/Common/Logo';
 
-// Static Options moved outside to prevent recreation
-const propertyTypeOptions = [
+const projectTypeOptions = [
     { value: '', label: 'All Types' },
-    { value: 'condo', label: 'Condo' },
-    { value: 'house', label: 'House' },
-    { value: 'townhouse', label: 'Townhouse' },
-    { value: 'apartment', label: 'Apartment' },
-    { value: 'land', label: 'Land' },
+    { value: 'condominium', label: 'Condominium' },
+    { value: 'housing_estate', label: 'Housing Estate' },
+    { value: 'townhome', label: 'Townhome' },
+    { value: 'mixed_use', label: 'Mixed-Use' },
+    { value: 'commercial', label: 'Commercial' },
 ];
 
-const listingTypeOptions = [
-    { value: '', label: 'Sale & Rent' },
-    { value: 'sale', label: 'For Sale' },
-    { value: 'rent', label: 'For Rent' },
+const statusOptions = [
+    { value: '', label: 'All Statuses' },
+    { value: 'pre_sales', label: 'Pre-Sales' },
+    { value: 'new_launch', label: 'New Launch' },
+    { value: 'under_construction', label: 'Under Construction' },
+    { value: 'ready_to_move', label: 'Ready to Move' },
+    { value: 'sold_out', label: 'Sold Out' },
 ];
-
-const bedroomOptions = [
-    { value: '', label: 'Any Beds' },
-    { value: '1', label: '1+ Beds' },
-    { value: '2', label: '2+ Beds' },
-    { value: '3', label: '3+ Beds' },
-    { value: '4', label: '4+ Beds' },
-    { value: '5', label: '5+ Beds' },
-];
-
-const formatPrice = (p) => p ? `${parseInt(p).toLocaleString()}` : '';
 
 const getSelectedOption = (options, value) => {
     if (!options || !value) return null;
@@ -114,11 +105,11 @@ const MapTransitionOverlay = ({ active, switchActive }) => {
 };
 
 
-const ListingsPage = () => {
+const ProjectsPage = () => {
     const { user } = useAuth();
     const { navVisible } = useOutletContext() || { navVisible: true };
     const [searchParams, setSearchParams] = useSearchParams();
-    const [listings, setListings] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
@@ -152,16 +143,15 @@ const ListingsPage = () => {
         }
     }, [isMapTransitioning]);
 
+    const [isAdvancedFilter, setIsAdvancedFilter] = useState(() => localStorage.getItem('is_advanced_filter_projects') === 'true');
+    const [developers, setDevelopers] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
 
-    const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
+    const [viewMode, setViewMode] = useState(() => localStorage.getItem('projects_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
     const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isAdvancedFilter, setIsAdvancedFilter] = useState(() => localStorage.getItem('is_advanced_filter') === 'true');
-    const [developers, setDevelopers] = useState([]);
-    const [projectsList, setProjectsList] = useState([]);
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
@@ -193,7 +183,7 @@ const ListingsPage = () => {
 
     // Save view mode selection
     useEffect(() => {
-        localStorage.setItem('listings_view_mode', viewMode);
+        localStorage.setItem('projects_view_mode', viewMode);
     }, [viewMode]);
 
     useEffect(() => {
@@ -249,6 +239,19 @@ const ListingsPage = () => {
         fetchAgentInfo();
     }, [searchParams, user]);
 
+    // Fetch developers once on mount
+    useEffect(() => {
+        const fetchDevelopersData = async () => {
+            try {
+                const response = await publicApi.getDevelopers();
+                setDevelopers(response.data || []);
+            } catch (error) {
+                console.error('Failed to fetch developers:', error);
+            }
+        };
+        fetchDevelopersData();
+    }, []);
+
     // Fetch stations once on mount (stations don't change based on URL params)
     useEffect(() => {
         const fetchStationsData = async () => {
@@ -272,23 +275,6 @@ const ListingsPage = () => {
         };
         fetchStationsData();
     }, []); // Fetch stations only once on mount
-
-    // Fetch Developers and Projects for Advanced Filter
-    useEffect(() => {
-        const fetchAdvancedFilterData = async () => {
-            try {
-                const [devRes, projRes] = await Promise.all([
-                    publicApi.getDevelopers(),
-                    publicApi.getProjects({ limit: 100 }) // Fetch enough projects for the dropdown
-                ]);
-                setDevelopers(devRes.data.developers || []);
-                setProjectsList(projRes.data.projects || []);
-            } catch (error) {
-                console.error('Failed to fetch advanced filter data:', error);
-            }
-        };
-        fetchAdvancedFilterData();
-    }, []);
 
     // Close search results on click outside
     useEffect(() => {
@@ -316,17 +302,13 @@ const ListingsPage = () => {
 
     // Filter states
     const [filters, setFilters] = useState(() => {
-        const saved = JSON.parse(localStorage.getItem('listing_filters') || '{}');
+        const saved = JSON.parse(localStorage.getItem('project_filters') || '{}');
         return {
-            type: searchParams.get('type') || saved.type || '',
-            listing_type: searchParams.get('listing_type') || saved.listing_type || '',
-            min_price: searchParams.get('min_price') || saved.min_price || '',
-            max_price: searchParams.get('max_price') || saved.max_price || '',
-            bedrooms: searchParams.get('bedrooms') || saved.bedrooms || '',
+            project_type: searchParams.get('project_type') || saved.project_type || '',
+            status: searchParams.get('status') || saved.status || '',
             station_id: searchParams.get('station_id') || saved.station_id || '',
-            developer_id: searchParams.get('developer_id') || saved.developer_id || '',
-            project_id: searchParams.get('project_id') || saved.project_id || '',
             search: searchParams.get('search') || saved.search || '',
+            developer_id: searchParams.get('developer_id') || saved.developer_id || '',
         };
     });
 
@@ -349,15 +331,11 @@ const ListingsPage = () => {
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
         const newFilters = {
-            type: params.get('type') || '',
-            listing_type: params.get('listing_type') || '',
-            min_price: params.get('min_price') || '',
-            max_price: params.get('max_price') || '',
-            bedrooms: params.get('bedrooms') || '',
+            project_type: params.get('project_type') || '',
+            status: params.get('status') || '',
             station_id: params.get('station_id') || '',
-            developer_id: params.get('developer_id') || '',
-            project_id: params.get('project_id') || '',
             search: params.get('search') || '',
+            developer_id: params.get('developer_id') || '',
         };
 
         // Only update if filters have actually changed to avoid infinite loops
@@ -383,12 +361,12 @@ const ListingsPage = () => {
             if (page === 1) {
                 // Avoid "flash" in map view OR during typing search.
                 // If map is open OR filters.search is changing, we don't clear results.
-                const isMapBoundsUpdate = isGoogleMapOpen && listings.length > 0;
-                const isSearchTyped = searchTerm !== filters.search && listings.length > 0;
+                const isMapBoundsUpdate = isGoogleMapOpen && projects.length > 0;
+                const isSearchTyped = searchTerm !== filters.search && projects.length > 0;
 
                 if (!isMapBoundsUpdate && !isSearchTyped) {
                     setInitialLoading(true);
-                    setListings([]); // Clear listings for fresh fetch on page 1
+                    setProjects([]); // Clear projects for fresh fetch on page 1
                 }
             }
             setLoading(true);
@@ -408,7 +386,7 @@ const ListingsPage = () => {
 
                 // Call API and artificial delay in parallel for premium "serial" loading feel
                 const [response] = await Promise.all([
-                    publicApi.getListings(params, { signal: controller.signal }),
+                    publicApi.getProjects(params, { signal: controller.signal }),
                     new Promise(resolve => setTimeout(resolve, 1500)) // Artificial 1.5s delay as requested
                 ]);
 
@@ -419,17 +397,17 @@ const ListingsPage = () => {
                     setIsExiting(true);
                     // Wait for the longest delay (11 * 60ms) + animation duration (600ms) = ~1260ms
                     await new Promise(resolve => setTimeout(resolve, 1300));
-                    setListings(data.listings);
+                    setProjects(data.projects);
                     setIsExiting(false);
                     setInitialLoading(false);
                 } else {
-                    setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+                    setProjects(prev => page === 1 ? data.projects : [...prev, ...data.projects]);
                 }
 
                 setTotal(data.total || 0);
             } catch (error) {
                 if (axios.isCancel(error)) return;
-                console.error('Failed to fetch listings', error);
+                console.error('Failed to fetch projects', error);
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
@@ -445,7 +423,7 @@ const ListingsPage = () => {
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
-                if (entries[0].isIntersecting && !loading && listings.length < total) {
+                if (entries[0].isIntersecting && !loading && projects.length < total) {
                     setPage(prev => prev + 1);
                 }
             },
@@ -453,12 +431,12 @@ const ListingsPage = () => {
         );
         if (observerTarget.current) observer.observe(observerTarget.current);
         return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-    }, [loading, listings.length, total]);
+    }, [loading, projects.length, total]);
 
     const handleFilterChange = (key, value, shouldScroll = true) => {
         const newFilters = { ...filters, [key]: value };
         setFilters(newFilters);
-        localStorage.setItem('listing_filters', JSON.stringify(newFilters));
+        localStorage.setItem('project_filters', JSON.stringify(newFilters));
         setPage(1);
 
         if (shouldScroll) {
@@ -481,18 +459,14 @@ const ListingsPage = () => {
 
     const clearFilters = () => {
         setFilters({
-            type: '',
-            listing_type: '',
-            min_price: '',
-            max_price: '',
-            bedrooms: '',
+            project_type: '',
+            status: '',
             station_id: '',
             developer_id: '',
-            project_id: '',
             search: '',
         });
 
-        localStorage.removeItem('listing_filters');
+        localStorage.removeItem('project_filters');
         setSearchTerm('');
         setPage(1); // Reset page
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
@@ -506,20 +480,14 @@ const ListingsPage = () => {
     // Generate active filters list (memoized or simple var)
     const activeFiltersList = [];
     if (filters.search) activeFiltersList.push({ label: `"${filters.search}"`, key: 'search' });
-    if (filters.type) {
-        const opt = propertyTypeOptions.find(o => o.value === filters.type);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'type' });
+    if (filters.project_type) {
+        const opt = projectTypeOptions.find(o => o.value === filters.project_type);
+        if (opt) activeFiltersList.push({ label: opt.label, key: 'project_type' });
     }
-    if (filters.listing_type) {
-        const opt = listingTypeOptions.find(o => o.value === filters.listing_type);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type' });
+    if (filters.status) {
+        const opt = statusOptions.find(o => o.value === filters.status);
+        if (opt) activeFiltersList.push({ label: opt.label, key: 'status' });
     }
-    if (filters.bedrooms) {
-        const opt = bedroomOptions.find(o => o.value === filters.bedrooms);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'bedrooms' });
-    }
-    if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
-    if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
     if (filters.station_id) {
         // Use flatStations (already flat option objects) to find the label
         const station = flatStations.find(s => s && s.value === filters.station_id);
@@ -528,10 +496,6 @@ const ListingsPage = () => {
     if (filters.developer_id) {
         const developer = developers.find(d => d.id === filters.developer_id);
         if (developer) activeFiltersList.push({ label: `Dev: ${developer.name}`, key: 'developer_id' });
-    }
-    if (filters.project_id) {
-        const project = projectsList.find(p => p.id === filters.project_id);
-        if (project) activeFiltersList.push({ label: `Project: ${project.name}`, key: 'project_id' });
     }
 
     // --- Render Helper: Compact Filter Content (Reusable for Sidebar/Modal) ---
@@ -553,7 +517,7 @@ const ListingsPage = () => {
                         onClick={() => {
                             const newValue = !isAdvancedFilter;
                             setIsAdvancedFilter(newValue);
-                            localStorage.setItem('is_advanced_filter', newValue);
+                            localStorage.setItem('is_advanced_filter_projects', newValue);
                         }}
                         className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${isAdvancedFilter ? 'bg-primary-600' : 'bg-gray-200'}`}
                     >
@@ -563,10 +527,10 @@ const ListingsPage = () => {
                     </button>
                 </div>
 
-                {/* Properties Found Counter */}
+                {/* Projects Found Counter */}
                 <div className="bg-primary-50/50 p-3 rounded-[3px] text-primary-800 text-[14px] font-bold border border-primary-100 flex items-center gap-2 justify-center shadow-sm">
                     <CheckCircleIcon className="w-5 h-5" />
-                    {total} {total === 1 ? 'Property' : 'Properties'} Found
+                    {total} {total === 1 ? 'Project' : 'Projects'} Found
                 </div>
 
                 {/* Filter Sections */}
@@ -578,22 +542,22 @@ const ListingsPage = () => {
                         </div>
                     )}
 
-                    {/* PROPERTY TYPE - Multi-Select Checkbox */}
+                    {/* PROJECT TYPE - Multi-Select Checkbox */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-[14px] font-bold text-gray-500">Property Type</label>
-                            {filters.type && <button onClick={() => handleFilterChange('type', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
+                            <label className="text-[14px] font-bold text-gray-500">Project Type</label>
+                            {filters.project_type && <button onClick={() => handleFilterChange('project_type', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
                         </div>
                         <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
                             {/* All option */}
                             <label className="flex items-center gap-2 cursor-pointer group">
-                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.type ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                    {!filters.type && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.project_type ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
+                                    {!filters.project_type && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                 </span>
-                                <span className={`text-[13px] font-medium transition-colors ${!filters.type ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('type', '')}>All Types</span>
+                                <span className={`text-[13px] font-medium transition-colors ${!filters.project_type ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('project_type', '')}>All Types</span>
                             </label>
-                            {propertyTypeOptions.filter(o => o.value !== '').map(opt => {
-                                const selected = filters.type ? filters.type.split(',') : [];
+                            {projectTypeOptions.filter(o => o.value !== '').map(opt => {
+                                const selected = filters.project_type ? filters.project_type.split(',') : [];
                                 const isActive = selected.includes(opt.value);
                                 const toggle = () => {
                                     let newSelected;
@@ -602,7 +566,7 @@ const ListingsPage = () => {
                                     } else {
                                         newSelected = [...selected, opt.value];
                                     }
-                                    handleFilterChange('type', newSelected.join(','));
+                                    handleFilterChange('project_type', newSelected.join(','));
                                 };
                                 return (
                                     <label key={opt.value} className="flex items-center gap-2 cursor-pointer group" onClick={toggle}>
@@ -633,22 +597,22 @@ const ListingsPage = () => {
                         )}
                     </div>
 
-                    {/* LISTING TYPE - Multi-Select Checkbox */}
+                    {/* PROJECT STATUS - Multi-Select Checkbox */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-[14px] font-bold text-gray-500">Listing Type</label>
-                            {filters.listing_type && <button onClick={() => handleFilterChange('listing_type', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
+                            <label className="text-[14px] font-bold text-gray-500">Project Status</label>
+                            {filters.status && <button onClick={() => handleFilterChange('status', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
                         </div>
                         <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
                             {/* All option */}
                             <label className="flex items-center gap-2 cursor-pointer group">
-                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.listing_type ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                    {!filters.listing_type && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.status ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
+                                    {!filters.status && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                 </span>
-                                <span className={`text-[13px] font-medium transition-colors ${!filters.listing_type ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('listing_type', '')}>All Types</span>
+                                <span className={`text-[13px] font-medium transition-colors ${!filters.status ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('status', '')}>All Statuses</span>
                             </label>
-                            {listingTypeOptions.filter(o => o.value !== '').map(opt => {
-                                const selected = filters.listing_type ? filters.listing_type.split(',') : [];
+                            {statusOptions.filter(o => o.value !== '').map(opt => {
+                                const selected = filters.status ? filters.status.split(',') : [];
                                 const isActive = selected.includes(opt.value);
                                 const toggle = () => {
                                     let newSelected;
@@ -657,7 +621,7 @@ const ListingsPage = () => {
                                     } else {
                                         newSelected = [...selected, opt.value];
                                     }
-                                    handleFilterChange('listing_type', newSelected.join(','));
+                                    handleFilterChange('status', newSelected.join(','));
                                 };
                                 return (
                                     <label key={opt.value} className="flex items-center gap-2 cursor-pointer group" onClick={toggle}>
@@ -668,49 +632,6 @@ const ListingsPage = () => {
                                     </label>
                                 );
                             })}
-                        </div>
-                    </div>
-
-                    {/* BEDROOMS - Multi-Select Checkbox */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[14px] font-bold text-gray-500">Bedrooms</label>
-                            {filters.bedrooms && <button onClick={() => handleFilterChange('bedrooms', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
-                        </div>
-                        <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
-                            {bedroomOptions.filter(o => o.value !== '').map(opt => {
-                                const selected = filters.bedrooms ? filters.bedrooms.split(',') : [];
-                                const isActive = selected.includes(opt.value);
-                                const toggle = () => {
-                                    let newSelected;
-                                    if (isActive) {
-                                        newSelected = selected.filter(v => v !== opt.value);
-                                    } else {
-                                        newSelected = [...selected, opt.value];
-                                    }
-                                    handleFilterChange('bedrooms', newSelected.join(','));
-                                };
-                                return (
-                                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer group" onClick={toggle}>
-                                        <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                            {isActive && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                        </span>
-                                        <span className={`text-[13px] font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`}>{opt.label}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* PRICE RANGE */}
-                    <div className="grid grid-cols-2 gap-x-4">
-                        <div className="space-y-2">
-                            <label className="text-[14px] font-bold text-gray-500">Min Price</label>
-                            <Input type="number" value={filters.min_price} onChange={e => handleFilterChange('min_price', e.target.value)} placeholder="0" className="w-full" />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[14px] font-bold text-gray-500">Max Price</label>
-                            <Input type="number" value={filters.max_price} onChange={e => handleFilterChange('max_price', e.target.value)} placeholder="No limit" className="w-full" />
                         </div>
                     </div>
 
@@ -724,18 +645,6 @@ const ListingsPage = () => {
                                     value={getSelectedOption(developers.map(d => ({ value: d.id, label: d.name })), filters.developer_id)}
                                     onChange={opt => handleSelectChange('developer_id', opt)}
                                     placeholder="All Developers"
-                                    isSearchable={true}
-                                />
-                            </div>
-
-                            {/* PROJECT FILTER */}
-                            <div className="space-y-2">
-                                <label className="text-[14px] font-bold text-gray-500">Project</label>
-                                <StyledSelect
-                                    options={[{ value: '', label: 'All Projects' }, ...projectsList.map(p => ({ value: p.id, label: p.name }))]}
-                                    value={getSelectedOption(projectsList.map(p => ({ value: p.id, label: p.name })), filters.project_id)}
-                                    onChange={opt => handleSelectChange('project_id', opt)}
-                                    placeholder="All Projects"
                                     isSearchable={true}
                                 />
                             </div>
@@ -909,7 +818,7 @@ const ListingsPage = () => {
                 {/* Header Mobile */}
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
-                        <h1 className="text-xl font-bold text-gray-900">Properties</h1>
+                        <h1 className="text-xl font-bold text-gray-900">Projects</h1>
                         <span className="text-sm font-medium text-gray-500">{total} results</span>
                     </div>
                 </div>
@@ -948,22 +857,22 @@ const ListingsPage = () => {
                                 className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? '' : 'min-h-[70vh]'}`}
                                 style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 190 : 130}px)` } : undefined}
                             >
-                                {/* Left Side: Property List */}
+                                {/* Left Side: Project List */}
                                 <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 overflow-y-auto h-full custom-scrollbar' : ''}`}>
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
-                                    ) : listings.length > 0 ? (
+                                    ) : projects.length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                                {listings.map((l, i) => (
+                                                {projects.map((l, i) => (
                                                     <div
                                                         key={l.id}
                                                         className="animate-in fade-in fill-mode-both duration-500"
                                                         style={{ animationDelay: `${(i % 12) * 50}ms` }}
                                                     >
-                                                        <ListingCard listing={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
+                                                        <ProjectCard project={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
                                                     </div>
                                                 ))}
                                                 {loading && !initialLoading && (
@@ -977,7 +886,7 @@ const ListingsPage = () => {
                                     ) : (
                                         <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                            <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
+                                            <h3 className="text-xl font-bold text-gray-900">No projects found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
                                             <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
                                         </div>
@@ -989,7 +898,7 @@ const ListingsPage = () => {
                                     <div className="hidden lg:flex lg:flex-col w-[55%] h-full">
                                         <div className="relative w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
-                                                listings={listings}
+                                                projects={projects}
                                                 onMarkerClick={(property) => {
                                                     const newParams = new URLSearchParams(searchParams);
                                                     newParams.set('detail', property.id);
@@ -1017,7 +926,7 @@ const ListingsPage = () => {
                                 {(isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
                                     <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
                                         <GoogleMap
-                                            listings={listings}
+                                            projects={projects}
                                             onMarkerClick={(property) => {
                                                 const newParams = new URLSearchParams(searchParams);
                                                 newParams.set('detail', property.id);
@@ -1133,7 +1042,7 @@ const ListingsPage = () => {
 
                         <div className="flex-1 w-full relative">
                             <GoogleMap
-                                listings={listings}
+                                projects={projects}
                                 onMarkerClick={(property) => {
                                     const newParams = new URLSearchParams(searchParams);
                                     newParams.set('detail', property.id);
@@ -1173,9 +1082,9 @@ const ListingsPage = () => {
             {/* Status Overlays */}
             <MapTransitionOverlay active={isMapTransitioning} switchActive={overlaySwitchActive} />
 
-            <ListingDetailModal />
+
         </div >
     );
 };
 
-export default ListingsPage;
+export default ProjectsPage;

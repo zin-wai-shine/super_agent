@@ -43,9 +43,11 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 		// Public routes
 		public := api.Group("/public")
 		{
+			public.GET("/projects", publicController.GetProjects)
 			public.GET("/listings", publicController.GetListings)
 			public.GET("/listings/:id", publicController.GetListing)
 			public.GET("/stations", publicController.GetStations)
+			public.GET("/developers", publicController.GetDevelopers)
 			public.GET("/listings/by-station/:stationId", publicController.GetListingsByStation)
 			public.GET("/agent/info", publicController.GetAgentInfo)
 			public.GET("/tenant/config", publicController.GetTenantConfig)

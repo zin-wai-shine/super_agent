@@ -3,10 +3,12 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"super_real_estate/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,14 +32,24 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		query = query.Where("agent_id = ?", tenantID)
 	}
 
-	// Filter by property type
+	// Filter by property type (supports comma-separated for multi-select)
 	if propertyType := c.Query("type"); propertyType != "" {
-		query = query.Where("property_type = ?", propertyType)
+		types := strings.Split(propertyType, ",")
+		if len(types) == 1 {
+			query = query.Where("property_type = ?", types[0])
+		} else {
+			query = query.Where("property_type IN ?", types)
+		}
 	}
 
-	// Filter by listing type (sale/rent)
+	// Filter by listing type (supports comma-separated for multi-select)
 	if listingType := c.Query("listing_type"); listingType != "" {
-		query = query.Where("listing_type = ?", listingType)
+		ltypes := strings.Split(listingType, ",")
+		if len(ltypes) == 1 {
+			query = query.Where("listing_type = ?", ltypes[0])
+		} else {
+			query = query.Where("listing_type IN ?", ltypes)
+		}
 	}
 
 	// Filter by station ID (transit map filtering)
@@ -57,7 +69,34 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		}
 	}
 
-	// Filter by bedrooms
+	// Filter by bedrooms (supports comma-separated for multi-select)
+	if bedrooms := c.Query("bedrooms"); bedrooms != "" {
+		bedVals := strings.Split(bedrooms, ",")
+		if len(bedVals) == 1 {
+			if beds, err := strconv.Atoi(bedVals[0]); err == nil {
+				query = query.Where("bedrooms >= ?", beds)
+			}
+		} else {
+			var bedInts []int
+			for _, b := range bedVals {
+				if n, err := strconv.Atoi(b); err == nil {
+					bedInts = append(bedInts, n)
+				}
+			}
+			if len(bedInts) > 0 {
+				query = query.Where("bedrooms IN ?", bedInts)
+			}
+		}
+	}
+
+	// Filter by developer or project
+	if projectID := c.Query("project_id"); projectID != "" {
+		query = query.Where("project_id = ?", projectID)
+	} else if developerID := c.Query("developer_id"); developerID != "" {
+		// If filtering by developer, we need to join with projects
+		query = query.Joins("JOIN projects ON projects.id = listings.project_id").
+			Where("projects.developer_id = ?", developerID)
+	}
 	if bedrooms := c.Query("bedrooms"); bedrooms != "" {
 		if beds, err := strconv.Atoi(bedrooms); err == nil {
 			query = query.Where("bedrooms >= ?", beds)
@@ -126,6 +165,113 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"listings": listings,
+		"total":    total,
+		"page":     page,
+		"limit":    limit,
+		"pages":    (total + int64(limit) - 1) / int64(limit),
+	})
+}
+
+// GetProjects returns published projects with optional filters
+func (pc *PublicController) GetProjects(c *gin.Context) {
+	var projects []models.Project
+	query := pc.db.Model(&models.Project{}).Preload("Developer")
+
+	// Tenant filtering (if accessed via agent subdomain)
+	if tenantID, exists := c.Get("tenant_id"); exists {
+		query = query.Where("agent_id = ?", tenantID)
+	}
+
+	// Filter by developer
+	if developerID := c.Query("developer"); developerID != "" {
+		// Use developer name or ID depending on frontend implementation
+		// The mega menu sends developer name aliases like 'sansiri', 'ap', 'origin'. Let's handle generic exact match if it's an ID, or ilike if it's a name
+		if _, err := uuid.Parse(developerID); err == nil {
+			query = query.Where("developer_id = ?", developerID)
+		} else {
+			query = query.Joins("JOIN developers ON developers.id = projects.developer_id").Where("developers.name ILIKE ?", "%"+developerID+"%")
+		}
+	}
+
+	// Filter by status (supports comma-separated for multi-select)
+	if status := c.Query("status"); status != "" {
+		statuses := strings.Split(status, ",")
+		if len(statuses) == 1 {
+			query = query.Where("status ILIKE ?", "%"+statuses[0]+"%")
+		} else {
+			query = query.Where("status IN ?", statuses)
+		}
+	}
+
+	// Filter by project type (supports comma-separated for multi-select)
+	if projectType := c.Query("type"); projectType != "" {
+		ptypes := strings.Split(projectType, ",")
+		if len(ptypes) == 1 {
+			query = query.Where("project_type ILIKE ?", "%"+ptypes[0]+"%")
+		} else {
+			query = query.Where("project_type IN ?", ptypes)
+		}
+	}
+
+	// Filter by style/height (if we use style query param)
+	if style := c.Query("style"); style != "" {
+		query = query.Where("project_type ILIKE ? OR description ILIKE ?", "%"+style+"%", "%"+style+"%")
+	}
+
+	// Filter by feature
+	if feature := c.Query("feature"); feature != "" {
+		query = query.Where("description ILIKE ? OR name ILIKE ?", "%"+feature+"%", "%"+feature+"%")
+	}
+
+	// Filter by district
+	if district := c.Query("district"); district != "" {
+		query = query.Where("district ILIKE ?", "%"+district+"%")
+	}
+
+	// Filter by near station
+	if near := c.Query("near"); near != "" {
+		query = query.Where("station_id ILIKE ?", "%"+near+"%")
+	}
+
+	// Search in name, description, district
+	if search := c.Query("search"); search != "" {
+		query = query.Where("name ILIKE ? OR description ILIKE ? OR district ILIKE ?",
+			"%"+search+"%", "%"+search+"%", "%"+search+"%")
+	}
+
+	// Sorting
+	sortBy := c.DefaultQuery("sort", "created_at")
+	sortOrder := c.DefaultQuery("order", "desc")
+
+	allowedSorts := map[string]bool{"created_at": true, "name": true}
+	allowedOrders := map[string]bool{"asc": true, "desc": true}
+
+	if !allowedSorts[sortBy] {
+		sortBy = "created_at"
+	}
+	if !allowedOrders[sortOrder] {
+		sortOrder = "desc"
+	}
+
+	query = query.Order(sortBy + " " + sortOrder)
+
+	// Pagination
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "12"))
+	offset := (page - 1) * limit
+
+	// Get total count
+	var total int64
+	query.Model(&models.Project{}).Count(&total)
+
+	// Fetch projects
+	if err := query.Offset(offset).Limit(limit).Find(&projects).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"projects": projects,
 		"total":    total,
 		"page":     page,
 		"limit":    limit,
@@ -299,4 +445,25 @@ func (pc *PublicController) GetPlans(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, plans)
+}
+
+// GetDevelopers returns all developers for the current agent
+func (pc *PublicController) GetDevelopers(c *gin.Context) {
+	var developers []models.Developer
+	query := pc.db.Model(&models.Developer{})
+
+	// Tenant filtering
+	if tenantID, exists := c.Get("tenant_id"); exists {
+		query = query.Where("agent_id = ?", tenantID)
+	}
+
+	if err := query.Order("name ASC").Find(&developers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch developers"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"developers": developers,
+		"total":      len(developers),
+	})
 }

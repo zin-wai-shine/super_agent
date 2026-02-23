@@ -1068,7 +1068,10 @@ const PublicLayout = () => {
 
                 {/* ===== Expanding Mega Menu Panel — navbar grows on hover ===== */}
                 <div
+                    className="absolute left-0 w-full border-b border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)]"
                     style={{
+                        top: '100%',
+                        backgroundColor: 'var(--nav-bg, #ffffff)',
                         maxHeight: activeMenu ? '600px' : '0px',
                         opacity: activeMenu ? 1 : 0,
                         overflow: 'hidden',
@@ -1301,73 +1304,75 @@ const PublicLayout = () => {
             </main>
 
             {/* Mobile Bottom Navigation Removed */}
-            {/* Footer */}
-            <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden">
-                {/* Background Decoration */}
-                <div
-                    className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
-                    style={{
-                        backgroundImage: `url(${buildingBlock})`,
-                        backgroundSize: '800px',
-                        backgroundPosition: 'right bottom',
-                        backgroundRepeat: 'no-repeat'
-                    }}
-                />
-                <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10">
-                    {/* Top Section: Slogan + Links */}
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
-                        <div className="max-w-md">
-                            <h2 className="text-4xl font-medium tracking-tight leading-[1.1]">
-                                Experience the future of<br />real estate management
-                            </h2>
-                        </div>
-                        <div className="flex gap-24 lg:gap-32 pr-4 lg:pr-12">
-                            <div>
-                                <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Platform</h4>
-                                <ul className="space-y-4">
-                                    <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 transition-colors">Features</Link></li>
-                                    <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 transition-colors">Pricing Plans</Link></li>
-                                    <li><Link to="/services" className="text-base font-medium hover:text-primary-600 transition-colors">Services</Link></li>
-                                    <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Get Started</Link></li>
-                                </ul>
+            {/* Footer - Hidden on listings/projects pages */}
+            {!location.pathname.startsWith('/listings') && !location.pathname.startsWith('/projects') && (
+                <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden">
+                    {/* Background Decoration */}
+                    <div
+                        className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
+                        style={{
+                            backgroundImage: `url(${buildingBlock})`,
+                            backgroundSize: '800px',
+                            backgroundPosition: 'right bottom',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+                    <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10">
+                        {/* Top Section: Slogan + Links */}
+                        <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
+                            <div className="max-w-md">
+                                <h2 className="text-4xl font-medium tracking-tight leading-[1.1]">
+                                    Experience the future of<br />real estate management
+                                </h2>
                             </div>
-                            <div>
-                                <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Support</h4>
-                                <ul className="space-y-4">
-                                    <li><Link to="/login" className="text-base font-medium hover:text-primary-600 transition-colors">Agent Login</Link></li>
-                                    <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Create Account</Link></li>
-                                    <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 transition-colors">Help Center</Link></li>
-                                </ul>
+                            <div className="flex gap-24 lg:gap-32 pr-4 lg:pr-12">
+                                <div>
+                                    <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Platform</h4>
+                                    <ul className="space-y-4">
+                                        <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 transition-colors">Features</Link></li>
+                                        <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 transition-colors">Pricing Plans</Link></li>
+                                        <li><Link to="/services" className="text-base font-medium hover:text-primary-600 transition-colors">Services</Link></li>
+                                        <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Get Started</Link></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Support</h4>
+                                    <ul className="space-y-4">
+                                        <li><Link to="/login" className="text-base font-medium hover:text-primary-600 transition-colors">Agent Login</Link></li>
+                                        <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Create Account</Link></li>
+                                        <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 transition-colors">Help Center</Link></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Center Section: Massive Typography */}
+                        <div className="mb-24 overflow-hidden">
+                            <h1 className="text-[11vw] lg:text-[9vw] font-bold tracking-[-0.04em] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-gray-500 to-transparent select-none uppercase inline-block pr-8 pb-4 w-fit">
+                                {brandName}
+                            </h1>
+                        </div>
+
+                        {/* Bottom Section: Logo + Legal */}
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl font-bold text-gray-900 tracking-tight">
+                                    Super
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-8">
+                                <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About Super</Link>
+                                <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Products</Link>
+                                <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
+                                <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
+                            </div>
+                            <div className="text-sm font-medium text-gray-400">
+                                {theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}
                             </div>
                         </div>
                     </div>
-
-                    {/* Center Section: Massive Typography */}
-                    <div className="mb-24 overflow-hidden">
-                        <h1 className="text-[11vw] lg:text-[9vw] font-bold tracking-[-0.04em] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-gray-950 via-gray-900 to-primary-500 select-none uppercase inline-block pr-8 pb-4 w-fit">
-                            {brandName}
-                        </h1>
-                    </div>
-
-                    {/* Bottom Section: Logo + Legal */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl font-bold text-gray-900 tracking-tight">
-                                Super
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-8">
-                            <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About Super</Link>
-                            <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Products</Link>
-                            <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
-                            <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
-                        </div>
-                        <div className="text-sm font-medium text-gray-400">
-                            {theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}
-                        </div>
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            )}
             {/* Cookie Consent Banner */}
             <CookieConsent />
         </div >

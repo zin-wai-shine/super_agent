@@ -11,6 +11,7 @@ import DashboardLayout from './components/Layout/DashboardLayout';
 // Public Pages
 import HomePage from './pages/Public/HomePage';
 import ListingsPage from './pages/Public/ListingsPage';
+import ProjectsPage from './pages/Public/ProjectsPage';
 import ListingDetailPage from './pages/Public/ListingDetailPage';
 import MobileSearchPage from './pages/Public/MobileSearchPage';
 import LoginPage from './pages/Auth/LoginPage';
@@ -114,6 +115,7 @@ const AppRoutes = () => {
             <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="listings" element={<ListingsPage />} />
+                <Route path="projects" element={<ProjectsPage />} />
                 <Route path="listings/:id" element={<ListingDetailPage />} />
                 <Route path="banners/:id" element={<BannerDetail />} />
                 <Route path="search" element={<MobileSearchPage />} />

@@ -134,8 +134,16 @@ func (dc *DeveloperController) CreateProject(c *gin.Context) {
 	agentID, _ := c.Get("agent_id")
 
 	var input struct {
-		Name        string `json:"name" binding:"required"`
-		DeveloperID string `json:"developer_id" binding:"required"`
+		Name        string  `json:"name" binding:"required"`
+		DeveloperID string  `json:"developer_id" binding:"required"`
+		Description string  `json:"description"`
+		Status      string  `json:"status"`
+		ProjectType string  `json:"project_type"`
+		District    string  `json:"district"`
+		StationID   string  `json:"station_id"`
+		Latitude    float64 `json:"latitude"`
+		Longitude   float64 `json:"longitude"`
+		CoverImage  string  `json:"cover_image"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -160,6 +168,14 @@ func (dc *DeveloperController) CreateProject(c *gin.Context) {
 		AgentID:     agentID.(uuid.UUID),
 		DeveloperID: devID,
 		Name:        input.Name,
+		Description: input.Description,
+		Status:      input.Status,
+		ProjectType: input.ProjectType,
+		District:    input.District,
+		StationID:   input.StationID,
+		Latitude:    input.Latitude,
+		Longitude:   input.Longitude,
+		CoverImage:  input.CoverImage,
 	}
 
 	if err := dc.db.Create(&project).Error; err != nil {
@@ -184,8 +200,16 @@ func (dc *DeveloperController) UpdateProject(c *gin.Context) {
 	}
 
 	var input struct {
-		Name        string `json:"name"`
-		DeveloperID string `json:"developer_id"`
+		Name        string  `json:"name"`
+		DeveloperID string  `json:"developer_id"`
+		Description string  `json:"description"`
+		Status      string  `json:"status"`
+		ProjectType string  `json:"project_type"`
+		District    string  `json:"district"`
+		StationID   string  `json:"station_id"`
+		Latitude    float64 `json:"latitude"`
+		Longitude   float64 `json:"longitude"`
+		CoverImage  string  `json:"cover_image"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -210,6 +234,31 @@ func (dc *DeveloperController) UpdateProject(c *gin.Context) {
 			return
 		}
 		project.DeveloperID = devID
+	}
+
+	if input.Description != "" {
+		project.Description = input.Description
+	}
+	if input.Status != "" {
+		project.Status = input.Status
+	}
+	if input.ProjectType != "" {
+		project.ProjectType = input.ProjectType
+	}
+	if input.District != "" {
+		project.District = input.District
+	}
+	if input.StationID != "" {
+		project.StationID = input.StationID
+	}
+	if input.Latitude != 0 {
+		project.Latitude = input.Latitude
+	}
+	if input.Longitude != 0 {
+		project.Longitude = input.Longitude
+	}
+	if input.CoverImage != "" {
+		project.CoverImage = input.CoverImage
 	}
 
 	dc.db.Save(&project)

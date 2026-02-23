@@ -319,6 +319,7 @@ const StyledSelect = ({
             isMulti={isMulti}
             isLoading={isLoading}
             styles={{ ...finalStyles, menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPlacement="auto"
             theme={customTheme}
             className={className}
             classNamePrefix="react-select"

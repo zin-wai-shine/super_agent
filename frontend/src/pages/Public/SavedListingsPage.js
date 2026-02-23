@@ -112,22 +112,24 @@ const SavedListingsPage = () => {
                 <div className="relative min-h-[400px]">
                     {initialLoading ? (
                         /* Skeletons Grid with sequential loading feel */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pointer-events-none">
-                            {[...Array(skeletonCount)].map((_, index) => (
-                                <ListingSkeleton
-                                    key={`skeleton-${index}`}
-                                    index={index}
-                                    isExiting={isExiting}
-                                />
+                        <div className="flex flex-wrap justify-center gap-6 pointer-events-none">
+                            {[...Array(Math.min(skeletonCount, 3))].map((_, index) => (
+                                <div key={`skeleton-wrapper-${index}`} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
+                                    <ListingSkeleton
+                                        key={`skeleton-${index}`}
+                                        index={index}
+                                        isExiting={isExiting}
+                                    />
+                                </div>
                             ))}
                         </div>
                     ) : listings.length > 0 ? (
                         /* Listings Grid */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {listings.map((listing) => (
+                        <div className="flex flex-wrap justify-center gap-6">
+                            {listings.slice(0, 3).map((listing) => (
                                 <div
                                     key={listing.id}
-                                    className={`transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
+                                    className={`w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
                                 >
                                     <ListingCard
                                         listing={listing}

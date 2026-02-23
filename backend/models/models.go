@@ -154,6 +154,14 @@ type Project struct {
 	DeveloperID uuid.UUID      `gorm:"type:uuid;not null" json:"developer_id"`
 	Developer   *Developer     `gorm:"foreignKey:DeveloperID" json:"developer,omitempty"`
 	Name        string         `gorm:"size:255;not null" json:"name"`
+	Description string         `gorm:"type:text" json:"description,omitempty"`
+	Status      string         `gorm:"size:50" json:"status,omitempty"`           // e.g., "New Launch", "Ready to Move"
+	ProjectType string         `gorm:"size:50" json:"project_type,omitempty"`     // e.g., "Condominium", "Housing Estate"
+	District    string         `gorm:"size:100" json:"district,omitempty"`        // e.g., "Sukhumvit", "Rama 9"
+	StationID   string         `gorm:"size:20;index" json:"station_id,omitempty"` // e.g., "BTS Asoke"
+	Latitude    float64        `gorm:"type:decimal(10,7)" json:"latitude,omitempty"`
+	Longitude   float64        `gorm:"type:decimal(10,7)" json:"longitude,omitempty"`
+	CoverImage  string         `gorm:"size:500" json:"cover_image,omitempty"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`

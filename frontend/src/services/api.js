@@ -78,6 +78,8 @@ export const authApi = {
 // Public API
 export const publicApi = {
     getListings: (params) => api.get('/public/listings', { params }),
+    getProjects: (params) => api.get('/public/projects', { params }),
+    getDevelopers: (params) => api.get('/public/developers', { params }),
     getListing: (id, params) => api.get(`/public/listings/${id}`, { params }),
     getStations: (params) => api.get('/public/stations', { params }),
     getListingsByStation: (stationId) => api.get(`/public/listings/by-station/${stationId}`),

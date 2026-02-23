@@ -320,7 +320,8 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 3px;
+    height: 3px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -328,12 +329,12 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
-    border-radius: 10px;
+    background: #00000010;
+    border-radius: 20px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #d1d5db;
+    background: #00000020;
   }
 
   @keyframes bounce-subtle {
@@ -382,17 +383,20 @@
 .dark .ql-toolbar.ql-snow {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
+
 /* === Mega Menu Item Stagger Animation === */
 @keyframes menuItemIn {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .menu-item-animate {
   opacity: 0;
   animation: menuItemIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
