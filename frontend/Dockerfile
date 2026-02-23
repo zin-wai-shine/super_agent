@@ -25,13 +25,17 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Copy nginx config
+# Copy default nginx config (for local Docker)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy Railway-specific nginx config template
+COPY nginx.railway.conf /etc/nginx/templates/default.conf.template
 
 # Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Expose port
-EXPOSE 3000
+# Railway sets PORT env var; nginx:alpine auto-processes templates in /etc/nginx/templates/
+# If PORT is set (Railway), the template overrides default.conf
+# If PORT is not set (local Docker), the default nginx.conf is used
 
 CMD ["nginx", "-g", "daemon off;"]
