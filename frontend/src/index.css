@@ -47,22 +47,23 @@
     direction: ltr;
   }
 
-  /* Specific Scrollbar - Neutral */
+  /* Specific Scrollbar - Neutral - Ultra Thin */
   .custom-scrollbar-primary::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
+    width: 2px;
+    height: 2px;
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-track {
-    @apply bg-gray-100/50;
+    background: transparent;
   }
 
   .custom-scrollbar-primary::-webkit-scrollbar-thumb {
-    @apply bg-gray-400/50;
+    @apply bg-gray-200;
+    border-radius: 10px;
   }
 
   .custom-scrollbar-primary:hover::-webkit-scrollbar-thumb {
-    @apply bg-gray-500/50;
+    @apply bg-gray-300;
   }
 }
 
@@ -245,129 +246,140 @@
     }
   }
 
-  .animate-mesh {
-    animation: mesh 15s ease infinite;
+  animation: mesh 15s ease infinite;
+}
+
+@keyframes mesh {
+  0% {
+    background-position: 0% 50%;
   }
 
-  @keyframes mesh {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+  50% {
+    background-position: 100% 50%;
   }
 
-  .animate-scroll {
-    animation: scroll 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-scroll {
+  animation: scroll 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateY(-4px);
+    opacity: 0;
   }
 
-  @keyframes scroll {
-    0% {
-      transform: translateY(-4px);
-      opacity: 0;
-    }
-
-    15% {
-      opacity: 1;
-    }
-
-    85% {
-      opacity: 1;
-    }
-
-    100% {
-      transform: translateY(4px);
-      opacity: 0;
-    }
+  15% {
+    opacity: 1;
   }
 
-  @keyframes fadeInUp {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
+  85% {
+    opacity: 1;
   }
 
-  @keyframes fadeOutDown {
-    from {
-      transform: translateY(0);
-      opacity: 1;
-    }
+  100% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+}
 
-    to {
-      transform: translateY(20px);
-      opacity: 0;
-    }
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
   }
 
-  .animate-fadeInUp {
-    animation: fadeInUp 0.6s ease-out forwards;
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
   }
 
-  .animate-fadeOutDown {
-    animation: fadeOutDown 0.6s ease-in forwards;
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fadeOutDown {
+  animation: fadeOutDown 0.6s ease-in forwards;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #00000015;
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #00000025;
+}
+
+/* Hover-only scrollbar */
+.custom-scrollbar-hover::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.custom-scrollbar-hover:hover::-webkit-scrollbar-thumb {
+  background: #00000015;
+}
+
+.overscroll-contain {
+  overscroll-behavior: contain;
+}
+
+@keyframes bounce-subtle {
+
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #00000010;
-    border-radius: 20px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #00000020;
-  }
-
-  @keyframes bounce-subtle {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  .animate-bounce-subtle {
-    animation: bounce-subtle 3s ease-in-out infinite;
-  }
-
-  @keyframes fade-in-up {
-    from {
-      transform: translateY(10px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out forwards;
-  }
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
 }
 
 /* Quill Editor Flattening */
@@ -400,4 +412,79 @@
 .menu-item-animate {
   opacity: 0;
   animation: menuItemIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* --- Premium Price Range Slider Styles --- */
+.price-slider-container {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.price-slider-track {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background-color: #f3f4f6;
+  border-radius: 9999px;
+}
+
+.price-slider-progress {
+  position: absolute;
+  height: 4px;
+  background-color: #0b6732;
+  /* matching your primary-600 */
+  border-radius: 9999px;
+}
+
+.price-slider-input {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  -webkit-appearance: none;
+  background: transparent;
+  z-index: 20;
+}
+
+.price-slider-input::-webkit-slider-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid #0b6732;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.price-slider-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid #0b6732;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+}
+
+.price-slider-input:active {
+  z-index: 30;
+}
+
+/* Map view: rounded-full for Google Maps zoom control */
+.map-overlays-rounded .gm-style .gmnoprint {
+  border-radius: 9999px !important;
+  overflow: hidden;
+}
+.map-overlays-rounded .gm-style .gmnoprint > div {
+  border-radius: 9999px !important;
+  overflow: hidden;
 }

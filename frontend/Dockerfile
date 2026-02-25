@@ -34,8 +34,7 @@ COPY nginx.railway.conf /etc/nginx/templates/default.conf.template
 # Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Railway sets PORT env var; nginx:alpine auto-processes templates in /etc/nginx/templates/
-# If PORT is set (Railway), the template overrides default.conf
-# If PORT is not set (local Docker), the default nginx.conf is used
+# Default PORT for local Docker; Railway overrides this with its own PORT
+ENV PORT=3000
 
 CMD ["nginx", "-g", "daemon off;"]

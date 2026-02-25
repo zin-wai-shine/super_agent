@@ -38,7 +38,7 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		if len(types) == 1 {
 			query = query.Where("property_type = ?", types[0])
 		} else {
-			query = query.Where("property_type IN ?", types)
+			query = query.Where("property_type IN (?)", types)
 		}
 	}
 
@@ -48,13 +48,18 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		if len(ltypes) == 1 {
 			query = query.Where("listing_type = ?", ltypes[0])
 		} else {
-			query = query.Where("listing_type IN ?", ltypes)
+			query = query.Where("listing_type IN (?)", ltypes)
 		}
 	}
 
 	// Filter by station ID (transit map filtering)
 	if stationID := c.Query("station_id"); stationID != "" {
-		query = query.Where("station_id = ?", stationID)
+		ids := strings.Split(stationID, ",")
+		if len(ids) == 1 {
+			query = query.Where("station_id = ?", ids[0])
+		} else {
+			query = query.Where("station_id IN (?)", ids)
+		}
 	}
 
 	// Filter by price range
@@ -107,6 +112,11 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 	if minArea := c.Query("min_area"); minArea != "" {
 		if area, err := strconv.ParseFloat(minArea, 64); err == nil {
 			query = query.Where("area >= ?", area)
+		}
+	}
+	if maxArea := c.Query("max_area"); maxArea != "" {
+		if area, err := strconv.ParseFloat(maxArea, 64); err == nil {
+			query = query.Where("area <= ?", area)
 		}
 	}
 
@@ -228,9 +238,14 @@ func (pc *PublicController) GetProjects(c *gin.Context) {
 		query = query.Where("district ILIKE ?", "%"+district+"%")
 	}
 
-	// Filter by near station
-	if near := c.Query("near"); near != "" {
-		query = query.Where("station_id ILIKE ?", "%"+near+"%")
+	// Filter by station ID (transit map filtering)
+	if stationID := c.Query("station_id"); stationID != "" {
+		ids := strings.Split(stationID, ",")
+		if len(ids) == 1 {
+			query = query.Where("station_id = ?", ids[0])
+		} else {
+			query = query.Where("station_id IN (?)", ids)
+		}
 	}
 
 	// Search in name, description, district
@@ -405,32 +420,65 @@ func (pc *PublicController) GetTenantConfig(c *gin.Context) {
 	isMainDomain, _ := c.Get("is_main_domain")
 	tenantID, tenantExists := c.Get("tenant_id")
 
+	// Calculate system-wide or tenant-specific price range
+	var priceRange struct {
+		MinPrice float64 `gorm:"column:min_price"`
+		MaxPrice float64 `gorm:"column:max_price"`
+	}
+	priceQuery := pc.db.Model(&models.Listing{}).
+		Select("MIN(price) as min_price, MAX(price) as max_price").
+		Where("is_published = ?", true)
+
+	if tenantExists {
+		priceQuery = priceQuery.Where("agent_id = ?", tenantID)
+	}
+	priceQuery.Scan(&priceRange)
+
 	response := gin.H{
-		"is_main_domain": isMainDomain,
+		"is_main_domain":   isMainDomain,
+		"actual_min_price": priceRange.MinPrice,
+		"actual_max_price": priceRange.MaxPrice,
 	}
 
 	if tenantExists {
 		var agent models.Agent
 		if err := pc.db.Preload("Theme").First(&agent, "id = ?", tenantID).Error; err == nil {
-			response["agent"] = gin.H{
-				"id":              agent.ID,
-				"name":            agent.Name,
-				"logo":            agent.Logo,
-				"description":     agent.Description,
-				"vision":          agent.Vision,
-				"mission":         agent.Mission,
-				"phone":           agent.Phone,
-				"email":           agent.Email,
-				"address":         agent.Address,
-				"theme":           agent.Theme,
-				"min_price_limit": agent.MinPriceLimit,
-				"max_price_limit": agent.MaxPriceLimit,
-				"price_format":    agent.PriceFormat,
-				"facebook":        agent.Facebook,
-				"instagram":       agent.Instagram,
-				"linkedin":        agent.LinkedIn,
-				"line":            agent.Line,
+			// Fallback to agent limits if no listings found for this specifically
+			actualMin := priceRange.MinPrice
+			actualMax := priceRange.MaxPrice
+			if actualMax == 0 {
+				actualMin = agent.MinPriceLimit
+				actualMax = agent.MaxPriceLimit
 			}
+
+			response["agent"] = gin.H{
+				"id":               agent.ID,
+				"name":             agent.Name,
+				"logo":             agent.Logo,
+				"description":      agent.Description,
+				"vision":           agent.Vision,
+				"mission":          agent.Mission,
+				"phone":            agent.Phone,
+				"email":            agent.Email,
+				"address":          agent.Address,
+				"theme":            agent.Theme,
+				"min_price_limit":  agent.MinPriceLimit,
+				"max_price_limit":  agent.MaxPriceLimit,
+				"actual_min_price": actualMin,
+				"actual_max_price": actualMax,
+				"price_format":     agent.PriceFormat,
+				"facebook":         agent.Facebook,
+				"instagram":        agent.Instagram,
+				"linkedin":         agent.LinkedIn,
+				"line":             agent.Line,
+			}
+			// Sync root values
+			response["actual_min_price"] = actualMin
+			response["actual_max_price"] = actualMax
+		}
+	} else {
+		if response["actual_max_price"] == 0 {
+			response["actual_max_price"] = 5000000.0
 		}
 	}
 

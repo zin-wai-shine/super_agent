@@ -60,6 +60,8 @@ export const TenantProvider = ({ children }) => {
             window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test')
         ),
         agent: tenantConfig?.agent ?? null,
+        actual_min_price: tenantConfig?.actual_min_price ?? 0,
+        actual_max_price: tenantConfig?.actual_max_price ?? 5000000,
         loading,
         error
     };

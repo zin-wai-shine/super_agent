@@ -163,29 +163,9 @@ const PublicLayout = () => {
         };
     }, []);
 
-    // Auto-hide navbar logic
+    // Navbar visibility logic (Always visible)
     const [isVisible, setIsVisible] = useState(true);
-    const lastScrollY = React.useRef(0);
 
-    React.useEffect(() => {
-        const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-
-            // Show when scrolling up or at top
-            if (currentScrollY < lastScrollY.current || currentScrollY < 10) {
-                setIsVisible(true);
-            }
-            // Hide when scrolling down
-            else if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
-                setIsVisible(false);
-            }
-
-            lastScrollY.current = currentScrollY;
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
     const [isNavLoading, setIsNavLoading] = useState(true);
 
     React.useEffect(() => {
@@ -200,7 +180,7 @@ const PublicLayout = () => {
     const brandName = theme.headerText || (agent ? (agent.agency_name || agent.name) : 'Super');
 
     return (
-        <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: theme.fontFamily }}>
+        <div className="min-h-screen flex flex-col bg-[#EEEEEE]" style={{ fontFamily: theme.fontFamily }}>
             {/* Mobile Header (Hamburger + Logo) */}
             <div
                 className={`md:hidden sticky top-0 z-[200] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}

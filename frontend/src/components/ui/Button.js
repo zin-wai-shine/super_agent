@@ -30,18 +30,11 @@ const Button = ({
         lg: "px-6 py-3 text-base",
     };
 
-    // Dynamic style to apply theme variables
-    const style = {
-        borderRadius: 'var(--btn-radius)',
-        backgroundImage: variant === 'primary' ? 'var(--btn-gradient)' : 'none',
-        ...customStyle
-    };
-
     return (
         <button
             type={type}
             className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-            style={style}
+            style={customStyle}
             disabled={disabled || isLoading}
             {...props}
         >

@@ -5,7 +5,8 @@ import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon, MapIcon } fro
 
 const TransitMapFilter = ({
     onStationClick,
-    selectedStation,
+    selectedStations = [], // Array of station IDs
+    selectedStation = null, // Single ID for centering/focus
     searchable = false,
     showTitle = false,
     onClose = null,
@@ -15,8 +16,8 @@ const TransitMapFilter = ({
     const [internalStations, setInternalStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const stations = externalStations || internalStations;
-    const [markerPos, setMarkerPos] = useState(null);
-    const [zoom, setZoom] = useState(1.5);
+    const [markers, setMarkers] = useState([]); // Array of {id, x, y}
+    const [zoom, setZoom] = useState(1.15);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [searchTerm, setSearchTerm] = useState('');
     const [showResults, setShowResults] = useState(false);
@@ -76,40 +77,27 @@ const TransitMapFilter = ({
         if (!container) return;
 
         const handleMapClick = (e) => {
-            // Check if clicked element is part of a station group
             const stationGroup = e.target.closest('[data-station-id]');
 
             if (stationGroup) {
-                e.stopPropagation(); // Prevent map click from triggering other things
+                e.stopPropagation();
                 const stationId = stationGroup.getAttribute('data-station-id');
                 const stationName = stationGroup.querySelector('[data-name="label-en"] text')?.textContent || stationId;
-
-                // Get station coordinates for the marker
-                // We use the circle element's cx/cy which are relative to the SVG coordinate system
-                const circle = stationGroup.querySelector('circle');
-                if (circle) {
-                    const cx = parseFloat(circle.getAttribute('cx'));
-                    const cy = parseFloat(circle.getAttribute('cy'));
-                    setMarkerPos({ x: cx, y: cy });
-                }
 
                 if (onStationClick) {
                     onStationClick(stationId, stationName);
                 }
-            } else {
-                // Clicked on empty map space - clear selection if needed?
-                // For now, do nothing or let parent handle
             }
         };
 
-        // Add listener to the SVG container (delegation)
         container.addEventListener('click', handleMapClick);
 
-        // Add cursor style
+        // Add cursor style and selective highlighting
         const style = document.createElement('style');
         style.textContent = `
             [data-station-id] { cursor: pointer; }
             [data-station-id]:hover circle { stroke: #EF4444; stroke-width: 4px; transition: all 0.2s; }
+            [data-station-id].is-selected circle { stroke: #EF4444; stroke-width: 1px; fill: #EF4444 !important; transform: scale(0.5); transform-origin: center; transform-box: fill-box; transition: all 0.3s; }
             [data-station-id]:hover text { fill: #EF4444; font-weight: bold; }
         `;
         container.appendChild(style);
@@ -120,25 +108,44 @@ const TransitMapFilter = ({
         };
     }, [onStationClick]);
 
-    // Sync selectedStation prop with marker position and zoom
+    // Update markers based on selectedStations
     useEffect(() => {
-        if (!mapWrapperRef.current) return;
+        const container = svgContainerRef.current;
+        if (!container || loading) return;
+
+        const newMarkers = [];
+        const stationsToProcess = (selectedStations || []);
+
+        stationsToProcess.forEach(id => {
+            const stationGroup = container.querySelector(`[data-station-id="${id}"]`);
+            if (stationGroup) {
+                stationGroup.classList.add('is-selected');
+                const circle = stationGroup.querySelector('circle');
+                if (circle) {
+                    newMarkers.push({
+                        id,
+                        x: parseFloat(circle.getAttribute('cx')),
+                        y: parseFloat(circle.getAttribute('cy'))
+                    });
+                }
+            }
+        });
+
+        // Cleanup old selections
+        container.querySelectorAll('[data-station-id]').forEach(el => {
+            const id = el.getAttribute('data-station-id');
+            if (!stationsToProcess.includes(id)) {
+                el.classList.remove('is-selected');
+            }
+        });
+
+        setMarkers(newMarkers);
+    }, [selectedStations, loading]);
+
+    // Centering logic for selectedStation (single focus)
+    useEffect(() => {
+        if (!mapWrapperRef.current || !selectedStation || loading) return;
         const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
-        const mapWidth = 1368;
-        const mapHeight = 1340;
-
-        if (!selectedStation) {
-            setMarkerPos(null);
-            // Default centered view
-            const defaultZoom = 1.2;
-            const resetPanX = (wrapperWidth - mapWidth * defaultZoom) / 2;
-            const resetPanY = (wrapperHeight - mapHeight * defaultZoom) / 2;
-            setZoom(defaultZoom);
-            setPan({ x: resetPanX, y: resetPanY });
-            return;
-        }
-
-        if (loading || stations.length === 0) return;
 
         const container = svgContainerRef.current;
         if (!container) return;
@@ -149,12 +156,9 @@ const TransitMapFilter = ({
             if (circle) {
                 const cx = parseFloat(circle.getAttribute('cx'));
                 const cy = parseFloat(circle.getAttribute('cy'));
-                setMarkerPos({ x: cx, y: cy });
 
                 // Targeted zoom on selection
                 const targetZoom = 2.5;
-
-                // Calculate pan to center the point
                 const newPanX = (wrapperWidth / 2) - (cx * targetZoom);
                 const newPanY = (wrapperHeight / 2) - (cy * targetZoom);
 
@@ -162,14 +166,13 @@ const TransitMapFilter = ({
                 setZoom(targetZoom);
             }
         }
-    }, [selectedStation, loading, stations]);
+    }, [selectedStation, loading]);
 
     // Constrain Pan Logic
     const constrainPan = (newPan, currentZoom) => {
         if (!mapWrapperRef.current) return newPan;
 
         const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
-        // Slightly larger than the raw SVG to account for labels and allow "breathing room"
         const mapWidth = 1450;
         const mapHeight = 1450;
 
@@ -179,11 +182,9 @@ const TransitMapFilter = ({
         let constrainedX = newPan.x;
         let constrainedY = newPan.y;
 
-        // X constraints - allow panning until mostly off-screen but keep a buffer
-        const bufferX = wrapperWidth * 0.4; // Allow 40% of the screen to be "over-panned"
+        const bufferX = wrapperWidth * 0.4;
 
         if (scaledWidth <= wrapperWidth) {
-            // If map is smaller than container, center it or allow small movement
             constrainedX = (wrapperWidth - scaledWidth) / 2;
         } else {
             const minX = wrapperWidth - scaledWidth - bufferX;
@@ -191,11 +192,9 @@ const TransitMapFilter = ({
             constrainedX = Math.min(maxX, Math.max(minX, newPan.x));
         }
 
-        // Y constraints
         const bufferY = wrapperHeight * 0.4;
 
         if (scaledHeight <= wrapperHeight) {
-            // If map is smaller than container, center it
             constrainedY = (wrapperHeight - scaledHeight) / 2;
         } else {
             const minY = wrapperHeight - scaledHeight - bufferY;
@@ -219,14 +218,13 @@ const TransitMapFilter = ({
                 <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 shadow-md flex-shrink-0 z-[110] relative">
                     {showTitle && (
                         <div className="flex items-center gap-3 flex-shrink-0">
-                            <div className="bg-white/20 p-2 rounded-[3px] backdrop-blur-md">
+                            <div className="bg-white/20 p-2 rounded-full backdrop-blur-md">
                                 <MapIcon className="w-5 h-5 text-white" />
                             </div>
                             <h3 className="font-bold text-white whitespace-nowrap">Transit Explorer</h3>
                         </div>
                     )}
 
-                    {/* Integrated Search Box - Near Title */}
                     {searchable && (
                         <div className={`${showTitle ? 'ml-6' : ''} flex-1 max-w-xl`} ref={searchRef}>
                             <div className="relative group">
@@ -242,10 +240,9 @@ const TransitMapFilter = ({
                                     }}
                                     onFocus={() => setShowResults(true)}
                                     placeholder="Search transit station..."
-                                    className="block w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-[3px] text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
+                                    className="block w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-[10px] text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
                                 />
 
-                                {/* Search Results Dropdown - Relative to Header */}
                                 {showResults && searchTerm && (
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
                                         {stations
@@ -274,7 +271,9 @@ const TransitMapFilter = ({
                                                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{station.id}</div>
                                                         </div>
                                                     </div>
-                                                    <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-[10px] font-black uppercase tracking-widest transition-opacity translate-x-1 group-hover/item:translate-x-0">Select</span>
+                                                    <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-[10px] font-black uppercase tracking-widest transition-opacity translate-x-1 group-hover/item:translate-x-0">
+                                                        {selectedStations.includes(station.id) ? 'Deselect' : 'Select'}
+                                                    </span>
                                                 </button>
                                             ))
                                         }
@@ -286,53 +285,53 @@ const TransitMapFilter = ({
                 </div>
             )}
 
-            {/* Legend - Modern Pill Chips with Wrap Support */}
-            <div className="px-6 py-4 relative z-[100] bg-white border-b border-gray-100/80 w-full max-w-full overflow-hidden flex-shrink-0">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full min-w-0 flex-1">
-                    {[
-                        { name: 'BTS Sukhumvit', color: '#7FBA00' },
-                        { name: 'BTS Silom', color: '#006633' },
-                        { name: 'CEN Siam', color: '#666666' },
-                        { name: 'MRT Blue', color: '#1E50A0' },
-                        { name: 'MRT Purple', color: '#800080' },
-                        { name: 'Yellow Line', color: '#FFD700' },
-                        { name: 'Pink Line', color: '#FF69B4' },
-                        { name: 'Gold Line', color: '#D4AF37' },
-                        { name: 'Chao Phraya River', color: '#B8E5FA' },
-                    ].map((line) => (
-                        <div
-                            key={line.name}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
-                        >
+            {/* Legend */}
+            {!hideHeader && (
+                <div className="px-6 py-4 relative z-[100] bg-white border-b border-gray-100/80 w-full max-w-full overflow-hidden flex-shrink-0">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full min-w-0 flex-1">
+                        {[
+                            { name: 'BTS Sukhumvit', color: '#7FBA00' },
+                            { name: 'BTS Silom', color: '#006633' },
+                            { name: 'CEN Siam', color: '#666666' },
+                            { name: 'MRT Blue', color: '#1E50A0' },
+                            { name: 'MRT Purple', color: '#800080' },
+                            { name: 'Yellow Line', color: '#FFD700' },
+                            { name: 'Pink Line', color: '#FF69B4' },
+                            { name: 'Gold Line', color: '#D4AF37' },
+                            { name: 'River', color: '#B8E5FA' },
+                        ].map((line) => (
                             <div
-                                className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
-                                style={{ backgroundColor: line.color }}
-                            />
-                            <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
-                        </div>
-                    ))}
+                                key={line.name}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
+                            >
+                                <div
+                                    className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
+                                    style={{ backgroundColor: line.color }}
+                                />
+                                <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
 
-            {/* Interactive Map Container - Full Bleed */}
+            {/* Interactive Map Container */}
             <div className="relative bg-white overflow-hidden group flex-1">
-                {/* Search box removed from here (moved to header) */}
-
-                {/* Zoom & Reset Controls Overlay - Floating Glassmorphism */}
-                <div className="absolute top-6 right-6 z-[90] flex flex-col gap-3">
-                    <div className="flex flex-col bg-white/90 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 p-2">
+                {/* Zoom & Reset Controls - Bottom Right Vertical */}
+                <div className="absolute bottom-6 right-6 z-[90] flex flex-col items-center gap-3">
+                    <div className="flex flex-col bg-white/95 backdrop-blur-xl rounded-full shadow-xl border border-gray-200 p-1">
                         <button
                             onClick={() => {
                                 const newZoom = Math.min(zoom + 0.1, 2.0);
                                 setZoom(newZoom);
                                 setPan(p => constrainPan(p, newZoom));
                             }}
-                            className="w-12 h-12 flex items-center justify-center text-gray-800 hover:bg-primary-600 hover:text-white rounded-[3px] transition-all duration-300 group/btn"
+                            className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
                             title="Zoom In"
                         >
-                            <span className="text-2xl font-light group-hover/btn:scale-110 transition-transform">+</span>
+                            <span className="text-xl font-bold">+</span>
                         </button>
-                        <div className="h-px bg-gray-100/50 my-1 mx-2 transition-opacity group-hover:opacity-0" />
+                        <div className="h-px bg-gray-200/50 mx-2 my-1" />
                         <button
                             onClick={() => {
                                 const minZoom = getMinZoom();
@@ -340,16 +339,16 @@ const TransitMapFilter = ({
                                 setZoom(newZoom);
                                 setPan(p => constrainPan(p, newZoom));
                             }}
-                            className="w-12 h-12 flex items-center justify-center text-gray-800 hover:bg-primary-600 hover:text-white rounded-[3px] transition-all duration-300 group/btn"
+                            className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
                             title="Zoom Out"
                         >
-                            <span className="text-2xl font-light group-hover/btn:scale-110 transition-transform">−</span>
+                            <span className="text-xl font-bold">−</span>
                         </button>
                     </div>
 
                     <button
                         onClick={() => {
-                            const defaultZoom = 1.5;
+                            const defaultZoom = 1.15;
                             const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
                             const initialPanX = (wrapperWidth - 1368 * defaultZoom) / 2;
                             const initialPanY = (wrapperHeight - 1340 * defaultZoom) / 2;
@@ -357,11 +356,11 @@ const TransitMapFilter = ({
                             setZoom(defaultZoom);
                             setPan(constrainPan({ x: initialPanX, y: initialPanY }, defaultZoom));
                         }}
-                        className="w-16 h-16 bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20 rounded-[3px] flex items-center justify-center text-gray-800 hover:text-primary-600 hover:bg-white transition-all duration-500 group/reset active:scale-95"
+                        className="w-10 h-10 bg-primary-600 shadow-xl border border-primary-500 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-all duration-300 group/reset active:scale-95"
                         title="Reset View"
                     >
-                        <svg className="w-7 h-7 transition-transform duration-700 group-hover/reset:rotate-[360deg]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <svg className="w-5 h-5 transition-transform duration-500 group-hover/reset:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
                 </div>
@@ -375,10 +374,7 @@ const TransitMapFilter = ({
                         const startY = e.pageY - pan.y;
 
                         const handleMouseMove = (mm) => {
-                            const newPan = {
-                                x: mm.pageX - startX,
-                                y: mm.pageY - startY
-                            };
+                            const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
                             setPan(constrainPan(newPan, zoom));
                         };
 
@@ -389,30 +385,6 @@ const TransitMapFilter = ({
 
                         window.addEventListener('mousemove', handleMouseMove);
                         window.addEventListener('mouseup', handleMouseUp);
-                    }}
-                    onTouchStart={(e) => {
-                        if (e.touches.length !== 1) return;
-                        const touch = e.touches[0];
-                        const startX = touch.pageX - pan.x;
-                        const startY = touch.pageY - pan.y;
-
-                        const handleTouchMove = (tm) => {
-                            if (tm.cancelable) tm.preventDefault();
-                            const t = tm.touches[0];
-                            const newPan = {
-                                x: t.pageX - startX,
-                                y: t.pageY - startY
-                            };
-                            setPan(constrainPan(newPan, zoom));
-                        };
-
-                        const handleTouchEnd = () => {
-                            window.removeEventListener('touchmove', handleTouchMove);
-                            window.removeEventListener('touchend', handleTouchEnd);
-                        };
-
-                        window.addEventListener('touchmove', handleTouchMove, { passive: false });
-                        window.addEventListener('touchend', handleTouchEnd);
                     }}
                     onWheel={(e) => {
                         e.preventDefault();
@@ -440,72 +412,52 @@ const TransitMapFilter = ({
                             <TransitMapSVG />
                         </div>
 
-                        {/* Selected Station Highlighter (Pulsing Dot) */}
-                        {markerPos && (
+                        {/* Selected Station Markers: 3D Location Pin Design */}
+                        {markers.map(m => (
                             <div
+                                key={m.id}
                                 className="absolute pointer-events-none z-50 transition-all duration-300 ease-out"
                                 style={{
-                                    left: `${markerPos.x}px`,
-                                    top: `${markerPos.y}px`,
-                                    transform: 'translate(-50%, -50%)'
+                                    left: `${m.x}px`,
+                                    top: `${m.y}px`,
+                                    transform: 'translate(-50%, -100%)' // Align bottom of pin to station center
                                 }}
                             >
-                                <div className="relative flex items-center justify-center">
-                                    <div className="w-8 h-8 bg-red-500/30 rounded-full animate-ping absolute"></div>
-                                    <div className="w-4 h-4 bg-red-600 rounded-full shadow-lg border-2 border-white relative z-10"></div>
+                                <div className="relative group">
+                                    {/* Ground shadow - static */}
+                                    <div className="absolute top-[85%] left-1/2 -translate-x-1/2 w-3 h-1 bg-black/20 rounded-full blur-[1px]"></div>
+
+                                    {/* Pin shape container - static */}
+                                    <div className="relative">
+                                        <svg
+                                            width="24"
+                                            height="30"
+                                            viewBox="0 0 32 40"
+                                            fill="none"
+                                            className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                                        >
+                                            <path
+                                                d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16344 24.8366 0 16 0Z"
+                                                fill="#EF4444"
+                                                className="fill-red-600"
+                                            />
+                                            <circle cx="16" cy="16" r="6" fill="white" fillOpacity="0.9" />
+                                            {/* 3D highlight effect */}
+                                            <path
+                                                d="M16 2C8.26801 2 2 8.26801 2 16C2 17.5 2.5 19.5 3.5 21.5L4 22.5"
+                                                stroke="white"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeOpacity="0.3"
+                                            />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
-                        )}
+                        ))}
                     </div>
                 </div>
-
-                {/* Map Controls Tips */}
-                <div className="absolute bottom-6 right-6 flex flex-col items-end space-y-2 pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-[3px] shadow-sm border border-gray-100 flex items-center space-x-2">
-                        <span className="text-[10px] text-gray-400 font-medium">Scroll to explore map</span>
-                    </div>
-                </div>
-            </div >
-
-            {/* Selected Station Info Card - Modern Premium with 3px Radius */}
-            {
-                selectedStation && (
-                    <div className="mt-6 p-4 bg-white rounded-[3px] border border-gray-100 shadow-xl flex items-center justify-between animate-fade-in ring-1 ring-black/[0.02]">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-primary-50 rounded-[3px] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                                <MapPinIcon className="w-6 h-6 text-primary-600" />
-                            </div>
-                            <div>
-                                <span className="block text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] leading-none mb-1.5">Station Active</span>
-                                <span className="text-lg font-black text-gray-900 tracking-tight">
-                                    {stations.find(s => s.id === selectedStation)?.name_en || selectedStation}
-                                </span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setMarkerPos(null);
-                                onStationClick('', '');
-                            }}
-                            className="p-2.5 hover:bg-gray-50 text-gray-400 hover:text-red-500 rounded-[3px] transition-all hover:rotate-90"
-                            title="Clear Selection"
-                        >
-                            <XMarkIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                )
-            }
-
-            {
-                !selectedStation && (
-                    <div className="flex items-center justify-center gap-2 mt-8 py-4 px-6 bg-gray-50/50 rounded-[3px] border border-dashed border-gray-200">
-                        <SparklesIcon className="w-4 h-4 text-primary-400" />
-                        <p className="text-gray-400 text-sm font-bold tracking-tight">
-                            Click any station on the map to find nearby properties
-                        </p>
-                    </div>
-                )
-            }
+            </div>
 
             <style dangerouslySetInnerHTML={{
                 __html: `

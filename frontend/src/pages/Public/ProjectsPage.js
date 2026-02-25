@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { publicApi } from '../../services/api';
 import ProjectCard from '../../components/Listings/ProjectCard';
 import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
+import TransitFilterModal from '../../components/TransitMap/TransitFilterModal';
 import StyledSelect from '../../components/Form/StyledSelect';
 import ShowcaseBanners from '../../components/Common/ShowcaseBanners';
 import Button from '../../components/ui/Button';
@@ -13,8 +15,12 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import FilterBar from '../../components/ui/FilterBar';
-import Modal from '../../components/ui/Modal';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
+import PriceRangeSlider from '../../components/ui/PriceRangeSlider';
+import FilterCard from '../../components/ui/FilterCard';
+import FilterPill from '../../components/ui/FilterPill';
+import { FilterIcons } from '../../utils/IconMap';
+import ScrollableFilterList from '../../components/ui/ScrollableFilterList';
 
 import {
     AdjustmentsHorizontalIcon,
@@ -29,6 +35,7 @@ import {
     SparklesIcon,
     ArrowUpIcon,
     TagIcon,
+    CheckIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -107,6 +114,7 @@ const MapTransitionOverlay = ({ active, switchActive }) => {
 
 const ProjectsPage = () => {
     const { user } = useAuth();
+    const { agent, actual_min_price, actual_max_price } = useTenant();
     const { navVisible } = useOutletContext() || { navVisible: true };
     const [searchParams, setSearchParams] = useSearchParams();
     const [projects, setProjects] = useState([]);
@@ -122,6 +130,7 @@ const ProjectsPage = () => {
     const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
     const [isMapTransitioning, setIsMapTransitioning] = useState(false);
     const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
+    const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
 
 
     // Update local state when searchParams change, except during transition
@@ -146,6 +155,7 @@ const ProjectsPage = () => {
     const [isAdvancedFilter, setIsAdvancedFilter] = useState(() => localStorage.getItem('is_advanced_filter_projects') === 'true');
     const [developers, setDevelopers] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
+    const [isMapSidebarOpen, setIsMapSidebarOpen] = useState(false); // Sidebar state for Map Overlay
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('projects_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
@@ -244,7 +254,8 @@ const ProjectsPage = () => {
         const fetchDevelopersData = async () => {
             try {
                 const response = await publicApi.getDevelopers();
-                setDevelopers(response.data || []);
+                const fetchedDevelopers = response.data?.developers || response.data || [];
+                setDevelopers(Array.isArray(fetchedDevelopers) ? fetchedDevelopers : []);
             } catch (error) {
                 console.error('Failed to fetch developers:', error);
             }
@@ -261,7 +272,7 @@ const ProjectsPage = () => {
                 setStations(fetchedStations); // Flat list for header search
 
                 // Flat options for StyledSelect (avoids react-select grouped options crash)
-                const flat = fetchedStations.map(station => ({
+                const flat = (fetchedStations || []).map(station => ({
                     value: station.id,
                     label: station.name_en,
                     line_name: station.line_name,
@@ -387,7 +398,7 @@ const ProjectsPage = () => {
                 // Call API and artificial delay in parallel for premium "serial" loading feel
                 const [response] = await Promise.all([
                     publicApi.getProjects(params, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 1500)) // Artificial 1.5s delay as requested
+                    new Promise(resolve => setTimeout(resolve, 750)) // Reduced from 1.5s to 0.75s
                 ]);
 
                 const data = response.data;
@@ -396,7 +407,7 @@ const ProjectsPage = () => {
                     // Trigger exit animation
                     setIsExiting(true);
                     // Wait for the longest delay (11 * 60ms) + animation duration (600ms) = ~1260ms
-                    await new Promise(resolve => setTimeout(resolve, 1300));
+                    await new Promise(resolve => setTimeout(resolve, 650)); // Reduced from 1.3s to 0.65s
                     setProjects(data.projects);
                     setIsExiting(false);
                     setInitialLoading(false);
@@ -453,8 +464,23 @@ const ProjectsPage = () => {
         handleFilterChange(key, val || '');
     };
 
-    const handleStationSelect = (stationId) => {
-        handleFilterChange('station_id', stationId);
+    const handleStationSelect = (stationIds) => {
+        const value = Array.isArray(stationIds) ? stationIds.join(',') : stationIds;
+        handleFilterChange('station_id', value);
+    };
+
+    const applyFilters = () => {
+        const newParams = new URLSearchParams(searchParams);
+        const view = searchParams.get('view');
+        ['project_type', 'status', 'station_id', 'developer_id', 'search'].forEach(key => {
+            const v = filters[key];
+            if (v) newParams.set(key, v);
+            else newParams.delete(key);
+        });
+        if (view) newParams.set('view', view);
+        setSearchParams(newParams);
+        setPage(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const clearFilters = () => {
@@ -501,16 +527,16 @@ const ProjectsPage = () => {
     // --- Render Helper: Compact Filter Content (Reusable for Sidebar/Modal) ---
     const renderFilterContent = () => {
         return (
-            <div className="space-y-6">
+            <div className="space-y-6 [&>*:first-child]:mt-0">
                 {/* Advanced Filter Toggle */}
-                <div className="p-4 rounded-[3px] border border-gray-100 bg-white shadow-sm flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-[3px] bg-primary-50 flex items-center justify-center">
-                            <AdjustmentsHorizontalIcon className="w-4 h-4 text-primary-600" />
+                <div className="flex items-center justify-between py-4 px-6 bg-white border border-gray-100 rounded-[10px] shadow-sm transition-all duration-300">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-[10px] bg-primary-50 flex items-center justify-center transition-all duration-300">
+                            <AdjustmentsHorizontalIcon className="w-5 h-5 text-primary-600" />
                         </div>
-                        <div>
-                            <div className="text-[14px] font-bold text-gray-900 leading-tight">Advanced Filter</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">More Options</div>
+                        <div className="flex flex-col">
+                            <div className="text-[14px] font-bold text-gray-900 leading-none">Advanced Filter</div>
+                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">More Options</div>
                         </div>
                     </div>
                     <button
@@ -519,43 +545,38 @@ const ProjectsPage = () => {
                             setIsAdvancedFilter(newValue);
                             localStorage.setItem('is_advanced_filter_projects', newValue);
                         }}
-                        className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${isAdvancedFilter ? 'bg-primary-600' : 'bg-gray-200'}`}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${isAdvancedFilter ? 'bg-primary-600' : 'bg-gray-200 hover:bg-gray-300'}`}
                     >
                         <span
-                            className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isAdvancedFilter ? 'translate-x-6' : 'translate-x-1'}`}
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-300 ease-in-out ${isAdvancedFilter ? 'translate-x-[20px]' : 'translate-x-[4px]'}`}
                         />
                     </button>
                 </div>
 
                 {/* Projects Found Counter */}
-                <div className="bg-primary-50/50 p-3 rounded-[3px] text-primary-800 text-[14px] font-bold border border-primary-100 flex items-center gap-2 justify-center shadow-sm">
-                    <CheckCircleIcon className="w-5 h-5" />
-                    {total} {total === 1 ? 'Project' : 'Projects'} Found
+                <div className="flex items-center gap-3 px-2 text-primary-600 text-[16px] font-bold transition-all duration-300 mt-2">
+                    <div className="w-6 h-6 rounded-full border-2 border-primary-600 flex items-center justify-center flex-shrink-0">
+                        <CheckIcon className="w-3.5 h-3.5 stroke-[4]" />
+                    </div>
+                    <span>{total} {total === 1 ? 'Project' : 'Projects'} Found</span>
                 </div>
 
                 {/* Filter Sections */}
-                <div className="space-y-8">
-                    {/* Clear All Filters */}
-                    {hasActiveFilters && (
-                        <div className="flex justify-end">
-                            <button onClick={clearFilters} className="text-[12px] font-semibold text-red-500 hover:text-red-700 transition-colors uppercase tracking-wide">Clear All Filters</button>
-                        </div>
-                    )}
+                <div className="space-y-3">
 
-                    {/* PROJECT TYPE - Multi-Select Checkbox */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[14px] font-bold text-gray-500">Project Type</label>
-                            {filters.project_type && <button onClick={() => handleFilterChange('project_type', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
-                        </div>
-                        <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
+
+                    {/* PROJECT TYPE - Pill Select */}
+                    <FilterCard
+                        title="Project Type"
+                        icon={FilterIcons.propertyType}
+                    >
+                        <div className="flex flex-wrap gap-2">
                             {/* All option */}
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.project_type ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                    {!filters.project_type && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                </span>
-                                <span className={`text-[13px] font-medium transition-colors ${!filters.project_type ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('project_type', '')}>All Types</span>
-                            </label>
+                            <FilterPill
+                                label="All Types"
+                                isActive={!filters.project_type}
+                                onClick={() => handleFilterChange('project_type', '')}
+                            />
                             {projectTypeOptions.filter(o => o.value !== '').map(opt => {
                                 const selected = filters.project_type ? filters.project_type.split(',') : [];
                                 const isActive = selected.includes(opt.value);
@@ -569,48 +590,30 @@ const ProjectsPage = () => {
                                     handleFilterChange('project_type', newSelected.join(','));
                                 };
                                 return (
-                                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer group" onClick={toggle}>
-                                        <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                            {isActive && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                        </span>
-                                        <span className={`text-[13px] font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`}>{opt.label}</span>
-                                    </label>
+                                    <FilterPill
+                                        key={opt.value}
+                                        label={opt.label}
+                                        isActive={isActive}
+                                        onClick={toggle}
+                                    />
                                 );
                             })}
                         </div>
-                    </div>
+                    </FilterCard>
 
-                    {/* TRANSIT STATION - Keep as searchable dropdown */}
-                    <div className="space-y-2">
-                        <label className="text-[14px] font-bold text-gray-500">Transit Station</label>
-                        {stationsLoaded ? (
-                            <StyledSelect
-                                key={`station-select-${flatStations.length}`}
-                                options={flatStations}
-                                value={flatStations.find(opt => opt && opt.value === filters.station_id) || null}
-                                onChange={opt => handleSelectChange('station_id', opt)}
-                                placeholder="All Stations"
-                                isSearchable={true}
-                            />
-                        ) : (
-                            <div className="h-[38px] bg-gray-50 border border-gray-200 rounded-[3px] flex items-center px-4 text-sm text-gray-400">Loading stations...</div>
-                        )}
-                    </div>
 
-                    {/* PROJECT STATUS - Multi-Select Checkbox */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[14px] font-bold text-gray-500">Project Status</label>
-                            {filters.status && <button onClick={() => handleFilterChange('status', '')} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">Clear</button>}
-                        </div>
-                        <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
+                    {/* PROJECT STATUS - Pill Select */}
+                    <FilterCard
+                        title="Project Status"
+                        icon={FilterIcons.projectStatus}
+                    >
+                        <div className="flex flex-wrap gap-2">
                             {/* All option */}
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${!filters.status ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                    {!filters.status && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                </span>
-                                <span className={`text-[13px] font-medium transition-colors ${!filters.status ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`} onClick={() => handleFilterChange('status', '')}>All Statuses</span>
-                            </label>
+                            <FilterPill
+                                label="All Statuses"
+                                isActive={!filters.status}
+                                onClick={() => handleFilterChange('status', '')}
+                            />
                             {statusOptions.filter(o => o.value !== '').map(opt => {
                                 const selected = filters.status ? filters.status.split(',') : [];
                                 const isActive = selected.includes(opt.value);
@@ -624,39 +627,113 @@ const ProjectsPage = () => {
                                     handleFilterChange('status', newSelected.join(','));
                                 };
                                 return (
-                                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer group" onClick={toggle}>
-                                        <span className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 transition-all ${isActive ? 'bg-primary-600 border-primary-600' : 'border-gray-300 group-hover:border-primary-400'}`}>
-                                            {isActive && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                        </span>
-                                        <span className={`text-[13px] font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-gray-600 group-hover:text-gray-800'}`}>{opt.label}</span>
-                                    </label>
+                                    <FilterPill
+                                        key={opt.value}
+                                        label={opt.label}
+                                        isActive={isActive}
+                                        onClick={toggle}
+                                    />
                                 );
                             })}
                         </div>
-                    </div>
+                    </FilterCard>
 
-                    {isAdvancedFilter && (
-                        <>
-                            {/* DEVELOPER FILTER */}
-                            <div className="space-y-2 pt-2 border-t border-gray-50">
-                                <label className="text-[14px] font-bold text-gray-500">Developer</label>
-                                <StyledSelect
-                                    options={[{ value: '', label: 'All Developers' }, ...developers.map(d => ({ value: d.id, label: d.name }))]}
-                                    value={getSelectedOption(developers.map(d => ({ value: d.id, label: d.name })), filters.developer_id)}
-                                    onChange={opt => handleSelectChange('developer_id', opt)}
-                                    placeholder="All Developers"
-                                    isSearchable={true}
-                                />
-                            </div>
-                        </>
-                    )}
+                    {/* TRANSIT STATION - Modal Trigger */}
+                    <FilterCard
+                        title="Transit Station"
+                        icon={FilterIcons.transit}
+                    >
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => setIsTransitModalOpen(true)}
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-gray-50 border border-gray-100 rounded-[10px] transition-all group shadow-sm hover:border-emerald-500/30 hover:bg-white"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-emerald-600/70 group-hover:text-emerald-600 transition-colors" />
+                                    <span className="font-semibold text-gray-500 group-hover:text-gray-700">Search transit station...</span>
+                                </div>
+                                <div className="bg-[#00875A] text-white p-2 rounded-full shadow-md shadow-emerald-900/10 active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-5 h-5" strokeWidth={2} />
+                                </div>
+                            </button>
+
+                            {/* Selection Pills */}
+                            {(filters.station_id || '').split(',').filter(Boolean).map(id => {
+                                const station = flatStations.find(s => s.value === id);
+                                return (
+                                    <button
+                                        key={id}
+                                        onClick={() => {
+                                            const currentIds = filters.station_id.split(',');
+                                            const newIds = currentIds.filter(i => i !== id);
+                                            handleFilterChange('station_id', newIds.join(','));
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 hover:bg-primary-100 rounded-full transition-colors group"
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-[#00D06C]" />
+                                        <span className="text-sm font-bold text-primary-600">
+                                            {station ? station.label : id}
+                                        </span>
+                                        <XMarkIcon className="w-4 h-4 text-primary-500 group-hover:text-primary-600" strokeWidth={2.5} />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </FilterCard>
+
+                    {/* PRICE RANGE */}
+                    <FilterCard
+                        title="Price Range"
+                        icon={FilterIcons.price}
+                    >
+                        <PriceRangeSlider
+                            min={actual_min_price}
+                            max={actual_max_price}
+                            step={Math.max(10000, Math.round(((actual_max_price) - (actual_min_price)) / 100))}
+                            initialMin={Number(filters.min_price) || actual_min_price}
+                            initialMax={Number(filters.max_price) || actual_max_price}
+                            onChange={({ min, max }) => {
+                                handleFilterChange('min_price', min > actual_min_price ? min : '');
+                                handleFilterChange('max_price', max < actual_max_price ? max : '');
+                            }}
+                        />
+                    </FilterCard>
+
+
+                    {
+                        isAdvancedFilter && (
+                            <>
+                                {/* DEVELOPER FILTER */}
+                                <FilterCard
+                                    title="Developer"
+                                    icon={FilterIcons.developer}
+                                >
+                                    <ScrollableFilterList
+                                        items={(developers || []).map(d => ({
+                                            id: d.id,
+                                            name: d.name,
+                                            subtitle: d.company || 'Real Estate Developer',
+                                            image: d.logo || d.image,
+                                            isAvatar: true
+                                        }))}
+                                        selectedId={filters.developer_id}
+                                        onSelect={id => handleSelectChange('developer_id', id)}
+                                        placeholder="Search developer..."
+                                        allLabel="All Developers"
+                                    />
+                                </FilterCard>
+                            </>
+                        )
+                    }
+                    {/* Spacer for bottom of sidebar */}
+                    <div className="h-12 pointer-events-none" />
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
+        <div className="min-h-screen bg-[#EEEEEE] flex flex-col font-inter">
             {/* Map Transition Loading Overlay */}
             {isMapTransitioning && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-300 animate-in fade-in">
@@ -700,121 +777,62 @@ const ProjectsPage = () => {
                     </div>
                 </div>
             )}
-            {/* --- MAP VIEW LAYOUT (SIDEBAR + FULL HEIGHT) --- */}
-            {/* --- SIDEBAR FILTER MENU (SHARED) --- */}
-            {/* --- FILTER MODAL (94vw x 94vh) --- */}
-            <Modal
-                isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
-                size="full"
-                title={null}
-                hideHeader={false}
-                className="!w-[94vw] !h-[94vh] !max-w-[94vw] !max-h-[94vh]"
-                headerExtra={
-                    <div className="flex items-center w-full">
-                        {/* First column header title: Filter Settings (aligned with 400px sidebar) */}
-                        <div className="w-[326px] flex-shrink-0 flex items-center pr-12">
+            {/* --- FILTER SIDEBAR (slide-in from left when Filters clicked) --- */}
+            {isSidebarOpen && (
+                <>
+                    <div
+                        className="fixed inset-0 z-[260] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300"
+                        onClick={() => setIsSidebarOpen(false)}
+                        aria-hidden
+                    />
+                    <aside
+                        className="fixed right-0 top-0 h-full w-[320px] max-w-[85vw] z-[261] bg-[#EEEEEE] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+                        role="dialog"
+                        aria-label="Filter settings"
+                    >
+                        {/* Sidebar header */}
+                        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-100">
                             <h3 className="text-lg font-bold text-gray-900">Filter Settings</h3>
+                            <button
+                                type="button"
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                aria-label="Close filters"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
                         </div>
-
-                        <div className="flex items-center gap-6 flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 whitespace-nowrap">Transit Explorer</h3>
-
-                            <div className="flex-1 relative" ref={transitSearchRef}>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={transitSearchTerm}
-                                        onChange={(e) => {
-                                            setTransitSearchTerm(e.target.value);
-                                            setShowTransitResults(true);
-                                        }}
-                                        onFocus={() => setShowTransitResults(true)}
-                                        placeholder="Search transit station..."
-                                        className="block w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-[3px] text-base font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:bg-white transition-all"
-                                    />
-
-                                    {/* Search Results Dropdown */}
-                                    {showTransitResults && transitSearchTerm && (
-                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[3px] shadow-2xl border border-gray-100 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
-                                            {stations
-                                                .filter(s =>
-                                                    s.name_en?.toLowerCase().includes(transitSearchTerm.toLowerCase()) ||
-                                                    s.id?.toLowerCase().includes(transitSearchTerm.toLowerCase())
-                                                )
-                                                .map(station => (
-                                                    <button
-                                                        key={station.id}
-                                                        onClick={() => {
-                                                            handleStationSelect(station.id);
-                                                            setTransitSearchTerm('');
-                                                            setShowTransitResults(false);
-                                                        }}
-                                                        className="w-full text-left px-5 py-4 hover:bg-primary-50/50 flex items-center justify-between group/item transition-all border-b border-gray-100/50 last:border-0"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-[1px] bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover/item:bg-primary-100 group-hover/item:text-primary-600 transition-colors">
-                                                                {station.id.substring(0, 2)}
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-bold text-gray-900 leading-tight">{station.name_en}</div>
-                                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{station.id}</div>
-                                                            </div>
-                                                        </div>
-                                                        <span className="text-primary-600 opacity-0 group-hover/item:opacity-100 text-[10px] font-black uppercase tracking-widest transition-opacity translate-x-1 group-hover/item:translate-x-0">Select</span>
-                                                    </button>
-                                                ))
-                                            }
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            >
-                <div className="flex-1 flex overflow-hidden h-full">
-                    {/* Left Pane: Filters (Wider 400px) */}
-                    <div className="w-[350px] flex-shrink-0 flex flex-col border-r border-gray-100 bg-white h-full relative z-10 transition-all duration-500 overflow-hidden">
-                        {/* Sidebar Content (Filters) */}
-                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar scroll-smooth modal-scrollable">
+                        {/* Filter box content */}
+                        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
-
-                    </div>
-
-                    {/* Right Pane: Content Area (Full Height Map) */}
-                    <div className="flex-1 min-w-0 flex flex-col h-full bg-white relative">
-                        {/* Transit Map - Full Height */}
-                        <div className="flex-1 relative bg-gray-50 overflow-hidden">
-                            <TransitMapFilter
-                                onStationClick={id => {
-                                    handleStationSelect(id);
-                                }}
-                                selectedStation={filters.station_id}
-                                hideHeader={true}
-                                externalStations={stations}
-                                onClose={() => setIsSidebarOpen(false)}
-                            />
+                        {/* Sidebar footer - extra bottom padding on mobile so it sits above the bottom nav */}
+                        <div className="flex-shrink-0 p-6 pb-24 lg:pb-6 border-t border-gray-100 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
+                            <button
+                                onClick={applyFilters}
+                                className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                            >
+                                Apply Filter
+                            </button>
+                            <button
+                                onClick={clearFilters}
+                                disabled={!hasActiveFilters}
+                                className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
+                                    ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                    : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
+                                    }`}
+                            >
+                                Clear all filters
+                            </button>
                         </div>
-                    </div>
-                </div>
-            </Modal >
-
-            {/* Overlay for Sidebar */}
-            {
-                isSidebarOpen && (
-                    <div className="fixed inset-0 bg-black/30 z-[65] backdrop-blur-sm" />
-                )
-            }
+                    </aside>
+                </>
+            )}
 
 
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className="w-full bg-white min-h-screen relative">
+            <div className="w-full bg-[#EEEEEE] min-h-screen relative">
                 {/* Header Mobile */}
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
@@ -825,7 +843,7 @@ const ProjectsPage = () => {
 
                 {/* Full Width Filter Bar (outside constrained container for background bleed) */}
                 <FilterBar
-                    className="mb-6"
+                    className=""
                     total={total}
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
@@ -833,21 +851,44 @@ const ProjectsPage = () => {
                     hasActiveFilters={hasActiveFilters}
                     viewMode={viewMode}
                     onViewModeChange={setViewMode}
-                    isMapViewOpen={isGoogleMapOpen}
+                    isGoogleMapOpen={isGoogleMapOpen}
                     onToggleMapView={toggleMapView}
                     isMapTransitioning={isMapTransitioning}
                     navVisible={navVisible}
                     isScrolled={isScrolled}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
                 />
 
                 {/* Main Content (Constrained Grid) */}
-                <div className="max-w-[1440px] mx-auto px-6 lg:px-12 pb-12">
-
+                <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[172px]' : 'top-[116px]'} max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar scroll-smooth pr-4`}>
-                                {renderFilterContent()}
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[150px] h-[calc(100vh-150px)]' : 'top-[92px] h-[calc(100vh-92px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
+                                    {renderFilterContent()}
+                                </div>
+
+                                {/* Desktop Sidebar Fixed Footer */}
+                                <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-[#EEEEEE] flex flex-row flex-nowrap items-center justify-center gap-3">
+                                    <button
+                                        onClick={applyFilters}
+                                        className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                                    >
+                                        Apply Filter
+                                    </button>
+                                    <button
+                                        onClick={clearFilters}
+                                        disabled={!hasActiveFilters}
+                                        className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
+                                            ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                            : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        Clear all filters
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -857,16 +898,16 @@ const ProjectsPage = () => {
                                 className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? '' : 'min-h-[70vh]'}`}
                                 style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 190 : 130}px)` } : undefined}
                             >
-                                {/* Left Side: Project List */}
-                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] lg:pr-4 overflow-y-auto h-full custom-scrollbar' : ''}`}>
+                                {/* Left Side: Project List (map view: no container bg; each card has its own bg + radius) */}
+                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] overflow-y-auto h-full custom-scrollbar pt-0 px-4 pb-4 lg:px-5 lg:pb-5' : ''}`}>
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
-                                    ) : projects.length > 0 ? (
+                                    ) : (projects || []).length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
-                                                {projects.map((l, i) => (
+                                                {(projects || []).map((l, i) => (
                                                     <div
                                                         key={l.id}
                                                         className="animate-in fade-in fill-mode-both duration-500"
@@ -884,7 +925,7 @@ const ProjectsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
+                                        <div className="text-center py-20 bg-[#EEEEEE] rounded-[3px] animate-fadeInUp">
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No projects found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
@@ -895,8 +936,8 @@ const ProjectsPage = () => {
 
                                 {/* Right Side: Map (Desktop/Tablet) */}
                                 {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className="hidden lg:flex lg:flex-col w-[55%] h-full">
-                                        <div className="relative w-full h-full rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200">
+                                    <div className="hidden lg:flex lg:flex-col w-[55%] h-full relative">
+                                        <div className="map-overlays-rounded relative w-full h-full rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 projects={projects}
                                                 onMarkerClick={(property) => {
@@ -908,32 +949,17 @@ const ProjectsPage = () => {
                                             />
                                             {/* Map Overlays */}
                                             <div className="absolute top-4 right-4 z-10 pointer-events-none">
-                                                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-white/50 flex items-center gap-3">
-                                                    <div className="bg-primary-50 p-2 rounded-lg">
+                                                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/50 flex items-center gap-3">
+                                                    <div className="bg-primary-50 p-2 rounded-full">
                                                         <GlobeAltIcon className="w-5 h-5 text-primary-600" />
                                                     </div>
                                                     <div>
                                                         <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
-                                                        <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                                        <p className="text-sm font-bold text-gray-900">{total} Projects</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Bottom Map override for Mobile (replaces properties entirely logic fallback) */}
-                                {(isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
-                                    <div className="block lg:hidden w-full h-[75vh] rounded-[var(--site-radius)] overflow-hidden shadow-sm border border-gray-200 relative">
-                                        <GoogleMap
-                                            projects={projects}
-                                            onMarkerClick={(property) => {
-                                                const newParams = new URLSearchParams(searchParams);
-                                                newParams.set('detail', property.id);
-                                                setSearchParams(newParams);
-                                            }}
-                                            onBoundsChanged={handleMapBoundsChanged}
-                                        />
                                     </div>
                                 )}
                             </div>
@@ -941,6 +967,8 @@ const ProjectsPage = () => {
                     </div>
                 </div>
             </div>
+
+
 
 
             {/* Modals */}
@@ -1082,6 +1110,12 @@ const ProjectsPage = () => {
             {/* Status Overlays */}
             <MapTransitionOverlay active={isMapTransitioning} switchActive={overlaySwitchActive} />
 
+            <TransitFilterModal
+                isOpen={isTransitModalOpen}
+                onClose={() => setIsTransitModalOpen(false)}
+                initialSelected={filters.station_id ? filters.station_id.split(',') : []}
+                onApply={handleStationSelect}
+            />
 
         </div >
     );

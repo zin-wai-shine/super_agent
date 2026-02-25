@@ -225,10 +225,10 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         return (
             <Link
                 to={to || `/listings?${detailParams.toString()}`}
-                className="group flex flex-row gap-4 py-4 md:py-5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors duration-300 px-2 -mx-2 rounded-xl"
+                className="group flex flex-row gap-3 p-3 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
             >
-                {/* Image Section */}
-                <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[var(--card-radius)] overflow-hidden flex-none">
+                {/* Image Section - same radius as card (24px) */}
+                <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[16px] overflow-hidden flex-none">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
@@ -237,9 +237,9 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
 
                     {/* Price Badge in Image (Like reference) */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1 items-start z-10">
-                        <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded shadow-sm border border-gray-100/80">
-                            <span className="text-gray-900 font-bold text-[13px] md:text-[14px] tracking-tight">{formatPrice(price)}</span>
-                        </div>
+<div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm border border-gray-100/80">
+                                            <span className="text-gray-900 font-bold text-[13px] md:text-[14px] tracking-tight">{formatPrice(price)}</span>
+                                        </div>
                     </div>
                 </div>
 
