@@ -119,14 +119,11 @@ const FilterBar = ({
                     className={`relative w-full pointer-events-auto transition-all duration-300 ease-out h-[84px] flex items-center ${isModalVariant ? 'bg-white/80 backdrop-blur-md' : ''}`}
                     style={!isModalVariant ? { background: 'linear-gradient(to bottom, #EEEEEE 0%, #EEEEEE 85%, #EEEEEE 100%)' } : undefined}
                 >
-                    <div className="max-w-[1440px] mx-auto px-6 lg:px-12 w-full flex items-center">
-                        {/* Search + map + filters: align start with cards below (cards have p-4 lg:p-5 in list column) */}
-                        <div className="flex items-center gap-3 flex-shrink-0 ml-4 lg:ml-5">
+                    <div className="w-full max-w-full flex items-center">
+                        {/* Search + map + filters: no horizontal padding */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
                         {/* Search Section — centered */}
-                        <div
-                            className="relative"
-                            style={{ width: '950px' }}
-                        >
+                        <div className="relative flex-1 min-w-0 max-w-[950px]">
                             {/* Search input wrapper */}
                             <div className={`relative group h-[46px] bg-white border border-primary-500/30 ${isFocused
                                 ? 'rounded-t-[24px] rounded-b-none border-b-transparent !bg-white'
@@ -173,8 +170,7 @@ const FilterBar = ({
                                 <div
                                     ref={dropdownRef}
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className="absolute top-full left-0 right-0 bg-white rounded-b-[24px] overflow-hidden z-[500] animate-in fade-in duration-150 pointer-events-auto flex flex-row h-[500px] border-l border-r border-b border-gray-200 shadow-[(-24px)_0_56px_-12px_rgba(0,0,0,0.2),24px_0_56px_-12px_rgba(0,0,0,0.2),0_32px_64px_-16px_rgba(0,0,0,0.25)]"
-                                    style={{ width: '950px' }}
+                                    className="absolute top-full left-0 right-0 w-full max-w-[950px] bg-white rounded-b-[24px] overflow-hidden z-[500] animate-in fade-in duration-150 pointer-events-auto flex flex-row h-[500px] border-l border-r border-b border-gray-200 shadow-[(-24px)_0_56px_-12px_rgba(0,0,0,0.2),24px_0_56px_-12px_rgba(0,0,0,0.2),0_32px_64px_-16px_rgba(0,0,0,0.25)]"
                                 >
                                     {/* Left Column: Quick Searches (1/3) */}
                                     <div className="w-[320px] flex-shrink-0 flex flex-col bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
@@ -254,7 +250,7 @@ const FilterBar = ({
                                 </button>
                             </div>
                         )}
-                        {/* Filters — same row as search + Map View, consistent gap-3 and matching pill style */}
+                        {/* Filters — old design: white bg + green border; dot position/size unchanged */}
                         {isGoogleMapOpen && (
                             <button
                                 type="button"
@@ -272,7 +268,10 @@ const FilterBar = ({
                                 </div>
                                 <span className={`text-[14px] font-medium ${hasActiveFilters ? 'text-primary-700' : 'text-gray-900'} group-hover:text-primary-700 transition-colors`}>Filters</span>
                                 {hasActiveFilters && (
-                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-600 rounded-full border-2 border-white animate-pulse" />
+                                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 z-10">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-white" />
+                                    </span>
                                 )}
                             </button>
                         )}

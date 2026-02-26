@@ -2,7 +2,9 @@ import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
     MapPinIcon,
-    LinkIcon
+    LinkIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
@@ -18,13 +20,34 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
         district,
         station_id,
         cover_image,
+        media,
         created_at,
     } = project;
 
-    // Use cover image or fallback placeholder
-    const featuredImage = getMediaUrl(cover_image) || '/placeholder-image.jpg';
+    // Build image list: media array (images) or single cover_image
+    const projectImages = React.useMemo(() => {
+        if (media && Array.isArray(media) && media.length > 0) {
+            return media.filter(m => m.type === 'image' || !m.type).map(m => getMediaUrl(m.url || m));
+        }
+        const cover = getMediaUrl(cover_image) || '/placeholder-image.jpg';
+        return [cover];
+    }, [media, cover_image]);
+
+    const featuredImage = projectImages[0] || '/placeholder-image.jpg';
 
     const [copied, setCopied] = React.useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+    const goPrev = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex((i) => (i - 1 + projectImages.length) % projectImages.length);
+    };
+    const goNext = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex((i) => (i + 1) % projectImages.length);
+    };
     const [searchParams] = useSearchParams();
 
     const handleCopyLink = async (e) => {
@@ -85,14 +108,22 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
                 to={to || `/projects?${detailParams.toString()}`}
                 className="group flex flex-row gap-3 p-3 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
             >
-                {/* Image Section */}
+                {/* Image Section — carousel when multiple images */}
                 <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[16px] overflow-hidden flex-none">
                     <img
-                        src={featuredImage}
+                        src={projectImages[currentImageIndex]}
                         alt={name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
-
+                    {projectImages.length > 1 && (
+                        <>
+                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-800 shadow-sm"><ChevronLeftIcon className="w-4 h-4" /></button>
+                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-800 shadow-sm"><ChevronRightIcon className="w-4 h-4" /></button>
+                            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-10 flex gap-1">
+                                {projectImages.map((_, i) => <span key={i} className={`rounded-full ${i === currentImageIndex ? 'w-1.5 h-1.5 bg-white' : 'w-1 h-1 bg-white/60'}`} />)}
+                            </div>
+                        </>
+                    )}
                     {/* Status Badge in Image */}
                     {status && (
                         <div className="absolute top-2 left-2 flex flex-col gap-1 items-start z-10">
@@ -159,17 +190,25 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
                 to={to || `/projects?${detailParams.toString()}`}
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
             >
-                {/* Image Section */}
+                {/* Image Section — carousel when multiple images */}
                 <div className="w-[135px] md:w-[35%] h-full relative overflow-hidden flex-none">
                     <img
-                        src={featuredImage}
+                        src={projectImages[currentImageIndex]}
                         alt={name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
-
+                    {projectImages.length > 1 && (
+                        <>
+                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center text-gray-800"><ChevronLeftIcon className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center text-gray-800"><ChevronRightIcon className="w-3.5 h-3.5" /></button>
+                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10 flex gap-0.5">
+                                {projectImages.map((_, i) => <span key={i} className={`rounded-full ${i === currentImageIndex ? 'w-1 h-1 bg-white' : 'w-0.5 h-0.5 bg-white/60'}`} />)}
+                            </div>
+                        </>
+                    )}
                     {status && (
                         <div className="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
-                            <div className="text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-[3px] bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
+                            <div className="text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
                                 {formatStatus(status)}
                             </div>
                         </div>
@@ -244,10 +283,10 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
 
     return (
         <div className="group bg-white rounded-[var(--card-radius)] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col h-full animate-fade-in-scale transform hover:-translate-y-1">
-            {/* Upper Section: Image & Status */}
+            {/* Upper Section: Image carousel with arrows & dots */}
             <Link to={linkTo} className="relative aspect-[4/3] overflow-hidden block">
                 <img
-                    src={featuredImage}
+                    src={projectImages[currentImageIndex]}
                     alt={name}
                     className="w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
                 />
@@ -260,17 +299,48 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
                     {/* Status Badge */}
                     <div className="flex flex-col gap-2 relative z-20 pointer-events-auto">
                         {status && (
-                            <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-[3px] shadow-sm transform transition-transform duration-300 origin-left hover:scale-105">
+                            <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm transform transition-transform duration-300 origin-left hover:scale-105">
                                 <span className="text-gray-900 font-black text-[11px] md:text-[12px] tracking-[0.05em] uppercase">{formatStatus(status)}</span>
                             </div>
                         )}
                         {project_type && (
-                            <div className="bg-primary-600/95 backdrop-blur-md px-2 py-1 rounded-[3px] shadow-sm transform transition-transform duration-300 origin-left hover:scale-105">
+                            <div className="bg-primary-600/95 backdrop-blur-md px-2 py-1 rounded-full shadow-sm transform transition-transform duration-300 origin-left hover:scale-105">
                                 <span className="text-white font-bold text-[10px] md:text-[11px] uppercase">{formatType(project_type)}</span>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* Carousel: left/right arrows — only when multiple images */}
+                {projectImages.length > 1 && (
+                    <>
+                        <button
+                            type="button"
+                            onClick={goPrev}
+                            aria-label="Previous image"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
+                        >
+                            <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={goNext}
+                            aria-label="Next image"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
+                        >
+                            <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                        {/* Pagination dots — bottom center */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 pointer-events-none">
+                            {projectImages.map((_, i) => (
+                                <span
+                                    key={i}
+                                    className={`inline-block rounded-full transition-all ${i === currentImageIndex ? 'w-2.5 h-2.5 bg-white shadow-md' : 'w-2 h-2 bg-white/70'}`}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
             </Link>
 
             {/* Lower Section: Content */}

@@ -179,8 +179,12 @@ const PublicLayout = () => {
 
     const brandName = theme.headerText || (agent ? (agent.agency_name || agent.name) : 'Super');
 
+    const isListingsOrProjects = location.pathname.startsWith('/listings') || location.pathname.startsWith('/projects');
     return (
-        <div className="min-h-screen flex flex-col bg-[#EEEEEE]" style={{ fontFamily: theme.fontFamily }}>
+        <div
+            className={`flex flex-col bg-[#EEEEEE] ${isListingsOrProjects ? 'h-screen overflow-y-auto overflow-x-hidden' : 'min-h-screen'}`}
+            style={{ fontFamily: theme.fontFamily }}
+        >
             {/* Mobile Header (Hamburger + Logo) */}
             <div
                 className={`md:hidden sticky top-0 z-[200] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
@@ -1278,15 +1282,14 @@ const PublicLayout = () => {
                 </div>
             </nav >
 
-            {/* Main Content */}
-            <main className="flex-1">
+            {/* Main Content — no flex-1 on listings/projects so content height drives scroll */}
+            <main className={isListingsOrProjects ? 'min-h-0 flex-shrink-0' : 'flex-1'}>
                 <Outlet context={{ navVisible: isVisible }} />
             </main>
 
             {/* Mobile Bottom Navigation Removed */}
-            {/* Footer - Hidden on listings/projects pages */}
-            {!location.pathname.startsWith('/listings') && !location.pathname.startsWith('/projects') && (
-                <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden">
+            {/* Footer - shown on all pages including listings and projects */}
+            <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden flex-shrink-0">
                     {/* Background Decoration */}
                     <div
                         className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
@@ -1352,7 +1355,6 @@ const PublicLayout = () => {
                         </div>
                     </div>
                 </footer>
-            )}
             {/* Cookie Consent Banner */}
             <CookieConsent />
         </div >

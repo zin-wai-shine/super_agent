@@ -2,21 +2,14 @@ import React from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
     MapPinIcon,
-    BookmarkIcon,
-    LinkIcon
+    BookmarkIcon
 } from '@heroicons/react/24/outline';
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
-import { MdOutlineBookmarkAdded, MdOutlineBookmarkBorder } from "react-icons/md";
 import { TbTrain } from "react-icons/tb";
-import { LiaBedSolid } from "react-icons/lia";
-import { PiBathtub } from "react-icons/pi";
 
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
-import PropertyShare from './PropertyShare';
-
-
 const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false }) => {
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
@@ -51,7 +44,6 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
     const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
-    const [copied, setCopied] = React.useState(false);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -125,41 +117,6 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         }
     };
 
-    const handleCopyLink = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const url = `${window.location.origin}/listings?detail=${id}`;
-
-        try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(url);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            } else {
-                // Fallback for non-secure contexts
-                const textArea = document.createElement("textarea");
-                textArea.value = url;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-999999px";
-                textArea.style.top = "-999999px";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                } catch (err) {
-                    console.error('Fallback copy failed', err);
-                }
-                document.body.removeChild(textArea);
-            }
-        } catch (err) {
-            console.error('Failed to copy text: ', err);
-        }
-    };
-
     const handleBookClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -225,111 +182,79 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         return (
             <Link
                 to={to || `/listings?${detailParams.toString()}`}
-                className="group flex flex-row gap-3 p-3 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+                className="group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
             >
-                {/* Image Section - same radius as card (24px) */}
-                <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[16px] overflow-hidden flex-none">
+                {/* Image on top — column layout */}
+                <div className="relative aspect-[16/10] overflow-hidden">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
-
-                    {/* Price Badge in Image (Like reference) */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1 items-start z-10">
-<div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm border border-gray-100/80">
-                                            <span className="text-gray-900 font-bold text-[13px] md:text-[14px] tracking-tight">{formatPrice(price)}</span>
-                                        </div>
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
+                        {is_featured && (
+                            <span className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
+                                Featured
+                            </span>
+                        )}
+                        <span className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
+                            {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
+                        </span>
                     </div>
+                    <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
+                        {formatRelativeTime(created_at)}
+                    </div>
+                    {/* Save above image — same style as map hover card */}
+                    {showSave && (
+                        <button
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
+                            aria-label={isSaved ? 'Unsave' : 'Save'}
+                        >
+                            {isSaved ? (
+                                <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
+                            ) : (
+                                <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
+                            )}
+                        </button>
+                    )}
                 </div>
 
-                {/* Content Section */}
-                <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 md:py-1">
-                    <div className="flex flex-col gap-1.5 md:gap-2">
-                        {/* Title */}
-                        <h3 className="text-sm md:text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
-                            {title}
-                        </h3>
-
-                        {/* Location / Information (Vertical stack like reference) */}
-                        <div className="flex flex-col gap-1.5 mt-1 md:mt-2">
-                            <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
-                                <span className="font-medium text-gray-400 w-24">Location</span>
-                                <span className="font-bold text-gray-700 truncate">: &nbsp; {district || 'Bangkok'}</span>
-                            </div>
-                            {nearestStation && (
-                                <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
-                                    <span className="font-medium text-gray-400 w-24">Station</span>
-                                    <span className="font-bold text-gray-700 truncate">: &nbsp; {nearestStation}</span>
-                                </div>
-                            )}
-                            <div className="flex items-center text-[12px] md:text-[13px] text-gray-500 shrink-0">
-                                <span className="font-medium text-gray-400 w-24">Type</span>
-                                <span className="font-bold text-gray-700 capitalize">: &nbsp; {property_type || 'Property'} • {listing_type === 'sale' ? 'Sale' : 'Rent'}</span>
-                            </div>
+                {/* Content below image — price, title, location, stats; no Share/Copy Link */}
+                <div className="p-4 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-1 text-gray-900">
+                            <span className="text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
+                            <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
+                            {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
                         </div>
-
-                        <div className="flex items-center gap-5 md:gap-8 mt-2.5 md:mt-4">
-                            <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                <span className="font-medium text-gray-400 tracking-tight">Beds</span>
-                                <span className="font-bold text-gray-700">: {bedrooms}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                <span className="font-medium text-gray-400 tracking-tight">Baths</span>
-                                <span className="font-bold text-gray-700">: {bathrooms}</span>
-                            </div>
-                            {area > 0 && (
-                                <div className="flex items-center gap-2 text-[12px] md:text-[13px] text-[#2F3E46]">
-                                    <span className="font-medium text-gray-400 tracking-tight">m²</span>
-                                    <span className="font-bold text-gray-700">: {area}</span>
-                                </div>
-                            )}
-                        </div>
+                        <span className="text-[10px] text-gray-300 font-mono opacity-60">#{String(id).slice(0, 6)}</span>
                     </div>
-
-                    {/* Footer Actions - Only Actions Here */}
-                    <div className="mt-3 pt-3 border-t border-gray-100/60 flex items-center justify-start gap-5 sm:gap-8">
-                        {/* Save Action */}
-                        {showSave && (
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="flex items-center gap-1.5 text-gray-500 hover:text-emerald-600 transition-colors"
-                            >
-                                {isSaved ? (
-                                    <MdOutlineBookmarkAdded className="w-[18px] h-[18px] text-emerald-500" />
-                                ) : (
-                                    <MdOutlineBookmarkBorder className="w-[18px] h-[18px]" />
-                                )}
-                                <span className={`text-[13px] font-medium transition-colors ${isSaved ? 'text-emerald-600' : 'text-gray-500'}`}>
-                                    {isSaved ? 'Saved' : 'Save'}
+                    <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
+                        {title}
+                    </h3>
+                    <div className="flex items-center text-[13px] text-gray-700 flex-wrap gap-x-3 gap-y-0.5">
+                        <span className="flex items-center gap-1">
+                            <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
+                            {district || 'Bangkok'}
+                        </span>
+                        {nearestStation && (
+                            <>
+                                <span className="w-px h-3 bg-gray-200" />
+                                <span className="flex items-center gap-1">
+                                    <TbTrain className="w-4 h-4 text-gray-700 shrink-0" />
+                                    {nearestStation}
                                 </span>
-                            </button>
+                            </>
                         )}
-
-                        {/* Share Action */}
-                        <PropertyShare
-                            property={{
-                                id, title,
-                                description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
-                                image: featuredImage
-                            }}
-                            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
-                            showLabel={true}
-                            labelClassName="text-[13px] font-medium text-gray-500"
-                            iconClassName="w-[16px] h-[16px] text-gray-500"
-                        />
-
-                        {/* Copy Link Action */}
-                        <button
-                            onClick={handleCopyLink}
-                            className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
-                        >
-                            <LinkIcon className="w-[16px] h-[16px] text-gray-500" />
-                            <span className="text-[13px] font-medium text-gray-500">
-                                {copied ? 'Copied' : 'Copy Link'}
-                            </span>
-                        </button>
+                    </div>
+                    <div className="flex items-center gap-6 text-[13px] text-gray-700">
+                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
+                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
+                        {area > 0 && (
+                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
+                        )}
                     </div>
                 </div>
             </Link>
@@ -342,119 +267,78 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         return (
             <Link
                 to={to || `/listings?${detailParams.toString()}`}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
+                className="group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
             >
-                {/* Image Section */}
-                <div className="w-[135px] md:w-[35%] h-full relative overflow-hidden flex-none">
+                {/* Image on top — column layout */}
+                <div className="relative aspect-[16/10] overflow-hidden">
                     <img
                         src={listingImages[currentImageIndex]}
                         alt={title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                     />
-
-                    <div className="absolute top-3 left-3 flex flex-col gap-1 items-start z-10">
-                        <div className="text-[12px] md:text-[13px] font-bold px-2.5 py-1 rounded-[3px] bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
-                            {listing_type === 'sale' ? 'Sale' : 'Rent'}
-                        </div>
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
+                        {is_featured && (
+                            <span className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
+                                Featured
+                            </span>
+                        )}
+                        <span className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
+                            {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
+                        </span>
                     </div>
+                    <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
+                        {formatRelativeTime(created_at)}
+                    </div>
+                    {showSave && (
+                        <button
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
+                            aria-label={isSaved ? 'Unsave' : 'Save'}
+                        >
+                            {isSaved ? (
+                                <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
+                            ) : (
+                                <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
+                            )}
+                        </button>
+                    )}
                 </div>
 
-                {/* Content Section */}
-                <div className="p-4 md:p-6 flex flex-col flex-1 min-w-0">
-                    <div className="flex flex-col gap-2">
-                        {/* Price Row */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-baseline gap-1 text-gray-900">
-                                <span className="text-xl md:text-2xl font-black tracking-tight">{formatPrice(price)}</span>
-                                <span className="text-[10px] md:text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                                {listing_type === 'rent' && <span className="text-[9px] md:text-[10px] font-bold text-gray-400">/mo</span>}
-                            </div>
-                            <span className="text-[10px] md:text-[11px] text-gray-300 font-mono">#{id.slice(0, 5)}</span>
+                {/* Content below image */}
+                <div className="p-4 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-1 text-gray-900">
+                            <span className="text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
+                            <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
+                            {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
                         </div>
-
-                        {/* Title - Dark text with primary hover */}
-                        <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1">
-                            {title}
-                        </h3>
-
-                        {/* Location */}
-                        <div className="flex items-center gap-2 text-[13px] md:text-[14px] text-gray-400 mb-1">
-                            <div className="flex items-center">
-                                <MapPinIcon className="w-4 h-4 mr-1 text-gray-300 shrink-0" />
-                                <span className="truncate">{district || 'Bangkok'}</span>
-                            </div>
-                            {nearestStation && (
-                                <>
-                                    <div className="w-px h-3 bg-gray-200" />
-                                    <div className="flex items-center">
-                                        <TbTrain className="w-4 h-4 mr-1 text-gray-300 shrink-0" />
-                                        <span className="truncate">{nearestStation}</span>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <span className="text-[10px] text-gray-300 font-mono opacity-60">#{String(id).slice(0, 6)}</span>
                     </div>
-
-                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                        {/* Stats Row */}
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-1.5">
-                                <LiaBedSolid className="w-5 h-5 text-gray-400" />
-                                <span className="text-[14px] font-bold text-gray-700">{bedrooms}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <PiBathtub className="w-5 h-5 text-gray-400" />
-                                <span className="text-[14px] font-bold text-gray-700">{bathrooms}</span>
-                            </div>
-                            {area > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[13px] font-bold text-gray-400">M²</span>
-                                    <span className="text-[14px] font-bold text-gray-700">{area}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Actions aligned to right in List View */}
-                        <div className="flex items-center gap-4">
-                            {showSave && (
-                                <button
-                                    onClick={handleToggleSave}
-                                    disabled={savingListing}
-                                    className="flex items-center gap-1.5 text-gray-500 hover:text-emerald-600 transition-colors"
-                                >
-                                    {isSaved ? (
-                                        <MdOutlineBookmarkAdded className="w-[24px] h-[24px] text-emerald-500 drop-shadow-md" />
-                                    ) : (
-                                        <MdOutlineBookmarkBorder className="w-[24px] h-[24px] transition-transform duration-300 hover:scale-110" />
-                                    )}
-                                    <span className="text-[13px] font-medium hidden sm:inline transition-colors">
-                                        {isSaved ? 'Saved' : 'Save'}
-                                    </span>
-                                </button>
-                            )}
-
-                            <PropertyShare
-                                property={{
-                                    id, title,
-                                    description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
-                                    image: featuredImage
-                                }}
-                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors"
-                                showLabel={true}
-                                labelClassName="text-[13px] font-medium hidden sm:inline"
-                                iconClassName="w-4 h-4"
-                            />
-
-                            <button
-                                onClick={handleCopyLink}
-                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 transition-colors min-w-[30px] sm:min-w-[80px] justify-end"
-                            >
-                                <LinkIcon className="w-4 h-4" />
-                                <span className="text-[13px] font-medium hidden sm:inline">
-                                    {copied && location.pathname === '/listings' ? 'Copied' : 'Copy Link'}
+                    <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
+                        {title}
+                    </h3>
+                    <div className="flex items-center text-[13px] text-gray-700 flex-wrap gap-x-3 gap-y-0.5">
+                        <span className="flex items-center gap-1">
+                            <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
+                            {district || 'Bangkok'}
+                        </span>
+                        {nearestStation && (
+                            <>
+                                <span className="w-px h-3 bg-gray-200" />
+                                <span className="flex items-center gap-1">
+                                    <TbTrain className="w-4 h-4 text-gray-700 shrink-0" />
+                                    {nearestStation}
                                 </span>
-                            </button>
-                        </div>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-6 text-[13px] text-gray-700">
+                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
+                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
+                        {area > 0 && (
+                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
+                        )}
                     </div>
                 </div>
             </Link>
@@ -478,19 +362,34 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 {/* Badges Overlay */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
                     {is_featured && (
-                        <div className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-[3px] shadow-md tracking-wider">
+                        <div className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
                             Featured
                         </div>
                     )}
-                    <div className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-[3px] bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
+                    <div className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
                         {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
                     </div>
                 </div>
 
                 {/* Date Badge - Minimalist bottom right */}
-                <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-[3px] tracking-wider border border-white/10">
+                <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
                     {formatRelativeTime(created_at)}
                 </div>
+                {/* Save above image — same style as map hover card */}
+                {showSave && (
+                    <button
+                        onClick={handleToggleSave}
+                        disabled={savingListing}
+                        className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
+                        aria-label={isSaved ? 'Unsave' : 'Save'}
+                    >
+                        {isSaved ? (
+                            <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
+                        ) : (
+                            <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
+                        )}
+                    </button>
+                )}
             </div>
 
             {/* Content Section */}
@@ -498,7 +397,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 {/* Price and ID Row */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-baseline gap-1 text-gray-900">
-                        <span className="text-2xl font-black tracking-tight">{formatPrice(price)}</span>
+                        <span className="text-2xl font-semibold tracking-tight">{formatPrice(price)}</span>
                         <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
                         {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
                     </div>
@@ -506,7 +405,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 </div>
 
                 {/* Title - Dark with primary hover */}
-                <h3 className="text-[17px] font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
+                <h3 className="text-[17px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
                     {title}
                 </h3>
 
@@ -525,69 +424,12 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                     </div>
 
                     {/* Stats Refined Row */}
-                    <div className="flex items-center gap-8 pb-1">
-                        <div className="flex items-center gap-2.5">
-                            <LiaBedSolid className="w-5 h-5 text-gray-700" />
-                            <span className="text-[14px] font-bold text-gray-700">{bedrooms}</span>
-                        </div>
-                        <div className="flex items-center gap-2.5">
-                            <PiBathtub className="w-5 h-5 text-gray-700" />
-                            <span className="text-[14px] font-bold text-gray-700">{bathrooms}</span>
-                        </div>
+                    <div className="flex items-center gap-8 pb-1 text-[14px] text-gray-700">
+                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
+                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
                         {area > 0 && (
-                            <div className="flex items-center gap-2.5">
-                                <span className="text-[13px] font-bold text-gray-700 tracking-tighter">M²</span>
-                                <span className="text-[14px] font-bold text-gray-700">{area}</span>
-                            </div>
+                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
                         )}
-                    </div>
-                </div>
-
-                {/* Redesigned Footer Action Bar */}
-                <div className="pt-4 px-5 pb-5 mt-1 border-t border-gray-100/60 bg-[#FAFBFC] -mx-5 -mb-5">
-                    <div className="flex items-center justify-between w-full">
-                        {/* Save Action */}
-                        {showSave && (
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="flex items-center gap-2 text-gray-700 hover:text-emerald-600 transition-all disabled:opacity-50 w-[68px]"
-                            >
-                                {isSaved ? (
-                                    <MdOutlineBookmarkAdded className="w-[18px] h-[18px] text-emerald-500" />
-                                ) : (
-                                    <MdOutlineBookmarkBorder className="w-[18px] h-[18px] transition-colors duration-300 hover:scale-110" />
-                                )}
-                                <span className={`text-[12px] font-medium transition-colors ${isSaved ? 'text-emerald-600' : 'text-gray-700'}`}>
-                                    {isSaved ? 'Saved' : 'Save'}
-                                </span>
-                            </button>
-                        )}
-
-                        {/* Share Action */}
-                        <PropertyShare
-                            property={{
-                                id,
-                                title,
-                                description: `${bedrooms} Bed, ${bathrooms} Bath, ${area} sqm property in ${district || 'Bangkok'}`,
-                                image: featuredImage
-                            }}
-                            className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-all w-[68px]"
-                            showLabel={true}
-                            labelClassName="text-[12px] font-medium"
-                            iconClassName="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors"
-                        />
-
-                        {/* Copy Link Action */}
-                        <button
-                            onClick={handleCopyLink}
-                            className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-all w-[92px]"
-                        >
-                            <LinkIcon className="w-4 h-4 text-gray-700 group-hover:text-primary-600 transition-colors" />
-                            <span className="text-[12px] font-medium whitespace-nowrap">
-                                {copied ? 'Copied' : 'Copy Link'}
-                            </span>
-                        </button>
                     </div>
                 </div>
             </div>

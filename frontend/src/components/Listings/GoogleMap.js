@@ -68,7 +68,7 @@ const options = {
     ]
 };
 
-const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedListingIds = [], useDefaultMarkers, highlightedMarkerListingId = null }) => {
+const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedListingIds = [], useDefaultMarkers, highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard }) => {
     const { theme } = useTheme();
     const primaryColor = theme?.primaryColor || '#2663EB';
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
@@ -102,7 +102,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         });
 
         const listener = marker.addListener('click', () => {
-            onClick(property);
+            if (onCardToggle) onCardToggle(property.id);
         });
 
         const handleMouseEnter = () => {
@@ -161,6 +161,10 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         const stationRaw = property.station?.name_en || property.station_name || '';
         const stationName = (typeof stationRaw === 'string' ? stationRaw.split('(')[0].trim() : '') || '—';
         const typeLine = (property.property_type || 'Property') + ' • ' + (property.listing_type === 'sale' ? 'Sale' : 'Rent');
+        const isFeatured = property.is_featured === true || property.is_featured === '1';
+        const listingType = property.listing_type || 'rent';
+        const dateStr = property.created_at ? (() => { try { const d = new Date(property.created_at); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (_) { return ''; } })() : '';
+        const priceUnit = property.price_unit || 'THB';
 
         const saveIconSvg = initialSaved
             ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="${primaryColor}" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>`
@@ -168,79 +172,110 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
 
         const newInnerHTML = `
             <style>
-                .marker-group.hovered .resting-pill { scale: 0; opacity: 0; pointer-events: none; transition: all 0.2s ease; }
-                .marker-group.hovered .resting-nub { opacity: 0; transition: opacity 0.2s ease; }
+                /* Initial: pill and nub primary; when card opened: pill and nub dark, card visible (click-only) */
+                .marker-group .resting-pill {
+                    background: var(--primary-color);
+                    border-color: var(--primary-color);
+                    color: white;
+                    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+                }
+                .marker-group .resting-pill span { color: white; }
+                .marker-group .resting-pill .resting-pill-icon { stroke: white; }
+                .marker-group .resting-nub { fill: var(--primary-color); transition: fill 0.2s ease; }
+                .marker-group .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.15); }
 
-                .marker-group.hovered .expanded-card { width: 510px; height: 220px; opacity: 1; padding: 0; }
-                .marker-group.hovered .expanded-content { opacity: 1; }
+                .marker-group.opened .resting-pill {
+                    background: #1f2937;
+                    border-color: #1f2937;
+                    color: white;
+                }
+                .marker-group.opened .resting-pill span { color: white; }
+                .marker-group.opened .resting-pill .resting-pill-icon { stroke: white; }
+                .marker-group.opened .resting-nub { fill: #1f2937; }
+                .marker-group.opened .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.2); }
 
-                /* Hover card price badge: same as main (list-highlighted) – primary background, white text */
+                .marker-group.opened .expanded-card { width: 320px; min-height: 320px; opacity: 1; padding: 0; }
+                .marker-group.opened .expanded-content { opacity: 1; }
+
+                /* Price pill (if used elsewhere) */
                 .marker-group:hover .price-pill,
-                .marker-group.hovered .price-pill {
+                .marker-group.opened .price-pill {
                     background: var(--primary-color);
                     border-color: var(--primary-color);
                     color: white;
                     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                 }
                 .marker-group:hover .price-pill span,
-                .marker-group.hovered .price-pill span { color: white; }
-                /* When list card is hovered, resting pill gets primary background and white text */
+                .marker-group.opened .price-pill span { color: white; }
+                /* When list card is hovered, target (pill + nub) turns dark like opened state */
                 .marker-group.list-highlighted .resting-pill {
-                    background: var(--primary-color);
-                    border-color: var(--primary-color);
+                    background: #1f2937;
+                    border-color: #1f2937;
                     color: white;
-                    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                 }
                 .marker-group.list-highlighted .resting-pill span { color: white; }
-                .marker-group.list-highlighted .resting-pill svg { stroke: white; }
+                .marker-group.list-highlighted .resting-pill .resting-pill-icon { stroke: white; }
+                .marker-group.list-highlighted .resting-nub { fill: #1f2937; }
+                .marker-group.list-highlighted .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.2); }
+                /* Hide hover card when Save is clicked */
+                .marker-group.save-clicked .expanded-card { width: 0; height: 0; opacity: 0; pointer-events: none; overflow: hidden; transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease; }
+                .marker-group.save-clicked .expanded-content { opacity: 0; }
+                .marker-group.save-clicked .resting-pill { background: var(--primary-color); border-color: var(--primary-color); }
+                .marker-group.save-clicked .resting-nub { fill: var(--primary-color); }
             </style>
-            <div class="marker-group group ${String(property.id) === String(highlightedMarkerListingId) ? 'list-highlighted' : ''} relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
-                <!-- Resting Pill: icon + price only -->
-                <div class="resting-pill flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 bg-white border border-gray-200 rounded-full transition-all duration-200 z-10 min-w-0">
+            <div class="marker-group group ${String(property.id) === String(highlightedMarkerListingId) ? 'list-highlighted' : ''} ${String(property.id) === String(openedMarkerId) ? 'opened' : ''} relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
+                <!-- Resting Pill: icon + price only (initial = primary bg + white text) -->
+                <div class="resting-pill flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 rounded-full transition-all duration-200 z-10 min-w-0 border">
                     <div class="flex-none flex items-center justify-center">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${primaryColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="resting-pill-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
-                    <span class="text-[13px] font-bold text-gray-900 leading-tight whitespace-nowrap">${priceFormatted}</span>
+                    <span class="text-[13px] font-bold leading-tight whitespace-nowrap">${priceFormatted}</span>
                 </div>
-                <svg class="resting-nub flex-none transition-opacity duration-200 pointer-events-none group-hover:opacity-0" width="18" height="9" viewBox="0 0 18 9">
-                    <polygon points="0,0 18,0 9,9" fill="white"/>
-                    <path d="M0,0 L9,9 L18,0" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg class="resting-nub flex-none transition-all duration-200 pointer-events-none" width="18" height="9" viewBox="0 0 18 9">
+                    <polygon points="0,0 18,0 9,9" />
+                    <path class="nub-stroke" d="M0,0 L9,9 L18,0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
-                <!-- HOVER EXPANDED CARD: container padding, image rounded on all 4 sides -->
-                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 h-0 opacity-0 bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all duration-300 ease-out group-hover:w-[510px] group-hover:h-[220px] group-hover:opacity-100 flex flex-col z-10 p-3" style="box-shadow: 8px 0 20px -4px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.12);">
-
-                    <div class="flex flex-1 min-h-0 w-full">
-                    <!-- Left: Image reduced size (50%), full height, rounded on all 4 sides like main card -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[50%] flex-none relative overflow-hidden rounded-[16px] h-full">
-                        <img src="${imageUrl}" class="w-full h-full object-cover" />
-                        <!-- Price: rounded pill on image (top-left); primary soft + reduced opacity on card hover -->
-                        <div class="price-pill absolute top-2 left-2 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm border border-gray-100/80 transition-all duration-200">
-                            <span class="text-[13px] md:text-[14px] font-bold text-gray-900 tracking-tight">${priceNumber}</span>
+                <!-- EXPANDED CARD (click to open): image on top, content below; click inside does not toggle -->
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 min-h-0 opacity-0 bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all duration-300 ease-out flex flex-col z-10" style="box-shadow: 8px 0 20px -4px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.12);">
+                    <!-- Image on top (same as main card) -->
+                    <div class="expanded-content opacity-0 transition-opacity duration-300 relative aspect-[16/10] w-full flex-none overflow-hidden">
+                        <img src="${imageUrl}" class="w-full h-full object-cover" alt="" />
+                        <div class="absolute top-2 left-2 flex flex-wrap gap-1.5 items-start z-10">
+                            ${isFeatured ? '<span class="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">Featured</span>' : ''}
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">${listingType === 'sale' ? 'For Sale' : 'For Rent'}</span>
                         </div>
-                        <!-- Save icon on image (top-right) – clickable, stops propagation -->
-                        <div class="absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors pointer-events-auto" data-marker-save role="button" tabindex="0" aria-label="${initialSaved ? 'Unsave' : 'Save'} listing">${saveIconSvg}</div>
-                    </div>
-
-                    <!-- Right: Text panel – dark title, increased gaps between lines -->
-                    <div class="expanded-content opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col flex-1 min-w-0 pl-3 pr-2 py-0 justify-start overflow-hidden">
-                        <div class="text-sm md:text-[15px] font-semibold leading-tight line-clamp-2 text-left break-words text-gray-900">${property.title}</div>
-                        <div class="flex flex-col gap-3 mt-2.5 text-[12px] md:text-[13px] text-left">
-                            <div class="flex items-start gap-1 min-w-0"><span class="font-medium text-gray-400 shrink-0 w-24">Location</span><span class="font-bold text-gray-700 min-w-0 break-words line-clamp-2">: ${district}</span></div>
-                            <div class="flex items-start gap-1 min-w-0"><span class="font-medium text-gray-400 shrink-0 w-24">Station</span><span class="font-bold text-gray-700 min-w-0 break-words line-clamp-2">: ${stationName}</span></div>
-                            <div class="flex items-start gap-1 min-w-0"><span class="font-medium text-gray-400 shrink-0 w-24">Type</span><span class="font-bold text-gray-700 min-w-0 break-words line-clamp-2 capitalize">: ${typeLine}</span></div>
-                        </div>
-                        <div class="flex items-center gap-5 mt-4 text-[12px] md:text-[13px] text-[#2F3E46] flex-shrink-0 flex-wrap">
-                            <span class="font-medium text-gray-400 tracking-tight shrink-0">Beds</span><span class="font-bold text-gray-700 shrink-0">: ${property.bedrooms ?? '—'}</span>
-                            <span class="font-medium text-gray-400 tracking-tight shrink-0">Baths</span><span class="font-bold text-gray-700 shrink-0">: ${property.bathrooms ?? '—'}</span>
-                            <span class="font-medium text-gray-400 tracking-tight shrink-0">m²</span><span class="font-bold text-gray-700 shrink-0">: ${property.area ?? '—'}</span>
+                        ${dateStr ? `<div class="absolute bottom-2 right-2 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">${dateStr}</div>` : ''}
+                        <div class="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+                            <div class="w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors pointer-events-auto" data-marker-close role="button" tabindex="0" aria-label="Close"><svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></div>
+                            <div class="w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors pointer-events-auto" data-marker-save role="button" tabindex="0" aria-label="${initialSaved ? 'Unsave' : 'Save'} listing">${saveIconSvg}</div>
                         </div>
                     </div>
+                    <!-- Content below (price, title, location, stats – like main card) -->
+                    <div class="expanded-content opacity-0 transition-opacity duration-300 flex flex-col flex-1 min-w-0 p-3 gap-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-baseline gap-1 text-gray-900">
+                                <span class="text-lg font-semibold tracking-tight">${priceNumber}</span>
+                                <span class="text-[11px] font-medium text-gray-400 tracking-wide">${priceUnit}</span>
+                                ${listingType === 'rent' ? '<span class="text-[11px] font-medium text-gray-400">/mo</span>' : ''}
+                            </div>
+                            <span class="text-[10px] text-gray-300 font-mono opacity-60">#${String(property.id).slice(0, 6)}</span>
+                        </div>
+                        <div class="text-[14px] font-semibold text-gray-900 leading-tight line-clamp-2">${property.title}</div>
+                        <div class="flex items-center text-[13px] text-gray-700 flex-wrap gap-x-2 gap-y-0.5">
+                            <span class="flex items-center gap-0.5"><svg class="w-4 h-4 text-gray-700 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>${district}</span>
+                            <span class="w-px h-2.5 bg-gray-200"></span>
+                            <span class="flex items-center gap-0.5"><svg class="w-4 h-4 text-gray-700 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 3v2m-6 4h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2zm0 4h12M6 15v2m12-2v2"/></svg>${stationName}</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-[13px] text-gray-700">
+                            <span><span class="font-bold">${property.bedrooms ?? '—'}</span> <span class="font-medium">bed</span></span>
+                            <span><span class="font-bold">${property.bathrooms ?? '—'}</span> <span class="font-medium">bath</span></span>
+                            <span><span class="font-bold">${property.area ?? '—'}</span> <span class="font-medium">sqm</span></span>
+                        </div>
                     </div>
-
                 </div>
             </div>
         `;
@@ -251,8 +286,10 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             lastContentRef.current = newInnerHTML;
         }
 
-        // Save button: stop propagation and call onSaveClick so marker click doesn't fire
+        // Save button: stop propagation, call onSaveClick, then hide card
+        const markerGroup = contentRef.current?.querySelector('.marker-group');
         const saveBtn = contentRef.current?.querySelector('[data-marker-save]');
+        const closeBtn = contentRef.current?.querySelector('[data-marker-close]');
         if (saveBtn && onSaveClick) {
             if (saveBtnListenerRef.current?.el) {
                 try {
@@ -264,6 +301,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 e.preventDefault();
                 e.stopPropagation();
                 onSaveClick(property.id, initialSaved);
+                if (markerGroup) markerGroup.classList.add('save-clicked');
             };
             const keyHandler = (e) => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(e); }
@@ -271,6 +309,30 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             saveBtn.addEventListener('click', handler);
             saveBtn.addEventListener('keydown', keyHandler);
             saveBtnListenerRef.current = { el: saveBtn, handler, keyHandler };
+        }
+        if (closeBtn && onCloseCard) {
+            const closeHandler = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCloseCard();
+            };
+            closeBtn.addEventListener('click', closeHandler);
+            closeBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeHandler(e); } });
+        }
+        let cardClickCleanup = null;
+        const expandedCardEl = contentRef.current?.querySelector('.expanded-card');
+        if (expandedCardEl) {
+            const handleCardClick = (e) => {
+                e.stopPropagation();
+                if (e.target.closest('[data-marker-save]') || e.target.closest('[data-marker-close]')) return;
+                if (onClick) onClick(property);
+            };
+            expandedCardEl.addEventListener('click', handleCardClick);
+            cardClickCleanup = () => expandedCardEl.removeEventListener('click', handleCardClick);
+        }
+        if (markerGroup) {
+            const removeSaveClicked = () => markerGroup.classList.remove('save-clicked');
+            markerGroup.addEventListener('mouseleave', removeSaveClicked);
         }
 
         // Raise z-index on hover to ensure expanded card is never clipped by other markers
@@ -294,6 +356,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         return () => {
             hoverListener.remove();
             outListener.remove();
+            if (cardClickCleanup) cardClickCleanup();
             if (saveBtnListenerRef.current?.el) {
                 try {
                     saveBtnListenerRef.current.el.removeEventListener('click', saveBtnListenerRef.current.handler);
@@ -302,7 +365,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 saveBtnListenerRef.current = null;
             }
         };
-    }, [property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId]);
+    }, [property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId, openedMarkerId, onCardToggle, onCloseCard]);
 
     return null;
 }, (prevProps, nextProps) => {
@@ -324,11 +387,20 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         p.bathrooms === n.bathrooms &&
         prevProps.onSaveClick === nextProps.onSaveClick &&
         (prevProps.savedListingIds?.length === nextProps.savedListingIds?.length && (prevProps.savedListingIds || []).every((id, i) => (nextProps.savedListingIds || [])[i] === id)) &&
-        prevProps.highlightedMarkerListingId === nextProps.highlightedMarkerListingId
+        prevProps.highlightedMarkerListingId === nextProps.highlightedMarkerListingId &&
+        prevProps.openedMarkerId === nextProps.openedMarkerId &&
+        prevProps.onCardToggle === nextProps.onCardToggle &&
+        prevProps.onCloseCard === nextProps.onCloseCard
     );
 });
 
 const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null }) => {
+    const [openedMarkerId, setOpenedMarkerId] = useState(null);
+    const handleCardToggle = useCallback((propertyId) => {
+        setOpenedMarkerId((prev) => (String(prev) === String(propertyId) ? null : propertyId));
+    }, []);
+    const handleCloseCard = useCallback(() => setOpenedMarkerId(null), []);
+
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
@@ -342,8 +414,16 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
     const boundsTimeoutRef = React.useRef(null);
     const wrapperRef = useRef(null);
 
+    const triggerMapResizeRef = useRef(null);
     const onLoad = useCallback(function callback(map) {
         setMap(map);
+        if (triggerMapResizeRef.current) clearTimeout(triggerMapResizeRef.current);
+        triggerMapResizeRef.current = setTimeout(() => {
+            if (map && window.google?.maps?.event) {
+                window.google.maps.event.trigger(map, 'resize');
+            }
+            triggerMapResizeRef.current = null;
+        }, 300);
     }, []);
 
     // Listen for fullscreen change (user can press Escape); support standard + webkit (Safari)
@@ -419,6 +499,10 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
     }, [map]);
 
     const onUnmount = useCallback(function callback(map) {
+        if (triggerMapResizeRef.current) {
+            clearTimeout(triggerMapResizeRef.current);
+            triggerMapResizeRef.current = null;
+        }
         setMap(null);
     }, []);
 
@@ -516,6 +600,9 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
                         savedListingIds={savedListingIds}
                         useDefaultMarkers={useDefaultMarkers}
                         highlightedMarkerListingId={highlightedMarkerListingId}
+                        openedMarkerId={openedMarkerId}
+                        onCardToggle={handleCardToggle}
+                        onCloseCard={handleCloseCard}
                     />
                 ))}
             </GoogleMap>

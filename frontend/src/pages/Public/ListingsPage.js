@@ -765,13 +765,13 @@ const ListingsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-gray-50 border border-gray-100 rounded-[10px] transition-all group shadow-sm hover:border-emerald-500/30 hover:bg-white"
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-gray-50 border border-gray-100 rounded-[10px] transition-all group shadow-sm hover:border-primary-500/30 hover:bg-white"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-emerald-600/70 group-hover:text-emerald-600 transition-colors" />
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-primary-600/70 group-hover:text-primary-600 transition-colors" />
                                     <span className="font-semibold text-gray-500 group-hover:text-gray-700">Search transit station...</span>
                                 </div>
-                                <div className="bg-[#00875A] text-white p-2 rounded-full shadow-md shadow-emerald-900/10 active:scale-95 transition-all flex items-center justify-center">
+                                <div className="bg-primary-600 text-white p-2 rounded-full shadow-md shadow-primary-900/10 active:scale-95 transition-all flex items-center justify-center">
                                     <MapIcon className="w-5 h-5" strokeWidth={2} />
                                 </div>
                             </button>
@@ -789,7 +789,7 @@ const ListingsPage = () => {
                                         }}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 hover:bg-primary-100 rounded-full transition-colors group"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-[#00D06C]" />
+                                        <div className="w-2 h-2 rounded-full bg-primary-500" />
                                         <span className="text-sm font-bold text-primary-600">
                                             {station ? station.label : id}
                                         </span>
@@ -1002,27 +1002,27 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Full Width Filter Bar (outside constrained container for background bleed) */}
-                <FilterBar
-                    className=""
-                    total={total}
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    onOpenFilters={() => setIsSidebarOpen(true)}
-                    hasActiveFilters={hasActiveFilters}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    isGoogleMapOpen={isGoogleMapOpen}
-                    onToggleMapView={toggleMapView}
-                    isMapTransitioning={isMapTransitioning}
-                    navVisible={navVisible}
-                    isScrolled={isScrolled}
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                />
+                {/* Same width as nav bar: max-w-[1440px] + px-6 lg:px-12 */}
+                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
+                    <FilterBar
+                        className=""
+                        total={total}
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        onOpenFilters={() => setIsSidebarOpen(true)}
+                        hasActiveFilters={hasActiveFilters}
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
+                        isGoogleMapOpen={isGoogleMapOpen}
+                        onToggleMapView={toggleMapView}
+                        isMapTransitioning={isMapTransitioning}
+                        navVisible={navVisible}
+                        isScrolled={isScrolled}
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                    />
 
-                {/* Main Content (Constrained Grid) */}
-                <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+                    {/* Main Content Grid — no container padding */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
@@ -1053,21 +1053,20 @@ const ListingsPage = () => {
                             </div>
                         </div>
 
-                        {/* Listings Grid or Map */}
+                        {/* Listings Grid or Map — when map open: no scroll in card container; main container scrolls, cards full height */}
                         <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-9'} transition-all duration-500 relative`}>
                             <div
-                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? '' : 'min-h-[70vh]'}`}
-                                style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 190 : 130}px)` } : undefined}
+                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? (isMapExpanded ? 'min-h-[72vh]' : 'min-h-[80vh]') : 'min-h-[70vh]'}`}
                             >
-                                {/* Left Side: Property List (map view) - hidden when map expanded full width */}
-                                <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[45%] overflow-y-auto h-full custom-scrollbar pt-0 px-4 pb-4 lg:px-5 lg:pb-5') : ''}`}>
+                                {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
+                                <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[52%] p-0') : ''}`}>
                                     {initialLoading ? (
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
                                     ) : (listings || []).length > 0 ? (
                                         <>
-                                            <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                            <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                                 {(listings || []).map((l, i) => (
                                                     <div
                                                         key={l.id}
@@ -1088,7 +1087,7 @@ const ListingsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
+                                        <div className="text-center py-20 bg-white rounded-[24px] animate-fadeInUp">
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
@@ -1097,10 +1096,10 @@ const ListingsPage = () => {
                                     )}
                                 </div>
 
-                                {/* Right Side: Map (Desktop/Tablet) - full width when expanded */}
-                                {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className={`hidden lg:flex lg:flex-col h-full relative transition-all duration-300 ${isMapExpanded ? 'w-full flex-1' : 'w-[55%]'}`}>
-                                        <div className="map-overlays-rounded relative w-full h-full rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
+                                {/* Right Side: Map — sticky below filter bar: moves up with initial scroll then stops under filter bar */}
+                                    {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
+                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative min-h-[72vh]' : `w-[48%] lg:sticky lg:self-start h-[80vh] min-h-[80vh] ${navVisible ? 'lg:top-[148px]' : 'lg:top-[88px]'}`}`}>
+                                        <div className={`map-overlays-rounded relative w-full rounded-[24px] overflow-hidden shadow-sm border border-gray-200 ${isMapExpanded ? 'min-h-[72vh] h-full' : 'h-[80vh] min-h-[80vh]'}`}>
                                             <GoogleMap
                                                 listings={listings}
                                                 onMarkerClick={(property) => {
