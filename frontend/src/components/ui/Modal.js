@@ -98,9 +98,8 @@ const Modal = ({
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
-                    className="bg-white text-left shadow-2xl w-full flex flex-col h-full overflow-hidden"
+                    className="bg-white text-left shadow-2xl w-full flex flex-col h-full overflow-hidden rounded-[24px]"
                     style={{
-                        borderRadius: 'var(--card-radius)',
                         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                     }}
                 >

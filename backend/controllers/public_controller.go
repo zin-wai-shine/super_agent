@@ -62,6 +62,13 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		}
 	}
 
+	// Filter by max distance to station (e.g. 600 = show listings within 600m of any station)
+	if maxDist := c.Query("max_distance_to_station"); maxDist != "" {
+		if dist, err := strconv.Atoi(maxDist); err == nil && dist > 0 {
+			query = query.Where("distance_to_station > 0 AND distance_to_station <= ?", dist)
+		}
+	}
+
 	// Filter by price range
 	if minPrice := c.Query("min_price"); minPrice != "" {
 		if price, err := strconv.ParseFloat(minPrice, 64); err == nil {
@@ -120,8 +127,9 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		}
 	}
 
-	// Search in title and description
-	if search := c.Query("search"); search != "" {
+	// Search in title and description (skip when search is the "Near BTS / MRT stations" quick-search label so only max_distance_to_station applies)
+	const nearTransitLabel = "Near BTS / MRT stations"
+	if search := c.Query("search"); search != "" && strings.TrimSpace(search) != nearTransitLabel {
 		query = query.Where("title ILIKE ? OR description ILIKE ? OR address ILIKE ?",
 			"%"+search+"%", "%"+search+"%", "%"+search+"%")
 	}

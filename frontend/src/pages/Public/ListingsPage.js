@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { saveListing, unsaveListing } from '../../services/savedListingsApi';
@@ -136,7 +137,8 @@ const ListingsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price } = useTenant();
-    const { navVisible } = useOutletContext() || { navVisible: true };
+    const outletContext = useOutletContext() || {};
+    const { navVisible, filterBarSlot } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const [savedListingIds, setSavedListingIds] = useState([]);
     const [listings, setListings] = useState([]);
@@ -383,6 +385,7 @@ const ListingsPage = () => {
             max_price: searchParams.get('max_price') || saved.max_price || '',
             bedrooms: searchParams.get('bedrooms') || saved.bedrooms || '',
             station_id: searchParams.get('station_id') || saved.station_id || '',
+            max_distance_to_station: searchParams.get('max_distance_to_station') || saved.max_distance_to_station || '',
             developer_id: searchParams.get('developer_id') || saved.developer_id || '',
             project_id: searchParams.get('project_id') || saved.project_id || '',
             search: searchParams.get('search') || saved.search || '',
@@ -390,7 +393,7 @@ const ListingsPage = () => {
             max_area: searchParams.get('max_area') || saved.max_area || '',
         };
     });
-    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', station_id: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
+    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
     const prevSidebarOpenRef = useRef(false);
 
     const [searchTerm, setSearchTerm] = useState(filters.search);
@@ -418,6 +421,7 @@ const ListingsPage = () => {
             max_price: params.get('max_price') || '',
             bedrooms: params.get('bedrooms') || '',
             station_id: params.get('station_id') || '',
+            max_distance_to_station: params.get('max_distance_to_station') || '',
             developer_id: params.get('developer_id') || '',
             project_id: params.get('project_id') || '',
             search: params.get('search') || '',
@@ -478,10 +482,10 @@ const ListingsPage = () => {
                     params.agent_id = user.agent_id;
                 }
 
-                // Call API and artificial delay in parallel for premium "serial" loading feel
+                // Call API and minimal delay in parallel
                 const [response] = await Promise.all([
                     publicApi.getListings(params, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 750)) // Reduced from 1.5s to 0.75s
+                    new Promise(resolve => setTimeout(resolve, 200))
                 ]);
 
                 const data = response.data;
@@ -489,8 +493,7 @@ const ListingsPage = () => {
                 if (page === 1 && initialLoading) {
                     // Trigger exit animation
                     setIsExiting(true);
-                    // Wait for the longest delay (11 * 60ms) + animation duration (600ms) = ~1260ms
-                    await new Promise(resolve => setTimeout(resolve, 650)); // Reduced from 1.3s to 0.65s
+                    await new Promise(resolve => setTimeout(resolve, 200));
                     setListings(data.listings);
                     setIsExiting(false);
                     setInitialLoading(false);
@@ -552,6 +555,45 @@ const ListingsPage = () => {
         handleFilterChange('station_id', value);
     };
 
+    const handleQuickSearchFilters = (tag, label = '') => {
+        const updates = {};
+        const searchText = label || (tag === 'featured' ? 'Featured properties' : '');
+        if (tag === 'transit') {
+            updates.max_distance_to_station = '600';
+            updates.station_id = '';
+            updates.search = searchText || 'Near BTS / MRT stations';
+        } else if (tag === 'Condo') {
+            updates.type = 'Condo';
+            updates.listing_type = 'rent';
+            updates.search = searchText || 'Condo for Rent';
+            updates.max_distance_to_station = '';
+        } else if (tag === 'Commercial') {
+            updates.type = 'Commercial';
+            updates.listing_type = 'sale';
+            updates.search = searchText || 'Commercial for Sale';
+            updates.max_distance_to_station = '';
+        } else if (tag === 'featured') {
+            updates.search = searchText || 'Featured properties';
+            updates.max_distance_to_station = '';
+        }
+        if (Object.keys(updates).length === 0) return;
+        const newFilters = { ...filters, ...updates };
+        setFilters(newFilters);
+        setSearchTerm(updates.search !== undefined ? updates.search : filters.search);
+        localStorage.setItem('listing_filters', JSON.stringify(newFilters));
+        setPage(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const newParams = new URLSearchParams(searchParams);
+        ['type', 'listing_type', 'search', 'station_id', 'max_distance_to_station'].forEach(key => {
+            const v = newFilters[key];
+            if (v) newParams.set(key, v);
+            else newParams.delete(key);
+        });
+        const view = searchParams.get('view');
+        if (view) newParams.set('view', view);
+        setSearchParams(newParams);
+    };
+
     const handlePendingFilterChange = (key, value) => {
         setPendingFilters(prev => ({ ...prev, [key]: value }));
     };
@@ -567,7 +609,7 @@ const ListingsPage = () => {
         setPage(1);
         const newParams = new URLSearchParams(searchParams);
         const view = searchParams.get('view');
-        ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'station_id', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'].forEach(key => {
+        ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'].forEach(key => {
             const v = next[key];
             if (v) newParams.set(key, v);
             else newParams.delete(key);
@@ -585,6 +627,7 @@ const ListingsPage = () => {
             max_price: '',
             bedrooms: '',
             station_id: '',
+            max_distance_to_station: '',
             developer_id: '',
             project_id: '',
             search: '',
@@ -620,6 +663,9 @@ const ListingsPage = () => {
     }
     if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
     if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
+    if (filters.max_distance_to_station) {
+        activeFiltersList.push({ label: `Near BTS/MRT (≤${filters.max_distance_to_station}m)`, key: 'max_distance_to_station' });
+    }
     if (filters.station_id) {
         // Use flatStations (already flat option objects) to find the label
         const station = flatStations.find(s => s && s.value === filters.station_id);
@@ -1002,13 +1048,17 @@ const ListingsPage = () => {
                     </div>
                 </div>
 
-                {/* Same width as nav bar: max-w-[1440px] + px-6 lg:px-12 */}
-                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
+                {/* Filter bar: portaled into layout so it sits in same container as nav bar */}
+                {filterBarSlot && createPortal(
                     <FilterBar
                         className=""
                         total={total}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
+                        onClearSearch={() => {
+                            setSearchTerm('');
+                            handleFilterChange('search', '', true);
+                        }}
                         onOpenFilters={() => setIsSidebarOpen(true)}
                         hasActiveFilters={hasActiveFilters}
                         viewMode={viewMode}
@@ -1020,13 +1070,20 @@ const ListingsPage = () => {
                         isScrolled={isScrolled}
                         filters={filters}
                         onFilterChange={handleFilterChange}
-                    />
+                        onQuickSearchClick={handleQuickSearchFilters}
+                    />,
+                    filterBarSlot
+                )}
+                {/* Spacer so content doesn't sit under the fixed filter bar (bar height 90px) */}
+                <div className="h-[90px] flex-shrink-0" aria-hidden />
 
-                    {/* Main Content Grid — no container padding */}
+                {/* Main Content Grid — same width as nav: max-w-[1440px] + px-6 lg:px-12 */}
+                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12 mt-5">
+                    {/* Main Content Grid — at lg only: no sidebar (use Filters drawer); at xl: sidebar visible again */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* Sidebar */}
-                        <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[150px] h-[calc(100vh-150px)]' : 'top-[92px] h-[calc(100vh-92px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
+                        {/* Sidebar — removed from list page; use Filters button to open filter drawer */}
+                        <div className={`hidden transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
@@ -1053,20 +1110,20 @@ const ListingsPage = () => {
                             </div>
                         </div>
 
-                        {/* Listings Grid or Map — when map open: no scroll in card container; main container scrolls, cards full height */}
-                        <div className={`${isGoogleMapOpen ? 'lg:col-span-12' : 'lg:col-span-9'} transition-all duration-500 relative`}>
+                        {/* Listings Grid or Map — full width at lg; at xl sidebar visible so 9 cols */}
+                        <div className="lg:col-span-12 transition-all duration-500 relative">
                             <div
-                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? (isMapExpanded ? 'min-h-[72vh]' : 'min-h-[80vh]') : 'min-h-[70vh]'}`}
+                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? 'min-h-[80vh]' : 'min-h-[70vh]'}`}
                             >
                                 {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
-                                <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[52%] p-0') : ''}`}>
+                                <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[42%] xl:w-[52%] p-0') : ''}`}>
                                     {initialLoading ? (
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
                                     ) : (listings || []).length > 0 ? (
                                         <>
-                                            <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
+                                            <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                                 {(listings || []).map((l, i) => (
                                                     <div
                                                         key={l.id}
@@ -1098,8 +1155,8 @@ const ListingsPage = () => {
 
                                 {/* Right Side: Map — sticky below filter bar: moves up with initial scroll then stops under filter bar */}
                                     {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative min-h-[72vh]' : `w-[48%] lg:sticky lg:self-start h-[80vh] min-h-[80vh] ${navVisible ? 'lg:top-[148px]' : 'lg:top-[88px]'}`}`}>
-                                        <div className={`map-overlays-rounded relative w-full rounded-[24px] overflow-hidden shadow-sm border border-gray-200 ${isMapExpanded ? 'min-h-[72vh] h-full' : 'h-[80vh] min-h-[80vh]'}`}>
+                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative h-[80vh] min-h-[80vh] lg:h-[calc(100vh-12.5rem)] lg:min-h-[calc(100vh-12.5rem)] xl:h-[80vh] xl:min-h-[80vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[80vh] min-h-[80vh] lg:h-[calc(100vh-12.5rem)] lg:min-h-[calc(100vh-12.5rem)] xl:h-[80vh] xl:min-h-[80vh] ${navVisible ? 'lg:top-[154px]' : 'lg:top-[90px]'}`}`}>
+                                        <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
                                                 onMarkerClick={(property) => {
@@ -1110,6 +1167,7 @@ const ListingsPage = () => {
                                                 onBoundsChanged={handleMapBoundsChanged}
                                                 onExpandClick={() => setIsMapExpanded(true)}
                                                 isExpanded={isMapExpanded}
+                                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
                                                 onSaveClick={handleMapSaveClick}
                                                 savedListingIds={savedListingIds}
                                                 highlightedMarkerListingId={listHoveredListingId}
@@ -1260,6 +1318,7 @@ const ListingsPage = () => {
                                 onSaveClick={handleMapSaveClick}
                                 savedListingIds={savedListingIds}
                                 highlightedMarkerListingId={listHoveredListingId}
+                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
                             />
 
                             {/* Mobile Legend Overlay - Theme Card Style */}

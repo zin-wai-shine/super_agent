@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
     MagnifyingGlassIcon,
     AdjustmentsHorizontalIcon,
@@ -41,7 +42,9 @@ const FilterBar = ({
     showInventory = true,
     variant = 'full',
     filters = {},
-    onFilterChange = () => { }
+    onFilterChange = () => { },
+    onQuickSearchClick = null,
+    onClearSearch = null,
 }) => {
     const isModalVariant = variant === 'modal';
     const [inputValue, setInputValue] = useState(searchTerm);
@@ -99,38 +102,60 @@ const FilterBar = ({
         }
     };
 
-    const handleSuggestionClick = (text) => {
+    const handleSuggestionClick = (text, tag) => {
         setInputValue(text);
-        onSearchChange && onSearchChange(text);
+        if (onQuickSearchClick && tag) {
+            onQuickSearchClick(tag, text);
+        } else {
+            onSearchChange && onSearchChange(text);
+        }
         setIsFocused(false);
         inputRef.current && inputRef.current.blur();
     };
 
     const handleClear = () => {
         setInputValue('');
-        onSearchChange && onSearchChange('');
+        if (onClearSearch) {
+            onClearSearch();
+        } else {
+            onSearchChange && onSearchChange('');
+        }
         inputRef.current && inputRef.current.focus();
     };
 
+    const overlayEl = !isModalVariant && isFocused && typeof document !== 'undefined' && document.body;
+
     return (
-        <div className={`w-full sticky z-[100] pointer-events-none transition-all duration-500 ease-in-out ${!isModalVariant && navVisible ? 'top-[4rem]' : 'top-0'} ${!isModalVariant ? 'bg-[#EEEEEE]' : ''} ${className}`}>
-            <div className={`relative w-full transition-all duration-300 ${isModalVariant ? 'lg:pr-40 md:pr-40 pr-2' : ''}`}>
+        <>
+            {/* Dark soft overlay portaled to body so it sits above listings; nav (z-150) and filter bar (z-100) stay above */}
+            {overlayEl && createPortal(
                 <div
-                    className={`relative w-full pointer-events-auto transition-all duration-300 ease-out h-[84px] flex items-center ${isModalVariant ? 'bg-white/80 backdrop-blur-md' : ''}`}
-                    style={!isModalVariant ? { background: 'linear-gradient(to bottom, #EEEEEE 0%, #EEEEEE 85%, #EEEEEE 100%)' } : undefined}
+                    className="fixed left-0 right-0 bottom-0 z-[90] bg-black/40 backdrop-blur-[2px] pointer-events-auto animate-in fade-in duration-200"
+                    style={{ top: navVisible ? '4rem' : '0' }}
+                    aria-hidden
+                    onClick={() => inputRef.current?.blur()}
+                />,
+                document.body
+            )}
+        <div className={`w-full ${!isModalVariant ? 'fixed left-0 right-0' : ''} z-[100] pointer-events-none transition-all duration-500 ease-in-out ${!isModalVariant && navVisible ? 'top-[4rem]' : !isModalVariant ? 'top-0' : ''} ${!isModalVariant ? 'bg-white' : ''} ${className}`}>
+            <div className="relative w-full transition-all duration-300 pointer-events-auto">
+                {/* Same inner width as nav bar: max-w-[1440px] + px-6 lg:px-12 */}
+                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
+                <div
+                    className={`relative w-full pointer-events-auto transition-all duration-300 ease-out h-[90px] flex items-center ${isModalVariant ? 'bg-white/80 backdrop-blur-md' : 'bg-white'}`}
                 >
                     <div className="w-full max-w-full flex items-center">
-                        {/* Search + map + filters: no horizontal padding */}
-                        <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
-                        {/* Search Section — centered */}
-                        <div className="relative flex-1 min-w-0 max-w-[950px]">
+                        {/* Left spacer — centers the search */}
+                        <div className="flex-1 min-w-0" aria-hidden />
+                        {/* Search Section — centered; 50% → 85% / lg 95% / xl 80% when focused; expand & reduce animated */}
+                        <div className={`relative flex-shrink-0 transition-[width] duration-300 ease-in-out ${isFocused ? 'w-[85%] lg:w-[95%] xl:w-[80%]' : 'w-[50%] max-w-[520px] min-w-[260px]'}`}>
                             {/* Search input wrapper */}
-                            <div className={`relative group h-[46px] bg-white border border-primary-500/30 ${isFocused
-                                ? 'rounded-t-[24px] rounded-b-none border-b-transparent !bg-white'
+                            <div className={`relative group h-[52px] bg-[#F9FAFC] lg:bg-white border border-primary-500/30 ${isFocused
+                                ? 'rounded-t-[24px] rounded-b-none border-b-transparent'
                                 : 'rounded-[24px]'
                                 }`} style={{ transition: 'border-color 0.2s ease, background-color 0.2s ease' }}>
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <MagnifyingGlassIcon className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
+                                    <MagnifyingGlassIcon className={`w-6 h-6 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
                                 </div>
 
                                 <input
@@ -141,7 +166,7 @@ const FilterBar = ({
                                     onFocus={handleFocus}
                                     onBlur={handleBlur}
                                     placeholder="Search location, name, neighborhood..."
-                                    className="w-full h-full bg-white pl-12 pr-24 text-[14px] font-medium text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-[24px]"
+                                    className="w-full h-full bg-[#F9FAFC] lg:bg-white pl-12 pr-[3.25rem] text-[14px] font-medium text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-[24px]"
                                 />
 
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px] gap-1">
@@ -158,29 +183,29 @@ const FilterBar = ({
                                     {/* Circular Search Button */}
                                     <button
                                         onClick={handleSearch}
-                                        className="w-9 h-9 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-sm transition-all duration-200 active:scale-95"
+                                        className="w-10 h-10 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-sm transition-all duration-200 active:scale-95"
                                     >
-                                        <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5]" />
+                                        <MagnifyingGlassIcon className="w-6 h-6 stroke-[2.5]" />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Two-Column Search Dropdown */}
+                            {/* Two-Column Search Dropdown — same width as search box when focused */}
                             {isFocused && (
                                 <div
                                     ref={dropdownRef}
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className="absolute top-full left-0 right-0 w-full max-w-[950px] bg-white rounded-b-[24px] overflow-hidden z-[500] animate-in fade-in duration-150 pointer-events-auto flex flex-row h-[500px] border-l border-r border-b border-gray-200 shadow-[(-24px)_0_56px_-12px_rgba(0,0,0,0.2),24px_0_56px_-12px_rgba(0,0,0,0.2),0_32px_64px_-16px_rgba(0,0,0,0.25)]"
+                                    className="absolute top-full left-0 right-0 w-full bg-[#F9FAFC] lg:bg-white rounded-b-[24px] overflow-hidden z-[500] animate-in fade-in duration-150 pointer-events-auto flex flex-row h-[500px] border-l border-r border-b border-gray-200 shadow-[(-24px)_0_56px_-12px_rgba(0,0,0,0.2),24px_0_56px_-12px_rgba(0,0,0,0.2),0_32px_64px_-16px_rgba(0,0,0,0.25)] xl:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.05)] xl:border-gray-200 xl:rounded-[24px] xl:rounded-t-none"
                                 >
                                     {/* Left Column: Quick Searches (1/3) */}
-                                    <div className="w-[320px] flex-shrink-0 flex flex-col bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
+                                    <div className="w-[320px] flex-shrink-0 flex flex-col bg-[#F9FAFC] lg:bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
                                         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                                             <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
                                             <div className="space-y-1">
                                                 {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                                     <button
                                                         key={tag}
-                                                        onMouseDown={() => handleSuggestionClick(label)}
+                                                        onMouseDown={() => handleSuggestionClick(label, tag)}
                                                         className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-primary-50/40 text-left transition-all group"
                                                     >
                                                         <div className="flex items-center gap-3">
@@ -216,11 +241,20 @@ const FilterBar = ({
                                             searchable
                                             hideHeader
                                             onStationClick={(id) => {
-                                                setPendingStationIds(prev =>
-                                                    prev.includes(id)
+                                                setPendingStationIds(prev => {
+                                                    const next = prev.includes(id)
                                                         ? prev.filter(i => i !== id)
-                                                        : [...prev, id]
-                                                );
+                                                        : [...prev, id];
+                                                    if (onFilterChange) {
+                                                        onFilterChange('station_id', next.join(','));
+                                                    }
+                                                    return next;
+                                                });
+                                                // Close dropdown after selection so results update immediately
+                                                setIsFocused(false);
+                                                if (inputRef.current) {
+                                                    inputRef.current.blur();
+                                                }
                                             }}
                                             selectedStations={pendingStationIds}
                                         />
@@ -229,14 +263,18 @@ const FilterBar = ({
                             )}
                         </div>
 
-                        {/* Map View switch — right of search bar, pill shape, same height & border as search */}
+                        {/* Right spacer — always flex-1 so search stays centered; content hidden when search focused for symmetric expand */}
+                        <div className="flex-1 flex items-center justify-end gap-3 min-w-0 pl-2">
+                        {!isFocused && (
+                        <>
+                        {/* Map View switch — at lg icon + toggle only, no container bg; at xl show text and container */}
                         {showMapToggle && onToggleMapView && (
-                            <div className="h-[46px] flex items-center justify-between gap-3 pl-3 pr-2 py-1.5 bg-white border border-primary-500/30 rounded-full shadow-sm transition-all duration-300 flex-shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
-                                        <MapIcon className={`w-5 h-5 text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />
+                            <div className="h-[52px] flex items-center justify-between gap-3 pl-3 pr-2 lg:pl-2 lg:pr-2 lg:min-w-0 py-1.5 rounded-full transition-all duration-300 flex-shrink-0 bg-transparent border-transparent shadow-none">
+                                <div className="flex items-center gap-3 lg:gap-2">
+                                    <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                                        <MapIcon className={`w-6 h-6 text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />
                                     </div>
-                                    <span className="text-[14px] font-medium text-gray-900">Map View</span>
+                                    <span className="text-[14px] font-medium text-gray-900 lg:hidden xl:inline">Map View</span>
                                 </div>
                                 <button
                                     type="button"
@@ -245,28 +283,30 @@ const FilterBar = ({
                                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${isGoogleMapOpen ? 'bg-primary-600' : 'bg-gray-200 hover:bg-gray-300'}`}
                                 >
                                     <span
-                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-300 ease-in-out ${isGoogleMapOpen ? 'translate-x-[20px]' : 'translate-x-[4px]'}`}
+                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full ring-0 transition duration-300 ease-in-out ${isGoogleMapOpen ? 'translate-x-[20px] bg-white shadow-sm' : 'translate-x-[4px] bg-primary-600'}`}
                                     />
                                 </button>
                             </div>
                         )}
-                        {/* Filters — old design: white bg + green border; dot position/size unchanged */}
-                        {isGoogleMapOpen && (
+
+                        {/* Filters — in map view always show; in list view show only at lg; at lg no container bg, at xl show text + container */}
+                        <div className={`h-[52px] flex items-center flex-shrink-0 ${!isGoogleMapOpen ? 'hidden lg:flex' : ''}`}>
                             <button
                                 type="button"
                                 onClick={onOpenFilters}
-                                className={`h-[46px] flex items-center gap-3 pl-3 pr-5 rounded-full bg-white border shadow-sm flex-shrink-0
+                                className="h-[52px] min-w-[130px] lg:min-w-0 lg:w-[52px] lg:px-0 lg:justify-center xl:min-w-[130px] xl:px-4 xl:gap-2 flex items-center gap-2 pl-3 pr-4 rounded-full flex-shrink-0
                                   transition-all duration-200 ease-out
-                                  hover:bg-primary-50/90 hover:border-primary-400/80 hover:shadow-md
+                                  bg-transparent border-transparent shadow-none
+                                  hover:bg-primary-50/90 hover:border-primary-400/80
                                   active:scale-[0.98] active:shadow-sm
                                   focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2
-                                  relative group
-                                  ${hasActiveFilters ? 'border-primary-500' : 'border-primary-500/30'}`}
+                                  relative group"
+                                aria-label="Filters"
                             >
-                                <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-                                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+                                    <AdjustmentsHorizontalIcon className="w-6 h-6 text-white" />
                                 </div>
-                                <span className={`text-[14px] font-medium ${hasActiveFilters ? 'text-primary-700' : 'text-gray-900'} group-hover:text-primary-700 transition-colors`}>Filters</span>
+                                <span className="text-[14px] font-medium text-gray-900 group-hover:text-primary-700 transition-colors lg:hidden xl:inline">Filters</span>
                                 {hasActiveFilters && (
                                     <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 z-10">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -274,12 +314,16 @@ const FilterBar = ({
                                     </span>
                                 )}
                             </button>
+                        </div>
+                        </>
                         )}
+                        </div>
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

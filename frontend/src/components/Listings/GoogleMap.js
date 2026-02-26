@@ -13,7 +13,7 @@ const options = {
     disableDefaultUI: true,
     zoomControl: false, // Use custom zoom + fullscreen controls
     gestureHandling: 'greedy', // Allow direct scroll zoom without Cmd key
-    mapId: 'DEMO_MAP_ID', // Using the ID from user's snippet
+    // mapId omitted so default map tiles render; use customOptions.mapId if you have a valid Cloud Map ID
     styles: [
         {
             featureType: "poi",
@@ -394,7 +394,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
     );
 });
 
-const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null }) => {
+const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true }) => {
     const [openedMarkerId, setOpenedMarkerId] = useState(null);
     const handleCardToggle = useCallback((propertyId) => {
         setOpenedMarkerId((prev) => (String(prev) === String(propertyId) ? null : propertyId));
@@ -447,11 +447,11 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
     }, [map]);
 
     useEffect(() => {
-        if (map && isExpanded) {
+        if (map && (isExpanded || isVisible)) {
             const t = setTimeout(triggerMapResize, 150);
             return () => clearTimeout(t);
         }
-    }, [map, isExpanded, triggerMapResize]);
+    }, [map, isExpanded, isVisible, triggerMapResize]);
 
     const toggleFullscreen = useCallback(() => {
         const el = wrapperRef.current;

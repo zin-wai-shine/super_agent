@@ -167,6 +167,7 @@ const PublicLayout = () => {
     const [isVisible, setIsVisible] = useState(true);
 
     const [isNavLoading, setIsNavLoading] = useState(true);
+    const [filterBarSlot, setFilterBarSlot] = useState(null);
 
     React.useEffect(() => {
         // Match the ListingsPage 800ms delay
@@ -207,9 +208,9 @@ const PublicLayout = () => {
                 </div>
             </div>
 
-            {/* Navigation Drawer (Mobile) */}
+            {/* Navigation Drawer (Mobile + lg when burger is used) */}
             {mobileMenuOpen && (
-                <div className="fixed inset-0 z-[250] md:hidden">
+                <div className="fixed inset-0 z-[250]">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -468,9 +469,10 @@ const PublicLayout = () => {
                 </div >
             )}
 
-            {/* Desktop Navigation */}
+            {/* Desktop: nav bar and filter bar in the same container (listings/projects) */}
+            <div className={`hidden md:block sticky top-0 z-[150] bg-white ${isVisible ? 'translate-y-0' : '-translate-y-full'} transition-all duration-300`} style={{ backgroundColor: '#ffffff' }}>
             <nav
-                className={`hidden md:block sticky top-0 z-[150] transition-all duration-300 bg-white/80 backdrop-blur-md ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+                className="transition-all duration-300 bg-white/80 backdrop-blur-md"
                 style={{ backgroundColor: '#ffffff' }}
                 onMouseLeave={closeMenu}
             >
@@ -509,8 +511,7 @@ const PublicLayout = () => {
                                         )}
                                     </Link>
 
-                                    {/* Desktop Navigation Links */}
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center space-x-1 lg:hidden xl:flex">
                                         {navigation.map((item) => {
                                             if (item.name === 'Projects') {
                                                 return (
@@ -912,31 +913,43 @@ const PublicLayout = () => {
                                 {/* Auth Buttons */}
                                 <div className="flex items-center space-x-4">
                                     {isAuthenticated ? (
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-1 sm:gap-2">
+                                            {/* Bookings — gray circular glass background behind icon */}
                                             <Link
                                                 to="/my-bookings"
-                                                className="group flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
+                                                className="group flex items-center gap-2 px-4 py-2 lg:px-0 lg:py-0 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
+                                                title="Bookings"
                                             >
-                                                <CiCalendar className="w-5 h-5 text-gray-500 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
-                                                <span className="text-[14px] font-medium">Bookings</span>
+                                                <div className="w-10 h-10 rounded-full bg-gray-200/40 backdrop-blur-md border border-white/40 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200/60 transition-colors">
+                                                    <CiCalendar className="w-5 h-5 text-gray-600 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
+                                                </div>
+                                                <span className="text-[14px] font-medium lg:sr-only">Bookings</span>
                                             </Link>
 
+                                            {/* Saved — gray circular glass background behind icon */}
                                             <Link
                                                 to="/saved-listings"
-                                                className="group flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
+                                                className="group flex items-center gap-2 px-4 py-2 lg:px-0 lg:py-0 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
+                                                title="Saved"
                                             >
-                                                <CiBookmark className="w-5 h-5 text-gray-500 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
-                                                <span className="text-[14px] font-medium">Saved</span>
+                                                <div className="w-10 h-10 rounded-full bg-gray-200/40 backdrop-blur-md border border-white/40 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200/60 transition-colors">
+                                                    <CiBookmark className="w-5 h-5 text-gray-600 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
+                                                </div>
+                                                <span className="text-[14px] font-medium lg:sr-only">Saved</span>
                                             </Link>
 
-                                            <div className="relative" ref={userMenuRef}>
+                                            {/* Vertical separator — lg only */}
+                                            <div className="hidden lg:block w-px h-6 bg-gray-200 flex-shrink-0" aria-hidden />
+
+                                            {/* Profile — visible at lg (layout like image) */}
+                                            <div className="relative flex items-center" ref={userMenuRef}>
                                                 <button
                                                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                                    className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1 transition-all duration-300 text-gray-700 hover:text-[var(--primary-color)] group`}
-                                                    style={{ borderRadius: 'var(--btn-radius)' }}
+                                                    className="flex items-center justify-center p-0.5 transition-all duration-300 text-gray-700 hover:text-[var(--primary-color)] group rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2"
+                                                    aria-label="Account menu"
                                                 >
                                                     <div
-                                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-base transition-all duration-300 text-white bg-primary-600`}
+                                                        className="w-10 h-10 rounded-full flex items-center justify-center font-black text-base transition-all duration-300 text-white bg-primary-600"
                                                         style={{
                                                             boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.25)',
                                                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -952,29 +965,22 @@ const PublicLayout = () => {
                                                     >
                                                         {user?.first_name?.[0]?.toUpperCase() || <UserCircleIcon className="w-6 h-6" />}
                                                     </div>
-                                                    <div className="flex flex-col items-start translate-x-1">
-                                                        <span className={`text-[10px] font-black leading-none mb-0.5 uppercase tracking-wider opacity-60 text-gray-400`}>Account</span>
-                                                        <span className={`text-sm font-black leading-none max-w-[80px] truncate transition-colors text-primary-600`}>
-                                                            {user?.first_name}
-                                                        </span>
-                                                    </div>
-                                                    <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-500 group-hover:text-[var(--primary-color)] ${userMenuOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`} />
                                                 </button>
 
-                                                {/* Dropdown Menu */}
+                                                {/* Dropdown Menu — opens below profile, clean card design */}
                                                 {userMenuOpen && (
-                                                    <div className="absolute right-0 mt-0 w-60 shadow-xl py-2 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden" style={{ borderRadius: 'var(--menu-radius)', backgroundColor: 'var(--menu-bg-color)' }}>
+                                                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-lg py-2 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[200]">
                                                         {/* User Header */}
-                                                        <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--menu-divider)', backgroundColor: 'rgba(var(--primary-rgb), 0.03)' }}>
-                                                            <p className="text-sm font-bold truncate" style={{ color: 'var(--menu-text-primary)' }}>
+                                                        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/80">
+                                                            <p className="text-sm font-bold text-gray-900 truncate">
                                                                 {user?.first_name} {user?.last_name}
                                                             </p>
-                                                            <p className="text-xs truncate font-medium mt-0.5" style={{ color: 'var(--menu-text-secondary)' }}>
+                                                            <p className="text-xs text-gray-500 truncate mt-0.5">
                                                                 {user?.email}
                                                             </p>
                                                         </div>
 
-                                                        <div className="py-2 px-2 space-y-0.5">
+                                                        <div className="py-2 px-2">
                                                             {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
                                                                 <Link
                                                                     to={(() => {
@@ -995,7 +1001,7 @@ const PublicLayout = () => {
                                                                         }
                                                                         return '/dashboard';
                                                                     })()}
-                                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50 hover:text-[var(--primary-color)] font-bold rounded-xl transition-colors group"
+                                                                    className="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-primary-600 rounded-lg transition-colors"
                                                                     onClick={(e) => {
                                                                         const href = e.currentTarget.getAttribute('href');
                                                                         if (href.startsWith('http')) {
@@ -1005,23 +1011,21 @@ const PublicLayout = () => {
                                                                         setUserMenuOpen(false);
                                                                     }}
                                                                 >
-                                                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: 'var(--menu-hover-bg)' }}>
-                                                                        <ChartBarIcon className="w-5 h-5" style={{ color: 'var(--menu-text-secondary)' }} />
+                                                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                                                        <ChartBarIcon className="w-5 h-5" />
                                                                     </div>
-                                                                    <span style={{ color: 'var(--menu-text-primary)' }}>Dashboard</span>
+                                                                    <span>Dashboard</span>
                                                                 </Link>
                                                             )}
-                                                        </div>
 
-                                                        <div className="py-2 px-2 mt-1" style={{ borderColor: 'var(--menu-divider)' }}>
                                                             <button
                                                                 onClick={() => {
                                                                     logout();
                                                                     setUserMenuOpen(false);
                                                                 }}
-                                                                className="flex w-full items-center gap-3 px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 font-bold rounded-xl transition-colors group"
+                                                                className="group flex w-full items-center gap-3 px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                             >
-                                                                <div className="w-8 h-8 rounded-lg bg-rose-50 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
+                                                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-rose-500 group-hover:bg-rose-100 transition-colors">
                                                                     <ArrowRightOnRectangleIcon className="w-4 h-4" />
                                                                 </div>
                                                                 Sign out
@@ -1029,6 +1033,18 @@ const PublicLayout = () => {
                                                         </div>
                                                     </div>
                                                 )}
+                                            </div>
+
+                                            {/* Hamburger menu — at lg only, right side; rounded bg + primary border (per image) */}
+                                            <div className="hidden lg:flex xl:hidden items-center flex-shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMobileMenuOpen(true)}
+                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-[var(--primary-color)] transition-colors shadow-sm"
+                                                    aria-label="Open menu"
+                                                >
+                                                    <Bars3Icon className="w-5 h-5" strokeWidth={2} />
+                                                </button>
                                             </div>
                                         </div>
                                     ) : (
@@ -1050,9 +1066,9 @@ const PublicLayout = () => {
                     </div>
                 </div>
 
-                {/* ===== Expanding Mega Menu Panel — navbar grows on hover ===== */}
+                {/* ===== Expanding Mega Menu Panel — navbar grows on hover; above filter bar (z-[160]) ===== */}
                 <div
-                    className="absolute left-0 w-full border-b border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)]"
+                    className="absolute left-0 w-full z-[160] border-b border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)]"
                     style={{
                         top: '100%',
                         backgroundColor: 'var(--nav-bg, #ffffff)',
@@ -1280,11 +1296,14 @@ const PublicLayout = () => {
                         )}
                     </div>
                 </div>
-            </nav >
+            </nav>
+                {/* Slot for filter bar (listings/projects): portaled from page so nav + filter bar are one container */}
+                {isListingsOrProjects && <div ref={(el) => setFilterBarSlot(el)} />}
+            </div>
 
             {/* Main Content — no flex-1 on listings/projects so content height drives scroll */}
             <main className={isListingsOrProjects ? 'min-h-0 flex-shrink-0' : 'flex-1'}>
-                <Outlet context={{ navVisible: isVisible }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot }} />
             </main>
 
             {/* Mobile Bottom Navigation Removed */}

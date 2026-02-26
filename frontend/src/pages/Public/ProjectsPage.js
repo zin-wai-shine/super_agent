@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
@@ -115,7 +116,8 @@ const MapTransitionOverlay = ({ active, switchActive }) => {
 const ProjectsPage = () => {
     const { user } = useAuth();
     const { agent, actual_min_price, actual_max_price } = useTenant();
-    const { navVisible } = useOutletContext() || { navVisible: true };
+    const outletContext = useOutletContext() || {};
+    const { navVisible, filterBarSlot } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -841,8 +843,8 @@ const ProjectsPage = () => {
                     </div>
                 </div>
 
-                {/* Same width as nav bar: max-w-[1440px] + px-6 lg:px-12 */}
-                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
+                {/* Filter bar is portaled into layout (same container as nav) */}
+                {filterBarSlot && createPortal(
                     <FilterBar
                         className=""
                         total={total}
@@ -859,13 +861,18 @@ const ProjectsPage = () => {
                         isScrolled={isScrolled}
                         filters={filters}
                         onFilterChange={handleFilterChange}
-                    />
+                    />,
+                    filterBarSlot
+                )}
+                <div className="h-[90px] flex-shrink-0" aria-hidden />
 
+                {/* Main Content Grid — same width as nav: max-w-[1440px] + px-6 lg:px-12 */}
+                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
                     {/* Main Content Grid — no container padding */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[150px] h-[calc(100vh-150px)]' : 'top-[92px] h-[calc(100vh-92px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
@@ -946,6 +953,7 @@ const ProjectsPage = () => {
                                                     setSearchParams(newParams);
                                                 }}
                                                 onBoundsChanged={handleMapBoundsChanged}
+                                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
                                             />
                                             {/* Map Overlays */}
                                             <div className="absolute top-4 right-4 z-10 pointer-events-none">
@@ -1077,6 +1085,7 @@ const ProjectsPage = () => {
                                     setSearchParams(newParams);
                                 }}
                                 onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
+                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
                             />
 
                             {/* Mobile Legend Overlay - Theme Card Style */}

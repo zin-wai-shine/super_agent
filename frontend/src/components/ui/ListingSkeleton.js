@@ -12,42 +12,51 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
         opacity: isExiting ? 1 : 0,
     };
 
-    const bar = 'bg-gray-200';
-    const barLight = 'bg-gray-100';
+    const bar = 'bg-gray-200 animate-pulse';
+    const barLight = 'bg-gray-100 animate-pulse';
 
-    // Same card design for all: image on top, content below, no footer (matches ListingCard)
-    const cardRadius = isMapListView || isListView ? 'rounded-[24px]' : '';
-    const cardRadiusStyle = viewMode === 'grid' ? { borderRadius: 'var(--card-radius)' } : {};
+    // Match ListingCard structure: image aspect-[16/10], then content (price+id, title, location+transit, stats)
+    const cardClass = 'bg-white overflow-hidden shadow-sm border border-gray-100 animate-pulse';
+    const radiusClass = isMapListView || isListView ? 'rounded-[24px]' : 'rounded-[24px]';
 
     return (
-        <div
-            className={`animate-pulse bg-white overflow-hidden shadow-sm border border-gray-100 ${cardRadius}`}
-            style={{ ...cardRadiusStyle, ...skeletonStyle }}
-        >
-            {/* Image on top — same as card */}
+        <div className={`${cardClass} ${radiusClass} border-gray-100/50`} style={skeletonStyle}>
+            {/* Image — same as ListingCard */}
             <div className="aspect-[16/10] bg-gray-100 w-full relative">
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                     <div className={`h-5 w-14 ${bar} rounded-full`} />
                     <div className={`h-5 w-16 ${bar} rounded-full`} />
                 </div>
                 <div className="absolute bottom-3 right-3 h-5 w-16 bg-gray-200 rounded-full" />
-                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-gray-200/80" />
+                <div className="absolute top-2 right-2 h-9 w-9 rounded-full bg-gray-200/80" />
             </div>
-            {/* Content below — price, title, location, stats; no footer */}
-            <div className={`flex flex-col gap-2 ${viewMode === 'grid' ? 'p-5 gap-3' : 'p-4'}`}>
-                <div className="flex justify-between items-center">
-                    <div className={`h-6 w-32 ${bar} rounded`} />
-                    <div className={`h-3 w-12 ${barLight} rounded`} />
+            {/* Content — same structure as ListingCard grid: p-5, gap-3, price+id, title, location row, stats row */}
+            <div className={`flex flex-col ${viewMode === 'grid' ? 'p-5 gap-3' : 'p-4 gap-2'}`}>
+                {/* Price and ID row */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-baseline gap-1">
+                        <div className={`h-7 w-24 ${bar} rounded`} />
+                        <div className={`h-3 w-10 ${barLight} rounded`} />
+                    </div>
+                    <div className={`h-3 w-10 ${barLight} rounded`} />
                 </div>
-                <div className={`h-4 w-full max-w-[90%] ${barLight} rounded`} />
-                <div className="flex items-center gap-3 flex-wrap">
-                    <div className={`h-3.5 w-20 ${barLight} rounded`} />
-                    <div className={`h-3 w-16 ${barLight} rounded`} />
-                </div>
-                <div className="flex items-center gap-6">
-                    <div className={`h-3.5 w-8 ${barLight} rounded`} />
-                    <div className={`h-3.5 w-8 ${barLight} rounded`} />
+                {/* Title — same height as card (h-[2.6em] / line-clamp-2) */}
+                <div className={`h-4 w-full max-w-[95%] ${barLight} rounded`} />
+                <div className={`h-4 w-3/4 ${barLight} rounded`} />
+                {/* Location row: icon + district, divider, icon + station (500m) */}
+                <div className="flex items-center gap-2 flex-wrap">
+                    <div className={`h-4 w-4 rounded ${barLight}`} />
+                    <div className={`h-3.5 w-16 ${barLight} rounded`} />
+                    <div className="w-px h-3 bg-gray-200" />
+                    <div className={`h-4 w-4 rounded ${barLight}`} />
+                    <div className={`h-3.5 w-14 ${barLight} rounded`} />
                     <div className={`h-3.5 w-10 ${barLight} rounded`} />
+                </div>
+                {/* Stats row: bed, bath, sqm — gap-8 like card */}
+                <div className="flex items-center gap-8 pt-0.5">
+                    <div className={`h-3.5 w-12 ${barLight} rounded`} />
+                    <div className={`h-3.5 w-12 ${barLight} rounded`} />
+                    <div className={`h-3.5 w-14 ${barLight} rounded`} />
                 </div>
             </div>
         </div>

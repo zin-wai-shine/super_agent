@@ -99,7 +99,7 @@ const HomePage = () => {
                         </div>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-normal text-gray-950 mb-10 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
+                    <h1 className="text-4xl md:text-6xl font-normal text-gray-950 mb-6 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
                         {isMainDomain ? (
                             <>
                                 Experience liftoff with the <br className="hidden md:block" />
@@ -113,7 +113,7 @@ const HomePage = () => {
                         )}
                     </h1>
 
-                    <div className="animate-fade-up mb-12" style={{ animationDelay: '0.4s' }}>
+                    <div className="animate-fade-up mb-12 -translate-y-1" style={{ animationDelay: '0.4s' }}>
                         <HeroFilter />
                     </div>
 

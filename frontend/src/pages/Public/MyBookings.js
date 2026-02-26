@@ -82,7 +82,7 @@ const MyBookings = () => {
     });
 
     return (
-        <div className="min-h-screen pt-24 pb-20 bg-white">
+        <div className="min-h-screen pt-24 pb-20 bg-[#EEEEEE]">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                 {/* Modern Header Section */}
                 <div className="flex flex-col items-center text-center gap-8 mb-16 relative z-20">
@@ -141,14 +141,18 @@ const MyBookings = () => {
                 {/* Content Area */}
                 <div className="relative min-h-[400px]">
                     {initialLoading ? (
-                        /* Skeletons Grid with sequential loading feel */
+                        /* Skeletons — same layout as cards: 3 per row on md+ */
                         <div className="flex flex-wrap gap-6 items-start pointer-events-none">
                             {[...Array(skeletonCount)].map((_, index) => (
-                                <BookingSkeleton
+                                <div
                                     key={`booking-skeleton-${index}`}
-                                    index={index}
-                                    isExiting={isExiting}
-                                />
+                                    className="w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0"
+                                >
+                                    <BookingSkeleton
+                                        index={index}
+                                        isExiting={isExiting}
+                                    />
+                                </div>
                             ))}
                         </div>
                     ) : filteredAppointments.length === 0 ? (
@@ -181,8 +185,7 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:w-[calc(50%-12px)] xl:w-[480px] flex flex-col group bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 hover:border-primary-500/30 transition-all duration-300 overflow-hidden animate-fadeInUp ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
-                                        style={{ borderRadius: 'var(--card-radius)' }}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 hover:border-primary-500/30 transition-all duration-300 overflow-hidden rounded-[24px] animate-fadeInUp ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
                                     >
                                         {/* Top Section */}
                                         <div className="p-5 md:p-6 pb-6 bg-white flex-1 relative">
@@ -205,9 +208,9 @@ const MyBookings = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Title */}
+                                            {/* Title — smaller and less bold at lg */}
                                             <div className="mb-2.5">
-                                                <h3 className="text-[18px] md:text-xl font-black text-[#1e293b] leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
+                                                <h3 className="text-[18px] md:text-xl lg:text-[16px] font-black lg:font-bold text-[#1e293b] leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
                                                     {appointment.listing?.title || 'Unknown Property'}
                                                 </h3>
                                             </div>
@@ -223,13 +226,13 @@ const MyBookings = () => {
                                         <div className="p-4 md:p-6 bg-[#f8fafc] border-t border-slate-200/60 flex items-center justify-between mt-auto">
                                             <div className="flex flex-col">
                                                 <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Date</div>
-                                                <div className="text-[14px] md:text-[15px] font-black text-[#0f172a]">
+                                                <div className="text-[14px] md:text-[15px] lg:text-[13px] font-black lg:font-semibold text-[#0f172a]">
                                                     {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end">
                                                 <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Time</div>
-                                                <div className="text-[14px] md:text-[15px] font-black text-[#0f172a]">
+                                                <div className="text-[14px] md:text-[15px] lg:text-[13px] font-black lg:font-semibold text-[#0f172a]">
                                                     {appointment.preferred_time}
                                                 </div>
                                             </div>

@@ -122,9 +122,9 @@ const TransitFilterModal = ({
                             />
                         </div>
 
-                        {/* Selected Pills */}
+                        {/* Selected Pills — fixed width, max 3 rows, scroll */}
                         {selectedIds.length > 0 && (
-                            <div className="flex flex-wrap gap-2 pt-2">
+                            <div className="w-full max-h-[7.5rem] overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 pt-2 custom-scrollbar">
                                 {selectedIds.map(id => {
                                     const station = stations.find(s => s.id === id);
                                     if (!station) return null;

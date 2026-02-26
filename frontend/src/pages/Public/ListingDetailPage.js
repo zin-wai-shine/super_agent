@@ -1401,8 +1401,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
             <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-4 sm:px-6 lg:px-8'} ${isModal ? 'py-12' : 'py-6'}`}>
                 <div className="flex justify-center">
                     <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-6`}>
-                        {/* Details - Header Section */}
-                        <div className="">
+                        {/* Details - Header Section (card radius) */}
+                        <div className="rounded-[24px] overflow-hidden bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
                             {/* Booking Information Bar */}
                             {bookingId && (
                                 <div ref={bookingBarRef} className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -1501,7 +1501,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         </div>
 
                         {/* Image Gallery - Desktop Bento Grid & Mobile Carousel */}
-                        <div className="rounded-2xl overflow-hidden shadow-sm bg-white">
+                        <div className="rounded-[24px] overflow-hidden shadow-sm bg-white">
                             {/* Mobile Carousel (Visible on small screens) */}
                             <div className="lg:hidden relative aspect-[16/10] group">
                                 <img
@@ -1577,7 +1577,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Third Image (Top Right) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-tr-2xl"
+                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-tr-[24px]"
                                     onClick={() => { setGalleryIndex(2); setIsGalleryOpen(true); }}
                                 >
                                     {images[2] && (
@@ -1611,7 +1611,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Fifth Image / Show All Button (Bottom Right) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-br-2xl"
+                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-br-[24px]"
                                     onClick={() => { setGalleryIndex(4); setIsGalleryOpen(true); }}
                                 >
                                     {images[4] ? (
@@ -1649,7 +1649,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                             {/* Features */}
                             {/* Features */}
                             {/* Features Grid */}
-                            <Card className="rounded-3xl overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
+                            <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
                                     {/* Row 1 */}
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
@@ -1893,7 +1893,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                         </div>
 
                                         {/* Map Content */}
-                                        <div className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
+                                        <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
                                             {activeMapTab === 'google' ? (
                                                 <div className="w-full h-full animate-in fade-in duration-700">
                                                     <GoogleMapComponent
@@ -2088,7 +2088,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         {!bookingId && relatedListings.length > 0 && (
                             <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                                <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-4 gap-6'}`}>
+                                <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}`}>
                                     {relatedListings.map((related) => (
                                         <ListingCard
                                             key={related.id}

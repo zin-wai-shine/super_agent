@@ -94,7 +94,7 @@ const SavedListingsPage = () => {
     }, [user]);
 
     return (
-        <div className="min-h-screen bg-white pt-24 pb-20">
+        <div className="min-h-screen bg-[#EEEEEE] pt-24 pb-20">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                 {/* Header */}
                 <div className="mb-16 flex flex-col items-center text-center">
@@ -111,28 +111,30 @@ const SavedListingsPage = () => {
                 {/* Content Area */}
                 <div className="relative min-h-[400px]">
                     {initialLoading ? (
-                        /* Skeletons Grid with sequential loading feel */
-                        <div className="flex flex-wrap justify-center gap-6 pointer-events-none">
-                            {[...Array(Math.min(skeletonCount, 3))].map((_, index) => (
-                                <div key={`skeleton-wrapper-${index}`} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
+                        /* Skeletons — grid: serial order, fixed equal spacing */
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pointer-events-none">
+                            {[...Array(Math.min(skeletonCount, 6))].map((_, index) => (
+                                <div key={`skeleton-wrapper-${index}`} className="min-w-0">
                                     <ListingSkeleton
                                         key={`skeleton-${index}`}
                                         index={index}
+                                        viewMode="grid"
                                         isExiting={isExiting}
                                     />
                                 </div>
                             ))}
                         </div>
                     ) : listings.length > 0 ? (
-                        /* Listings Grid */
-                        <div className="flex flex-wrap justify-center gap-6">
-                            {listings.slice(0, 3).map((listing) => (
+                        /* Listings — grid: show cards by serial order with fixed equal spacing between */
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {listings.map((listing) => (
                                 <div
                                     key={listing.id}
-                                    className={`w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
+                                    className={`min-w-0 transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
                                 >
                                     <ListingCard
                                         listing={listing}
+                                        viewMode="grid"
                                         showSave={true}
                                         initialSaved={true}
                                         onSaveToggle={(id, saved) => !saved && handleUnsave(id)}

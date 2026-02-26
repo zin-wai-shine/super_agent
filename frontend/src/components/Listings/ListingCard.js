@@ -10,7 +10,7 @@ import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
-const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false }) => {
+const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '' }) => {
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
@@ -24,6 +24,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         area,
         station_id,
         station_name,
+        distance_to_station,
         district,
         road,
         line_color,
@@ -130,7 +131,10 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         }
     };
 
-    const nearestStation = station?.name_en?.split('(')[0] || station_name?.split('(')[0] || '';
+    const nearestStationName = (station?.name_en || station_name || '').split('(')[0].trim() || '';
+    const stationWithDistance = nearestStationName && (distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0)
+        ? `${nearestStationName} (${Number(distance_to_station)}m)`
+        : nearestStationName;
 
     // Format price
     const formatPrice = (price) => {
@@ -182,7 +186,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         return (
             <Link
                 to={to || `/listings?${detailParams.toString()}`}
-                className="group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+                className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 ${cardClassName}`}
             >
                 {/* Image on top — column layout */}
                 <div className="relative aspect-[16/10] overflow-hidden">
@@ -239,12 +243,15 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
                             {district || 'Bangkok'}
                         </span>
-                        {nearestStation && (
+                        {stationWithDistance && (
                             <>
                                 <span className="w-px h-3 bg-gray-200" />
                                 <span className="flex items-center gap-1">
-                                    <TbTrain className="w-4 h-4 text-gray-700 shrink-0" />
-                                    {nearestStation}
+                                    <TbTrain className="w-4 h-4 text-primary-600 shrink-0" />
+                                    <span className="font-bold text-gray-900">{nearestStationName}</span>
+                                    {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
+                                        <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
+                                    )}
                                 </span>
                             </>
                         )}
@@ -267,7 +274,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
         return (
             <Link
                 to={to || `/listings?${detailParams.toString()}`}
-                className="group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+                className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 ${cardClassName}`}
             >
                 {/* Image on top — column layout */}
                 <div className="relative aspect-[16/10] overflow-hidden">
@@ -323,12 +330,15 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
                             {district || 'Bangkok'}
                         </span>
-                        {nearestStation && (
+                        {stationWithDistance && (
                             <>
                                 <span className="w-px h-3 bg-gray-200" />
                                 <span className="flex items-center gap-1">
-                                    <TbTrain className="w-4 h-4 text-gray-700 shrink-0" />
-                                    {nearestStation}
+                                    <TbTrain className="w-4 h-4 text-primary-600 shrink-0" />
+                                    <span className="font-bold text-gray-900">{nearestStationName}</span>
+                                    {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
+                                        <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
+                                    )}
                                 </span>
                             </>
                         )}
@@ -348,8 +358,7 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     return (
         <Link
             to={to || `/listings?detail=${id}`}
-            className="group block bg-white overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-fade-in-scale border border-gray-100/50"
-            style={{ borderRadius: 'var(--card-radius)' }}
+            className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-fade-in-scale border border-gray-100/50 ${cardClassName}`}
         >
             {/* Image Section */}
             <div className="relative aspect-[16/10] overflow-hidden">
@@ -392,39 +401,42 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                 )}
             </div>
 
-            {/* Content Section */}
-            <div className="p-5 flex flex-col gap-3">
+            {/* Content Section — slightly smaller text at lg */}
+            <div className="p-5 lg:p-4 flex flex-col gap-3">
                 {/* Price and ID Row */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-baseline gap-1 text-gray-900">
-                        <span className="text-2xl font-semibold tracking-tight">{formatPrice(price)}</span>
-                        <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                        {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
+                        <span className="text-2xl lg:text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
+                        <span className="text-[11px] lg:text-[10px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
+                        {listing_type === 'rent' && <span className="text-[11px] lg:text-[10px] font-bold text-gray-400">/mo</span>}
                     </div>
-                    <span className="text-[11px] text-gray-300 font-mono tracking-tighter opacity-60">#{id.slice(0, 5)}</span>
+                    <span className="text-[11px] lg:text-[10px] text-gray-300 font-mono tracking-tighter opacity-60">#{id.slice(0, 5)}</span>
                 </div>
 
                 {/* Title - Dark with primary hover */}
-                <h3 className="text-[17px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em]">
+                <h3 className="text-[17px] lg:text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em] lg:leading-[1.35] lg:h-[2.7em]">
                     {title}
                 </h3>
 
                 {/* Information Rows */}
                 <div className="space-y-3">
-                    <div className="flex items-center text-[14px] text-gray-700">
-                        <MapPinIcon className="w-5 h-5 mr-1 text-gray-700 shrink-0" />
+                    <div className="flex items-center text-[14px] lg:text-[13px] text-gray-700">
+                        <MapPinIcon className="w-5 h-5 lg:w-4 lg:h-4 mr-1 text-gray-700 shrink-0" />
                         <span className="truncate">{district || 'Bangkok'}</span>
-                        {nearestStation && (
+                        {stationWithDistance && (
                             <>
                                 <div className="mx-2 w-px h-3 bg-gray-200" />
-                                <TbTrain className="w-5 h-5 mr-1 text-gray-700 shrink-0" />
-                                <span className="truncate">{nearestStation}</span>
+                                <TbTrain className="w-5 h-5 lg:w-4 lg:h-4 mr-1 text-primary-600 shrink-0" />
+                                <span className="truncate font-bold text-gray-900">{nearestStationName}</span>
+                                {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
+                                    <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
+                                )}
                             </>
                         )}
                     </div>
 
                     {/* Stats Refined Row */}
-                    <div className="flex items-center gap-8 pb-1 text-[14px] text-gray-700">
+                    <div className="flex items-center gap-8 pb-1 text-[14px] lg:text-[13px] text-gray-700">
                         <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
                         <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
                         {area > 0 && (
