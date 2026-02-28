@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { ArrowLeftIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
@@ -53,16 +53,34 @@ function LayerCard({ section, onTap, firstFlatIndex }) {
     );
 }
 
+// Section title for a flat image index (from room_type)
+function getSectionTitleForImage(img) {
+    const rt = img?.room_type?.trim();
+    return rt || 'Additional Photos';
+}
+
 export default function AllPhotosModalContent({ images, initialIndex, onClose }) {
     const scrollRef = useRef(null);
     const sectionRefs = useRef({});
     const [activeSectionTitle, setActiveSectionTitle] = useState('');
+    const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
+    const swipeStartX = useRef(0);
+    const focusedMouseStart = useRef({ x: 0, down: false });
+    const SWIPE_THRESHOLD = 40;
 
-    // Show section title in nav bar center based on scroll position
+    const goPrevImage = useCallback(() => {
+        setFocusedImageIndex((i) => (i == null ? 0 : (i - 1 + flatImages.length) % flatImages.length));
+    }, [flatImages.length]);
+
+    const goNextImage = useCallback(() => {
+        setFocusedImageIndex((i) => (i == null ? 0 : (i + 1) % flatImages.length));
+    }, [flatImages.length]);
+
+    // Show section title in nav bar center based on scroll position (list view only)
     useEffect(() => {
         const container = scrollRef.current;
-        if (!container || !sections.length) return;
+        if (!container || !sections.length || focusedImageIndex !== null) return;
         const updateActiveSection = () => {
             const scrollTop = container.scrollTop;
             const offset = 120;
@@ -76,12 +94,17 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
         updateActiveSection();
         container.addEventListener('scroll', updateActiveSection, { passive: true });
         return () => container.removeEventListener('scroll', updateActiveSection);
-    }, [sections]);
+    }, [sections, focusedImageIndex]);
 
-    // Only scrolling when user clicks a card in the photo tour strip (not on open)
-    const scrollToIndex = (idx) => {
-        const el = scrollRef.current?.querySelector(`[data-photo-index="${idx}"]`);
+    // When clicking a category card in the strip: scroll to that section (do not open big view)
+    const scrollToIndex = (flatIndex) => {
+        const el = scrollRef.current?.querySelector(`[data-photo-index="${flatIndex}"]`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // When clicking an image in the list: open single full-screen view
+    const openFocusedView = (flatIndex) => {
+        setFocusedImageIndex(flatIndex);
     };
 
     const handleShare = async () => {
@@ -106,6 +129,89 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
 
     if (!flatImages.length) return null;
 
+    const isFocusedView = focusedImageIndex !== null;
+    const focusedImage = flatImages[focusedImageIndex ?? 0];
+    const focusedSectionTitle = focusedImage ? getSectionTitleForImage(focusedImage) : '';
+
+    // Single full-screen image view: count, drag left/right to change image (title updates with section)
+    if (isFocusedView && focusedImage) {
+        const currentIdx = focusedImageIndex ?? 0;
+        const total = flatImages.length;
+        const handleTouchStart = (e) => {
+            swipeStartX.current = e.touches[0].clientX;
+        };
+        const handleTouchEnd = (e) => {
+            const dx = e.changedTouches[0].clientX - swipeStartX.current;
+            if (dx > SWIPE_THRESHOLD && total > 1) goPrevImage();
+            else if (dx < -SWIPE_THRESHOLD && total > 1) goNextImage();
+        };
+        const handleMouseDown = (e) => {
+            focusedMouseStart.current = { x: e.clientX, down: true };
+        };
+        const handleMouseMove = (e) => {
+            if (!focusedMouseStart.current.down || total <= 1) return;
+            const dx = e.clientX - focusedMouseStart.current.x;
+            if (dx > SWIPE_THRESHOLD) {
+                goPrevImage();
+                focusedMouseStart.current.down = false;
+            } else if (dx < -SWIPE_THRESHOLD) {
+                goNextImage();
+                focusedMouseStart.current.down = false;
+            }
+        };
+        const handleMouseUp = () => {
+            focusedMouseStart.current.down = false;
+        };
+
+        return (
+            <div className="h-full min-h-0 flex flex-col bg-black overflow-hidden">
+                <header className="relative flex-none flex items-center justify-between px-4 py-3 shrink-0 z-10">
+                    <button
+                        type="button"
+                        onClick={() => setFocusedImageIndex(null)}
+                        className="flex items-center gap-1.5 text-white hover:text-gray-200 py-2 px-2 -ml-2 rounded-lg hover:bg-white/10 active:scale-95 transition-colors duration-200"
+                    >
+                        <ArrowLeftIcon className="w-6 h-6" />
+                    </button>
+                    <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-white truncate max-w-[50vw] pointer-events-none">
+                        {focusedSectionTitle}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className="p-2 rounded-full text-white hover:bg-white/10 active:scale-95 transition-colors duration-200"
+                        aria-label="Share"
+                    >
+                        <ShareIcon className="w-6 h-6" />
+                    </button>
+                </header>
+                <div
+                    className="flex-1 min-h-0 flex items-center justify-center p-0 overflow-hidden select-none cursor-grab active:cursor-grabbing"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                >
+                    <img
+                        src={getMediaUrl(focusedImage.url)}
+                        alt=""
+                        className="max-w-full max-h-full w-auto h-full object-contain pointer-events-none"
+                        draggable={false}
+                    />
+                </div>
+                {total > 1 && (
+                    <div className="flex-none py-3 flex justify-center pointer-events-none">
+                        <span className="bg-black/70 text-white text-sm font-semibold px-3 py-1.5 rounded-full">
+                            {currentIdx + 1} / {total}
+                        </span>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     let globalIndex = 0;
 
     return (
@@ -114,7 +220,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-lg hover:bg-gray-100 active:scale-95"
+                    className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                 >
                     <ArrowLeftIcon className="w-6 h-6" />
                 </button>
@@ -124,7 +230,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                 <button
                     type="button"
                     onClick={handleShare}
-                    className="p-2 rounded-full text-gray-900 hover:bg-gray-100 active:scale-95"
+                    className="p-2 rounded-full text-gray-900 hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                     aria-label="Share"
                 >
                     <ShareIcon className="w-6 h-6" />
@@ -187,7 +293,15 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                                             const img1 = section.images[i];
                                             const idx1 = globalIndex++;
                                             rows.push(
-                                                <div key={img1.id || idx1} data-photo-index={idx1} className="shrink-0">
+                                                <div
+                                                    key={img1.id || idx1}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    data-photo-index={idx1}
+                                                    className="shrink-0 cursor-pointer"
+                                                    onClick={() => openFocusedView(idx1)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx1)}
+                                                >
                                                     <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden">
                                                         <img src={getMediaUrl(img1.url)} alt="" className="w-full h-full object-cover block" />
                                                     </div>
@@ -200,11 +314,25 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                                                 const idx3 = img3 ? globalIndex++ : null;
                                                 rows.push(
                                                     <div key={img2.id || `row-${idx2}`} className="grid grid-cols-2 gap-3 shrink-0">
-                                                        <div data-photo-index={idx2} className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                                                        <div
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            data-photo-index={idx2}
+                                                            className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer"
+                                                            onClick={() => openFocusedView(idx2)}
+                                                            onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx2)}
+                                                        >
                                                             <img src={getMediaUrl(img2.url)} alt="" className="w-full h-full object-cover block" />
                                                         </div>
                                                         {img3 ? (
-                                                            <div data-photo-index={idx3} className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                                                            <div
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                data-photo-index={idx3}
+                                                                className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer"
+                                                                onClick={() => openFocusedView(idx3)}
+                                                                onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx3)}
+                                                            >
                                                                 <img src={getMediaUrl(img3.url)} alt="" className="w-full h-full object-cover block" />
                                                             </div>
                                                         ) : (
