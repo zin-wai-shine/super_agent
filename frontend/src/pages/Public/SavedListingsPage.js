@@ -5,7 +5,7 @@ import { getSavedListings } from '../../services/savedListingsApi';
 import ListingCard from '../../components/Listings/ListingCard';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
-import { BsBookmark, BsBookmarks } from "react-icons/bs";
+import { FiHeart } from "react-icons/fi";
 
 
 const SavedListingsPage = () => {
@@ -94,62 +94,94 @@ const SavedListingsPage = () => {
     }, [user]);
 
     return (
-        <div className="min-h-screen bg-[#EEEEEE] pt-24 pb-20">
-            <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-                {/* Header */}
-                <div className="mb-16 flex flex-col items-center text-center">
-                    <h1 className="text-4xl font-medium text-slate-900 tracking-tight leading-tight">
-                        Saved Listings
+        <div className="min-h-screen bg-white pt-10 pb-20">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-12">
+                {/* Header - Simplified for app-like look when navbar is hidden */}
+                <div className="mb-0 flex flex-col items-start px-0">
+                    <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
+                        Favorites
                     </h1>
-                    {!initialLoading && (
-                        <p className="mt-2 text-slate-500 font-medium text-lg animate-fadeInUp">
-                            {listings.length} {listings.length === 1 ? 'property' : 'properties'} saved
-                        </p>
-                    )}
                 </div>
 
                 {/* Content Area */}
-                <div className="relative min-h-[400px]">
+                <div className="relative min-h-[400px] mt-6">
                     {initialLoading ? (
-                        /* Skeletons — grid: serial order, fixed equal spacing */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pointer-events-none">
+                        /* Skeletons — grid: 2 columns on mobile */
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pointer-events-none">
                             {[...Array(Math.min(skeletonCount, 6))].map((_, index) => (
                                 <div key={`skeleton-wrapper-${index}`} className="min-w-0">
                                     <ListingSkeleton
                                         key={`skeleton-${index}`}
                                         index={index}
-                                        viewMode="grid"
+                                        viewMode="saved-grid"
                                         isExiting={isExiting}
                                     />
                                 </div>
                             ))}
                         </div>
                     ) : listings.length > 0 ? (
-                        /* Listings — grid: show cards by serial order with fixed equal spacing between */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {listings.map((listing) => (
-                                <div
-                                    key={listing.id}
-                                    className={`min-w-0 transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
-                                >
-                                    <ListingCard
-                                        listing={listing}
-                                        viewMode="grid"
-                                        showSave={true}
-                                        initialSaved={true}
-                                        onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
-                                        to={`?detail=${listing.id}`}
-                                    />
-                                </div>
-                            ))}
+                        /* Listings Grouped by Date */
+                        <div className="space-y-10">
+                            {(() => {
+                                // Grouping logic
+                                const groups = {
+                                    Today: [],
+                                    Yesterday: [],
+                                    Earlier: []
+                                };
+
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                const yesterday = new Date(today);
+                                yesterday.setDate(yesterday.getDate() - 1);
+
+                                listings.forEach(listing => {
+                                    const date = new Date(listing.created_at || new Date());
+                                    date.setHours(0, 0, 0, 0);
+
+                                    if (date.getTime() === today.getTime()) {
+                                        groups.Today.push(listing);
+                                    } else if (date.getTime() === yesterday.getTime()) {
+                                        groups.Yesterday.push(listing);
+                                    } else {
+                                        groups.Earlier.push(listing);
+                                    }
+                                });
+
+                                return Object.entries(groups).map(([label, items]) => {
+                                    if (items.length === 0) return null;
+                                    return (
+                                        <div key={label} className="space-y-4">
+                                            <h3 className="text-xl font-bold text-gray-900 px-0">{label}</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                                {items.map((listing) => (
+                                                    <div
+                                                        key={listing.id}
+                                                        className={`min-w-0 transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : 'animate-fadeInUp'}`}
+                                                    >
+                                                        <ListingCard
+                                                            listing={listing}
+                                                            viewMode="saved-grid"
+                                                            showSave={true}
+                                                            initialSaved={true}
+                                                            onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
+                                                            to={`?detail=${listing.id}`}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
                     ) : (
                         /* Empty State */
                         <div className="text-center py-16 animate-fadeInUp">
-                            <BsBookmarks className="mx-auto h-20 w-20 text-gray-300" />
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">No saved listings</h3>
+                            <FiHeart className="mx-auto h-20 w-20 text-gray-300" />
+                            <h3 className="mt-4 text-lg font-medium text-gray-900">No favorites listings</h3>
                             <p className="mt-2 text-gray-500">
-                                Start saving properties you're interested in to view them here.
+                                Start favoriting properties you're interested in to view them here.
                             </p>
                             <button
                                 onClick={() => navigate('/listings')}

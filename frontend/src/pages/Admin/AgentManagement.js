@@ -293,8 +293,8 @@ const AgentManagement = () => {
                 header: 'Domain',
                 cell: ({ row }) => {
                     const agent = row.original;
-                    const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.superealestate.test` : '');
-                    const url = domain ? `http://${domain}:3000` : '#'; // Using port 3000 for local dev
+                    const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.superealestate.localhost` : '');
+                    const url = domain ? `http://${domain}:${window.location.port || '3000'}` : '#'; // Use current port
 
                     return (
                         <div>

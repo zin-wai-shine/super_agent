@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { BuildingOfficeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useTenant } from '../../contexts/TenantContext';
+import { getMediaUrl } from '../../utils/media';
 
 
 const LoginPage = () => {
@@ -11,6 +13,7 @@ const LoginPage = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { isMainDomain, agent } = useTenant();
 
     const from = location.state?.from?.pathname || null;
 
@@ -35,7 +38,7 @@ const LoginPage = () => {
                 const agent = result.user.agent;
                 if (agent && agent.subdomain) {
                     const currentHost = window.location.hostname;
-                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
                     const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
 
                     if (currentHost !== agentHost) {
@@ -59,10 +62,24 @@ const LoginPage = () => {
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <Link to="/" className="flex items-center justify-center space-x-3 mb-8">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/25">
-                        <BuildingOfficeIcon className="w-7 h-7 text-white" />
-                    </div>
-                    <span className="text-2xl font-bold gradient-text">Super</span>
+                    {!isMainDomain && agent?.logo ? (
+                        <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-primary-500/25">
+                            <img
+                                src={getMediaUrl(agent.logo)}
+                                alt={agent.name}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/25">
+                                <BuildingOfficeIcon className="w-7 h-7 text-white" />
+                            </div>
+                            <span className="text-2xl font-bold gradient-text">
+                                Super
+                            </span>
+                        </>
+                    )}
                 </Link>
 
                 {/* Card */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi, uploadApi, developerApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi, developerApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
@@ -268,14 +268,14 @@ const EditListing = () => {
         }
     };
 
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
+    const handleImageUpload = async (roomType, e) => {
+        const files = Array.from(e.target.files || []);
         if (!files.length) return;
 
         setUploading(true);
         try {
             for (const file of files) {
-                await uploadApi.uploadImage(id, file);
+                await uploadApi.uploadImage(id, file, { roomType });
             }
             toast.success('Images uploaded!');
             fetchData();
@@ -289,13 +289,12 @@ const EditListing = () => {
     const handleDeleteMedia = async (mediaId) => {
         try {
             await uploadApi.deleteMedia(mediaId);
-            const index = media.findIndex(m => m.id === mediaId);
-            setMedia(media.filter((m) => m.id !== mediaId));
+            const index = imageList.findIndex((m) => m.id === mediaId);
+            setMedia((prev) => prev.filter((m) => m.id !== mediaId));
 
-            if (lightboxIndex === index) {
-                setLightboxIndex(null);
-            } else if (lightboxIndex > index) {
-                setLightboxIndex(lightboxIndex - 1);
+            if (index >= 0) {
+                if (lightboxIndex === index) setLightboxIndex(null);
+                else if (lightboxIndex > index) setLightboxIndex(lightboxIndex - 1);
             }
 
             toast.success('Image deleted');
@@ -304,14 +303,24 @@ const EditListing = () => {
         }
     };
 
+    const imageList = useMemo(() => {
+        const byType = {};
+        (media || []).filter((m) => m.type === 'image').forEach((m) => {
+            const rt = (m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos';
+            if (!byType[rt]) byType[rt] = [];
+            byType[rt].push(m);
+        });
+        return PHOTO_ROOM_TYPES.flatMap((t) => byType[t] || []);
+    }, [media]);
+
     const nextImage = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev + 1) % media.length);
+        setLightboxIndex((prev) => (prev + 1) % imageList.length);
     };
 
     const prevImage = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev - 1 + media.length) % media.length);
+        setLightboxIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
     };
 
     if (loading) {
@@ -373,50 +382,70 @@ const EditListing = () => {
             </style>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                {/* Media Upload */}
+                {/* Media Upload — one section per room type, upload under each title */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">📸 Photos</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                        Add photos under each section. Images uploaded in a section use that section&apos;s type.
+                    </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {media.filter((m) => m.type === 'image').map((item, index) => (
-                            <div key={item.id}
-                                className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
-                                onClick={() => setLightboxIndex(index)}
-                            >
-                                <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteMedia(item.id);
-                                    }}
-                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
-                                >
-                                    <TrashIcon className="w-4 h-4" />
-                                </button>
-                                <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Click to view
+                    <div className="space-y-8">
+                        {PHOTO_ROOM_TYPES.map((roomType) => {
+                            const items = (media || []).filter(
+                                (m) => m.type === 'image' && ((m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos') === roomType
+                            );
+                            let flatIndexOffset = 0;
+                            PHOTO_ROOM_TYPES.forEach((t) => {
+                                if (t === roomType) return;
+                                flatIndexOffset += (media || []).filter(
+                                    (m) => m.type === 'image' && ((m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos') === t
+                                ).length;
+                            });
+                            return (
+                                <div key={roomType} className="space-y-3">
+                                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {items.map((item, i) => {
+                                            const flatIndex = flatIndexOffset >= 0 ? flatIndexOffset + i : 0;
+                                            return (
+                                                <div
+                                                    key={item.id}
+                                                    className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
+                                                    onClick={() => setLightboxIndex(flatIndex)}
+                                                >
+                                                    <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteMedia(item.id);
+                                                        }}
+                                                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
+                                            <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors mb-2" />
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 px-2 text-center">
+                                                {uploading ? 'Uploading...' : 'Add photos'}
+                                            </span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={(e) => handleImageUpload(roomType, e)}
+                                                disabled={uploading}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-
-                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform mb-3">
-                                <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
-                            </div>
-                            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors px-4 text-center">
-                                {uploading ? 'Uploading your photos...' : 'Add High-Quality Photos'}
-                            </span>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageUpload}
-                                disabled={uploading}
-                                className="hidden"
-                            />
-                        </label>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -1063,15 +1092,14 @@ const EditListing = () => {
             </form >
 
             {/* Lightbox */}
-            {lightboxIndex !== null && media.length > 0 && (
+            {lightboxIndex !== null && imageList.length > 0 && imageList[lightboxIndex] && (
                 <div
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
                     onClick={() => setLightboxIndex(null)}
                 >
-                    {/* Dynamic Blurred Background */}
                     <div className="absolute inset-0 z-0 overflow-hidden bg-black">
                         <img
-                            src={getMediaUrl(media[lightboxIndex].url)}
+                            src={getMediaUrl(imageList[lightboxIndex].url)}
                             alt=""
                             className="w-full h-full object-cover blur-2xl opacity-40 scale-110 transition-all duration-500"
                         />
@@ -1085,19 +1113,17 @@ const EditListing = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
-
                     <button
                         className="absolute bottom-6 right-6 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xl transition-all flex items-center gap-2 font-bold z-[110]"
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteMedia(media[lightboxIndex].id);
+                            handleDeleteMedia(imageList[lightboxIndex].id);
                         }}
                     >
                         <TrashIcon className="w-6 h-6" />
                         <span>Delete Permanently</span>
                     </button>
-
-                    {media.length > 1 && (
+                    {imageList.length > 1 && (
                         <>
                             <button
                                 className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
@@ -1113,18 +1139,17 @@ const EditListing = () => {
                             </button>
                         </>
                     )}
-
                     <div
                         className="relative z-10 max-w-5xl w-full max-h-[85vh] flex items-center justify-center"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <img
-                            src={getMediaUrl(media[lightboxIndex].url)}
+                            src={getMediaUrl(imageList[lightboxIndex].url)}
                             alt="Full Preview"
                             className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
                         />
                         <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
-                            {lightboxIndex + 1} / {media.length}
+                            {lightboxIndex + 1} / {imageList.length}
                         </div>
                     </div>
                 </div>

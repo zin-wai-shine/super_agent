@@ -31,7 +31,7 @@ func LoadConfig() *Config {
 		DBName:     getEnv("DB_NAME", "super_real_estate"),
 		JWTSecret:  getEnv("JWT_SECRET", "default_jwt_secret"),
 		UploadPath: getEnv("UPLOAD_PATH", "./uploads"),
-		MainDomain: getEnv("MAIN_DOMAIN", "superealestate.test"),
+		MainDomain: getEnv("MAIN_DOMAIN", "superealestate.localhost"),
 	}
 }
 

@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import { ArrowLeftIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
@@ -76,6 +76,30 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
     const goNextImage = useCallback(() => {
         setFocusedImageIndex((i) => (i == null ? 0 : (i + 1) % flatImages.length));
     }, [flatImages.length]);
+
+    const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        const handle = () => setIsMobile(mq.matches);
+        mq.addEventListener('change', handle);
+        return () => mq.removeEventListener('change', handle);
+    }, []);
+
+    // Keyboard: Arrow Left/Right when in single-image view
+    useEffect(() => {
+        if (focusedImageIndex == null || flatImages.length <= 1) return;
+        const onKeyDown = (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goPrevImage();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goNextImage();
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [focusedImageIndex, flatImages.length, goPrevImage, goNextImage]);
 
     // Show section title in nav bar center based on scroll position (list view only)
     useEffect(() => {
@@ -169,7 +193,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                     <button
                         type="button"
                         onClick={() => setFocusedImageIndex(null)}
-                        className="flex items-center gap-1.5 text-white hover:text-gray-200 py-2 px-2 -ml-2 rounded-lg hover:bg-white/10 active:scale-95 transition-colors duration-200"
+                        className="flex items-center gap-1.5 text-white hover:text-gray-200 py-2 px-2 -ml-2 rounded-full hover:bg-white/10 active:scale-95 transition-colors duration-200"
                     >
                         <ArrowLeftIcon className="w-6 h-6" />
                     </button>
@@ -185,21 +209,43 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                         <ShareIcon className="w-6 h-6" />
                     </button>
                 </header>
-                <div
-                    className="flex-1 min-h-0 flex items-center justify-center p-0 overflow-hidden select-none cursor-grab active:cursor-grabbing"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                >
-                    <img
-                        src={getMediaUrl(focusedImage.url)}
-                        alt=""
-                        className="max-w-full max-h-full w-auto h-full object-contain pointer-events-none"
-                        draggable={false}
-                    />
+                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0 overflow-hidden">
+                    <div
+                        className="absolute inset-0 flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                    >
+                        <img
+                            src={getMediaUrl(focusedImage.url)}
+                            alt=""
+                            className="max-w-full max-h-full w-auto h-full object-contain pointer-events-none"
+                            draggable={false}
+                        />
+                    </div>
+                    {!isMobile && total > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 flex items-center justify-center active:scale-95 transition-all"
+                                aria-label="Previous image"
+                            >
+                                <ChevronLeftIcon className="w-6 h-6" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); goNextImage(); }}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 flex items-center justify-center active:scale-95 transition-all"
+                                aria-label="Next image"
+                            >
+                                <ChevronRightIcon className="w-6 h-6" />
+                            </button>
+                        </>
+                    )}
                 </div>
                 {total > 1 && (
                     <div className="flex-none py-3 flex justify-center pointer-events-none">
@@ -220,7 +266,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                    className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                 >
                     <ArrowLeftIcon className="w-6 h-6" />
                 </button>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -165,6 +166,17 @@ const ProjectsPage = () => {
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
+
+    // Open sidebar filters when triggered from mobile nav search pill
+    useEffect(() => {
+        const mobileFilters = searchParams.get('mobile_filters');
+        if (mobileFilters === '1') {
+            setIsSidebarOpen(true);
+            const next = new URLSearchParams(searchParams);
+            next.delete('mobile_filters');
+            setSearchParams(next);
+        }
+    }, [searchParams, setSearchParams]);
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
@@ -735,7 +747,7 @@ const ProjectsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#EEEEEE] flex flex-col font-inter">
+        <div className="min-h-screen bg-white flex flex-col font-inter">
             {/* Map Transition Loading Overlay */}
             {isMapTransitioning && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-300 animate-in fade-in">
@@ -788,12 +800,12 @@ const ProjectsPage = () => {
                         aria-hidden
                     />
                     <aside
-                        className="fixed right-0 top-0 h-full w-[320px] max-w-[85vw] z-[261] bg-[#EEEEEE] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+                        className="fixed right-0 top-0 h-full w-full sm:w-[320px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
                         role="dialog"
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
                             <h3 className="text-lg font-bold text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
@@ -808,23 +820,24 @@ const ProjectsPage = () => {
                         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
-                        {/* Sidebar footer - extra bottom padding on mobile so it sits above the bottom nav */}
-                        <div className="flex-shrink-0 p-6 pb-24 lg:pb-6 border-t border-gray-100 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
-                            <button
-                                onClick={applyFilters}
-                                className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
-                            >
-                                Apply Filter
-                            </button>
+                        {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; desktop keeps centered layout */}
+                        <div className="flex-shrink-0 px-4 py-4 pb-5 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3">
                             <button
                                 onClick={clearFilters}
                                 disabled={!hasActiveFilters}
-                                className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
+                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
                                     ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
                                     : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 Clear all filters
+                            </button>
+                            <button
+                                onClick={applyFilters}
+                                className="order-2 md:order-1 inline-flex items-center justify-center px-6 py-2.5 md:px-8 md:py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                            >
+                                <MagnifyingGlassIcon className="w-4 h-4 mr-1.5" />
+                                <span>Search</span>
                             </button>
                         </div>
                     </aside>
@@ -834,11 +847,11 @@ const ProjectsPage = () => {
 
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className="w-full bg-[#EEEEEE] min-h-screen relative">
+            <div className="w-full bg-white min-h-screen relative">
                 {/* Header Mobile */}
                 <div className="pt-4 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
-                        <h1 className="text-xl font-bold text-gray-900">Projects</h1>
+                        <h1 className="text-xl font-semibold text-gray-900">Projects</h1>
                         <span className="text-sm font-medium text-gray-500">{total} results</span>
                     </div>
                 </div>
@@ -864,7 +877,7 @@ const ProjectsPage = () => {
                     />,
                     filterBarSlot
                 )}
-                <div className="h-[90px] flex-shrink-0" aria-hidden />
+                <div className="hidden lg:block h-[90px] flex-shrink-0" aria-hidden />
 
                 {/* Main Content Grid — same width as nav: max-w-[1440px] + px-6 lg:px-12 */}
                 <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
@@ -872,13 +885,13 @@ const ProjectsPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-[#EEEEEE] border-r border-gray-100/50`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
 
                                 {/* Desktop Sidebar Fixed Footer */}
-                                <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-[#EEEEEE] flex flex-row flex-nowrap items-center justify-center gap-3">
+                                <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
                                         onClick={applyFilters}
                                         className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
@@ -932,7 +945,7 @@ const ProjectsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-[#EEEEEE] rounded-[3px] animate-fadeInUp">
+                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No projects found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
@@ -992,65 +1005,26 @@ const ProjectsPage = () => {
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
 
-            {/* Mobile Bottom Bar - Premium Curved Design */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] safe-area-bottom pointer-events-none">
-                <div className="relative h-16 w-full pointer-events-auto">
-                    {/* The Curved Background SVG */}
-                    <svg
-                        viewBox="0 0 400 64"
-                        className="absolute inset-0 w-full h-full drop-shadow-[0_-8px_20px_rgba(0,0,0,0.06)]"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            d="M0 0H140C160 0 170 38 200 38C230 38 240 0 260 0H400V64H0V0Z"
-                            fill="#2563eb"
-                        />
-                    </svg>
-
-                    {/* Navigation Items */}
-                    <div className="relative h-full flex items-center justify-between px-6 sm:px-10">
-                        {/* Google Map Button */}
-                        <button
-                            onClick={() => toggleMapView(true)}
-                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
-                        >
-                            <div className="w-8 h-8 flex items-center justify-center">
-                                <GlobeAltIcon className="w-6 h-6 stroke-[2.5]" />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-tight">Map View</span>
-                        </button>
-
-
-
-                        {/* Bulging Filter Button - Submerged into the curve */}
-                        <div className="absolute left-1/2 -translate-x-1/2 -top-10 w-20 h-20 flex items-center justify-center">
-                            {/* Glow Effect */}
-                            <div className="absolute inset-0 bg-white/20 blur-2xl rounded-full animate-pulse" />
-                            <button
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_8px_25px_-5px_rgba(0,0,0,0.2)] active:scale-95 transition-all z-10 border-4 border-primary-600"
-                            >
-                                <div className="relative">
-                                    <AdjustmentsHorizontalIcon className="w-7 h-7 text-primary-600 stroke-[2.5]" />
-                                    {hasActiveFilters && (
-                                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-white shadow-sm" />
-                                    )}
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* View Mode Button */}
-                        <button
-                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform pt-0.5"
-                        >
-                            <div className="w-8 h-8 flex items-center justify-center">
-                                {viewMode === 'grid' ? <ListBulletIcon className="w-6 h-6 stroke-[2.5]" /> : <Squares2X2Icon className="w-6 h-6 stroke-[2.5]" />}
-                            </div>
-                            <span className="text-[11px] font-black uppercase tracking-tight">{viewMode === 'grid' ? 'List' : 'Grid'}</span>
-                        </button>
-                    </div>
-                </div>
+            {/* Mobile Floating Action Button - Filters */}
+            <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] safe-area-bottom pointer-events-none flex items-center gap-3 shadow-2xl rounded-full">
+                <button
+                    onClick={() => toggleMapView()}
+                    className="pointer-events-auto flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
+                >
+                    {isGoogleMapOpen ? <ListBulletIcon className="w-5 h-5 stroke-[2]" /> : <MapIcon className="w-5 h-5 stroke-[2]" />}
+                    <span className="text-sm font-bold tracking-wide">{isGoogleMapOpen ? 'List' : 'Map'}</span>
+                </button>
+                <div className="w-px h-6 bg-gray-700 pointer-events-none" />
+                <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="pointer-events-auto relative flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
+                >
+                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-white stroke-[2]" />
+                    <span className="text-sm font-bold tracking-wide">Filters</span>
+                    {hasActiveFilters && (
+                        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-gray-900 translate-x-1/4 -translate-y-1/4" />
+                    )}
+                </button>
             </div>
 
             {/* Google Maps Modal (Mobile Only) */}

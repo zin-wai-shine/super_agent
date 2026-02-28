@@ -2,9 +2,16 @@ import React from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
     MapPinIcon,
-    BookmarkIcon
+    BookmarkIcon,
+    HeartIcon,
+    StarIcon,
+    ShareIcon
 } from '@heroicons/react/24/outline';
-import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
+import {
+    BookmarkIcon as BookmarkSolidIcon,
+    HeartIcon as HeartSolidIcon,
+    StarIcon as StarSolidIcon
+} from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
@@ -179,274 +186,209 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
 
     const isListView = viewMode === 'list';
     const isMapListView = viewMode === 'map-list';
+    const linkTo = to || `/listings/${id}`;
 
-    if (isMapListView) {
-        const detailParams = new URLSearchParams(searchParams);
-        detailParams.set('detail', id);
-        return (
-            <Link
-                to={to || `/listings?${detailParams.toString()}`}
-                className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 ${cardClassName}`}
-            >
-                {/* Image on top — column layout */}
-                <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
-                        src={listingImages[currentImageIndex]}
-                        alt={title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                    />
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
-                        {is_featured && (
-                            <span className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
-                                Featured
+    // --- RENDER LOGIC ---
+    const renderUnifiedCard = (cardLink) => {
+        const isSavedMode = viewMode === 'saved-grid';
+
+        if (isSavedMode || isListView) {
+            return (
+                <div className="bg-white rounded-none overflow-hidden group">
+                    <div className="relative aspect-[5/4] rounded-[23px] overflow-hidden mb-2">
+                        <Link to={cardLink}>
+                            <img
+                                src={listingImages[0]}
+                                alt={title}
+                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                        </Link>
+
+                        {/* Status Badge (Rent/Sale) */}
+                        <div className="absolute top-3.5 left-3.5">
+                            <span className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-medium text-gray-900 shadow-sm">
+                                {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
-                        )}
-                        <span className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
-                            {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
-                        </span>
-                    </div>
-                    <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
-                        {formatRelativeTime(created_at)}
-                    </div>
-                    {/* Save above image — same style as map hover card */}
-                    {showSave && (
-                        <button
-                            onClick={handleToggleSave}
-                            disabled={savingListing}
-                            className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
-                            aria-label={isSaved ? 'Unsave' : 'Save'}
-                        >
-                            {isSaved ? (
-                                <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
-                            ) : (
-                                <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
-                            )}
-                        </button>
-                    )}
-                </div>
-
-                {/* Content below image — price, title, location, stats; no Share/Copy Link */}
-                <div className="p-4 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-1 text-gray-900">
-                            <span className="text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
-                            <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                            {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
                         </div>
-                        <span className="text-[10px] text-gray-300 font-mono opacity-60">#{String(id).slice(0, 6)}</span>
-                    </div>
-                    <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
-                        {title}
-                    </h3>
-                    <div className="flex items-center text-[13px] text-gray-700 flex-wrap gap-x-3 gap-y-0.5">
-                        <span className="flex items-center gap-1">
-                            <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
-                            {district || 'Bangkok'}
-                        </span>
-                        {stationWithDistance && (
-                            <>
-                                <span className="w-px h-3 bg-gray-200" />
-                                <span className="flex items-center gap-1">
-                                    <TbTrain className="w-4 h-4 text-primary-600 shrink-0" />
-                                    <span className="font-bold text-gray-900">{nearestStationName}</span>
-                                    {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
-                                        <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
-                                    )}
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-6 text-[13px] text-gray-700">
-                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
-                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
-                        {area > 0 && (
-                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
-                        )}
-                    </div>
-                </div>
-            </Link>
-        );
-    }
 
-    if (isListView) {
-        const detailParams = new URLSearchParams(searchParams);
-        detailParams.set('detail', id);
-        return (
-            <Link
-                to={to || `/listings?${detailParams.toString()}`}
-                className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 ${cardClassName}`}
-            >
-                {/* Image on top — column layout */}
-                <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
-                        src={listingImages[currentImageIndex]}
-                        alt={title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                    />
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
-                        {is_featured && (
-                            <span className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
-                                Featured
-                            </span>
-                        )}
-                        <span className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
-                            {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
-                        </span>
-                    </div>
-                    <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
-                        {formatRelativeTime(created_at)}
-                    </div>
-                    {showSave && (
-                        <button
-                            onClick={handleToggleSave}
-                            disabled={savingListing}
-                            className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
-                            aria-label={isSaved ? 'Unsave' : 'Save'}
-                        >
-                            {isSaved ? (
-                                <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
-                            ) : (
-                                <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
-                            )}
-                        </button>
-                    )}
-                </div>
-
-                {/* Content below image */}
-                <div className="p-4 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-1 text-gray-900">
-                            <span className="text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
-                            <span className="text-[11px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                            {listing_type === 'rent' && <span className="text-[11px] font-bold text-gray-400">/mo</span>}
-                        </div>
-                        <span className="text-[10px] text-gray-300 font-mono opacity-60">#{String(id).slice(0, 6)}</span>
-                    </div>
-                    <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
-                        {title}
-                    </h3>
-                    <div className="flex items-center text-[13px] text-gray-700 flex-wrap gap-x-3 gap-y-0.5">
-                        <span className="flex items-center gap-1">
-                            <MapPinIcon className="w-4 h-4 text-gray-700 shrink-0" />
-                            {district || 'Bangkok'}
-                        </span>
-                        {stationWithDistance && (
-                            <>
-                                <span className="w-px h-3 bg-gray-200" />
-                                <span className="flex items-center gap-1">
-                                    <TbTrain className="w-4 h-4 text-primary-600 shrink-0" />
-                                    <span className="font-bold text-gray-900">{nearestStationName}</span>
-                                    {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
-                                        <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
-                                    )}
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-6 text-[13px] text-gray-700">
-                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
-                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
-                        {area > 0 && (
-                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
-                        )}
-                    </div>
-                </div>
-            </Link>
-        );
-    }
-
-    return (
-        <Link
-            to={to || `/listings?detail=${id}`}
-            className={`group block bg-white overflow-hidden rounded-[24px] shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-fade-in-scale border border-gray-100/50 ${cardClassName}`}
-        >
-            {/* Image Section */}
-            <div className="relative aspect-[16/10] overflow-hidden">
-                <img
-                    src={featuredImage}
-                    alt={title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
-                />
-
-                {/* Badges Overlay */}
-                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10">
-                    {is_featured && (
-                        <div className="bg-[#2f3e46]/90 backdrop-blur-md text-white text-[11px] md:text-[12px] font-black px-2.5 py-1 rounded-full shadow-md tracking-wider">
-                            Featured
-                        </div>
-                    )}
-                    <div className="text-[11px] md:text-[12px] font-bold px-2.5 py-1 rounded-full bg-[#2f3e46]/90 backdrop-blur-md text-white shadow-sm tracking-tight">
-                        {listing_type === 'sale' ? 'For Sale' : 'For Rent'}
-                    </div>
-                </div>
-
-                {/* Date Badge - Minimalist bottom right */}
-                <div className="absolute bottom-3 right-3 bg-[#2f3e46]/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-white/10">
-                    {formatRelativeTime(created_at)}
-                </div>
-                {/* Save above image — same style as map hover card */}
-                {showSave && (
-                    <button
-                        onClick={handleToggleSave}
-                        disabled={savingListing}
-                        className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-sm border border-gray-100/80 cursor-pointer hover:bg-white transition-colors"
-                        aria-label={isSaved ? 'Unsave' : 'Save'}
-                    >
-                        {isSaved ? (
-                            <BookmarkSolidIcon className="w-5 h-5 text-primary-600" />
-                        ) : (
-                            <BookmarkIcon className="w-5 h-5 text-gray-600 hover:text-primary-600" />
-                        )}
-                    </button>
-                )}
-            </div>
-
-            {/* Content Section — slightly smaller text at lg */}
-            <div className="p-5 lg:p-4 flex flex-col gap-3">
-                {/* Price and ID Row */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-baseline gap-1 text-gray-900">
-                        <span className="text-2xl lg:text-xl font-semibold tracking-tight">{formatPrice(price)}</span>
-                        <span className="text-[11px] lg:text-[10px] font-bold text-gray-400 tracking-wide">{price_unit}</span>
-                        {listing_type === 'rent' && <span className="text-[11px] lg:text-[10px] font-bold text-gray-400">/mo</span>}
-                    </div>
-                    <span className="text-[11px] lg:text-[10px] text-gray-300 font-mono tracking-tighter opacity-60">#{id.slice(0, 5)}</span>
-                </div>
-
-                {/* Title - Dark with primary hover */}
-                <h3 className="text-[17px] lg:text-[15px] font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-[1.3] h-[2.6em] lg:leading-[1.35] lg:h-[2.7em]">
-                    {title}
-                </h3>
-
-                {/* Information Rows */}
-                <div className="space-y-3">
-                    <div className="flex items-center text-[14px] lg:text-[13px] text-gray-700">
-                        <MapPinIcon className="w-5 h-5 lg:w-4 lg:h-4 mr-1 text-gray-700 shrink-0" />
-                        <span className="truncate">{district || 'Bangkok'}</span>
-                        {stationWithDistance && (
-                            <>
-                                <div className="mx-2 w-px h-3 bg-gray-200" />
-                                <TbTrain className="w-5 h-5 lg:w-4 lg:h-4 mr-1 text-primary-600 shrink-0" />
-                                <span className="truncate font-bold text-gray-900">{nearestStationName}</span>
-                                {distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0 && (
-                                    <span className="text-gray-500 font-medium">({Number(distance_to_station)}m)</span>
+                        {showSave && (
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="absolute top-3 right-3 z-10 p-1 active:scale-95"
+                            >
+                                {isSaved ? (
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                ) : (
+                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
                                 )}
-                            </>
+                            </button>
                         )}
                     </div>
 
-                    {/* Stats Refined Row */}
-                    <div className="flex items-center gap-8 pb-1 text-[14px] lg:text-[13px] text-gray-700">
-                        <span><span className="font-bold">{bedrooms}</span> <span className="font-medium">bed</span></span>
-                        <span><span className="font-bold">{bathrooms}</span> <span className="font-medium">bath</span></span>
-                        {area > 0 && (
-                            <span><span className="font-bold">{area}</span> <span className="font-medium">sqm</span></span>
+                    <div className="px-1.5 py-2">
+                        <Link to={cardLink} className="block group/link">
+                            <h3 className="text-[13px] font-medium text-slate-900 line-clamp-1 leading-snug group-hover:text-primary-600 transition-colors">
+                                {title}
+                            </h3>
+                            <div className="mt-1 flex flex-col gap-0.5">
+                                <p className="text-[13px] text-gray-500 font-medium">
+                                    {bedrooms} Bed · {bathrooms} Bath
+                                </p>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className={`group relative flex flex-col transition-all duration-300 ${cardClassName}`}>
+                <div className="flex flex-col w-full bg-white rounded-none border-none">
+                    <Link to={cardLink} className="relative aspect-[4/3] w-full overflow-hidden rounded-[23px] group-hover:shadow-md transition-shadow duration-300">
+                        <div className="flex h-full w-full transition-transform duration-500 ease-out">
+                            <img
+                                src={listingImages[currentImageIndex]}
+                                alt={title}
+                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="absolute top-3.5 left-3.5">
+                            <span className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-[12px] font-semibold text-gray-900 shadow-sm">
+                                {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
+                            </span>
+                        </div>
+
+                        {showSave && (
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="absolute top-3 right-3 z-10 p-1 active:scale-95"
+                            >
+                                {isSaved ? (
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                ) : (
+                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
+                                )}
+                            </button>
                         )}
+
+                        {listingImages.length > 1 && (
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                {listingImages.slice(0, 5).map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white' : 'bg-white/60'
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </Link>
+
+                    <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-[16px] font-semibold text-slate-900 truncate group-hover:text-primary-600 transition-colors">{title}</h3>
+                        </div>
+
+                        <div className="text-[14px] text-gray-500 flex items-center gap-1.5 mb-0.5">
+                            <MapPinIcon className="w-3.5 h-3.5" />
+                            <span className="truncate">{district || 'Bangkok'}</span>
+                            {nearestStationName && (
+                                <>
+                                    <span className="text-gray-300">·</span>
+                                    <span className="truncate font-medium text-gray-600">{nearestStationName}</span>
+                                </>
+                            )}
+                        </div>
+
+                        <p className="text-[14px] text-gray-500">
+                            {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
+                        </p>
+
+                        <p className="text-[14px] text-gray-400 font-mono tracking-tight mt-0.5">
+                            ID: #{id.slice(0, 6)} {created_at && `· ${new Date(created_at).toLocaleDateString('en-GB')}`}
+                        </p>
+
+                        <div className="mt-2 flex items-baseline gap-1">
+                            <span className="text-[14.5px] font-semibold text-gray-900">฿{formatPrice(price)}</span>
+                            <span className="text-[13px] text-gray-500">{listing_type === 'rent' ? '/ mo' : ''}</span>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+        );
+    };
+
+    // List view: horizontal row (image left, content right)
+    if (isListView) {
+        return (
+            <div className={`group bg-white rounded-none border-b border-gray-100 flex flex-col transition-all duration-300 ${cardClassName}`}>
+                <div className="p-4 flex gap-5">
+                    <Link to={linkTo} className="relative aspect-[4/3] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
+                        <img
+                            src={listingImages[0]}
+                            alt={title}
+                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute top-3.5 left-3.5 z-10">
+                            <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+                                <span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
+                            </div>
+                        </div>
+                        {showSave && (
+                            <button
+                                onClick={handleToggleSave}
+                                disabled={savingListing}
+                                className="absolute top-2 right-2 z-10 p-1 active:scale-95"
+                            >
+                                {isSaved ? (
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                ) : (
+                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
+                                )}
+                            </button>
+                        )}
+                    </Link>
+                    <div className="flex-1 py-1 flex flex-col justify-between">
+                        <div>
+                            <div className="flex justify-between items-start mb-1">
+                                <Link to={linkTo}>
+                                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 hover:text-primary-600 transition-colors">{title}</h3>
+                                </Link>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                <MapPinIcon className="w-4 h-4" />
+                                <span className="truncate">{district || 'Bangkok'}</span>
+                                {stationWithDistance && (
+                                    <>
+                                        <span className="text-gray-300">·</span>
+                                        <span className="truncate">{stationWithDistance}</span>
+                                    </>
+                                )}
+                            </div>
+                            <div className="flex gap-4 text-sm text-gray-600">
+                                <span>{bedrooms} Bed</span>
+                                <span>{bathrooms} Bath</span>
+                                <span>{area} sqm</span>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <p className="text-[16px] font-semibold text-gray-900">
+                                ฿{formatPrice(price)}
+                                <span className="text-sm font-normal text-gray-500">{listing_type === 'rent' ? '/mo' : ''}</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </Link>
-    );
+        );
+    }
+
+    // Map view and grid: same card design as list page (image on top, details below)
+    return renderUnifiedCard(linkTo);
 };
 
 export default ListingCard;

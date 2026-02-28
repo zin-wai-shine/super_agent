@@ -9,63 +9,14 @@ const mapContainerStyle = {
     height: '100%',
 };
 
+const LIBRARIES = ['places', 'marker'];
+
 const options = {
     disableDefaultUI: true,
     zoomControl: false, // Use custom zoom + fullscreen controls
     gestureHandling: 'greedy', // Allow direct scroll zoom without Cmd key
-    // mapId omitted so default map tiles render; use customOptions.mapId if you have a valid Cloud Map ID
-    styles: [
-        {
-            featureType: "poi",
-            elementType: "labels",
-            stylers: [{ visibility: "off" }]
-        },
-        {
-            featureType: "water",
-            elementType: "geometry",
-            stylers: [{ color: "#e9e9e9" }, { lightness: 17 }]
-        },
-        {
-            featureType: "landscape",
-            elementType: "geometry",
-            stylers: [{ color: "#f5f5f5" }, { lightness: 20 }]
-        },
-        {
-            featureType: "road.highway",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#ffffff" }, { lightness: 17 }]
-        },
-        {
-            featureType: "road.highway",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#ffffff" }, { lightness: 29 }, { weight: 0.2 }]
-        },
-        {
-            featureType: "road.arterial",
-            elementType: "geometry",
-            stylers: [{ color: "#ffffff" }, { lightness: 18 }]
-        },
-        {
-            featureType: "road.local",
-            elementType: "geometry",
-            stylers: [{ color: "#ffffff" }, { lightness: 16 }]
-        },
-        {
-            featureType: "transit",
-            elementType: "geometry",
-            stylers: [{ color: "#f2f2f2" }, { lightness: 19 }]
-        },
-        {
-            featureType: "administrative",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#fefefe" }, { lightness: 20 }]
-        },
-        {
-            featureType: "administrative",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#fefefe" }, { lightness: 17 }, { weight: 1.2 }]
-        }
-    ]
+    // mapId and styles are handled dynamically in mapOptions useMemo
+    mapId: 'DEMO_MAP_ID'
 };
 
 const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedListingIds = [], useDefaultMarkers, highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard }) => {
@@ -295,7 +246,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 try {
                     saveBtnListenerRef.current.el.removeEventListener('click', saveBtnListenerRef.current.handler);
                     saveBtnListenerRef.current.el.removeEventListener('keydown', saveBtnListenerRef.current.keyHandler);
-                } catch (_) {}
+                } catch (_) { }
             }
             const handler = (e) => {
                 e.preventDefault();
@@ -361,7 +312,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 try {
                     saveBtnListenerRef.current.el.removeEventListener('click', saveBtnListenerRef.current.handler);
                     saveBtnListenerRef.current.el.removeEventListener('keydown', saveBtnListenerRef.current.keyHandler);
-                } catch (_) {}
+                } catch (_) { }
                 saveBtnListenerRef.current = null;
             }
         };
@@ -404,7 +355,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
-        libraries: ['places', 'marker'],
+        libraries: LIBRARIES,
         version: 'weekly'
     });
 
@@ -479,7 +430,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
                 requestFs.call(el).then(() => {
                     setIsFullscreen(true);
                     setTimeout(triggerMapResize, 250);
-                }).catch(() => {});
+                }).catch(() => { });
             }
         }
     }, [triggerMapResize, onExpandClick]);
@@ -507,10 +458,34 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
     }, []);
 
     // Merge default options with custom options
-    const mapOptions = useMemo(() => ({
-        ...options,
-        ...customOptions
-    }), [customOptions]);
+    const mapOptions = useMemo(() => {
+        const merged = {
+            ...options,
+            ...customOptions
+        };
+
+        // CRITICAL: A map cannot have both 'styles' and 'mapId' set at the same time.
+        // If mapId is present (it is by default in our options), we must remove styles.
+        if (merged.mapId) {
+            delete merged.styles;
+        } else {
+            // Re-apply our default styles if NO mapId is present
+            merged.styles = [
+                { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+                { featureType: "water", elementType: "geometry", stylers: [{ color: "#e9e9e9" }, { lightness: 17 }] },
+                { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f5f5f5" }, { lightness: 20 }] },
+                { featureType: "road.highway", elementType: "geometry.fill", stylers: [{ color: "#ffffff" }, { lightness: 17 }] },
+                { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#ffffff" }, { lightness: 29 }, { weight: 0.2 }] },
+                { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#ffffff" }, { lightness: 18 }] },
+                { featureType: "road.local", elementType: "geometry", stylers: [{ color: "#ffffff" }, { lightness: 16 }] },
+                { featureType: "transit", elementType: "geometry", stylers: [{ color: "#f2f2f2" }, { lightness: 19 }] },
+                { featureType: "administrative", elementType: "geometry.fill", stylers: [{ color: "#fefefe" }, { lightness: 20 }] },
+                { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#fefefe" }, { lightness: 17 }, { weight: 1.2 }] }
+            ];
+        }
+
+        return merged;
+    }, [customOptions]);
 
     // Debounced bounds change handler
     const handleBoundsChanged = useCallback(() => {

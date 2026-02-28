@@ -207,6 +207,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const touchStartRef = useRef({ x: 0, y: 0 });
     const mouseStartRef = useRef({ x: 0, down: false });
     const didSwipeRef = useRef(false);
+    const bookingDateRef = useRef(null);
+    const bookingTimeRef = useRef(null);
+    const bookingFullNameRef = useRef(null);
+    const bookingPhoneRef = useRef(null);
+    const bookingEmailRef = useRef(null);
+    const bookingConfirmRef = useRef(null);
 
     // Booking states (from BookAppointment.js)
     const [submitting, setSubmitting] = useState(false);
@@ -227,6 +233,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     // Advanced booking states
     const [availableSlots, setAvailableSlots] = useState([]);
     const [lockId, setLockId] = useState(null);
+    const [confirmedDateTime, setConfirmedDateTime] = useState(false);
     const [expiresAt, setExpiresAt] = useState(null);
     const [timeLeft, setTimeLeft] = useState(null);
     const [fetchingSlots, setFetchingSlots] = useState(false);
@@ -675,6 +682,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         setLockId(null);
         setExpiresAt(null);
         setTimeLeft(null);
+        setConfirmedDateTime(false);
         setBookingErrors({});
     };
 
@@ -688,7 +696,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         listing_id: id,
                         date: bookingForm.preferred_date
                     });
-                    setAvailableSlots(response.data.slots);
+                    setAvailableSlots(response.data.slots || []);
                 } catch (error) {
                     console.error('Failed to fetch slots:', error);
                 } finally {
@@ -702,8 +710,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const handleTimeSelect = async (time) => {
         if (bookingForm.preferred_time === time) return;
 
+        setConfirmedDateTime(false);
         setBookingForm(prev => ({ ...prev, preferred_time: time }));
-        setBookingErrors(prev => ({ ...prev, submit: null }));
+        setBookingErrors(prev => ({ ...prev, submit: null, preferred_time: null }));
 
         try {
             const response = await appointmentApi.softLockSlot({
@@ -720,7 +729,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             // Refresh slots
             if (bookingForm.preferred_date) {
                 const resp = await appointmentApi.getAvailableSlots({ listing_id: id, date: bookingForm.preferred_date });
-                setAvailableSlots(resp.data.slots);
+                setAvailableSlots(resp.data.slots || []);
             }
         }
     };
@@ -751,6 +760,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const morningSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
     const afternoonSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
 
+    // When selected date is today, disable time slots that are already in the past
+    const isSelectedDateToday = () => {
+        if (!bookingForm.preferred_date) return false;
+        const selected = new Date(bookingForm.preferred_date);
+        const today = new Date();
+        return selected.getFullYear() === today.getFullYear() &&
+            selected.getMonth() === today.getMonth() &&
+            selected.getDate() === today.getDate();
+    };
+    const isTimeSlotInPast = (timeStr) => {
+        if (!isSelectedDateToday()) return false;
+        const [hours, mins] = timeStr.split(':').map(Number);
+        const slotMinutes = hours * 60 + mins;
+        const now = new Date();
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        return slotMinutes < nowMinutes;
+    };
+
     const validateBookingForm = () => {
         const newErrors = {};
         if (!bookingForm.full_name.trim()) newErrors.full_name = 'Required';
@@ -758,12 +785,41 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         if (!bookingForm.phone.trim()) newErrors.phone = 'Required';
         if (!bookingForm.preferred_date) newErrors.preferred_date = 'Required';
         if (!bookingForm.preferred_time) newErrors.preferred_time = 'Required';
+        if (bookingForm.preferred_date && bookingForm.preferred_time && isTimeSlotInPast(bookingForm.preferred_time)) {
+            newErrors.preferred_time = 'This time has passed. Please select a later time.';
+        }
+        if (!confirmedDateTime) {
+            newErrors.confirm = 'Please confirm the date and time information above.';
+        }
         setBookingErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return newErrors;
+    };
+
+    const scrollToFirstBookingError = (errors) => {
+        const order = ['preferred_date', 'preferred_time', 'full_name', 'phone', 'email', 'confirm'];
+        const firstKey = order.find((k) => errors[k]);
+        const refMap = {
+            preferred_date: bookingDateRef,
+            preferred_time: bookingTimeRef,
+            full_name: bookingFullNameRef,
+            phone: bookingPhoneRef,
+            email: bookingEmailRef,
+            confirm: bookingConfirmRef
+        };
+        const ref = firstKey && refMap[firstKey];
+        if (ref?.current) {
+            setTimeout(() => {
+                ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     };
 
     const handleBookingSubmit = async () => {
-        if (!validateBookingForm()) return;
+        const errors = validateBookingForm();
+        if (Object.keys(errors).length > 0) {
+            scrollToFirstBookingError(errors);
+            return;
+        }
         setSubmitting(true);
         try {
             const response = await appointmentApi.createAppointment({
@@ -884,7 +940,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         if (!isModal || !badgesContainer || !listing || isBookingOverlayOpen || isContactOverlayOpen || bookingId) return null;
 
         return createPortal(
-            <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
                 <div
                     className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border animate-in fade-in slide-in-from-left-2 duration-500 ${listing.listing_type === 'sale'
                         ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
@@ -911,7 +967,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         if (isBookingOverlayOpen || isContactOverlayOpen || bookingId) return null;
 
         return createPortal(
-            <div className="flex items-center gap-6">
+            <div className="hidden lg:flex items-center gap-6">
                 {/* Group 1: Contact & Booking — text + icon */}
                 <div className="flex items-center gap-2">
                     <button
@@ -978,80 +1034,55 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         );
     };
 
-    // Booking Overlay Component
+    // Booking: open in its own modal (new modal, not inside existing view)
     const renderBookingOverlay = () => {
         if (!isBookingOverlayOpen) return null;
 
         const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
         return (
-            <>
+            <Modal
+                isOpen
+                onClose={() => setIsBookingOverlayOpen(false)}
+                size="full"
+                closeOnBackdropClick={false}
+                lockScroll
+                hideHeader
+                fullScreenMobile
+                className="!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:h-[94vh] !max-w-full sm:!max-w-[94vw] overflow-hidden shadow-none sm:shadow-2xl transition-all duration-500"
+                overlayZIndex={10040}
+            >
                 <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[55] animate-fade-in"
-                    onClick={() => setIsBookingOverlayOpen(false)}
-                />
-
-                <div
-                    className="fixed inset-0 z-[60] backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-slide-up flex flex-col overflow-hidden"
-                    style={{
-                        backgroundColor: 'var(--menu-bg-color, rgba(255, 255, 255, 0.95))',
-                        borderRadius: 'var(--card-radius)'
-                    }}
+                    className="h-full flex flex-col overflow-hidden bg-white"
+                    style={{ backgroundColor: 'var(--menu-bg-color, #fff)' }}
                 >
-                    {/* Header bar - Hide on success */}
+                    {/* Header - Hide on success; mobile: compact padding */}
                     {!success && (
                         <div
-                            className="flex items-center justify-between px-6 py-4 border-b backdrop-blur-xl z-[70]"
+                            className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 border-b shrink-0"
                             style={{
                                 backgroundColor: 'var(--menu-bg-color)',
                                 borderBottomColor: 'var(--menu-divider)'
                             }}
                         >
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setIsBookingOverlayOpen(false)}
-                                    className="flex items-center gap-1.5 transition-all py-1.5 px-3 rounded-lg group active:scale-95"
-                                    style={{ color: 'var(--menu-text-muted)' }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.color = 'var(--menu-text-primary)';
-                                        e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.color = 'var(--menu-text-muted)';
-                                        e.currentTarget.style.backgroundColor = 'transparent';
-                                    }}
-                                >
-                                    <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                                    <span className="text-sm font-bold">Back</span>
-                                </button>
-                                <span
-                                    className="text-lg font-bold"
-                                    style={{ color: 'var(--menu-text-primary)' }}
-                                >
-                                    Booking Message
-                                </span>
-                            </div>
                             <button
                                 onClick={() => setIsBookingOverlayOpen(false)}
-                                className="p-2 transition-all rounded-full"
-                                style={{ color: 'var(--menu-text-muted)' }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = 'var(--menu-text-primary)';
-                                    e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = 'var(--menu-text-muted)';
-                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                }}
+                                className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                             >
-                                <XMarkIcon className="w-6 h-6" />
+                                <ArrowLeftIcon className="w-6 h-6" />
                             </button>
+                            <span
+                                className="text-lg font-semibold ml-auto"
+                                style={{ color: 'var(--menu-text-primary)' }}
+                            >
+                                Request a Viewing
+                            </span>
                         </div>
                     )}
 
-                    {/* Content Area */}
-                    <div className={`flex-1 overflow-y-auto modal-scrollable ${success ? 'flex items-center justify-center' : ''}`}>
-                        <div className={`max-w-[1400px] mx-auto p-8 lg:p-12 ${success ? 'h-full w-full flex items-center justify-center' : ''}`}>
+                    {/* Content Area - mobile: full-width padding; desktop: centered; z-[60] so scroll lock skips this container */}
+                    <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <div className={`max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-12 ${success ? 'h-full w-full flex items-center justify-center' : ''}`}>
                             {success ? (
                                 <div className="h-full w-full flex items-center justify-center p-6">
                                     <div
@@ -1071,12 +1102,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             Appointment Confirmed!
                                         </h2>
                                         <p
-                                            className="text-sm mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5"
+                                            className="text-base mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5"
                                             style={{ color: 'var(--menu-text-muted)' }}
                                         >
                                             You can check your booking information and status at
                                             <span
-                                                className="group inline-flex items-center gap-1 font-bold cursor-pointer transition-all duration-300"
+                                                className="group inline-flex items-center gap-1 font-bold cursor-pointer transition-all duration-300 text-base"
                                                 onClick={() => {
                                                     setIsBookingOverlayOpen(false);
                                                     setSuccess(false);
@@ -1085,7 +1116,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             >
                                                 <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300" style={{ color: 'var(--menu-text-primary)' }}>Bookings</span>
                                                 <ArrowRightIcon
-                                                    className="w-4 h-4 transition-all duration-300 transform group-hover:translate-x-1"
+                                                    className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
                                                     style={{ color: 'var(--primary-color)' }}
                                                 />
                                             </span>
@@ -1096,136 +1127,62 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     setIsBookingOverlayOpen(false);
                                                     setSuccess(false);
                                                 }}
-                                                className="min-w-[180px] font-black py-4 tracking-[0.2em] text-xs text-white border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
+                                                className="min-w-[180px] font-black py-4 tracking-[0.2em] text-lg text-white border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
                                                 style={{
                                                     borderRadius: 'var(--btn-radius)',
                                                     background: 'var(--primary-color)'
                                                 }}
                                             >
-                                                DONE
+                                                Done
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 xl:gap-16 pb-12">
+                                <div className="grid grid-cols-1 gap-6 lg:gap-12 xl:gap-16 pb-8 lg:pb-12">
                                     {/* Column 1: Purpose, Date & Time */}
                                     <div className="space-y-10">
-                                        {/* Purpose */}
+                                        {/* Purpose - show only the option matching listing type (rent → For Rent, sale → For Buy), auto-selected */}
                                         <div>
-                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">I want to</h3>
-                                            <StyledSelect
-                                                options={[
-                                                    { value: 'rent', label: 'For Rent' },
-                                                    { value: 'buy', label: 'For Buy' }
-                                                ]}
-                                                value={bookingForm.purpose}
-                                                onChange={(val) => setBookingForm(prev => ({ ...prev, purpose: val }))}
-                                                className="w-full"
-                                            />
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-4">I want to</h3>
+                                            {(() => {
+                                                const purposeOptions = listing?.listing_type === 'sale'
+                                                    ? [{ value: 'buy', label: 'For Buy' }]
+                                                    : [{ value: 'rent', label: 'For Rent' }];
+                                                return (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {purposeOptions.map((opt) => (
+                                                            <button
+                                                                key={opt.value}
+                                                                type="button"
+                                                                className="py-2.5 px-5 rounded-full text-sm font-bold transition-all border-2 border-primary-600 bg-primary-50 text-primary-700"
+                                                            >
+                                                                {opt.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
 
-                                        {/* Time Selection */}
-                                        <div>
-                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Select Time</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 rounded-3xl p-6 border border-gray-100">
-                                                <div>
-                                                    <h4 className="text-[10px] items-center text-gray-400 uppercase font-black tracking-widest mb-3 flex items-center justify-between">
-                                                        <span className="flex items-center gap-2">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
-                                                            Morning
-                                                        </span>
-                                                        {fetchingSlots && <div className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>}
-                                                    </h4>
-                                                    <StyledSelect
-                                                        options={morningSlots.map(time => {
-                                                            const slotData = availableSlots.find(s => s.time === time);
-                                                            const isAvailable = slotData && slotData.status === 'available';
-                                                            const isLocked = slotData && slotData.status === 'locked';
-
-                                                            return {
-                                                                value: time,
-                                                                label: time + (isLocked ? ' (Unavailable)' : ''),
-                                                                disabled: (!isAvailable && !isLocked) || isLocked || fetchingSlots,
-                                                                status: slotData ? slotData.status : 'unavailable'
-                                                            };
-                                                        })}
-                                                        value={morningSlots.includes(bookingForm.preferred_time) ? bookingForm.preferred_time : null}
-                                                        onChange={(val) => handleTimeSelect(val)}
-                                                        placeholder="Morning"
-                                                        className="w-full"
-                                                        styles={{
-                                                            option: (base, state) => {
-                                                                if (state.data.status === 'locked') {
-                                                                    return {
-                                                                        ...base,
-                                                                        color: '#ef4444',
-                                                                        backgroundColor: '#fee2e2',
-                                                                        opacity: 0.7,
-                                                                        cursor: 'not-allowed'
-                                                                    };
-                                                                }
-                                                                return base;
-                                                            }
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-[10px] items-center text-gray-400 uppercase font-black tracking-widest mb-3 flex items-center gap-2">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                                        Afternoon
-                                                    </h4>
-                                                    <StyledSelect
-                                                        options={afternoonSlots.map(time => {
-                                                            const slotData = availableSlots.find(s => s.time === time);
-                                                            const isAvailable = slotData && slotData.status === 'available';
-                                                            const isLocked = slotData && slotData.status === 'locked';
-
-                                                            return {
-                                                                value: time,
-                                                                label: time + (isLocked ? ' (Unavailable)' : ''),
-                                                                disabled: (!isAvailable && !isLocked) || isLocked || fetchingSlots,
-                                                                status: slotData ? slotData.status : 'unavailable'
-                                                            };
-                                                        })}
-                                                        value={afternoonSlots.includes(bookingForm.preferred_time) ? bookingForm.preferred_time : null}
-                                                        onChange={(val) => handleTimeSelect(val)}
-                                                        placeholder="Afternoon"
-                                                        className="w-full"
-                                                        styles={{
-                                                            option: (base, state) => {
-                                                                if (state.data.status === 'locked') {
-                                                                    return {
-                                                                        ...base,
-                                                                        color: '#ef4444',
-                                                                        backgroundColor: '#fee2e2',
-                                                                        opacity: 0.7,
-                                                                        cursor: 'not-allowed'
-                                                                    };
-                                                                }
-                                                                return base;
-                                                            }
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Calendar */}
-                                        <div>
-                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Select Date</h3>
+                                        {/* Calendar - half width on lg/xl */}
+                                        <div ref={bookingDateRef} className="w-full lg:max-w-[50%]">
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Select Date</h3>
+                                            {bookingErrors.preferred_date && (
+                                                <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
+                                            )}
                                             <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100">
                                                 <div className="flex items-center justify-between mb-6 px-2">
                                                     <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                                         <ChevronLeftIcon className="w-5 h-5 text-gray-400" />
                                                     </button>
-                                                    <h4 className="font-bold text-gray-900 uppercase tracking-widest text-sm">{monthYear}</h4>
+                                                    <h4 className="font-semibold text-gray-900 text-lg">{monthYear}</h4>
                                                     <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() + 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                                         <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                                                     </button>
                                                 </div>
                                                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-[10px] font-black text-gray-400 py-1">{d}</div>)}
+                                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-semibold text-gray-900 py-1">{d}</div>)}
                                                 </div>
                                                 <div className="grid grid-cols-7 gap-1">
                                                     {generateCalendarGrid().map((day, i) => {
@@ -1251,7 +1208,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 key={i}
                                                                 disabled={isDisabled}
                                                                 onClick={() => handleDateSelect(day)}
-                                                                className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'bg-gray-900 text-white shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                                className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'bg-[var(--primary-color)] text-white shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
                                                             >
                                                                 {day}
                                                             </button>
@@ -1260,58 +1217,138 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Time Selection - button grid for all screen sizes */}
+                                        <div ref={bookingTimeRef}>
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Select Time</h3>
+                                            {bookingErrors.preferred_time && (
+                                                <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_time}</p>
+                                            )}
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                                                        Morning
+                                                        {fetchingSlots && <span className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin ml-1" />}
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {morningSlots.map((time) => {
+                                                            const slotData = (availableSlots || []).find(s => s.time === time);
+                                                            const isAvailable = slotData && slotData.status === 'available';
+                                                            const isLocked = slotData && slotData.status === 'locked';
+                                                            const isPast = isTimeSlotInPast(time);
+                                                            const disabled = (!isAvailable && !isLocked) || isLocked || fetchingSlots || isPast;
+                                                            const isSelected = bookingForm.preferred_time === time;
+                                                            return (
+                                                                <button
+                                                                    key={time}
+                                                                    type="button"
+                                                                    disabled={disabled}
+                                                                    onClick={() => !disabled && handleTimeSelect(time)}
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-semibold transition-all border ${
+                                                                        isSelected
+                                                                            ? 'border-primary-600 bg-primary-50 text-primary-600'
+                                                                            : disabled
+                                                                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                    }`}
+                                                                >
+                                                                    {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                        Afternoon
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {afternoonSlots.map((time) => {
+                                                            const slotData = (availableSlots || []).find(s => s.time === time);
+                                                            const isAvailable = slotData && slotData.status === 'available';
+                                                            const isLocked = slotData && slotData.status === 'locked';
+                                                            const isPast = isTimeSlotInPast(time);
+                                                            const disabled = (!isAvailable && !isLocked) || isLocked || fetchingSlots || isPast;
+                                                            const isSelected = bookingForm.preferred_time === time;
+                                                            return (
+                                                                <button
+                                                                    key={time}
+                                                                    type="button"
+                                                                    disabled={disabled}
+                                                                    onClick={() => !disabled && handleTimeSelect(time)}
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-semibold transition-all border ${
+                                                                        isSelected
+                                                                            ? 'border-primary-600 bg-primary-50 text-primary-600'
+                                                                            : disabled
+                                                                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                    }`}
+                                                                >
+                                                                    {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Column 2: Details & Message */}
-                                    <div className="space-y-10">
+                                    {/* Column 2: Details & Message - half width on lg/xl */}
+                                    <div className="space-y-10 w-full lg:max-w-[50%]">
                                         <div className="space-y-6">
-                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Your Details</h3>
+                                            <h3 className="text-lg font-semibold text-gray-900">Your Details</h3>
                                             <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Full Name</label>
+                                                <div ref={bookingFullNameRef}>
+                                                    <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Full Name</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.full_name}
-                                                        onChange={e => setBookingForm({ ...bookingForm, full_name: e.target.value })}
-                                                        className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                        onChange={e => { setBookingForm({ ...bookingForm, full_name: e.target.value }); if (bookingErrors.full_name) setBookingErrors(prev => ({ ...prev, full_name: null })); }}
+                                                        className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="John Doe"
                                                     />
+                                                    {bookingErrors.full_name && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.full_name}</p>}
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Phone Number</label>
+                                                    <div ref={bookingPhoneRef}>
+                                                        <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Phone Number</label>
                                                         <input
                                                             type="text"
                                                             value={bookingForm.phone}
-                                                            onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                                                            className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                            onChange={e => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (bookingErrors.phone) setBookingErrors(prev => ({ ...prev, phone: null })); }}
+                                                            className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                             style={{ borderRadius: 'var(--card-radius)' }}
                                                             placeholder="+66..."
                                                         />
+                                                        {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.phone}</p>}
                                                     </div>
-                                                    <div>
-                                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Email Address</label>
+                                                    <div ref={bookingEmailRef}>
+                                                        <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Email Address</label>
                                                         <input
                                                             type="text"
                                                             value={bookingForm.email}
-                                                            onChange={e => setBookingForm({ ...bookingForm, email: e.target.value })}
-                                                            className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm"
+                                                            onChange={e => { setBookingForm({ ...bookingForm, email: e.target.value }); if (bookingErrors.email) setBookingErrors(prev => ({ ...prev, email: null })); }}
+                                                            className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                             style={{ borderRadius: 'var(--card-radius)' }}
                                                             placeholder="john@example.com"
                                                         />
+                                                        {bookingErrors.email && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.email}</p>}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-6">
-                                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Additional Message</h3>
+                                            <h3 className="text-lg font-semibold text-gray-900">Additional Message</h3>
                                             <textarea
                                                 value={bookingForm.message}
                                                 onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
                                                 rows={5}
-                                                className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-sm resize-none"
+                                                className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-base resize-none"
                                                 style={{ borderRadius: 'var(--card-radius)' }}
                                                 placeholder="I would like to know more about..."
                                             />
@@ -1326,122 +1363,72 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {/* Column 3: Summary & Preview */}
                                     <div className="space-y-10">
                                         <div className="space-y-8">
-                                            <div
-                                                className="p-8 relative overflow-hidden group"
-                                                style={{
-                                                    borderRadius: 'var(--card-radius)',
-                                                    backgroundColor: 'var(--menu-bg-color)',
-                                                    boxShadow: 'var(--card-shadow)'
-                                                }}
-                                            >
-                                                <div className="relative z-10">
-                                                    <h4
-                                                        className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 flex items-center justify-between"
-                                                        style={{ color: 'var(--menu-text-muted)' }}
+                                            <div>
+                                                <h4
+                                                    className="text-lg font-semibold text-gray-900 mb-8 flex items-center justify-between"
+                                                >
+                                                    <span>Booking Summary</span>
+                                                    {timeLeft && (
+                                                        <span className="inline-flex flex-row items-center gap-2 pl-4 pr-4 py-2 rounded-full bg-rose-500 text-white text-sm font-semibold">
+                                                            <span className="w-12 shrink-0 text-left">Locked:</span>
+                                                            <span className="min-w-[2.25rem] text-left">{timeLeft}</span>
+                                                        </span>
+                                                    )}
+                                                </h4>
+                                                <div
+                                                    className="space-y-8 px-4"
+                                                >
+                                                    <div
+                                                        className="border-b pb-8"
+                                                        style={{ borderBottomColor: 'var(--menu-divider)' }}
                                                     >
-                                                        <span>Booking Summary</span>
-                                                        {timeLeft && (
-                                                            <span className="bg-rose-500 text-white px-2 py-0.5 rounded-full animate-pulse text-[8px] font-black">
-                                                                LOCKED: {timeLeft}
-                                                            </span>
-                                                        )}
-                                                    </h4>
-                                                    <div className="space-y-8">
-                                                        <div
-                                                            className="flex items-center gap-6 border-b pb-8"
-                                                            style={{ borderBottomColor: 'var(--menu-divider)' }}
-                                                        >
-                                                            <div className="relative">
-                                                                <img
-                                                                    src={hasImages ? getMediaUrl(images[0].url) : '/api/placeholder/100/100'}
-                                                                    className="w-20 h-20 object-cover"
-                                                                    style={{ borderRadius: 'calc(var(--card-radius) * 0.5)' }}
-                                                                    alt=""
-                                                                />
-                                                                <div
-                                                                    className="absolute -top-2 -right-2 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
-                                                                    style={{ backgroundColor: 'var(--primary-color)' }}
-                                                                >
-                                                                    {bookingForm.purpose === 'rent' ? 'Rent' : 'Buy'}
-                                                                </div>
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <div
-                                                                    className="text-[10px] font-bold uppercase mb-1 tracking-wider"
-                                                                    style={{ color: 'var(--menu-text-secondary)' }}
-                                                                >
-                                                                    {listing.district}
-                                                                </div>
-                                                                <div
-                                                                    className="font-bold text-base leading-tight mb-2 truncate"
-                                                                    style={{ color: 'var(--menu-text-primary)' }}
-                                                                >
-                                                                    {listing.title}
-                                                                </div>
-                                                                <div
-                                                                    className="flex items-center gap-2 font-bold text-[10px]"
-                                                                    style={{ color: 'var(--menu-text-muted)' }}
-                                                                >
-                                                                    <MapPinIcon className="w-3 h-3" />
-                                                                    {listing.location || 'Bangkok'}
-                                                                </div>
-                                                            </div>
+                                                        <div className="text-base font-semibold text-gray-900 mb-1">
+                                                            {listing.district}
                                                         </div>
-
-                                                        <div className="grid grid-cols-2 gap-8">
-                                                            <div>
-                                                                <div
-                                                                    className="text-[9px] font-bold uppercase mb-2 tracking-widest"
-                                                                    style={{ color: 'var(--menu-text-muted)' }}
-                                                                >
-                                                                    Preferred Date
-                                                                </div>
-                                                                <div
-                                                                    className="font-black text-sm"
-                                                                    style={{ color: 'var(--menu-text-primary)' }}
-                                                                >
-                                                                    {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div
-                                                                    className="text-[9px] font-bold uppercase mb-2 tracking-widest"
-                                                                    style={{ color: 'var(--menu-text-muted)' }}
-                                                                >
-                                                                    Preferred Time
-                                                                </div>
-                                                                <div
-                                                                    className="font-black text-sm"
-                                                                    style={{ color: 'var(--menu-text-primary)' }}
-                                                                >
-                                                                    {bookingForm.preferred_time || '---'}
-                                                                </div>
-                                                            </div>
+                                                        <div className="font-bold text-lg leading-tight mb-2 truncate text-gray-900">
+                                                            {listing.title}
                                                         </div>
-
-                                                        {bookingForm.message && (
-                                                            <div
-                                                                className="pt-4 border-t"
-                                                                style={{ borderTopColor: 'var(--menu-divider)' }}
-                                                            >
-                                                                <div
-                                                                    className="text-[9px] font-bold uppercase mb-3 tracking-widest"
-                                                                    style={{ color: 'var(--menu-text-muted)' }}
-                                                                >
-                                                                    Your Message
-                                                                </div>
-                                                                <div
-                                                                    className="text-xs italic leading-relaxed line-clamp-2 pl-4 border-l-2"
-                                                                    style={{
-                                                                        color: 'var(--menu-text-secondary)',
-                                                                        borderLeftColor: 'var(--menu-divider)'
-                                                                    }}
-                                                                >
-                                                                    "{bookingForm.message}"
-                                                                </div>
-                                                            </div>
-                                                        )}
+                                                        <div className="flex items-center gap-2 text-base text-gray-700">
+                                                            <MapPinIcon className="w-4 h-4" />
+                                                            {listing.location || 'Bangkok'}
+                                                        </div>
                                                     </div>
+
+                                                    <div className="grid grid-cols-2 gap-8">
+                                                        <div>
+                                                            <div className="text-base font-semibold text-gray-900 mb-2">
+                                                                Preferred Date
+                                                            </div>
+                                                            <div className="font-semibold text-base text-gray-900">
+                                                                {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-base font-semibold text-gray-900 mb-2">
+                                                                Preferred Time
+                                                            </div>
+                                                            <div className="font-semibold text-base text-gray-900">
+                                                                {bookingForm.preferred_time || '---'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {bookingForm.message && (
+                                                        <div
+                                                            className="pt-4 border-t"
+                                                            style={{ borderTopColor: 'var(--menu-divider)' }}
+                                                        >
+                                                            <div className="text-base font-semibold text-gray-900 mb-3">
+                                                                Your Message
+                                                            </div>
+                                                            <div
+                                                                className="text-base italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900"
+                                                                style={{ borderLeftColor: 'var(--menu-divider)' }}
+                                                            >
+                                                                "{bookingForm.message}"
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1451,26 +1438,42 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         </div>
                     </div>
 
-                    {/* Persistent Footer for Button - Only show if not success */}
+                    {/* Persistent Footer - Confirm checkbox + Send Request; only when not success */}
                     {!success && (
-                        <div className="p-6 z-[70] flex justify-center items-center">
-                            <div className="max-w-[1400px] w-full flex justify-end px-4">
+                        <div ref={bookingConfirmRef} className="p-4 lg:p-6 z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm">
+                            <div className="max-w-[1400px] w-full flex flex-col items-center gap-4">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={confirmedDateTime}
+                                        onChange={(e) => {
+                                            setConfirmedDateTime(e.target.checked);
+                                            if (bookingErrors.confirm) setBookingErrors(prev => ({ ...prev, confirm: null }));
+                                        }}
+                                        className="w-5 h-5 rounded border-2 border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                                    />
+                                    <span className="text-base text-gray-900 font-medium select-none group-hover:text-gray-700">
+                                        I confirm the date and time selected above
+                                    </span>
+                                </label>
+                                {bookingErrors.confirm && (
+                                    <p className="text-sm text-red-600 font-medium">{bookingErrors.confirm}</p>
+                                )}
                                 <Button
                                     onClick={handleBookingSubmit}
                                     isLoading={submitting}
-                                    variant="outline"
-                                    className="w-full md:w-auto md:min-w-[280px] font-black py-3.5 transition-all hover:translate-y-[-2px] active:scale-[0.98] tracking-[0.2em] text-sm"
-                                    style={{
-                                        borderRadius: 'var(--btn-radius)'
-                                    }}
+                                    disabled={!confirmedDateTime}
+                                    variant="primary"
+                                    size="lg"
+                                    className={`w-auto max-w-[240px] font-semibold py-3 px-6 rounded-full transition-all hover:translate-y-[-2px] active:scale-[0.98] !text-lg ${!confirmedDateTime ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 >
-                                    SEND BOOKING REQUEST
+                                    Send Request
                                 </Button>
                             </div>
                         </div>
                     )}
                 </div>
-            </>
+            </Modal>
         );
     };
 
@@ -2207,7 +2210,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="px-5 py-2.5 rounded-xl bg-gray-50 text-gray-900 font-bold text-[14px] flex items-center hover:bg-gray-100 transition-all border border-gray-100"
+                                                    className="px-5 py-2.5 rounded-full bg-gray-50 text-gray-900 font-bold text-[14px] flex items-center hover:bg-gray-100 transition-all border border-gray-100"
                                                 >
                                                     View on Google Maps
                                                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2488,7 +2491,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         onClick={handleBookingClick}
                         className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-8 py-3 rounded-full"
                     >
-                        Check availability
+                        Request a Viewing
                     </button>
                 </div>
         </div >
@@ -2551,7 +2554,7 @@ const ListingDetailPage = () => {
                     isOpen
                     onClose={closeGallery}
                     size="full"
-                    closeOnBackdropClick
+                    closeOnBackdropClick={false}
                     lockScroll
                     hideHeader
                     fullScreenMobile

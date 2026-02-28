@@ -25,7 +25,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: super_backend
     restart: unless-stopped
     environment:
@@ -37,8 +37,9 @@ services:
       - JWT_SECRET=super_jwt_secret_key_change_in_production
       - UPLOAD_PATH=/app/uploads
       - GIN_MODE=debug
-      - MAIN_DOMAIN=superealestate.test
+      - MAIN_DOMAIN=superealestate.localhost
     volumes:
+      - ./backend:/app
       - ./uploads:/app/uploads
     ports:
       - "8080:8080"
@@ -52,13 +53,15 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         - REACT_APP_API_URL=${REACT_APP_API_URL}
         - REACT_APP_GOOGLE_MAPS_API_KEY=${REACT_APP_GOOGLE_MAPS_API_KEY}
-        - REACT_APP_MAIN_DOMAIN=superealestate.test
+        - REACT_APP_MAIN_DOMAIN=superealestate.localhost
     container_name: super_frontend
     restart: unless-stopped
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend:/app
       - /app/node_modules

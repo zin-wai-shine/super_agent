@@ -82,7 +82,7 @@ const MyBookings = () => {
     });
 
     return (
-        <div className="min-h-screen pt-24 pb-20 bg-[#EEEEEE]">
+        <div className="min-h-screen pt-24 pb-20 bg-white">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
                 {/* Modern Header Section */}
                 <div className="flex flex-col items-center text-center gap-8 mb-16 relative z-20">
@@ -191,10 +191,10 @@ const MyBookings = () => {
                                         <div className="p-5 md:p-6 pb-6 bg-white flex-1 relative">
                                             {/* Status & ID */}
                                             <div className="flex items-center justify-between mb-5">
-                                                <span className="text-[10px] sm:text-[11px] font-black text-slate-500 tracking-[0.05em] uppercase bg-slate-100/80 px-2.5 py-1.5 rounded-[4px]">
+                                                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 tracking-[0.05em] uppercase bg-slate-100/80 px-2.5 py-1.5 rounded-[4px]">
                                                     ID: {appointment.id.slice(0, 8).toUpperCase()}
                                                 </span>
-                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${appointment.status === 'confirmed' ? 'bg-emerald-50/80 text-emerald-600' :
+                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${appointment.status === 'confirmed' ? 'bg-emerald-50/80 text-emerald-600' :
                                                     appointment.status === 'completed' ? 'bg-amber-100/80 text-amber-700' :
                                                         appointment.status === 'cancelled' ? 'bg-rose-50/80 text-rose-600' :
                                                             'bg-amber-50/80 text-amber-600'
@@ -210,7 +210,7 @@ const MyBookings = () => {
 
                                             {/* Title — smaller and less bold at lg */}
                                             <div className="mb-2.5">
-                                                <h3 className="text-[18px] md:text-xl lg:text-[16px] font-black lg:font-bold text-[#1e293b] leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
+                                                <h3 className="text-base md:text-xl lg:text-[16px] font-bold text-[#1e293b] leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
                                                     {appointment.listing?.title || 'Unknown Property'}
                                                 </h3>
                                             </div>
@@ -225,14 +225,14 @@ const MyBookings = () => {
                                         {/* Bottom Section */}
                                         <div className="p-4 md:p-6 bg-[#f8fafc] border-t border-slate-200/60 flex items-center justify-between mt-auto">
                                             <div className="flex flex-col">
-                                                <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Date</div>
-                                                <div className="text-[14px] md:text-[15px] lg:text-[13px] font-black lg:font-semibold text-[#0f172a]">
+                                                <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Date</div>
+                                                <div className="text-[13px] md:text-[15px] lg:text-[13px] font-bold lg:font-semibold text-[#0f172a]">
                                                     {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Time</div>
-                                                <div className="text-[14px] md:text-[15px] lg:text-[13px] font-black lg:font-semibold text-[#0f172a]">
+                                                <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Time</div>
+                                                <div className="text-[13px] md:text-[15px] lg:text-[13px] font-bold lg:font-semibold text-[#0f172a]">
                                                     {appointment.preferred_time}
                                                 </div>
                                             </div>

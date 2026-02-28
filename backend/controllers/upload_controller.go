@@ -98,6 +98,12 @@ func (uc *UploadController) UploadImage(c *gin.Context) {
 		return
 	}
 
+	// Room type: default to Additional Photos for existing flow
+	roomType := c.PostForm("room_type")
+	if roomType == "" {
+		roomType = models.RoomTypeAdditionalPhotos
+	}
+
 	// Create media record
 	listingUUID, _ := uuid.Parse(listingID)
 	media := models.Media{
@@ -105,6 +111,7 @@ func (uc *UploadController) UploadImage(c *gin.Context) {
 		Type:      "image",
 		URL:       fmt.Sprintf("/uploads/%s/images/%s", agentID.String(), filename),
 		Caption:   c.PostForm("caption"),
+		RoomType:  roomType,
 	}
 
 	if err := uc.db.Create(&media).Error; err != nil {
@@ -230,6 +237,54 @@ func (uc *UploadController) DeleteMedia(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Media deleted successfully"})
+}
+
+// UpdateMediaRequest is the body for PATCH /upload/:id
+type UpdateMediaRequest struct {
+	RoomType *string `json:"room_type"`
+	Caption  *string `json:"caption"`
+}
+
+// UpdateMedia updates room_type and/or caption for a media record
+func (uc *UploadController) UpdateMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	mediaID := c.Param("id")
+	var media models.Media
+	if err := uc.db.First(&media, "id = ?", mediaID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Media not found"})
+		return
+	}
+
+	var listing models.Listing
+	if err := uc.db.Where("id = ? AND agent_id = ?", media.ListingID, agentID).First(&listing).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this media"})
+		return
+	}
+
+	var body UpdateMediaRequest
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	if body.RoomType != nil {
+		media.RoomType = *body.RoomType
+	}
+	if body.Caption != nil {
+		media.Caption = *body.Caption
+	}
+
+	if err := uc.db.Save(&media).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, media)
 }
 
 // UploadLogo handles agent logo uploads

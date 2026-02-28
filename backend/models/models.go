@@ -209,6 +209,17 @@ type Listing struct {
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+// Photo room type constants for display grouping
+const (
+	RoomTypeLivingRoom         = "Living Room"
+	RoomTypeDiningArea         = "Dining Area"
+	RoomTypeBedroom            = "Bedroom"
+	RoomTypeSharedFullBathroom = "Shared Full Bathroom"
+	RoomTypeLaundryArea        = "Laundry area"
+	RoomTypeExterior           = "Exterior"
+	RoomTypeAdditionalPhotos   = "Additional Photos"
+)
+
 // Media represents images and videos for listings
 type Media struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
@@ -217,6 +228,7 @@ type Media struct {
 	URL       string    `gorm:"size:500;not null" json:"url"`
 	Thumbnail string    `gorm:"size:500" json:"thumbnail,omitempty"`
 	Caption   string    `gorm:"size:255" json:"caption,omitempty"`
+	RoomType  string    `gorm:"size:50;default:Additional Photos" json:"room_type,omitempty"` // Living Room, Dining Area, Bedroom, etc.
 	SortOrder int       `gorm:"default:0" json:"sort_order"`
 	CreatedAt time.Time `json:"created_at"`
 }

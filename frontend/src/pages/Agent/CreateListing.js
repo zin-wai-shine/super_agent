@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { agentApi, publicApi, uploadApi, developerApi } from '../../services/api';
+import { agentApi, publicApi, uploadApi, developerApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
@@ -25,11 +25,14 @@ const availabilityOptions = [
     { value: 'date', label: 'Unavailable until...' }
 ];
 
+// Initial state: one array per room type
+const initialImageSections = () => PHOTO_ROOM_TYPES.reduce((acc, t) => ({ ...acc, [t]: [] }), {});
+
 const CreateListing = () => {
     const [loading, setLoading] = useState(false);
     const [stations, setStations] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [selectedImages, setSelectedImages] = useState([]);
+    const [imageSections, setImageSections] = useState(initialImageSections);
     const [uploading, setUploading] = useState(false);
     const [walkingTime, setWalkingTime] = useState('');
 
@@ -148,12 +151,15 @@ const CreateListing = () => {
 
             const listingId = response.data.id;
 
-            // Upload images if any
-            if (selectedImages.length > 0) {
+            // Upload images by section (each file gets its section's room type)
+            const flatImages = PHOTO_ROOM_TYPES.flatMap((roomType) =>
+                (imageSections[roomType] || []).map((file) => ({ file, roomType }))
+            );
+            if (flatImages.length > 0) {
                 setUploading(true);
                 try {
-                    for (const file of selectedImages) {
-                        await uploadApi.uploadImage(listingId, file);
+                    for (const { file, roomType } of flatImages) {
+                        await uploadApi.uploadImage(listingId, file, { roomType });
                     }
                     toast.success('Listing and images created successfully!');
                 } catch (uploadError) {
@@ -173,30 +179,49 @@ const CreateListing = () => {
         }
     };
 
-    const handleImageSelect = (e) => {
-        const files = Array.from(e.target.files);
+    const getFlattenedImages = () =>
+        PHOTO_ROOM_TYPES.flatMap((roomType) =>
+            (imageSections[roomType] || []).map((file) => ({ file, roomType }))
+        );
+
+    const handleImageSelect = (roomType, e) => {
+        const files = Array.from(e.target.files || []);
         if (files.length > 0) {
-            setSelectedImages(prev => [...prev, ...files]);
+            setImageSections((prev) => ({ ...prev, [roomType]: [...(prev[roomType] || []), ...files] }));
         }
     };
 
-    const removeImage = (index) => {
-        setSelectedImages(prev => prev.filter((_, i) => i !== index));
-        if (lightboxIndex === index) {
-            setLightboxIndex(null);
-        } else if (lightboxIndex > index) {
-            setLightboxIndex(lightboxIndex - 1);
+    const removeImageFromSection = (roomType, indexInSection) => {
+        setImageSections((prev) => ({
+            ...prev,
+            [roomType]: (prev[roomType] || []).filter((_, i) => i !== indexInSection),
+        }));
+        setLightboxIndex(null);
+    };
+
+    const removeImageByFlatIndex = (flatIndex) => {
+        const flat = getFlattenedImages();
+        let consumed = 0;
+        for (const roomType of PHOTO_ROOM_TYPES) {
+            const arr = imageSections[roomType] || [];
+            if (flatIndex < consumed + arr.length) {
+                removeImageFromSection(roomType, flatIndex - consumed);
+                return;
+            }
+            consumed += arr.length;
         }
     };
 
     const nextImage = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev + 1) % selectedImages.length);
+        const flat = getFlattenedImages();
+        setLightboxIndex((prev) => (prev + 1) % flat.length);
     };
 
     const prevImage = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev - 1 + selectedImages.length) % selectedImages.length);
+        const flat = getFlattenedImages();
+        setLightboxIndex((prev) => (prev - 1 + flat.length) % flat.length);
     };
 
     // Dropdown options
@@ -277,57 +302,70 @@ const CreateListing = () => {
             </style>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                {/* Media Selection */}
+                {/* Media Selection — one section per room type, upload under each title */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                        Upload photos under each section. Images added in a section use that section&apos;s type.
+                    </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {selectedImages.map((file, index) => (
-                            <div key={index}
-                                className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
-                                onClick={() => setLightboxIndex(index)}
-                            >
-                                <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={`Selected ${index}`}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeImage(index);
-                                    }}
-                                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
-                                >
-                                    <TrashIcon className="w-4 h-4" />
-                                </button>
-                                <div className="absolute bottom-4 left-4 text-white text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {file.name}
+                    <div className="space-y-8">
+                        {PHOTO_ROOM_TYPES.map((roomType) => {
+                            const files = imageSections[roomType] || [];
+                            let flatOffset = 0;
+                            PHOTO_ROOM_TYPES.forEach((t) => {
+                                if (t === roomType) return;
+                                flatOffset += (imageSections[t] || []).length;
+                            });
+                            return (
+                                <div key={roomType} className="space-y-3">
+                                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {files.map((file, indexInSection) => (
+                                            <div
+                                                key={`${roomType}-${indexInSection}`}
+                                                className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
+                                                onClick={() => setLightboxIndex(flatOffset + indexInSection)}
+                                            >
+                                                <img
+                                                    src={URL.createObjectURL(file)}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeImageFromSection(roomType, indexInSection);
+                                                    }}
+                                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
+                                            <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors mb-2" />
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 px-2 text-center">
+                                                Add photos
+                                            </span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={(e) => handleImageSelect(roomType, e)}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-
-                        <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform mb-3">
-                                <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
-                            </div>
-                            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors px-4 text-center">
-                                Add High-Quality Photos
-                            </span>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageSelect}
-                                className="hidden"
-                            />
-                        </label>
+                            );
+                        })}
                     </div>
-                    {selectedImages.length > 0 && (
-                        <p className="mt-4 text-sm text-gray-500">
-                            {selectedImages.length} image(s) selected. They will be uploaded after you create the listing.
+                    {getFlattenedImages().length > 0 && (
+                        <p className="mt-6 text-sm text-gray-500">
+                            {getFlattenedImages().length} image(s) selected. They will be uploaded after you create the listing.
                         </p>
                     )}
                 </div>
@@ -1006,72 +1044,74 @@ const CreateListing = () => {
             </form >
 
             {/* Lightbox */}
-            {lightboxIndex !== null && (
-                <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
-                    onClick={() => setLightboxIndex(null)}
-                >
-                    {/* Dynamic Blurred Background */}
-                    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-                        <img
-                            src={URL.createObjectURL(selectedImages[lightboxIndex])}
-                            alt=""
-                            className="w-full h-full object-cover blur-2xl opacity-40 scale-110 transition-all duration-500"
-                        />
-                        <div className="absolute inset-0 bg-black/60" />
-                    </div>
-                    <button
-                        className="absolute top-6 right-6 p-3 text-white hover:text-gray-300 transition-colors z-[110]"
+            {lightboxIndex !== null && (() => {
+                const flat = getFlattenedImages();
+                const item = flat[lightboxIndex];
+                if (!item) return null;
+                const { file } = item;
+                return (
+                    <div
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
                         onClick={() => setLightboxIndex(null)}
                     >
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                    <button
-                        className="absolute bottom-6 right-6 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xl transition-all flex items-center gap-2 font-bold z-[110]"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            removeImage(lightboxIndex);
-                        }}
-                    >
-                        <TrashIcon className="w-6 h-6" />
-                        <span>Delete Photo</span>
-                    </button>
-
-                    {selectedImages.length > 1 && (
-                        <>
-                            <button
-                                className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
-                                onClick={prevImage}
-                            >
-                                <ChevronLeftIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
-                            </button>
-                            <button
-                                className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
-                                onClick={nextImage}
-                            >
-                                <ChevronRightIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
-                            </button>
-                        </>
-                    )}
-
-                    <div
-                        className="relative z-10 max-w-5xl w-full max-h-[85vh] flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <img
-                            src={URL.createObjectURL(selectedImages[lightboxIndex])}
-                            alt="Preview"
-                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
-                        />
-                        <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
-                            {lightboxIndex + 1} / {selectedImages.length} — {selectedImages[lightboxIndex].name}
+                        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt=""
+                                className="w-full h-full object-cover blur-2xl opacity-40 scale-110 transition-all duration-500"
+                            />
+                            <div className="absolute inset-0 bg-black/60" />
+                        </div>
+                        <button
+                            className="absolute top-6 right-6 p-3 text-white hover:text-gray-300 transition-colors z-[110]"
+                            onClick={() => setLightboxIndex(null)}
+                        >
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <button
+                            className="absolute bottom-6 right-6 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-xl transition-all flex items-center gap-2 font-bold z-[110]"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                removeImageByFlatIndex(lightboxIndex);
+                            }}
+                        >
+                            <TrashIcon className="w-6 h-6" />
+                            <span>Delete Photo</span>
+                        </button>
+                        {flat.length > 1 && (
+                            <>
+                                <button
+                                    className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
+                                    onClick={prevImage}
+                                >
+                                    <ChevronLeftIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
+                                </button>
+                                <button
+                                    className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-16 h-32 sm:w-24 sm:h-48 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all rounded-3xl group z-[110]"
+                                    onClick={nextImage}
+                                >
+                                    <ChevronRightIcon className="w-12 h-12 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" />
+                                </button>
+                            </>
+                        )}
+                        <div
+                            className="relative z-10 max-w-5xl w-full max-h-[85vh] flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt="Preview"
+                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
+                            />
+                            <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
+                                {lightboxIndex + 1} / {flat.length} — {file.name}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div >
     );
 };

@@ -95,7 +95,7 @@ const MobileBottomNav = () => {
 
     return (
         /* Full Width Bottom Nav - Scroll Aware */
-        <div className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] border-t border-gray-100/50 pb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}>
+        <div className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 border-t border-gray-200 pb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}>
             <div className="grid grid-cols-4 h-[72px] items-center px-4">
                 {allItems.map((item) => {
                     const active = isActive(item);
