@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { publicApi, appointmentApi } from '../../services/api';
+import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 
 import {
@@ -50,6 +50,7 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
+import AllPhotosModalContent from '../../components/Listings/AllPhotosModalContent';
 import FilterBar from '../../components/ui/FilterBar';
 import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
@@ -57,8 +58,7 @@ import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine } from "react-icons/ri";
 import { LuSofa, LuWind } from "react-icons/lu";
 import { LuCalendarCheck2 } from "react-icons/lu";
-import { BsBookmark, BsFillBookmarkCheckFill } from "react-icons/bs";
-import { MdOutlineBookmarkAdded, MdOutlineBookmarkBorder } from "react-icons/md";
+import { FiHeart } from "react-icons/fi";
 import {
     HiOutlineTv,
 } from "react-icons/hi2";
@@ -152,7 +152,7 @@ const TrainIconCool = (props) => (
     </svg>
 );
 
-export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }) => {
+export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onClose, onOpenGallery }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { id: routeId } = useParams();
@@ -165,9 +165,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [viewedBooking, setViewedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [imageSlideDir, setImageSlideDir] = useState(null); // 'next' | 'prev' | null – for transition
+    const [imageTransitionStep, setImageTransitionStep] = useState(0); // 0 = start, 1 = end (triggers CSS transition)
     const [isFavorite, setIsFavorite] = useState(false);
-    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-    const [galleryIndex, setGalleryIndex] = useState(0);
     const [relatedListings, setRelatedListings] = useState([]);
     const [activeMapTab, setActiveMapTab] = useState('google');
     const [mapState, setMapState] = useState({
@@ -182,15 +182,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
 
     // 2. Optimized Map Props (Hooks)
-    const mapCenter = useMemo(() => (listing?.latitude && listing?.longitude ? {
-        lat: parseFloat(listing.latitude),
-        lng: parseFloat(listing.longitude)
-    } : undefined), [listing?.latitude, listing?.longitude]);
+    const mapCenter = useMemo(() => {
+        if (!listing?.latitude || !listing?.longitude) return undefined;
+        return {
+            lat: parseFloat(listing.latitude),
+            lng: parseFloat(listing.longitude)
+        };
+    }, [listing?.id]); // Only re-calculate when the listing actually changes
 
     const mapOptions = useMemo(() => ({
         gestureHandling: 'cooperative',
         disableDefaultUI: false,
-        styles: [] // Remove custom grey map styles for detail page
+        styles: [], // Remove custom grey map styles for detail page
+        mapId: 'DEMO_MAP_ID'
     }), []);
 
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
@@ -200,6 +204,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [activeBooking, setActiveBooking] = useState(null); // Tracks if the user already booked this property
     const [showStickyHeader, setShowStickyHeader] = useState(false);
     const bookingBarRef = useRef(null);
+    const touchStartRef = useRef({ x: 0, y: 0 });
+    const mouseStartRef = useRef({ x: 0, down: false });
+    const didSwipeRef = useRef(false);
 
     // Booking states (from BookAppointment.js)
     const [submitting, setSubmitting] = useState(false);
@@ -224,6 +231,46 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     const [timeLeft, setTimeLeft] = useState(null);
     const [fetchingSlots, setFetchingSlots] = useState(false);
 
+    const rawImages = listing?.media?.filter((m) => m.type === 'image') || [];
+    // Order by room type: Bedroom first, then Living Room, then rest — so count 1, 2, 3… starts from Bedroom
+    const images = useMemo(() => {
+        if (!rawImages.length) return [];
+        const order = (rt) => {
+            const i = PHOTO_ROOM_TYPES.indexOf(rt && rt.trim() ? rt.trim() : 'Additional Photos');
+            return i >= 0 ? i : PHOTO_ROOM_TYPES.length;
+        };
+        return [...rawImages].sort((a, b) => order(a.room_type) - order(b.room_type));
+    }, [listing?.media]);
+
+    // Detail hero starts at first image (Bedroom first after sort)
+    useEffect(() => {
+        if (!images.length) return;
+        setCurrentImageIndex(0);
+    }, [listing?.id, images.length]);
+
+    // Trigger slide animation after paint (transitionStep 0 → 1)
+    useEffect(() => {
+        if (imageSlideDir == null) return;
+        const id = requestAnimationFrame(() => setImageTransitionStep(1));
+        return () => cancelAnimationFrame(id);
+    }, [imageSlideDir, currentImageIndex]);
+
+    // Reset slide direction after transition ends
+    useEffect(() => {
+        if (imageSlideDir == null) return;
+        const t = setTimeout(() => {
+            setImageSlideDir(null);
+            setImageTransitionStep(0);
+        }, 320);
+        return () => clearTimeout(t);
+    }, [imageSlideDir, currentImageIndex]);
+
+    const openGallery = (index) => {
+        if (isModal && onOpenGallery && images?.length) {
+            onOpenGallery({ images, initialIndex: Math.min(index, images.length - 1) });
+        }
+    };
+
     // Intersection Observer for Sticky Header
     useEffect(() => {
         if (!bookingId || !bookingBarRef.current) return;
@@ -239,7 +286,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
         return () => observer.disconnect();
     }, [bookingId]);
 
-    // Update Modal Title & Header Extra
+    // Update Modal Title & Header Extra (including gallery header when image viewer is open)
     useEffect(() => {
         if (isModal && onTitleChange) {
             if (isBookingOverlayOpen) {
@@ -276,7 +323,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
     // Lock background scroll when modals or overlays are open
     useEffect(() => {
-        if (isGalleryOpen || isContactOverlayOpen || isBookingOverlayOpen) {
+        if (isContactOverlayOpen || isBookingOverlayOpen) {
             document.body.style.overflow = 'hidden';
 
             // Also lock the inner modal scrollable if we're in modal mode
@@ -305,7 +352,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                 container.style.overflow = '';
             });
         };
-    }, [isGalleryOpen, isContactOverlayOpen, isBookingOverlayOpen, isModal]);
+    }, [isContactOverlayOpen, isBookingOverlayOpen, isModal]);
 
     // Scroll Contact modal to top when it opens
     useEffect(() => {
@@ -755,16 +802,66 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
         );
     }
 
-    const images = listing.media?.filter((m) => m.type === 'image') || [];
     const videos = listing.media?.filter((m) => m.type === 'video') || [];
     const hasImages = images.length > 0;
 
     const nextImage = () => {
+        setImageSlideDir('next');
+        setImageTransitionStep(0);
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
     };
 
     const prevImage = () => {
+        setImageSlideDir('prev');
+        setImageTransitionStep(0);
         setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    const SWIPE_THRESHOLD = 40;
+
+    const handleImageTouchStart = (e) => {
+        if (!hasImages || images.length < 2) return;
+        didSwipeRef.current = false;
+        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+
+    const handleImageTouchEnd = (e) => {
+        if (!hasImages || images.length < 2) return;
+        const x = e.changedTouches[0].clientX;
+        const dx = x - touchStartRef.current.x;
+        if (dx > SWIPE_THRESHOLD) {
+            prevImage();
+            didSwipeRef.current = true;
+        } else if (dx < -SWIPE_THRESHOLD) {
+            nextImage();
+            didSwipeRef.current = true;
+        }
+        if (didSwipeRef.current) setTimeout(() => { didSwipeRef.current = false; }, 300);
+    };
+
+    const handleImageMouseDown = (e) => {
+        if (!hasImages || images.length < 2) return;
+        mouseStartRef.current = { x: e.clientX, down: true };
+    };
+
+    const handleImageMouseMove = (e) => {
+        if (!mouseStartRef.current.down) return;
+        const dx = e.clientX - mouseStartRef.current.x;
+        if (dx > SWIPE_THRESHOLD) {
+            prevImage();
+            didSwipeRef.current = true;
+            setTimeout(() => { didSwipeRef.current = false; }, 300);
+            mouseStartRef.current.down = false;
+        } else if (dx < -SWIPE_THRESHOLD) {
+            nextImage();
+            didSwipeRef.current = true;
+            setTimeout(() => { didSwipeRef.current = false; }, 300);
+            mouseStartRef.current.down = false;
+        }
+    };
+
+    const handleImageMouseUp = () => {
+        mouseStartRef.current.down = false;
     };
 
     const formatPrice = (price) => {
@@ -807,16 +904,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
         );
     };
 
-    // Render Actions for Modal Header
+    // Render Actions for Modal Header (Contact, Booking, Saved, Share — gallery is in separate modal)
     const renderHeaderActions = () => {
         const actionsContainer = document.getElementById('modal-header-actions');
-        if (!isModal || !actionsContainer || isBookingOverlayOpen || isContactOverlayOpen || bookingId) return null;
+        if (!isModal || !actionsContainer) return null;
+        if (isBookingOverlayOpen || isContactOverlayOpen || bookingId) return null;
 
         return createPortal(
             <div className="flex items-center gap-6">
-                {/* Group 1: Contact & Booking */}
+                {/* Group 1: Contact & Booking — text + icon */}
                 <div className="flex items-center gap-2">
-                    {/* Contact */}
                     <button
                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
                         className="flex items-center justify-center gap-1.5 w-[90px] py-2 rounded-lg transition-all duration-300 active:scale-95 group"
@@ -824,8 +921,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         <PhoneIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
                         <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Contact</span>
                     </button>
-
-                    {/* Booking */}
                     {activeBooking ? (
                         <button
                             disabled
@@ -845,9 +940,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                     )}
                 </div>
 
-                {/* Group 2: Saved, Share, Copy Link */}
+                {/* Group 2: Saved, Share — text + icon */}
                 <div className="flex items-center gap-2">
-                    {/* Saved */}
                     <button
                         onClick={handleToggleSave}
                         disabled={savingListing}
@@ -855,17 +949,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                     >
                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
-                                <MdOutlineBookmarkAdded className="w-[18px] h-[18px] text-emerald-600" />
+                                <HeartSolidIcon className="w-[18px] h-[18px] text-rose-500" />
                             ) : (
-                                <MdOutlineBookmarkBorder className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 opacity-60" />
+                                <HeartIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 opacity-60" />
                             )}
                         </div>
-                        <span className={`text-[13px] font-semibold transition-all duration-300 translate-y-0 ${isSaved ? 'text-emerald-700' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                        <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
                             {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
-
-                    {/* Share & Copy Link handled by PropertyShare */}
                     <PropertyShare
                         property={{
                             id,
@@ -1383,11 +1475,115 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
     };
 
     return (
-        <div key={id} className={`min-h-screen bg-white ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'}`}>
+        <div key={id} className={`min-h-screen bg-white ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'} pb-24 lg:pb-0`}>
             {renderBookingOverlay()}
-            {/* Back button - Modern minimalist style - Hidden in modal mode */}
+            {/* Mobile Header (White Nav & Image Carousel) - Visible only on mobile/tablet */}
+            <div className="lg:hidden w-full flex flex-col relative">
+                {/* Float Top Nav for Mobile - Buttons over image */}
+                <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 pt-6 z-[60] bg-transparent pointer-events-none">
+                    <button
+                        onClick={() => onClose ? onClose() : navigate(-1)}
+                        className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
+                    >
+                        <ArrowLeftIcon className="w-5 h-5" />
+                    </button>
+                    <div className="flex items-center gap-3 pr-1 pointer-events-auto">
+                        <PropertyShare
+                            property={{
+                                id,
+                                title: listing?.title,
+                                description: listing?.description || `${listing?.bedrooms} Bed, ${listing?.bathrooms} Bath property in ${listing?.district || 'Bangkok'}`,
+                                image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
+                                url: window.location.href
+                            }}
+                            className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
+                            showLabel={false}
+                            iconClassName="w-5 h-5 text-gray-900"
+                        />
+                        <button
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
+                        >
+                            {isSaved ? (
+                                <HeartSolidIcon className="w-5 h-5 text-rose-500" />
+                            ) : (
+                                <HeartIcon className="w-5 h-5 text-gray-900" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Image Carousel - drag/swipe horizontally to change image */}
+                <div
+                    className="relative w-full h-[45vh] min-h-[350px] touch-pan-y select-none overflow-hidden"
+                    onTouchStart={handleImageTouchStart}
+                    onTouchEnd={handleImageTouchEnd}
+                    onMouseDown={handleImageMouseDown}
+                    onMouseMove={handleImageMouseMove}
+                    onMouseUp={handleImageMouseUp}
+                    onMouseLeave={handleImageMouseUp}
+                >
+                    {hasImages && images.length > 1 && imageSlideDir ? (
+                        <>
+                            {/* Leaving image */}
+                            <img
+                                key={`leave-${imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length}`}
+                                src={getMediaUrl(images[imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length].url)}
+                                alt=""
+                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${
+                                    imageTransitionStep === 1
+                                        ? imageSlideDir === 'next'
+                                            ? '-translate-x-full'
+                                            : 'translate-x-full'
+                                        : 'translate-x-0'
+                                }`}
+                                draggable={false}
+                            />
+                            {/* Entering image */}
+                            <img
+                                key={`enter-${currentImageIndex}`}
+                                src={getMediaUrl(images[currentImageIndex].url)}
+                                alt={listing.title}
+                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${
+                                    imageTransitionStep === 1 ? 'translate-x-0' : imageSlideDir === 'next' ? 'translate-x-full' : '-translate-x-full'
+                                }`}
+                                draggable={false}
+                            />
+                        </>
+                    ) : (
+                        <img
+                            src={
+                                hasImages
+                                    ? getMediaUrl(images[currentImageIndex].url)
+                                    : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'
+                            }
+                            alt={listing.title}
+                            className="w-full h-full object-cover pointer-events-none"
+                            draggable={false}
+                        />
+                    )}
+                    <div
+                        className="absolute inset-0 cursor-grab active:cursor-grabbing"
+                        onClick={() => {
+                            if (!hasImages || didSwipeRef.current) return;
+                            openGallery(currentImageIndex);
+                        }}
+                        aria-label="View photo tour"
+                    />
+
+                    {/* Image counter */}
+                    {hasImages && images.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-[12px] font-bold tracking-widest z-[40] pointer-events-none">
+                            {currentImageIndex + 1} / {images.length}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Desktop Back button */}
             {!isModal && (
-                <div className="sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
+                <div className="hidden lg:block sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
                     <button
                         onClick={() => navigate(-1)}
                         className="pointer-events-auto text-gray-400 hover:text-gray-900 transition-all py-2 px-4 rounded-lg hover:bg-gray-100/50 active:scale-95 group flex items-center"
@@ -1398,11 +1594,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                 </div>
             )}
 
-            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-4 sm:px-6 lg:px-8'} ${isModal ? 'py-12' : 'py-6'}`}>
+            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-0 sm:px-6' : 'px-0 lg:px-8'} ${isModal ? 'py-0 sm:py-12' : 'py-0 lg:py-6'}`}>
                 <div className="flex justify-center">
-                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-6`}>
+                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
                         {/* Details - Header Section (card radius) */}
-                        <div className="rounded-[24px] overflow-hidden bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
+                        <div className="bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden lg:border lg:border-gray-100 shadow-none lg:shadow-sm px-0 py-8 lg:px-8 lg:p-8 relative z-10 -mt-8 lg:mt-0">
                             {/* Booking Information Bar */}
                             {bookingId && (
                                 <div ref={bookingBarRef} className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -1454,101 +1650,63 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                 </div>
                             )}
 
-                            {/* Title & ID - Only show if not booking view */}
+                            {/* Title & Info - Airbnb Layout */}
                             {!bookingId && (
-                                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
-                                    <div className="flex-1 min-w-0">
-                                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                                <div className="px-5 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-6 lg:pt-0">
+                                    <div className="flex-1 min-w-0 w-full">
+                                        <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 leading-[1.2] mb-2 tracking-tight">
                                             {listing.title}
                                         </h1>
+
+                                        <div className="flex items-center text-gray-800 text-[15px] pb-6">
+                                            <span>{listing.bedrooms || 0} bedroom{listing.bedrooms > 1 || !listing.bedrooms ? 's' : ''}</span>
+                                            <span className="mx-1.5 font-bold">·</span>
+                                            <span>{listing.bathrooms || 0} bath{listing.bathrooms > 1 || !listing.bathrooms ? 's' : ''}</span>
+                                            <span className="mx-1.5 font-bold">·</span>
+                                            <span>{listing.area ? `${listing.area} m²` : 'Spacious'}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
+
+                                    <div className="hidden lg:flex flex-wrap items-center gap-2">
                                         <Badge variant="neutral" className="border border-gray-100 px-2 py-1 rounded-lg">
                                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1">Property</span>
-                                            <span className="text-xs font-black text-gray-900">{listing.id.toUpperCase()}</span>
+                                            <span className="text-xs font-black text-gray-900">{listing.id?.toUpperCase() || ''}</span>
                                         </Badge>
                                     </div>
                                 </div>
                             )}
 
+
                             {!bookingId && (
-                                <div className="flex flex-wrap items-center gap-y-3 gap-x-6 mb-8">
-                                    <div className="flex items-center gap-2 text-gray-600">
-                                        <div className="p-2 bg-gray-50 rounded-lg">
-                                            <MapPinIcon className="w-5 h-5 text-primary-500" />
-                                        </div>
-                                        <span className="text-lg font-semibold tracking-tight">
-                                            {listing.district || 'District'}, {listing.city || 'Bangkok'}
-                                        </span>
+                                <div className="px-5 lg:px-0 flex gap-4 mb-8">
+                                    <div className="mt-0.5">
+                                        <CheckBadgeIcon className="w-6 h-6 text-gray-900" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-[16px] font-semibold text-gray-900 leading-tight mb-1">Confirmed available</h3>
+                                        <p className="text-[14px] text-gray-500 leading-snug">This property recently verified its status and is available today.</p>
                                     </div>
                                 </div>
                             )}
-                            {/* Price */}
-                            <div className="text-3xl font-bold text-gray-900 mb-4 flex items-baseline">
+
+                            {/* Price for Mobile (Fixed styling) */}
+                            <div className="px-5 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 mb-2 flex items-baseline">
                                 {formatPrice(listing.price)}
                                 {listing.listing_type === 'rent' && (
-                                    <span className="text-gray-700 text-xl font-semibold ml-2">/month</span>
+                                    <span className="text-gray-900 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 border-dashed pb-0.5">/month</span>
                                 )}
-                            </div>
-
-                            {/* Confirmed Button */}
-                            <div className="flex flex-wrap gap-3">
-                                <Button variant="success" className="text-sm tracking-wide">
-                                    <CheckBadgeIcon className="w-5 h-5 mr-2" />
-                                    Confirmed Available Today
-                                </Button>
                             </div>
                         </div>
 
-                        {/* Image Gallery - Desktop Bento Grid & Mobile Carousel */}
-                        <div className="rounded-[24px] overflow-hidden shadow-sm bg-white">
-                            {/* Mobile Carousel (Visible on small screens) */}
-                            <div className="lg:hidden relative aspect-[16/10] group">
-                                <img
-                                    src={
-                                        hasImages
-                                            ? getMediaUrl(images[currentImageIndex].url)
-                                            : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'
-                                    }
-                                    alt={listing.title}
-                                    className="w-full h-full object-cover"
-                                    onClick={() => {
-                                        if (hasImages) {
-                                            setGalleryIndex(currentImageIndex);
-                                            setIsGalleryOpen(true);
-                                        }
-                                    }}
-                                />
-                                {/* Bottom Gradient for counter legibility */}
-                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-
-                                {hasImages && images.length > 1 && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-md p-3 rounded-2xl shadow-lg hover:bg-white transition-all active:scale-90"
-                                        >
-                                            <ChevronLeftIcon className="w-5 h-5 text-gray-900" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-md p-3 rounded-2xl shadow-lg hover:bg-white transition-all active:scale-90"
-                                        >
-                                            <ChevronRightIcon className="w-5 h-5 text-gray-900" />
-                                        </button>
-                                        <div className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-sm text-white px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10">
-                                            {currentImageIndex + 1} / {images.length}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                        {/* Image Gallery - Desktop Bento Grid */}
+                        <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white mt-6">
 
                             {/* Desktop Bento Grid (Visible on lg screens) */}
                             <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] cursor-pointer">
                                 {/* Main Image (Large, Left) */}
                                 <div
-                                    className="col-span-2 row-span-2 relative overflow-hidden group"
-                                    onClick={() => { setGalleryIndex(0); setIsGalleryOpen(true); }}
+                                    className="col-span-2 row-span-2 relative overflow-hidden group cursor-pointer"
+                                    onClick={() => openGallery(0)}
                                 >
                                     <img
                                         src={hasImages ? getMediaUrl(images[0].url) : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'}
@@ -1560,8 +1718,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Second Image (Top Right Center) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group"
-                                    onClick={() => { setGalleryIndex(1); setIsGalleryOpen(true); }}
+                                    className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+                                    onClick={() => openGallery(1)}
                                 >
                                     {images[1] && (
                                         <>
@@ -1577,8 +1735,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Third Image (Top Right) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-tr-[24px]"
-                                    onClick={() => { setGalleryIndex(2); setIsGalleryOpen(true); }}
+                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-tr-[24px] cursor-pointer"
+                                    onClick={() => openGallery(2)}
                                 >
                                     {images[2] && (
                                         <>
@@ -1594,8 +1752,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Fourth Image (Bottom Right Center) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group"
-                                    onClick={() => { setGalleryIndex(3); setIsGalleryOpen(true); }}
+                                    className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+                                    onClick={() => openGallery(3)}
                                 >
                                     {images[3] && (
                                         <>
@@ -1611,8 +1769,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
 
                                 {/* Fifth Image / Show All Button (Bottom Right) */}
                                 <div
-                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-br-[24px]"
-                                    onClick={() => { setGalleryIndex(4); setIsGalleryOpen(true); }}
+                                    className="col-span-1 row-span-1 relative overflow-hidden group rounded-br-[24px] cursor-pointer"
+                                    onClick={() => openGallery(images[4] ? 4 : 0)}
                                 >
                                     {images[4] ? (
                                         <>
@@ -1621,19 +1779,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                                 alt="Gallery 5"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
-                                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors">
-                                                <button className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-white transition-all transform group-hover:scale-105">
+                                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors pointer-events-none">
+                                                <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 w-fit">
                                                     <Square2StackIcon className="w-5 h-5" />
                                                     Show all photos
-                                                </button>
+                                                </span>
                                             </div>
                                         </>
                                     ) : (
                                         <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                            <button className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-sm border border-gray-200 hover:bg-gray-50 flex items-center gap-2">
+                                            <span className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-none">
                                                 <Square2StackIcon className="w-5 h-5" />
                                                 Show all {images.length} photos
-                                            </button>
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -1645,8 +1803,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                         {renderHeaderActions()}
 
                         {/* Details - Features & Description */}
-                        <div className="">
-                            {/* Features */}
+                        <div className="px-5 lg:px-0">
                             {/* Features */}
                             {/* Features Grid */}
                             <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
@@ -1712,7 +1869,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                     </div>
                                 </div>
                             </Card>
-
 
 
                             {/* Features & Amenities Section */}
@@ -1899,10 +2055,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                                                     <GoogleMapComponent
                                                         listings={[listing]}
                                                         center={mapCenter}
-                                                        zoom={15}
+                                                        zoom={17}
                                                         onMarkerClick={() => { }}
                                                         options={mapOptions}
                                                         useDefaultMarkers={true}
+                                                        isVisible={true}
                                                     />
                                                 </div>
                                             ) : (
@@ -2149,73 +2306,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                             </div>
                         </div>
 
-                        {/* Gallery Modal - Lightbox Style */}
-                        {
-                            isGalleryOpen && (
-                                <div className="fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm animate-fade-in">
-                                    {/* Dynamic Blurred Background */}
-                                    <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-                                        <img
-                                            src={getMediaUrl(images[galleryIndex].url)}
-                                            alt=""
-                                            className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/60" />
-                                    </div>
-
-                                    {/* Header: Counter & Close */}
-                                    <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[120] font-bold">
-                                        <div className="text-white/90 font-medium tracking-wide">
-                                            {galleryIndex + 1} / {images.length}
-                                        </div>
-                                        <button
-                                            onClick={() => setIsGalleryOpen(false)}
-                                            className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-105 pointer-events-auto"
-                                        >
-                                            <XMarkIcon className="w-8 h-8" />
-                                        </button>
-                                    </div>
-
-                                    {/* Main Image */}
-                                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
-                                        <img
-                                            src={getMediaUrl(images[galleryIndex].url)}
-                                            alt={`Gallery ${galleryIndex + 1}`}
-                                            className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
-                                        />
-                                    </div>
-
-                                    {/* Navigation Buttons (Huge) */}
-                                    {images.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
-                                                }}
-                                                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
-                                            >
-                                                <ChevronLeftIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:-translate-x-1 transition-transform" />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setGalleryIndex((prev) => (prev + 1) % images.length);
-                                                }}
-                                                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 md:p-6 bg-black/40 hover:bg-black/60 rounded-full text-white/90 hover:text-white transition-all hover:scale-110 backdrop-blur-md border border-white/10 group z-[120] pointer-events-auto"
-                                            >
-                                                <ChevronRightIcon className="w-10 h-10 md:w-16 md:h-16 shadow-lg group-hover:translate-x-1 transition-transform" />
-                                            </button>
-                                        </>
-                                    )}
-
-                                    {/* Bottom Caption (Optional) */}
-                                    <div className="absolute bottom-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90 text-sm font-medium tracking-wide z-[120]">
-                                        {listing.title} | {formatPrice(listing.price)}{listing.listing_type === 'rent' && '/mo'}
-                                    </div>
-                                </div>
-                            )
-                        }
                         {
                             isContactOverlayOpen && (
                                 <>
@@ -2383,20 +2473,57 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange }
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Sticky Mobile Footer */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 px-6 pt-4 z-[90] flex items-center justify-between pointer-events-auto" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                    <div className="flex flex-col">
+                        <div className="flex items-baseline">
+                            <span className="text-[18px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
+                            {listing.listing_type === 'rent' && (
+                                <span className="text-gray-900 text-[13px] font-normal ml-1">/month</span>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleBookingClick}
+                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-8 py-3 rounded-full"
+                    >
+                        Check availability
+                    </button>
+                </div>
+        </div >
     );
 };
+
+const MODAL_SIZE_CLASS = '!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:h-[94vh] !max-w-full sm:!max-w-[94vw] overflow-hidden shadow-none sm:shadow-2xl transition-all duration-500';
 
 const ListingDetailPage = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
-    const [modalTitle, setModalTitle] = useState(bookingId ? "Appointment Details" : "Property Details");
+    const [modalTitle, setModalTitle] = useState(bookingId ? 'Appointment Details' : 'Property Details');
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [galleryPayload, setGalleryPayload] = useState(null);
 
     useEffect(() => {
-        setModalTitle(bookingId ? "Appointment Details" : "Property Details");
+        setModalTitle(bookingId ? 'Appointment Details' : 'Property Details');
     }, [bookingId]);
+
+    const openGallery = (payload) => {
+        if (payload?.images?.length) {
+            setGalleryPayload({
+                images: payload.images,
+                initialIndex: Math.min(payload.initialIndex ?? 0, payload.images.length - 1)
+            });
+            setGalleryOpen(true);
+        }
+    };
+
+    const closeGallery = () => {
+        setGalleryOpen(false);
+        setGalleryPayload(null);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -2405,12 +2532,40 @@ const ListingDetailPage = () => {
                 onClose={() => navigate(-1)}
                 size="full"
                 title={modalTitle}
-                className="!p-0 w-[94vw] h-[94vh] !max-w-[94vw] overflow-hidden"
+                hideHeaderOnMobile={true}
+                fullScreenMobile={true}
+                className={MODAL_SIZE_CLASS}
             >
                 <div className="h-full overflow-y-auto modal-scrollable bg-white">
-                    <ListingDetailView id={id} isModal={true} onTitleChange={setModalTitle} />
+                    <ListingDetailView
+                        id={id}
+                        isModal={true}
+                        onTitleChange={setModalTitle}
+                        onClose={() => navigate(-1)}
+                        onOpenGallery={openGallery}
+                    />
                 </div>
             </Modal>
+            {galleryOpen && galleryPayload && (
+                <Modal
+                    isOpen
+                    onClose={closeGallery}
+                    size="full"
+                    closeOnBackdropClick
+                    lockScroll
+                    hideHeader
+                    fullScreenMobile
+                    className={MODAL_SIZE_CLASS}
+                    style={{ overscrollBehavior: 'contain' }}
+                    overlayZIndex={10050}
+                >
+                    <AllPhotosModalContent
+                        images={galleryPayload.images}
+                        initialIndex={galleryPayload.initialIndex}
+                        onClose={closeGallery}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };

@@ -12,8 +12,12 @@ const Modal = ({
     closeOnBackdropClick = true,
     lockScroll = true,
     hideHeader = false,
+    hideHeaderOnMobile = false,
+    hideCloseButton = false,
     headerExtra,
-    headerActions
+    headerActions,
+    fullScreenMobile = false,
+    overlayZIndex
 }) => {
 
     useEffect(() => {
@@ -71,7 +75,7 @@ const Modal = ({
         md: "max-w-lg",
         lg: "max-w-2xl",
         xl: "max-w-4xl",
-        full: "max-w-full m-4",
+        full: "max-w-full", // Margin now handled cleanly by the wrapper below
     };
 
     // Show header if not hidden and we have either a title or extra content
@@ -79,7 +83,8 @@ const Modal = ({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[1000] overflow-visible flex items-center justify-center pointer-events-none"
+            className="fixed inset-0 overflow-visible flex items-center justify-center pointer-events-none"
+            style={{ zIndex: overlayZIndex ?? 1000 }}
         >
             {/* Backdrop */}
             <div
@@ -94,18 +99,18 @@ const Modal = ({
 
             {/* Modal Dialog */}
             <div
-                className={`relative transform animate-scale-in w-full flex items-center justify-center p-4 sm:p-0 z-10 pointer-events-auto ${sizes[size]} ${className}`}
+                className={`relative transform animate-scale-in w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 sm:m-4' : 'p-4 sm:p-0'}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
-                    className="bg-white text-left shadow-2xl w-full flex flex-col h-full overflow-hidden rounded-[24px]"
+                    className={`bg-white text-left shadow-2xl w-full flex flex-col h-full overflow-hidden ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`}
                     style={{
                         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                     }}
                 >
                     {/* Header - Only render if title is provided */}
                     {hasHeader && (
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0" >
+                        <div className={`items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`} >
                             <div className="flex items-center gap-3 min-w-0 flex-1" >
                                 <h3 className="text-lg font-semibold text-gray-900 truncate" >
                                     {title}
@@ -119,13 +124,15 @@ const Modal = ({
                                 <div id="modal-header-actions" className="flex items-center gap-2" >
                                     {headerActions}
                                 </div>
-                                <button
-                                    onClick={onClose}
-                                    className="text-gray-400 hover:text-gray-500 focus:outline-none p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                    style={{ borderRadius: 'var(--btn-radius)' }}
-                                >
-                                    <XMarkIcon className="h-6 w-6" />
-                                </button>
+                                {!hideCloseButton && (
+                                    <button
+                                        onClick={onClose}
+                                        className="text-gray-400 hover:text-gray-500 focus:outline-none p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                        style={{ borderRadius: 'var(--btn-radius)' }}
+                                    >
+                                        <XMarkIcon className="h-6 w-6" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}

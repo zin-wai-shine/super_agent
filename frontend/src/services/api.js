@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.test';
+const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
 const currentHostname = window.location.hostname;
-const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1';
+const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1' && !currentHostname.endsWith('.localhost');
 
-const API_URL = (isProbablySubdomain || !process.env.REACT_APP_API_URL)
-    ? `${window.location.protocol}//${currentHostname}:8080/api`
-    : process.env.REACT_APP_API_URL;
+const API_URL = window.location.port === '3000'
+    ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+    : '/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -155,13 +155,26 @@ export const adminApi = {
     getUsers: (params) => api.get('/admin/users', { params }),
 };
 
+// Photo room types for listing photos — Bedroom first, then Living Room, then rest (display & count order)
+export const PHOTO_ROOM_TYPES = [
+    'Bedroom',
+    'Living Room',
+    'Dining Area',
+    'Shared Full Bathroom',
+    'Laundry area',
+    'Exterior',
+    'Additional Photos',
+];
+
 // Upload API
 export const uploadApi = {
-    uploadImage: (listingId, file, caption = '') => {
+    uploadImage: (listingId, file, options = {}) => {
+        const { caption = '', roomType = 'Additional Photos' } = typeof options === 'string' ? { caption: options } : options;
         const formData = new FormData();
         formData.append('listing_id', listingId);
         formData.append('file', file);
         formData.append('caption', caption);
+        formData.append('room_type', roomType);
         return api.post('/upload/image', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -175,6 +188,7 @@ export const uploadApi = {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
+    updateMedia: (id, data) => api.patch(`/upload/${id}`, data),
     deleteMedia: (id) => api.delete(`/upload/${id}`),
 };
 
