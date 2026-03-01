@@ -306,7 +306,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
 
     return (
         <div className="h-full min-h-0 flex flex-col bg-white overflow-hidden">
-            <header className="relative flex-none flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
+            <header className="relative flex-none flex items-center justify-between px-4 py-3 md:px-8 lg:px-10 border-b border-gray-100 shrink-0">
                 <button
                     type="button"
                     onClick={onClose}
@@ -335,14 +335,14 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                 {/* Desktop: 30% top block (Photo tour + strip), 70% sections below */}
                 <div className="min-h-full md:flex md:flex-col">
                     <div className="md:flex-shrink-0 md:min-h-[30%]">
-                        <div className="pl-4 pr-4 pt-5 pb-2">
+                        <div className="pl-4 pr-4 pt-5 pb-2 md:px-8 lg:px-10">
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Photo tour</h1>
                         </div>
 
                         {/* Horizontal strip: one layer card per section (not per image) */}
                         <div className="pb-4">
                             <div
-                                className="flex gap-4 overflow-x-auto pl-4 pr-4 pb-2 -mr-4"
+                                className="flex gap-4 overflow-x-auto pl-4 pr-4 pb-2 md:pl-8 md:pr-8 lg:pl-10 lg:pr-10 -mr-4"
                                 style={{ WebkitOverflowScrolling: 'touch' }}
                             >
                                 {sections.map((section) => {
@@ -373,7 +373,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                             <div
                                 key={section.title}
                                 ref={(el) => { sectionRefs.current[section.title] = el; }}
-                                className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 md:px-5"
+                                className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 px-0 md:px-8 lg:px-10"
                             >
                                 {/* First column (desktop): images — 70% (left); on mobile appears below title via order */}
                                 <div className="flex-1 min-w-0 md:w-[70%] order-2 md:order-1">
@@ -441,7 +441,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                                 </div>
                                 </div>
                                 {/* Second column (desktop): section title only — 30% (right); on mobile appears first via order; text left-aligned */}
-                                <div className="md:w-[30%] md:flex-shrink-0 px-5 mb-3 md:mb-0 md:pt-1 order-1 md:order-2 text-left">
+                                <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left">
                                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{section.title}</h2>
                                 </div>
                             </div>

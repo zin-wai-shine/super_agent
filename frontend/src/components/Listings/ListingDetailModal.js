@@ -7,7 +7,7 @@ const ListingDetailView = lazy(() => import('../../pages/Public/ListingDetailPag
     default: module.ListingDetailView
 })));
 
-const MODAL_SIZE_CLASS = '!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:min-w-0 sm:max-w-[1400px] sm:h-[94vh] sm:!max-w-[1400px] !max-w-full overflow-hidden shadow-none sm:shadow-2xl sm:rounded-[24px] transition-all duration-500';
+const MODAL_SIZE_CLASS = '!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:h-[90vh] sm:w-[94vw] sm:min-w-0 sm:max-w-[1400px] sm:!max-w-[1400px] !max-w-full overflow-hidden shadow-none sm:shadow-2xl sm:rounded-[24px] transition-all duration-500';
 
 const ListingDetailModal = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -57,7 +57,7 @@ const ListingDetailModal = () => {
                 closeOnBackdropClick={false}
                 lockScroll
                 hideHeader={false}
-                hideHeaderOnMobile={false}
+                hideHeaderOnMobile={true}
                 hideCloseButton={false}
                 fullScreenMobile
                 className={MODAL_SIZE_CLASS}

@@ -169,7 +169,7 @@ const FilterBar = ({
                                     onFocus={handleFocus}
                                     onBlur={handleBlur}
                                     placeholder="Search location, name, neighborhood..."
-                                    className="w-full h-full min-h-[44px] bg-[#F9FAFC] lg:bg-white pl-12 pr-[3.25rem] text-[15px] sm:text-[14px] font-medium text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-full"
+                                    className="w-full h-full min-h-[44px] bg-[#F9FAFC] lg:bg-white pl-12 pr-[3.25rem] text-[15px] sm:text-[14px] font-normal text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-full"
                                 />
 
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px] gap-1">
@@ -203,7 +203,7 @@ const FilterBar = ({
                                     {/* Left Column: Quick Searches (1/3) */}
                                     <div className="w-[320px] flex-shrink-0 flex flex-col bg-[#F9FAFC] lg:bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
                                         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                                            <p className="text-[13px] sm:text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
+                                            <p className="text-[13px] sm:text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
                                             <div className="space-y-1">
                                                 {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                                     <button
@@ -213,7 +213,7 @@ const FilterBar = ({
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <Icon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                                                            <span className="text-[15px] sm:text-[13px] text-gray-600 font-medium group-hover:text-gray-900 transition-colors">{label}</span>
+                                                            <span className="text-[15px] sm:text-[13px] text-gray-600 font-normal group-hover:text-gray-900 transition-colors">{label}</span>
                                                         </div>
                                                         <ChevronRightIcon className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
                                                     </button>
@@ -224,7 +224,7 @@ const FilterBar = ({
                                         {/* Footer hint */}
                                         <div className="px-6 py-4 bg-gray-50/80 border-t border-gray-100 flex items-center gap-1.5 mt-auto">
                                             <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-                                            <p className="text-[13px] sm:text-[11px] text-gray-400 font-bold tracking-tight">Press Enter to search all results</p>
+                                            <p className="text-[13px] sm:text-[11px] text-gray-400 font-normal tracking-tight">Press Enter to search all results</p>
                                         </div>
                                     </div>
 
@@ -236,7 +236,7 @@ const FilterBar = ({
                                                 <div className="bg-primary-600 p-1 rounded-full">
                                                     <MapIcon className="w-3.5 h-3.5 text-white" />
                                                 </div>
-                                                <span className="text-[13px] sm:text-[11px] font-black text-gray-900 uppercase tracking-widest">Transit Explorer</span>
+                                                <span className="text-[13px] sm:text-[11px] font-medium text-gray-900 uppercase tracking-widest">Transit Explorer</span>
                                             </div>
                                         </div>
 
@@ -309,7 +309,7 @@ const FilterBar = ({
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 relative ${activeFilterCount > 0 ? 'border-2 border-gray-800 bg-white group-hover:scale-105 group-hover:border-gray-700' : 'bg-white'}`}>
                                     <AdjustmentsHorizontalIcon className={`text-gray-800 ${activeFilterCount > 0 ? 'w-5 h-5' : 'w-7 h-7'}`} />
                                     {activeFilterCount > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-normal border border-white leading-none">
                                             {activeFilterCount > 99 ? '99+' : activeFilterCount}
                                         </span>
                                     )}

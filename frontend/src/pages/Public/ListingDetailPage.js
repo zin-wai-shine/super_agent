@@ -976,15 +976,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
-                        className="flex items-center justify-center gap-1.5 w-[90px] py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                        className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group"
                     >
-                        <PhoneIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
-                        <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Contact</span>
+                        <PhoneIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                        <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">Contact</span>
                     </button>
                     {activeBooking ? (
                         <button
                             disabled
-                            className="flex items-center justify-center gap-1.5 min-w-[90px] py-2 px-2 cursor-not-allowed transition-all duration-300"
+                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 cursor-not-allowed transition-all duration-300"
                         >
                             <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600 flex-shrink-0" />
                             <span className="text-[13px] font-semibold text-emerald-700 whitespace-nowrap">Viewing requested</span>
@@ -992,10 +992,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     ) : (
                         <button
                             onClick={handleBookingClick}
-                            className="flex items-center justify-center gap-1.5 w-[90px] py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group"
                         >
-                            <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
-                            <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Request viewing</span>
+                            <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                            <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">Request viewing</span>
                         </button>
                     )}
                 </div>
@@ -1005,16 +1005,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <button
                         onClick={handleToggleSave}
                         disabled={savingListing}
-                        className="flex items-center justify-center gap-1.5 w-[80px] py-2 rounded-lg transition-all duration-300 active:scale-95 group disabled:opacity-50"
+                        className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group disabled:opacity-50"
                     >
-                        <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
+                        <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
                                 <HeartSolidIcon className="w-[18px] h-[18px] text-rose-500" />
                             ) : (
                                 <HeartIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 opacity-60" />
                             )}
                         </div>
-                        <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                        <span className={`text-[13px] font-semibold transition-all duration-300 whitespace-nowrap ${isSaved ? 'text-rose-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
                             {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
@@ -1026,9 +1026,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                             url: window.location.href
                         }}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group shrink-0"
                         showLabel={true}
-                        labelClassName="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300"
+                        labelClassName="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap"
                         iconClassName="w-4 h-4 text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300"
                     />
                 </div>
@@ -1053,7 +1053,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 lockScroll
                 hideHeader
                 fullScreenMobile
-                className="!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:h-[94vh] !max-w-full sm:!max-w-[94vw] overflow-hidden shadow-none sm:shadow-2xl transition-all duration-500"
+                className="!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:min-w-0 sm:max-w-[1400px] sm:h-[90vh] !max-w-full sm:!max-w-[1400px] overflow-hidden shadow-none sm:shadow-2xl sm:rounded-[24px] transition-all duration-500"
                 overlayZIndex={10040}
             >
                 <div
@@ -1084,9 +1084,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         </div>
                     )}
 
-                    {/* Content Area - mobile: full-width padding; desktop: centered; z-[60] so scroll lock skips this container */}
+                    {/* Content Area - mobile: full width; desktop: centered max-width; z-[60] so scroll lock skips this container */}
                     <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className={`max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-12 ${success ? 'h-full w-full flex items-center justify-center' : ''}`}>
+                        <div className={`w-full max-w-full px-4 py-6 sm:max-w-[1400px] sm:mx-auto sm:p-6 lg:p-12 ${success ? 'h-full flex items-center justify-center' : ''}`}>
                             {success ? (
                                 <div className="h-full w-full flex items-center justify-center p-6">
                                     <div
@@ -1148,7 +1148,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     <div className="space-y-10">
                                         {/* Purpose - show only the option matching listing type (rent → For Rent, sale → For Buy), auto-selected */}
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-4">I want to</h3>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-4">I want to</h3>
                                             {(() => {
                                                 const purposeOptions = listing?.listing_type === 'sale'
                                                     ? [{ value: 'buy', label: 'For Buy' }]
@@ -1159,7 +1159,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             <button
                                                                 key={opt.value}
                                                                 type="button"
-                                                                className="py-2.5 px-5 rounded-full text-sm font-bold transition-all border-2 border-primary-600 bg-primary-50 text-primary-700"
+                                                                className="py-2.5 px-5 rounded-full text-sm font-normal transition-all border border-primary-600 bg-primary-50 text-primary-700"
                                                             >
                                                                 {opt.label}
                                                             </button>
@@ -1171,7 +1171,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                         {/* Calendar - half width on lg/xl */}
                                         <div ref={bookingDateRef} className="w-full lg:max-w-[50%]">
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Select Date</h3>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-6">Select Date</h3>
                                             {bookingErrors.preferred_date && (
                                                 <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
                                             )}
@@ -1180,13 +1180,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                                         <ChevronLeftIcon className="w-5 h-5 text-gray-400" />
                                                     </button>
-                                                    <h4 className="font-semibold text-gray-900 text-lg">{monthYear}</h4>
+                                                    <h4 className="font-normal text-gray-900 text-lg">{monthYear}</h4>
                                                     <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() + 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                                         <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                                                     </button>
                                                 </div>
                                                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-semibold text-gray-900 py-1">{d}</div>)}
+                                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-normal text-gray-900 py-1">{d}</div>)}
                                                 </div>
                                                 <div className="grid grid-cols-7 gap-1">
                                                     {generateCalendarGrid().map((day, i) => {
@@ -1212,7 +1212,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 key={i}
                                                                 disabled={isDisabled}
                                                                 onClick={() => handleDateSelect(day)}
-                                                                className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'bg-[var(--primary-color)] text-white shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                                className={`w-10 h-10 mx-auto rounded-full text-sm font-normal flex items-center justify-center transition-all ${isSelected ? 'bg-[var(--primary-color)] text-white shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
                                                             >
                                                                 {day}
                                                             </button>
@@ -1224,13 +1224,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                         {/* Time Selection - button grid for all screen sizes */}
                                         <div ref={bookingTimeRef}>
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Select Time</h3>
+                                            <h3 className="text-lg font-medium text-gray-900 mb-6">Select Time</h3>
                                             {bookingErrors.preferred_time && (
                                                 <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_time}</p>
                                             )}
                                             <div className="space-y-6">
                                                 <div>
-                                                    <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                    <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                                                         Morning
                                                         {fetchingSlots && <span className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin ml-1" />}
@@ -1249,7 +1249,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     type="button"
                                                                     disabled={disabled}
                                                                     onClick={() => !disabled && handleTimeSelect(time)}
-                                                                    className={`py-2.5 px-4 rounded-full text-base font-semibold transition-all border ${
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${
                                                                         isSelected
                                                                             ? 'border-primary-600 bg-primary-50 text-primary-600'
                                                                             : disabled
@@ -1264,7 +1264,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                    <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                                         Afternoon
                                                     </h4>
@@ -1282,7 +1282,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     type="button"
                                                                     disabled={disabled}
                                                                     onClick={() => !disabled && handleTimeSelect(time)}
-                                                                    className={`py-2.5 px-4 rounded-full text-base font-semibold transition-all border ${
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${
                                                                         isSelected
                                                                             ? 'border-primary-600 bg-primary-50 text-primary-600'
                                                                             : disabled
@@ -1303,15 +1303,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {/* Column 2: Details & Message - half width on lg/xl */}
                                     <div className="space-y-10 w-full lg:max-w-[50%]">
                                         <div className="space-y-6">
-                                            <h3 className="text-lg font-semibold text-gray-900">Your Details</h3>
+                                            <h3 className="text-lg font-medium text-gray-900">Your Details</h3>
                                             <div className="space-y-4">
                                                 <div ref={bookingFullNameRef}>
-                                                    <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Full Name</label>
+                                                    <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Full Name</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.full_name}
                                                         onChange={e => { setBookingForm({ ...bookingForm, full_name: e.target.value }); if (bookingErrors.full_name) setBookingErrors(prev => ({ ...prev, full_name: null })); }}
-                                                        className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="John Doe"
                                                     />
@@ -1319,24 +1319,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-4">
                                                     <div ref={bookingPhoneRef}>
-                                                        <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Phone Number</label>
+                                                        <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Phone Number</label>
                                                         <input
                                                             type="text"
                                                             value={bookingForm.phone}
                                                             onChange={e => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (bookingErrors.phone) setBookingErrors(prev => ({ ...prev, phone: null })); }}
-                                                            className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                            className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                             style={{ borderRadius: 'var(--card-radius)' }}
                                                             placeholder="+66..."
                                                         />
                                                         {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.phone}</p>}
                                                     </div>
                                                     <div ref={bookingEmailRef}>
-                                                        <label className="block text-base font-semibold text-gray-900 mb-1.5 ml-1">Email Address</label>
+                                                        <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Email Address</label>
                                                         <input
                                                             type="text"
                                                             value={bookingForm.email}
                                                             onChange={e => { setBookingForm({ ...bookingForm, email: e.target.value }); if (bookingErrors.email) setBookingErrors(prev => ({ ...prev, email: null })); }}
-                                                            className={`w-full px-5 py-2.5 bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-bold text-gray-900 text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                            className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
                                                             style={{ borderRadius: 'var(--card-radius)' }}
                                                             placeholder="john@example.com"
                                                         />
@@ -1347,12 +1347,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         </div>
 
                                         <div className="space-y-6">
-                                            <h3 className="text-lg font-semibold text-gray-900">Additional Message</h3>
+                                            <h3 className="text-lg font-medium text-gray-900">Additional Message</h3>
                                             <textarea
                                                 value={bookingForm.message}
                                                 onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
                                                 rows={5}
-                                                className="w-full px-5 py-2.5 bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-bold text-gray-900 text-base resize-none"
+                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 text-base resize-none"
                                                 style={{ borderRadius: 'var(--card-radius)' }}
                                                 placeholder="I would like to know more about..."
                                             />
@@ -1442,9 +1442,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         </div>
                     </div>
 
-                    {/* Persistent Footer - Confirm checkbox + Send Request; only when not success */}
+                    {/* Persistent Footer - Confirm checkbox + Send Request; only when not success. Mobile: same padding as detail sticky footer (safe area). */}
                     {!success && (
-                        <div ref={bookingConfirmRef} className="p-4 lg:p-6 z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm">
+                        <div
+                            ref={bookingConfirmRef}
+                            className="z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm pt-[max(1.25rem,env(safe-area-inset-top,0px))] pr-[max(2.5rem,env(safe-area-inset-right,0px))] pb-[max(1.75rem,calc(env(safe-area-inset-bottom,0px)+1rem))] pl-[max(2.5rem,env(safe-area-inset-left,0px))] lg:p-6"
+                        >
                             <div className="max-w-[1400px] w-full flex flex-col items-center gap-4">
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -1469,7 +1472,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     disabled={!confirmedDateTime}
                                     variant="primary"
                                     size="lg"
-                                    className={`w-auto max-w-[240px] font-semibold py-3 px-6 rounded-full transition-all hover:translate-y-[-2px] active:scale-[0.98] !text-lg ${!confirmedDateTime ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    className={`w-auto max-w-[240px] font-normal py-3 px-6 rounded-full transition-all hover:translate-y-[-2px] active:scale-[0.98] !text-lg ${!confirmedDateTime ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 >
                                     Send Request
                                 </Button>
@@ -1603,9 +1606,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 </div>
             )}
 
-            <div className={`mx-auto ${isModal ? 'max-w-[1400px] px-0 sm:px-8 lg:px-10 py-0 sm:py-8' : 'max-w-[1600px] px-0 lg:px-8 py-0 lg:py-6'}`}>
+            <div className={`mx-auto ${isModal ? 'w-full px-0 py-0 sm:max-w-[1400px] sm:px-8 sm:py-8 lg:px-10' : 'max-w-[1600px] px-0 lg:px-8 py-0 lg:py-6'}`}>
                 <div className="flex justify-center">
-                    <div className={`w-full ${isModal ? 'max-w-5xl' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
+                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
                         {/* Details - Header Section (card radius) */}
                         <div className="bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden lg:border lg:border-gray-100 shadow-none lg:shadow-sm px-0 py-8 lg:px-8 lg:p-8 relative z-10 -mt-8 lg:mt-0">
                             {/* Booking Information Bar */}
@@ -2253,7 +2256,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         {/* Related Listings Section */}
                         {!bookingId && relatedListings.length > 0 && (
-                            <div className={`mx-auto ${isModal ? 'max-w-[1400px] px-4 sm:px-8 lg:px-10' : 'max-w-[1600px] px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
+                            <div className={`mx-auto ${isModal ? 'w-full px-4 py-12 sm:max-w-[1400px] sm:px-8 lg:px-10' : 'max-w-[1600px] px-6 sm:px-12 lg:px-20 py-12'} border-t border-gray-100`}>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
                                 <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}`}>
                                     {relatedListings.map((related) => (
@@ -2269,7 +2272,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         <div className="bg-white overflow-hidden relative min-h-[400px] flex flex-col justify-center">
 
-                            <div className={`w-full mx-auto ${isModal ? 'max-w-[1400px] px-6 sm:px-8 lg:px-10' : 'max-w-[1600px] px-8 sm:px-20 lg:px-32'} py-24 relative z-10`}>
+                            <div className={`w-full mx-auto ${isModal ? 'px-6 py-24 sm:max-w-[1400px] sm:px-8 lg:px-10' : 'max-w-[1600px] px-8 sm:px-20 lg:px-32 py-24'} relative z-10`}>
                                 {/* Top Row: Intro & Menus */}
                                 <div className="flex flex-col lg:flex-row justify-between gap-16 mb-24">
                                     {/* Intro Text */}
