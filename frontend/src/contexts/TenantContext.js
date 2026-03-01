@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const TenantContext = createContext(null);
 
@@ -19,18 +19,10 @@ export const TenantProvider = ({ children }) => {
     useEffect(() => {
         const fetchTenantConfig = async () => {
             try {
-                const currentHost = window.location.hostname;
-                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
-
-                // Determine API URL: If we are in dev on port 3000, we likely need to hit 8080 directly
-                // unless we are using a proxy. To be robust for both port 8000 (nginx) and 3000 (dev server),
-                // we set the base URL accordingly.
-                const apiUrl = window.location.port === '3000'
-                    ? `${window.location.protocol}//${currentHost}:8080/api`
-                    : '/api';
-
+                // Use api instance so base URL and X-Tenant (for subdomain.superealestate.IP) are correct
+                const apiUrl = api.defaults.baseURL;
                 console.log('Fetching tenant config from:', apiUrl);
-                const response = await axios.get(`${apiUrl}/public/tenant/config`, { timeout: 5000 });
+                const response = await api.get('/public/tenant/config', { timeout: 5000 });
                 console.log('Tenant config received:', response.data);
                 setTenantConfig(response.data);
             } catch (err) {

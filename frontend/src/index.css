@@ -18,6 +18,15 @@
     font-family: "DM Sans", sans-serif;
   }
 
+  /* Prevent iOS Safari zoom on input focus (zooms when font-size < 16px) */
+  @media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   /* Custom scrollbar - Global */
   ::-webkit-scrollbar {
     width: 4px !important;
@@ -93,9 +102,9 @@
     @apply inline-flex items-center justify-center px-4 h-[38px] text-sm border-2 border-primary-500 text-primary-600 font-semibold rounded-[3px] hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
-  /* Input styles */
+  /* Input styles — rounded-full, consistent height for UI */
   .input-field {
-    @apply w-full px-4 py-2 bg-white border border-gray-200 rounded-[3px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-2 min-h-[44px] bg-white border border-gray-200 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
   }
 
   .input-label {
@@ -344,6 +353,15 @@
 
 .custom-scrollbar-hover:hover::-webkit-scrollbar-thumb {
   background: #00000015;
+}
+
+/* Hide scrollbar but keep scroll/drag (e.g. selected pills) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 .overscroll-contain {

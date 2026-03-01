@@ -818,7 +818,7 @@ const CreateListing = () => {
                                     </span>
                                 )}
                             </label>
-                            <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-lg border-2 border-primary-50 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group relative">
+                            <div className="w-full h-[400px] rounded-[24px] overflow-hidden shadow-lg border-2 border-primary-50 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group relative">
                                 <LocationPicker
                                     value={{
                                         lat: fieldValues.latitude,

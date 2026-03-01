@@ -73,7 +73,7 @@ const MobileSearchPage = () => {
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
                 <h1 className="text-xl font-bold text-gray-900">Search Properties</h1>
-                <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                     <XMarkIcon className="w-6 h-6 text-gray-500" />
                 </button>
             </div>

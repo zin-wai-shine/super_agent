@@ -83,7 +83,7 @@ const Modal = ({
 
     return createPortal(
         <div
-            className="fixed inset-0 overflow-visible flex items-center justify-center pointer-events-none"
+            className={`fixed inset-0 overflow-visible flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-center'}`}
             style={{ zIndex: overlayZIndex ?? 1000 }}
         >
             {/* Backdrop */}
@@ -99,7 +99,7 @@ const Modal = ({
 
             {/* Modal Dialog */}
             <div
-                className={`relative transform animate-scale-in w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 sm:m-4' : 'p-4 sm:p-0'}`}
+                className={`relative transform animate-scale-in w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 h-full sm:h-auto sm:m-4' : 'p-4 sm:p-0'}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
@@ -127,8 +127,7 @@ const Modal = ({
                                 {!hideCloseButton && (
                                     <button
                                         onClick={onClose}
-                                        className="text-gray-400 hover:text-gray-500 focus:outline-none p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        style={{ borderRadius: 'var(--btn-radius)' }}
+                                        className="text-gray-400 hover:text-gray-500 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                     >
                                         <XMarkIcon className="h-6 w-6" />
                                     </button>

@@ -58,7 +58,7 @@ const BannerDisplay = ({ targetRole: customTargetRole }) => {
                 <div className={`p-8 flex flex-col justify-center relative z-10 ${isFullWidth ? 'md:w-1/2 h-full text-gray-900 min-h-[300px]' : 'md:w-2/3'}`}>
                     <button
                         onClick={() => setVisible(false)}
-                        className={`absolute top-4 right-4 text-gray-400 hover:text-gray-600`}
+                        className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>

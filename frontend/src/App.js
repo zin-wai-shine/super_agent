@@ -113,7 +113,7 @@ const AppRoutes = () => {
         <Routes>
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
+                <Route index element={<ListingsPage />} />
                 <Route path="listings" element={<ListingsPage />} />
                 <Route path="projects" element={<ProjectsPage />} />
                 <Route path="listings/:id" element={<ListingDetailPage />} />
@@ -143,25 +143,23 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="login"
+                    element={
+                        <GuestRoute>
+                            <LoginPage />
+                        </GuestRoute>
+                    }
+                />
+                <Route
+                    path="register"
+                    element={
+                        <GuestRoute>
+                            <RegisterPage />
+                        </GuestRoute>
+                    }
+                />
             </Route>
-
-            {/* Auth Routes */}
-            <Route
-                path="/login"
-                element={
-                    <GuestRoute>
-                        <LoginPage />
-                    </GuestRoute>
-                }
-            />
-            <Route
-                path="/register"
-                element={
-                    <GuestRoute>
-                        <RegisterPage />
-                    </GuestRoute>
-                }
-            />
 
             {/* Agent Dashboard Routes */}
             <Route

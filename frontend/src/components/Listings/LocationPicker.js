@@ -126,7 +126,7 @@ const LocationPicker = ({ value, onChange, address }) => {
                     <input
                         type="text"
                         placeholder="Search for a location or address..."
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[3px] shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-sm"
+                        className="w-full px-4 py-3 min-h-[44px] bg-white border border-gray-200 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-sm"
                         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
                     />
                 </Autocomplete>
@@ -156,7 +156,7 @@ const LocationPicker = ({ value, onChange, address }) => {
                 )}
             </GoogleMap>
 
-            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-[3px] shadow-sm border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 Click on map or drag pin to adjust
             </div>
         </div>

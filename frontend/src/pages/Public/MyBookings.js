@@ -23,7 +23,7 @@ const MyBookings = () => {
     const [loading, setLoading] = useState(true);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
-    const [skeletonCount, setSkeletonCount] = useState(1);
+    const [skeletonCount, setSkeletonCount] = useState(2);
     const [error, setError] = useState(null);
     const { user } = useAuth();
     const [filter, setFilter] = useState('all');
@@ -37,32 +37,16 @@ const MyBookings = () => {
             setLoading(true);
             setInitialLoading(true);
             setIsExiting(false);
-            setSkeletonCount(1);
+            setSkeletonCount(2);
 
-            // Sequential skeleton increase (1 to 4)
-            const skeletonInterval = setInterval(() => {
-                setSkeletonCount(prev => {
-                    if (prev >= 4) {
-                        clearInterval(skeletonInterval);
-                        return 4;
-                    }
-                    return prev + 1;
-                });
-            }, 200);
-
-            // Promise.all to ensure minimum visibility of the loading state
             const [response] = await Promise.all([
                 appointmentApi.getMyAppointments(),
-                new Promise(resolve => setTimeout(resolve, 1500))
+                new Promise(resolve => setTimeout(resolve, 200))
             ]);
 
-            clearInterval(skeletonInterval);
-            setSkeletonCount(4);
-
-            // Trigger exit animation
+            // Trigger exit animation (match Listings page)
             setIsExiting(true);
-            // Wait for animation duration
-            await new Promise(resolve => setTimeout(resolve, 900));
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             setAppointments(response.data.appointments || []);
             setInitialLoading(false);
@@ -82,16 +66,16 @@ const MyBookings = () => {
     });
 
     return (
-        <div className="min-h-screen pt-24 pb-20 bg-white">
+        <div className="min-h-screen pt-10 pb-20 bg-white">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-                {/* Modern Header Section */}
-                <div className="flex flex-col items-center text-center gap-8 mb-16 relative z-20">
+                {/* Header — same design/size as Favorites, left-aligned */}
+                <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20">
                     <div>
-                        <h1 className="text-4xl font-medium text-slate-900 tracking-tight leading-tight">
-                            My Bookings
+                        <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
+                            My Viewing Requests
                         </h1>
-                        <p className="text-slate-500 mt-2 font-medium text-lg max-w-md mx-auto">
-                            Your journey to finding the perfect home starts here.
+                        <p className="text-slate-500 mt-2 font-medium text-lg max-w-md">
+                            View and manage your property viewing requests.
                         </p>
                     </div>
 
@@ -100,7 +84,7 @@ const MyBookings = () => {
                         <div className="w-full max-w-xs animate-fadeInUp">
                             <StyledSelect
                                 options={[
-                                    { value: 'all', label: 'All Bookings' },
+                                    { value: 'all', label: 'All requests' },
                                     { value: 'pending', label: 'Pending' },
                                     { value: 'confirmed', label: 'Confirmed' },
                                     { value: 'cancelled', label: 'Cancelled' }

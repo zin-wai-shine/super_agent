@@ -16,7 +16,7 @@ const SavedListingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
-    const [skeletonCount, setSkeletonCount] = useState(1);
+    const [skeletonCount, setSkeletonCount] = useState(2);
     const [removingId, setRemovingId] = useState(null);
 
     useEffect(() => {
@@ -32,33 +32,17 @@ const SavedListingsPage = () => {
         setLoading(true);
         setInitialLoading(true);
         setIsExiting(false);
-        setSkeletonCount(1);
-
-        // Sequential skeleton increase (1 to 4)
-        const skeletonInterval = setInterval(() => {
-            setSkeletonCount(prev => {
-                if (prev >= 4) {
-                    clearInterval(skeletonInterval);
-                    return 4;
-                }
-                return prev + 1;
-            });
-        }, 200);
+        setSkeletonCount(2);
 
         try {
-            // Use Promise.all to ensure minimum visibility of the loading state
             const [response] = await Promise.all([
                 getSavedListings(),
-                new Promise(resolve => setTimeout(resolve, 1500))
+                new Promise(resolve => setTimeout(resolve, 200))
             ]);
 
-            clearInterval(skeletonInterval);
-            setSkeletonCount(4); // Ensure it reaches 4 before exiting
-
-            // Trigger exit animation for skeletons
+            // Trigger exit animation for skeletons (match Listings page)
             setIsExiting(true);
-            // Wait for animation duration (longest delay ~240ms + 600ms = 840ms)
-            await new Promise(resolve => setTimeout(resolve, 900));
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             setListings(response.data || []);
             setInitialLoading(false);
@@ -68,7 +52,6 @@ const SavedListingsPage = () => {
             setInitialLoading(false);
         } finally {
             setLoading(false);
-            clearInterval(skeletonInterval);
         }
     };
 

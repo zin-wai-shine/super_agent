@@ -1,8 +1,8 @@
 import React from 'react';
 
 const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) => {
+    const isSavedGrid = viewMode === 'saved-grid';
     const isListView = viewMode === 'list';
-    const isMapListView = viewMode === 'map-list';
 
     const delay = isExiting ? `${(index % 12) * 60}ms` : `${(index % 12) * 100}ms`;
 
@@ -15,17 +15,16 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     const bar = 'bg-gray-100 animate-pulse';
     const barLight = 'bg-gray-50 animate-pulse';
 
-    return (
-        <div className="flex flex-col w-full" style={skeletonStyle}>
-            {/* Image Skeleton */}
-            <div className={`${viewMode === 'saved-grid' ? 'aspect-[5/4]' : 'aspect-square'} w-full ${bar} rounded-[23px] relative overflow-hidden mb-3`}>
-                {/* Top badges skeleton */}
-                <div className="absolute top-3 left-3 flex gap-2">
+    // Grid card: same structure as ListingCard (aspect-[4/3] image, then title, location, bed/bath, ID, price)
+    const renderGridSkeleton = () => (
+        <div className="flex flex-col w-full bg-white rounded-none border-none" style={skeletonStyle}>
+            {/* Image — same aspect and radius as ListingCard */}
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[23px] mb-0">
+                <div className={`h-full w-full ${bar}`} />
+                <div className="absolute top-3.5 left-3.5">
                     <div className={`h-6 w-16 ${barLight} rounded-full`} />
                 </div>
-                {/* Heart icon skeleton */}
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20" />
-                {/* Carousel dots skeleton */}
+                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 animate-pulse" />
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className={`w-1.5 h-1.5 rounded-full ${barLight}`} />
@@ -33,27 +32,62 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
                 </div>
             </div>
 
-            {/* Info Section */}
-            <div className="flex flex-col gap-2 px-1.5">
+            {/* Content — same padding and layout as ListingCard (py-3 px-1.5, gap-1) */}
+            <div className="py-3 px-1.5 flex flex-col gap-1">
                 <div className="flex justify-between items-start">
-                    <div className={`h-5 w-3/4 ${bar} rounded`} />
+                    <div className={`h-4 w-3/4 ${bar} rounded`} />
                 </div>
-
-                <div className="flex items-center gap-2">
-                    <div className={`h-4 w-4 ${barLight} rounded`} />
-                    <div className={`h-4 w-1/3 ${barLight} rounded`} />
+                <div className="flex items-center gap-1.5 mb-0.5">
+                    <div className={`h-3.5 w-3.5 ${barLight} rounded`} />
+                    <div className={`h-3.5 w-1/2 ${barLight} rounded`} />
                 </div>
-
-                <div className={`h-4 w-1/2 ${barLight} rounded`} />
-
-                <div className={`h-3 w-1/4 ${barLight} rounded mt-1`} />
-
+                <div className={`h-3.5 w-2/5 ${barLight} rounded`} />
+                <div className={`h-3.5 w-1/3 ${barLight} rounded mt-0.5`} />
                 <div className="mt-2 flex items-baseline gap-1">
-                    <div className={`h-6 w-24 ${bar} rounded`} />
+                    <div className={`h-4 w-20 ${bar} rounded`} />
+                    <div className={`h-3 w-8 ${barLight} rounded`} />
                 </div>
             </div>
         </div>
     );
+
+    // Saved grid / Favorites: aspect-[5/4], simpler content (title + bed/bath)
+    const renderSavedGridSkeleton = () => (
+        <div className="flex flex-col w-full" style={skeletonStyle}>
+            <div className={`aspect-[5/4] w-full ${bar} rounded-[23px] relative overflow-hidden mb-2`}>
+                <div className="absolute top-3 left-3">
+                    <div className={`h-6 w-16 ${barLight} rounded-full`} />
+                </div>
+                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20" />
+            </div>
+            <div className="px-1.5 py-2">
+                <div className={`h-4 w-3/4 ${bar} rounded mb-1`} />
+                <div className={`h-3.5 w-1/2 ${barLight} rounded`} />
+            </div>
+        </div>
+    );
+
+    // List view: horizontal layout to match list card
+    const renderListSkeleton = () => (
+        <div className="flex flex-col w-full" style={skeletonStyle}>
+            <div className="p-4 flex gap-5">
+                <div className={`aspect-[4/3] w-40 sm:w-48 rounded-[23px] flex-shrink-0 ${bar}`} />
+                <div className="flex-1 py-1 flex flex-col justify-between gap-2">
+                    <div className={`h-5 w-4/5 ${bar} rounded`} />
+                    <div className="flex items-center gap-2">
+                        <div className={`h-4 w-4 ${barLight} rounded`} />
+                        <div className={`h-4 w-1/3 ${barLight} rounded`} />
+                    </div>
+                    <div className={`h-4 w-1/2 ${barLight} rounded`} />
+                    <div className={`h-5 w-24 ${bar} rounded mt-auto`} />
+                </div>
+            </div>
+        </div>
+    );
+
+    if (isSavedGrid) return renderSavedGridSkeleton();
+    if (isListView) return renderListSkeleton();
+    return renderGridSkeleton();
 };
 
 export default ListingSkeleton;

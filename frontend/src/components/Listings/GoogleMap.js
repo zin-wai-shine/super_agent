@@ -345,8 +345,9 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
     );
 });
 
-const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true }) => {
+const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false }) => {
     const [openedMarkerId, setOpenedMarkerId] = useState(null);
+    const [mapType, setMapType] = useState('roadmap');
     const handleCardToggle = useCallback((propertyId) => {
         setOpenedMarkerId((prev) => (String(prev) === String(propertyId) ? null : propertyId));
     }, []);
@@ -403,6 +404,12 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             return () => clearTimeout(t);
         }
     }, [map, isExpanded, isVisible, triggerMapResize]);
+
+    useEffect(() => {
+        if (map && map.setMapTypeId) {
+            map.setMapTypeId(mapType);
+        }
+    }, [map, mapType]);
 
     const toggleFullscreen = useCallback(() => {
         const el = wrapperRef.current;
@@ -512,27 +519,25 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
         }, 500);
     }, [map, onBoundsChanged]);
 
-    const [hasInitiallyCentered, setHasInitiallyCentered] = useState(false);
-
     const defaultCenter = useMemo(() => ({
         lat: 13.7563, // Bangkok
         lng: 100.5018
     }), []);
 
     const mapCenter = useMemo(() => {
-        // If we've already centered once, don't let listing updates force a re-center
-        // This is the core of the infinite loop fix
-        if (hasInitiallyCentered) return undefined;
-
-        if (center && center.lat && center.lng) {
-            setHasInitiallyCentered(true);
-            return center;
+        // When center is provided from props (e.g. detail page), always use it so the map and marker render
+        const hasValidCenter = center && (typeof center.lat === 'number' || !isNaN(parseFloat(center.lat))) && (typeof center.lng === 'number' || !isNaN(parseFloat(center.lng)));
+        if (hasValidCenter) {
+            return {
+                lat: typeof center.lat === 'number' ? center.lat : parseFloat(center.lat),
+                lng: typeof center.lng === 'number' ? center.lng : parseFloat(center.lng)
+            };
         }
 
+        // List view: use first valid listing for center; hasInitiallyCentered only prevents pan-on-idle
         if (listings.length > 0) {
             const validListings = listings.filter(l => l.latitude && l.longitude);
             if (validListings.length > 0) {
-                setHasInitiallyCentered(true);
                 return {
                     lat: parseFloat(validListings[0].latitude),
                     lng: parseFloat(validListings[0].longitude)
@@ -540,7 +545,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             }
         }
         return defaultCenter;
-    }, [center, listings, defaultCenter, hasInitiallyCentered]);
+    }, [center, listings, defaultCenter]);
 
     if (!isLoaded) {
         return (
@@ -581,8 +586,8 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
                     />
                 ))}
             </GoogleMap>
-            {/* X close button when fullscreen - always visible and clickable */}
-            {map && isFullscreen && (
+            {/* X close button when fullscreen - only when controls are shown */}
+            {!hideControls && map && isFullscreen && (
                 <button
                     type="button"
                     onClick={toggleFullscreen}
@@ -592,22 +597,67 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
                     <XMarkIcon className="w-6 h-6" />
                 </button>
             )}
-            {/* Custom map controls: fullscreen + zoom (pill) */}
-            {map && (
-                <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-[10] pointer-events-auto">
+            {/* Detail map: Map/Satellite pill (rounded-full) + fullscreen (rounded-full) only */}
+            {hideControls && map && (
+                <>
+                    <div className="absolute top-4 left-4 z-[10] pointer-events-auto isolate flex rounded-full overflow-hidden bg-white shadow-md border border-gray-200" style={{ isolation: 'isolate', transform: 'translateZ(0)' }}>
+                        <button
+                            type="button"
+                            onClick={() => setMapType('roadmap')}
+                            className={`px-4 py-2.5 text-sm font-bold transition-colors ${mapType === 'roadmap' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}
+                            aria-label="Map view"
+                        >
+                            Map
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setMapType('hybrid')}
+                            className={`px-4 py-2.5 text-sm font-bold transition-colors ${mapType === 'hybrid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}
+                            aria-label="Satellite view"
+                        >
+                            Satellite
+                        </button>
+                    </div>
+                    {!isFullscreen ? (
+                        <div className="absolute top-4 right-4 z-[10] pointer-events-auto isolate" style={{ transform: 'translateZ(0)' }}>
+                            <button
+                                type="button"
+                                onClick={toggleFullscreen}
+                                className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:shadow-lg transition-all active:scale-95"
+                                aria-label="Fullscreen"
+                            >
+                                <ArrowsPointingOutIcon className="w-5 h-5 flex-shrink-0" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={toggleFullscreen}
+                            className="absolute top-4 right-4 z-[20] w-11 h-11 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all active:scale-95"
+                            aria-label="Close fullscreen"
+                        >
+                            <XMarkIcon className="w-6 h-6" />
+                        </button>
+                    )}
+                </>
+            )}
+            {/* List/projects map: fullscreen + zoom controls */}
+            {!hideControls && map && (
+                <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-[10] pointer-events-auto isolate">
                     <button
                         type="button"
                         onClick={toggleFullscreen}
-                        className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:shadow-lg transition-all active:scale-95"
+                        className="w-10 h-10 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:shadow-lg transition-all active:scale-95 shrink-0"
+                        style={{ isolation: 'isolate', transform: 'translateZ(0)' }}
                         aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
                     >
                         {isFullscreen ? (
-                            <ArrowsPointingInIcon className="w-5 h-5" />
+                            <ArrowsPointingInIcon className="w-5 h-5 flex-shrink-0" />
                         ) : (
-                            <ArrowsPointingOutIcon className="w-5 h-5" />
+                            <ArrowsPointingOutIcon className="w-5 h-5 flex-shrink-0" />
                         )}
                     </button>
-                    <div className="rounded-full overflow-hidden bg-white shadow-md border border-gray-200 flex flex-col">
+                    <div className="rounded-full overflow-hidden bg-white shadow-md border border-gray-200 flex flex-col isolate" style={{ transform: 'translateZ(0)' }}>
                         <button
                             type="button"
                             onClick={zoomIn}

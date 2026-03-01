@@ -1,13 +1,13 @@
 import React from 'react';
 
-const FilterCard = ({ title, icon, onClear, children }) => {
+const FilterCard = ({ title, icon, onClear, children, titleTag: TitleTag = 'span', titleClassName = '' }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50 rounded-[10px] shadow-sm overflow-hidden transition-all duration-300">
+        <div className="transition-all duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 transition-colors group">
+            <div className="flex items-center justify-between transition-colors group">
                 <div className="flex items-center gap-2">
                     {icon}
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</span>
+                    <TitleTag className={`text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900 dark:text-gray-100 ${titleClassName}`.trim()}>{title}</TitleTag>
                 </div>
                 <div className="flex items-center gap-2">
                     {onClear && (
@@ -16,7 +16,7 @@ const FilterCard = ({ title, icon, onClear, children }) => {
                                 e.stopPropagation();
                                 onClear();
                             }}
-                            className="text-[12px] font-medium text-primary-500 hover:text-primary-600 dark:text-primary-400 transition-colors mr-1"
+                            className="text-[13px] font-normal text-primary-500 hover:text-primary-600 dark:text-primary-400 transition-colors mr-1"
                         >
                             Clear
                         </button>
@@ -24,8 +24,8 @@ const FilterCard = ({ title, icon, onClear, children }) => {
                 </div>
             </div>
 
-            {/* Content Space */}
-            <div className="p-4">
+            {/* Content Space — padding only on direct children */}
+            <div className="[&>*]:pt-2">
                 {children}
             </div>
         </div>

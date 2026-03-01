@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
-import { useSearchParams, useOutletContext, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, useOutletContext, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { saveListing, unsaveListing } from '../../services/savedListingsApi';
 import { useTenant } from '../../contexts/TenantContext';
@@ -25,6 +25,7 @@ import FilterCard from '../../components/ui/FilterCard';
 import FilterPill from '../../components/ui/FilterPill';
 import { FilterIcons } from '../../utils/IconMap';
 import ScrollableFilterList from '../../components/ui/ScrollableFilterList';
+import RoomStepperRow from '../../components/ui/RoomStepperRow';
 
 import {
     AdjustmentsHorizontalIcon,
@@ -34,12 +35,15 @@ import {
     MapPinIcon,
     XMarkIcon,
     BuildingOfficeIcon,
+    BuildingOffice2Icon,
     MagnifyingGlassIcon,
     GlobeAltIcon,
     SparklesIcon,
     ArrowUpIcon,
     TagIcon,
-    CheckIcon,
+    BanknotesIcon,
+    KeyIcon,
+    HomeIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -70,6 +74,8 @@ const bathroomOptions = [
     { value: '3', label: '3+' },
     { value: '4', label: '4+' },
     { value: '5', label: '5+' },
+    { value: '6', label: '6+' },
+    { value: '7', label: '7+' },
 ];
 
 const bedroomOptions = [
@@ -79,6 +85,8 @@ const bedroomOptions = [
     { value: '3', label: '3+' },
     { value: '4', label: '4+' },
     { value: '5', label: '5+' },
+    { value: '6', label: '6+' },
+    { value: '7', label: '7+' },
 ];
 
 const formatPrice = (p) => p ? `${parseInt(p).toLocaleString()}` : '';
@@ -139,8 +147,9 @@ const ListingsPage = () => {
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -192,6 +201,8 @@ const ListingsPage = () => {
     }, [isMapTransitioning]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
+    const [isSidebarClosing, setIsSidebarClosing] = useState(false); // For close animation
+    const [sidebarAnimateIn, setSidebarAnimateIn] = useState(false); // Start off-screen for open animation
     const [isMapSidebarOpen, setIsMapSidebarOpen] = useState(false); // Sidebar state for Map Overlay
     const [isMapExpanded, setIsMapExpanded] = useState(false); // Map full-width (hide list) when true
 
@@ -200,18 +211,39 @@ const ListingsPage = () => {
         const mobileFilters = searchParams.get('mobile_filters');
         if (mobileFilters === '1') {
             setIsSidebarOpen(true);
+            setSidebarAnimateIn(true);
             const next = new URLSearchParams(searchParams);
             next.delete('mobile_filters');
             setSearchParams(next);
         }
     }, [searchParams, setSearchParams]);
 
+    // Filter sidebar open animation: start off-screen then transition in
+    useEffect(() => {
+        if (isSidebarOpen && sidebarAnimateIn) {
+            const t = requestAnimationFrame(() => {
+                requestAnimationFrame(() => setSidebarAnimateIn(false));
+            });
+            return () => cancelAnimationFrame(t);
+        }
+    }, [isSidebarOpen, sidebarAnimateIn]);
+
+    // Filter sidebar close animation: slide out then unmount
+    const closeFilterSidebar = useCallback(() => setIsSidebarClosing(true), []);
+    useEffect(() => {
+        if (!isSidebarClosing) return;
+        const t = setTimeout(() => {
+            setIsSidebarOpen(false);
+            setIsSidebarClosing(false);
+        }, 300);
+        return () => clearTimeout(t);
+    }, [isSidebarClosing]);
+
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
     const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isAdvancedFilter, setIsAdvancedFilter] = useState(() => localStorage.getItem('is_advanced_filter') === 'true');
     const [developers, setDevelopers] = useState([]);
     const [projectsList, setProjectsList] = useState([]);
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
@@ -396,6 +428,7 @@ const ListingsPage = () => {
             min_price: searchParams.get('min_price') || saved.min_price || '',
             max_price: searchParams.get('max_price') || saved.max_price || '',
             bedrooms: searchParams.get('bedrooms') || saved.bedrooms || '',
+            bathrooms: searchParams.get('bathrooms') || saved.bathrooms || '',
             station_id: searchParams.get('station_id') || saved.station_id || '',
             max_distance_to_station: searchParams.get('max_distance_to_station') || saved.max_distance_to_station || '',
             developer_id: searchParams.get('developer_id') || saved.developer_id || '',
@@ -405,26 +438,41 @@ const ListingsPage = () => {
             max_area: searchParams.get('max_area') || saved.max_area || '',
         };
     });
-    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
+    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
     const prevSidebarOpenRef = useRef(false);
+    const skipNextUrlSyncRef = useRef(false);
+    const [exitingChipKeys, setExitingChipKeys] = useState(new Set());
 
     const [searchTerm, setSearchTerm] = useState(filters.search);
 
+    const FILTER_KEYS = ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'];
+    const toSerializableFilters = (obj) => {
+        const out = {};
+        FILTER_KEYS.forEach(k => { out[k] = obj[k] != null && typeof obj[k] === 'string' ? obj[k] : (obj[k] != null ? String(obj[k]) : ''); });
+        return out;
+    };
 
-    // Debounce search
+    const listingTypeIconMap = { '': TagIcon, sale: BanknotesIcon, rent: KeyIcon };
+    const propertyTypeIconMap = { '': Squares2X2Icon, condo: BuildingOffice2Icon, house: HomeIcon, townhouse: BuildingOfficeIcon, apartment: BuildingOffice2Icon, land: MapIcon };
+
+
+    // Debounce search — apply quickly so data reloads feel instant
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchTerm !== filters.search) {
-                // Pass false for shouldScroll to keep focus/position while typing
                 handleFilterChange('search', searchTerm, false);
             }
-        }, 500);
+        }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
     const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
-    // Sync filters with URL search params
+    // Sync filters with URL search params (e.g. browser back/forward). Skip when we just applied filters so we don't overwrite with stale URL.
     useEffect(() => {
+        if (skipNextUrlSyncRef.current) {
+            skipNextUrlSyncRef.current = false;
+            return;
+        }
         const params = new URLSearchParams(searchParams);
         const newFilters = {
             type: params.get('type') || '',
@@ -432,11 +480,14 @@ const ListingsPage = () => {
             min_price: params.get('min_price') || '',
             max_price: params.get('max_price') || '',
             bedrooms: params.get('bedrooms') || '',
+            bathrooms: params.get('bathrooms') || '',
             station_id: params.get('station_id') || '',
             max_distance_to_station: params.get('max_distance_to_station') || '',
             developer_id: params.get('developer_id') || '',
             project_id: params.get('project_id') || '',
             search: params.get('search') || '',
+            min_area: params.get('min_area') || '',
+            max_area: params.get('max_area') || '',
         };
 
         // Only update if filters have actually changed to avoid infinite loops
@@ -448,13 +499,13 @@ const ListingsPage = () => {
         }
     }, [searchParams]);
 
-    // When sidebar opens, sync pending filters from applied filters so user can edit and apply
+    // When sidebar opens, sync pending filters from applied filters (and current searchTerm so inside/outside text match)
     useEffect(() => {
         if (isSidebarOpen && !prevSidebarOpenRef.current) {
-            setPendingFilters({ ...filters });
+            setPendingFilters({ ...filters, search: searchTerm });
         }
         prevSidebarOpenRef.current = isSidebarOpen;
-    }, [isSidebarOpen, filters]);
+    }, [isSidebarOpen, filters, searchTerm]);
 
 
     useEffect(() => {
@@ -511,6 +562,7 @@ const ListingsPage = () => {
                     setInitialLoading(false);
                 } else {
                     setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+                    if (page === 1) setInitialLoading(false); // always clear so cards show (closure may have stale initialLoading)
                 }
 
                 setTotal(data.total || 0);
@@ -543,19 +595,42 @@ const ListingsPage = () => {
     }, [loading, listings.length, total]);
 
     const handleFilterChange = (key, value, shouldScroll = true) => {
-        const newFilters = { ...filters, [key]: value };
+        const safeValue = value != null && typeof value !== 'string' ? String(value) : (value ?? '');
+        const newFilters = toSerializableFilters({ ...filters, [key]: safeValue });
         setFilters(newFilters);
-        if (isSidebarOpen) setPendingFilters(prev => ({ ...prev, [key]: value }));
+        if (isSidebarOpen) setPendingFilters(prev => ({ ...prev, [key]: safeValue }));
         localStorage.setItem('listing_filters', JSON.stringify(newFilters));
         setPage(1);
 
         if (shouldScroll) {
             window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to prevent jump
+            skipNextUrlSyncRef.current = true;
             const newParams = new URLSearchParams(searchParams);
             if (value) newParams.set(key, value);
             else newParams.delete(key);
             setSearchParams(newParams);
         }
+    };
+
+    // Toggle one value in a comma-separated multi-select filter (e.g. listing_type, type)
+    const toggleMultiFilter = (key, valueToToggle, shouldScroll = true) => {
+        const current = (filters[key] || '').toString().split(',').filter(Boolean);
+        const set = new Set(current);
+        if (valueToToggle === '') {
+            handleFilterChange(key, '', shouldScroll);
+            return;
+        }
+        if (set.has(valueToToggle)) set.delete(valueToToggle);
+        else set.add(valueToToggle);
+        const next = [...set].join(',');
+        handleFilterChange(key, next, shouldScroll);
+    };
+
+    // Remove one value from a comma-separated filter (for Selected chip ×)
+    const clearFilterValue = (key, valueToRemove) => {
+        const current = (filters[key] || '').toString().split(',').filter(Boolean);
+        const next = current.filter(v => v !== valueToRemove).join(',');
+        handleFilterChange(key, next);
     };
 
     const handleSelectChange = (key, option) => {
@@ -614,16 +689,23 @@ const ListingsPage = () => {
         setPendingFilters(prev => ({ ...prev, ...partial }));
     };
 
-    const applyFilters = () => {
-        // Commit pending filters to applied filters so the fetch effect runs and data loads
-        const next = { ...pendingFilters };
-        setFilters(next);
+    const applyFilters = (override, closeSidebar = true) => {
+        const raw = override ? { ...pendingFilters, ...override } : { ...pendingFilters };
+        const next = toSerializableFilters(raw);
+        const filtersUnchanged = FILTER_KEYS.every(k => (filters[k] || '') === (next[k] || ''));
+        skipNextUrlSyncRef.current = true; // prevent URL sync from overwriting filters with stale params
+        if (!filtersUnchanged) {
+            setFilters(next);
+            setPendingFilters(next);
+            setPage(1);
+        } else {
+            setPendingFilters(next);
+        }
         setSearchTerm(next.search ?? '');
         localStorage.setItem('listing_filters', JSON.stringify(next));
-        setPage(1);
         const newParams = new URLSearchParams(searchParams);
         const view = searchParams.get('view');
-        ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'].forEach(key => {
+        ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'].forEach(key => {
             const v = next[key];
             if (v) newParams.set(key, v);
             else newParams.delete(key);
@@ -631,7 +713,7 @@ const ListingsPage = () => {
         if (view) newParams.set('view', view);
         setSearchParams(newParams);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        setIsSidebarOpen(false);
+        if (closeSidebar) setIsSidebarClosing(true);
     };
 
     const clearFilters = () => {
@@ -641,6 +723,7 @@ const ListingsPage = () => {
             min_price: '',
             max_price: '',
             bedrooms: '',
+            bathrooms: '',
             station_id: '',
             max_distance_to_station: '',
             developer_id: '',
@@ -665,16 +748,24 @@ const ListingsPage = () => {
     const activeFiltersList = [];
     if (filters.search) activeFiltersList.push({ label: `"${filters.search}"`, key: 'search' });
     if (filters.type) {
-        const opt = propertyTypeOptions.find(o => o.value === filters.type);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'type' });
+        filters.type.split(',').filter(Boolean).forEach(v => {
+            const opt = propertyTypeOptions.find(o => o.value === v);
+            if (opt) activeFiltersList.push({ label: opt.label, key: 'type', valueToRemove: v });
+        });
     }
     if (filters.listing_type) {
-        const opt = listingTypeOptions.find(o => o.value === filters.listing_type);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type' });
+        filters.listing_type.split(',').filter(Boolean).forEach(v => {
+            const opt = listingTypeOptions.find(o => o.value === v);
+            if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+        });
     }
     if (filters.bedrooms) {
         const opt = bedroomOptions.find(o => o.value === filters.bedrooms);
-        if (opt) activeFiltersList.push({ label: opt.label, key: 'bedrooms' });
+        if (opt) activeFiltersList.push({ label: `Bedrooms: ${opt.label}`, key: 'bedrooms' });
+    }
+    if (filters.bathrooms) {
+        const opt = bathroomOptions.find(o => o.value === filters.bathrooms);
+        if (opt) activeFiltersList.push({ label: `Bathrooms: ${opt.label}`, key: 'bathrooms' });
     }
     if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
     if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
@@ -701,132 +792,132 @@ const ListingsPage = () => {
     const renderFilterContent = () => {
         return (
             <div className="space-y-6 [&>*:first-child]:mt-0">
-                {/* Advanced Filter Toggle */}
-                <div className="flex items-center justify-between py-4 px-6 bg-white border border-gray-100 rounded-[10px] shadow-sm transition-all duration-300">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-[10px] bg-primary-50 flex items-center justify-center transition-all duration-300">
-                            <AdjustmentsHorizontalIcon className="w-5 h-5 text-primary-600" />
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="text-[14px] font-bold text-gray-900 leading-none">Advanced Filter</div>
-                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">More Options</div>
+                {/* Selected filters — chips with × to remove */}
+                {activeFiltersList.length > 0 && (
+                    <div className="space-y-2">
+                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Selected</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {activeFiltersList.map(({ label, key, valueToRemove }) => {
+                                const chipKey = valueToRemove != null ? `${key}-${valueToRemove}` : key;
+                                const isExiting = exitingChipKeys.has(chipKey);
+                                const handleRemove = () => {
+                                    setExitingChipKeys(prev => new Set(prev).add(chipKey));
+                                    setTimeout(() => {
+                                        valueToRemove != null ? clearFilterValue(key, valueToRemove) : handleFilterChange(key, '');
+                                        setExitingChipKeys(prev => { const n = new Set(prev); n.delete(chipKey); return n; });
+                                    }, 200);
+                                };
+                                return (
+                                    <span
+                                        key={chipKey}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${
+                                            isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
+                                        }`}
+                                        style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
+                                    >
+                                        <span className="break-words max-w-[140px] min-w-0">{label}</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemove}
+                                            className="flex-shrink-0 p-0.5 rounded-full hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors"
+                                            aria-label={`Remove ${label}`}
+                                        >
+                                            <XMarkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                        </button>
+                                    </span>
+                                );
+                            })}
                         </div>
                     </div>
-                    <button
-                        onClick={() => {
-                            const newValue = !isAdvancedFilter;
-                            setIsAdvancedFilter(newValue);
-                            localStorage.setItem('is_advanced_filter', newValue);
-                        }}
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${isAdvancedFilter ? 'bg-primary-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-                    >
-                        <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-300 ease-in-out ${isAdvancedFilter ? 'translate-x-[20px]' : 'translate-x-[4px]'}`}
-                        />
-                    </button>
-                </div>
-
-                {/* Properties Found Counter */}
-                <div className="flex items-center gap-3 px-2 text-primary-600 text-[16px] font-bold transition-all duration-300 mt-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-primary-600 flex items-center justify-center flex-shrink-0">
-                        <CheckIcon className="w-3.5 h-3.5 stroke-[4]" />
-                    </div>
-                    <span>{total} {total === 1 ? 'Property' : 'Properties'} Found</span>
-                </div>
+                )}
 
                 {/* Text Search — applied only when user clicks Search (Apply) */}
                 <div className="space-y-2">
-                    <label className="block text-sm font-bold text-gray-900">Search by text</label>
+                    <label className="block text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Search by text</label>
                     <input
                         type="text"
                         value={pendingFilters.search ?? ''}
-                        onChange={(e) => updatePendingFilters({ search: e.target.value })}
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            updatePendingFilters({ search: v });
+                            setSearchTerm(v);
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
                         placeholder="Keyword, location, property name..."
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm font-medium placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all"
+                        className="w-full px-4 py-3 min-h-[48px] rounded-full border border-gray-200 bg-white text-gray-900 text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-500 transition-all"
                     />
                 </div>
 
                 {/* Filter Sections */}
-                <div className="space-y-3">
+                <div className="space-y-10">
 
 
-                    {/* LISTING TYPE (Buy/Rent) */}
+                    {/* LISTING TYPE (Buy/Rent) — multi-select */}
                     <FilterCard
                         title="Listing Type"
                         icon={FilterIcons.tag}
                     >
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5">
                             {listingTypeOptions.map(({ value, label }) => {
-                                const isActive = filters.listing_type === value;
+                                const selectedSet = new Set((filters.listing_type || '').split(',').filter(Boolean));
+                                const isActive = value === '' ? selectedSet.size === 0 : selectedSet.has(value);
+                                const IconComp = listingTypeIconMap[value];
                                 return (
                                     <FilterPill
-                                        key={value}
+                                        key={value || 'all'}
                                         label={label}
                                         isActive={isActive}
-                                        onClick={() => handleFilterChange('listing_type', value)}
+                                        onClick={() => toggleMultiFilter('listing_type', value)}
+                                        icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
                                     />
                                 );
                             })}
                         </div>
                     </FilterCard>
 
-                    {/* PROPERTY TYPE */}
+                    {/* PROPERTY TYPE — multi-select */}
                     <FilterCard
                         title="Property Type"
                         icon={FilterIcons.property}
                     >
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5">
                             {propertyTypeOptions.map(({ value, label }) => {
-                                const isActive = filters.type === value || (!filters.type && value === '');
+                                const selectedSet = new Set((filters.type || '').split(',').filter(Boolean));
+                                const isActive = value === '' ? selectedSet.size === 0 : selectedSet.has(value);
+                                const IconComp = propertyTypeIconMap[value];
                                 return (
                                     <FilterPill
-                                        key={value}
+                                        key={value || 'all'}
                                         label={label}
                                         isActive={isActive}
-                                        onClick={() => handleFilterChange('type', value)}
+                                        onClick={() => toggleMultiFilter('type', value)}
+                                        icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
                                     />
                                 );
                             })}
                         </div>
                     </FilterCard>
 
-                    {/* BEDROOMS */}
+                    {/* ROOMS AND BEDS */}
                     <FilterCard
-                        title="Bedrooms"
+                        title="Rooms and beds"
                         icon={FilterIcons.bed}
+                        titleTag="h2"
+                        titleClassName="font-medium"
                     >
-                        <div className="flex flex-wrap gap-2">
-                            {bedroomOptions.map(({ value, label }) => {
-                                const isActive = filters.bedrooms === value || (!filters.bedrooms && value === '');
-                                return (
-                                    <FilterPill
-                                        key={value}
-                                        label={label}
-                                        isActive={isActive}
-                                        onClick={() => handleFilterChange('bedrooms', value)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </FilterCard>
-
-                    {/* BATHROOMS */}
-                    <FilterCard
-                        title="Bathrooms"
-                        icon={FilterIcons.bath}
-                    >
-                        <div className="flex flex-wrap gap-2">
-                            {bathroomOptions.map(({ value, label }) => {
-                                const isActive = filters.bathrooms === value || (!filters.bathrooms && value === '');
-                                return (
-                                    <FilterPill
-                                        key={value}
-                                        label={label}
-                                        isActive={isActive}
-                                        onClick={() => handleFilterChange('bathrooms', value)}
-                                    />
-                                );
-                            })}
+                        <div className="space-y-4">
+                            <RoomStepperRow
+                                label="Bedrooms"
+                                options={bedroomOptions}
+                                value={filters.bedrooms}
+                                onChange={(v) => handleFilterChange('bedrooms', v)}
+                            />
+                            <RoomStepperRow
+                                label="Bathrooms"
+                                options={bathroomOptions}
+                                value={filters.bathrooms}
+                                onChange={(v) => handleFilterChange('bathrooms', v)}
+                            />
                         </div>
                     </FilterCard>
 
@@ -838,14 +929,14 @@ const ListingsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-gray-50 border border-gray-100 rounded-[10px] transition-all group shadow-sm hover:border-primary-500/30 hover:bg-white"
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white border border-gray-200 rounded-full transition-all group hover:border-gray-400"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-primary-600/70 group-hover:text-primary-600 transition-colors" />
-                                    <span className="font-semibold text-gray-500 group-hover:text-gray-700">Search transit station...</span>
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700">Search transit station...</span>
                                 </div>
-                                <div className="bg-primary-600 text-white p-2 rounded-full shadow-md shadow-primary-900/10 active:scale-95 transition-all flex items-center justify-center">
-                                    <MapIcon className="w-5 h-5" strokeWidth={2} />
+                                <div className="bg-white border border-gray-800 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-5 h-5 text-gray-800" strokeWidth={2} />
                                 </div>
                             </button>
 
@@ -860,13 +951,13 @@ const ListingsPage = () => {
                                             const newIds = currentIds.filter(i => i !== id);
                                             handleFilterChange('station_id', newIds.join(','));
                                         }}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 hover:bg-primary-100 rounded-full transition-colors group"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-800 hover:border-gray-600 rounded-full transition-colors group"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-primary-500" />
-                                        <span className="text-sm font-bold text-primary-600">
+                                        <div className="w-2 h-2 rounded-full bg-gray-800" />
+                                        <span className="text-[13px] font-normal text-gray-900">
                                             {station ? station.label : id}
                                         </span>
-                                        <XMarkIcon className="w-4 h-4 text-primary-500 group-hover:text-primary-600" strokeWidth={2.5} />
+                                        <XMarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-800" strokeWidth={2.5} />
                                     </button>
                                 );
                             })}
@@ -885,10 +976,10 @@ const ListingsPage = () => {
                             initialMin={filters.min_price ? parseInt(filters.min_price) : 0}
                             initialMax={filters.max_price ? parseInt(filters.max_price) : 100000000}
                             onChange={({ min, max }) => {
-                                updateFilters({
+                                applyFilters({
                                     min_price: min?.toString() || '',
                                     max_price: max?.toString() || ''
-                                });
+                                }, false);
                             }}
                         />
                     </FilterCard>
@@ -905,60 +996,54 @@ const ListingsPage = () => {
                             initialMin={filters.min_area ? parseInt(filters.min_area) : 0}
                             initialMax={filters.max_area ? parseInt(filters.max_area) : 500}
                             onChange={({ min, max }) => {
-                                updateFilters({
+                                applyFilters({
                                     min_area: min?.toString() || '',
                                     max_area: max?.toString() || ''
-                                });
+                                }, false);
                             }}
                         />
                     </FilterCard>
 
 
-                    {
-                        isAdvancedFilter && (
-                            <>
-                                {/* DEVELOPER FILTER */}
-                                <FilterCard
-                                    title="Developer"
-                                    icon={FilterIcons.developer}
-                                >
-                                    <ScrollableFilterList
-                                        items={(developers || []).map(d => ({
-                                            id: d.id,
-                                            name: d.name,
-                                            subtitle: d.company || 'Real Estate Developer',
-                                            image: d.logo || d.image,
-                                            isAvatar: true
-                                        }))}
-                                        selectedId={filters.developer_id}
-                                        onSelect={id => handleFilterChange('developer_id', id)}
-                                        placeholder="Search developer..."
-                                        allLabel="All Developers"
-                                    />
-                                </FilterCard>
+                    {/* DEVELOPER FILTER */}
+                    <FilterCard
+                        title="Developer"
+                        icon={FilterIcons.developer}
+                    >
+                        <ScrollableFilterList
+                            items={(developers || []).map(d => ({
+                                id: d.id,
+                                name: d.name,
+                                subtitle: d.company || 'Real Estate Developer',
+                                image: d.logo || d.image,
+                                isAvatar: true
+                            }))}
+                            selectedId={filters.developer_id}
+                            onSelect={id => handleFilterChange('developer_id', id)}
+                            placeholder="Search developer..."
+                            allLabel="All Developers"
+                        />
+                    </FilterCard>
 
-                                {/* PROJECT FILTER */}
-                                <FilterCard
-                                    title="Project"
-                                    icon={FilterIcons.project}
-                                >
-                                    <ScrollableFilterList
-                                        items={(projectsList || []).map(p => ({
-                                            id: p.id,
-                                            name: p.name,
-                                            subtitle: p.developer?.name || p.developer_name,
-                                            image: p.cover_image || p.image,
-                                            isAvatar: false
-                                        }))}
-                                        selectedId={filters.project_id}
-                                        onSelect={id => handleFilterChange('project_id', id)}
-                                        placeholder="Search project..."
-                                        allLabel="All Projects"
-                                    />
-                                </FilterCard>
-                            </>
-                        )
-                    }
+                    {/* PROJECT FILTER */}
+                    <FilterCard
+                        title="Project"
+                        icon={FilterIcons.project}
+                    >
+                        <ScrollableFilterList
+                            items={(projectsList || []).map(p => ({
+                                id: p.id,
+                                name: p.name,
+                                subtitle: p.developer?.name || p.developer_name,
+                                image: p.cover_image || p.image,
+                                isAvatar: false
+                            }))}
+                            selectedId={filters.project_id}
+                            onSelect={id => handleFilterChange('project_id', id)}
+                            placeholder="Search project..."
+                            allLabel="All Projects"
+                        />
+                    </FilterCard>
                     {/* Spacer for bottom of sidebar */}
                     <div className="h-12 pointer-events-none" />
                 </div>
@@ -1011,25 +1096,25 @@ const ListingsPage = () => {
                     </div>
                 </div>
             )}
-            {/* --- FILTER SIDEBAR (slide-in from left when Filters clicked) --- */}
+            {/* --- FILTER SIDEBAR (slide-in from right with open/close animation) --- */}
             {isSidebarOpen && (
                 <>
                     <div
-                        className="fixed inset-0 z-[260] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300"
-                        onClick={() => setIsSidebarOpen(false)}
+                        className={`fixed inset-0 z-[260] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 ease-out ${isSidebarClosing ? 'opacity-0' : 'opacity-100'}`}
+                        onClick={closeFilterSidebar}
                         aria-hidden
                     />
                     <aside
-                        className="fixed right-0 top-0 h-full w-full sm:w-[320px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
                         role="dialog"
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-lg font-bold text-gray-900">Filter Settings</h3>
+                            <h3 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
-                                onClick={() => setIsSidebarOpen(false)}
+                                onClick={closeFilterSidebar}
                                 className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                                 aria-label="Close filters"
                             >
@@ -1040,24 +1125,31 @@ const ListingsPage = () => {
                         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
-                        {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; desktop keeps centered layout */}
-                        <div className="flex-shrink-0 px-4 py-4 pb-5 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3">
+                        {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
+                        <div
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3 pt-4 pb-5"
+                            style={{
+                                paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
+                                paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
+                                paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
+                                paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                            }}
+                        >
                             <button
                                 onClick={clearFilters}
                                 disabled={!hasActiveFilters}
-                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
-                                    ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActiveFilters
+                                    ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                     : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                     }`}
                             >
-                                Clear all filters
+                                Clear all
                             </button>
                             <button
-                                onClick={applyFilters}
-                                className="order-2 md:order-1 inline-flex items-center justify-center px-6 py-2.5 md:px-8 md:py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                                onClick={closeFilterSidebar}
+                                className="order-2 md:order-1 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
-                                <MagnifyingGlassIcon className="w-4 h-4 mr-1.5" />
-                                <span>Search</span>
+                                <span>Show {total} {total === 1 ? 'property' : 'properties'}</span>
                             </button>
                         </div>
                     </aside>
@@ -1068,8 +1160,38 @@ const ListingsPage = () => {
 
             {/* --- STANDARD GRID LAYOUT --- */}
             <div className="w-full bg-white min-h-screen relative">
+                {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
+                <div className={`lg:hidden sticky top-0 z-[100] bg-white py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white border border-gray-200">
+                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                            <input
+                                type="search"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                                placeholder="Search properties & filters"
+                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
+                                aria-label="Search properties"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white hover:border-gray-700' : 'bg-white'}`}
+                            aria-label="Open filters"
+                        >
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                            {activeFiltersList.length > 0 && (
+                                <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                    {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
                 {/* Header Mobile */}
-                <div className="pt-4 pb-2 px-4 lg:hidden">
+                <div className="pt-2 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
                         <h1 className="text-xl font-semibold text-gray-900">Properties</h1>
                         <span className="text-sm font-medium text-gray-500">{total} results</span>
@@ -1087,15 +1209,16 @@ const ListingsPage = () => {
                             setSearchTerm('');
                             handleFilterChange('search', '', true);
                         }}
-                        onOpenFilters={() => setIsSidebarOpen(true)}
+                        onOpenFilters={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
                         hasActiveFilters={hasActiveFilters}
+                        activeFilterCount={activeFiltersList.length}
                         viewMode={viewMode}
                         onViewModeChange={setViewMode}
                         isGoogleMapOpen={isGoogleMapOpen}
                         onToggleMapView={toggleMapView}
                         isMapTransitioning={isMapTransitioning}
                         navVisible={navVisible}
-                        isScrolled={isScrolled}
+                        isScrolled={layoutScrolled}
                         filters={filters}
                         onFilterChange={handleFilterChange}
                         onQuickSearchClick={handleQuickSearchFilters}
@@ -1119,20 +1242,20 @@ const ListingsPage = () => {
                                 {/* Desktop Sidebar Fixed Footer */}
                                 <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
-                                        onClick={applyFilters}
-                                        className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                                        onClick={closeFilterSidebar}
+                                        className="px-6 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
                                     >
-                                        Apply Filter
+                                        Show {total} {total === 1 ? 'property' : 'properties'}
                                     </button>
                                     <button
                                         onClick={clearFilters}
                                         disabled={!hasActiveFilters}
                                         className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
-                                            ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                            ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                             : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                             }`}
                                     >
-                                        Clear all filters
+                                        Clear all
                                     </button>
                                 </div>
                             </div>
@@ -1146,9 +1269,15 @@ const ListingsPage = () => {
                                 {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
                                 <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[42%] xl:w-[52%] p-0') : ''}`}>
                                     {initialLoading ? (
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
-                                            {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
-                                        </div>
+                                        isGoogleMapOpen ? (
+                                            <div className="flex items-center justify-center py-16 lg:py-24">
+                                                <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-200 border-t-primary-600" />
+                                            </div>
+                                        ) : (
+                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                                                {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
+                                            </div>
+                                        )
                                     ) : (listings || []).length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
@@ -1160,12 +1289,21 @@ const ListingsPage = () => {
                                                         onMouseEnter={() => isGoogleMapOpen && setListHoveredListingId(l.id)}
                                                         onMouseLeave={() => setListHoveredListingId(null)}
                                                     >
-                                                        <ListingCard listing={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
+                                                        <ListingCard
+                                                            listing={l}
+                                                            viewMode={isGoogleMapOpen ? 'map-list' : viewMode}
+                                                            priceFormat={priceFormat}
+                                                            to={`${location.pathname}?${(function () {
+                                                                const p = new URLSearchParams(searchParams);
+                                                                p.set('detail', l.id);
+                                                                return p.toString();
+                                                            })()}`}
+                                                        />
                                                     </div>
                                                 ))}
-                                                {loading && !initialLoading && (
+                                                {loading && !initialLoading && !isGoogleMapOpen && (
                                                     <div className="contents">
-                                                        {[...Array(viewMode === 'grid' ? (isGoogleMapOpen ? 3 : 6) : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} />)}
+                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
                                                     </div>
                                                 )}
                                             </div>
@@ -1176,7 +1314,7 @@ const ListingsPage = () => {
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                            <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                            <button onClick={clearFilters} className="mt-6 text-red-600 font-bold underline hover:text-red-700">Clear all</button>
                                         </div>
                                     )}
                                 </div>
@@ -1250,28 +1388,6 @@ const ListingsPage = () => {
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
 
-            {/* Mobile Floating Action Button - Filters */}
-            <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] safe-area-bottom pointer-events-none flex items-center gap-3 shadow-2xl rounded-full">
-                <button
-                    onClick={() => toggleMapView()}
-                    className="pointer-events-auto flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
-                >
-                    {isGoogleMapOpen ? <ListBulletIcon className="w-5 h-5 stroke-[2]" /> : <MapIcon className="w-5 h-5 stroke-[2]" />}
-                    <span className="text-sm font-bold tracking-wide">{isGoogleMapOpen ? 'List' : 'Map'}</span>
-                </button>
-                <div className="w-px h-6 bg-gray-700 pointer-events-none" />
-                <button
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="pointer-events-auto relative flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
-                >
-                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-white stroke-[2]" />
-                    <span className="text-sm font-bold tracking-wide">Filters</span>
-                    {hasActiveFilters && (
-                        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-gray-900 translate-x-1/4 -translate-y-1/4" />
-                    )}
-                </button>
-            </div>
-
             {/* Google Maps Modal (Mobile Only) */}
             {
                 (isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
@@ -1288,8 +1404,7 @@ const ListingsPage = () => {
                             </div>
                             <button
                                 onClick={() => toggleMapView(false)}
-                                className="bg-white border border-gray-200 text-gray-700 px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
-                                style={{ borderRadius: 'var(--btn-radius)' }}
+                                className="p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all flex items-center justify-center"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
@@ -1312,7 +1427,7 @@ const ListingsPage = () => {
 
                             {/* Mobile Legend Overlay - Theme Card Style */}
                             <div className="absolute top-4 left-4 right-4 z-10">
-                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
+                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Rent</span>

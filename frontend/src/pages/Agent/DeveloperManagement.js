@@ -343,8 +343,8 @@ const DeveloperManagement = () => {
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                 {editingDev ? 'Edit Developer' : 'Add Developer'}
                             </h3>
-                            <button onClick={handleCloseForm} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
-                                <XMarkIcon className="w-5 h-5" />
+<button onClick={handleCloseForm} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                            <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">

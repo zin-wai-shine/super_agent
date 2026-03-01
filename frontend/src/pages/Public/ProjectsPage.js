@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
@@ -37,7 +37,6 @@ import {
     SparklesIcon,
     ArrowUpIcon,
     TagIcon,
-    CheckIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -118,7 +117,7 @@ const ProjectsPage = () => {
     const { user } = useAuth();
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -155,9 +154,11 @@ const ProjectsPage = () => {
         }
     }, [isMapTransitioning]);
 
-    const [isAdvancedFilter, setIsAdvancedFilter] = useState(() => localStorage.getItem('is_advanced_filter_projects') === 'true');
     const [developers, setDevelopers] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
+    const [isSidebarClosing, setIsSidebarClosing] = useState(false); // For close animation
+    const [sidebarAnimateIn, setSidebarAnimateIn] = useState(false); // Start off-screen for open animation
+    const [exitingChipKeys, setExitingChipKeys] = useState(new Set());
     const [isMapSidebarOpen, setIsMapSidebarOpen] = useState(false); // Sidebar state for Map Overlay
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('projects_view_mode') || 'grid');
@@ -172,11 +173,33 @@ const ProjectsPage = () => {
         const mobileFilters = searchParams.get('mobile_filters');
         if (mobileFilters === '1') {
             setIsSidebarOpen(true);
+            setSidebarAnimateIn(true);
             const next = new URLSearchParams(searchParams);
             next.delete('mobile_filters');
             setSearchParams(next);
         }
     }, [searchParams, setSearchParams]);
+
+    // Start open animation (slide in from right) on next frame
+    useEffect(() => {
+        if (isSidebarOpen && sidebarAnimateIn) {
+            const t = requestAnimationFrame(() => {
+                requestAnimationFrame(() => setSidebarAnimateIn(false));
+            });
+            return () => cancelAnimationFrame(t);
+        }
+    }, [isSidebarOpen, sidebarAnimateIn]);
+
+    // Filter sidebar close animation: slide out then unmount
+    const closeFilterSidebar = useCallback(() => setIsSidebarClosing(true), []);
+    useEffect(() => {
+        if (!isSidebarClosing) return;
+        const t = setTimeout(() => {
+            setIsSidebarOpen(false);
+            setIsSidebarClosing(false);
+        }, 300);
+        return () => clearTimeout(t);
+    }, [isSidebarClosing]);
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
@@ -483,11 +506,13 @@ const ProjectsPage = () => {
         handleFilterChange('station_id', value);
     };
 
-    const applyFilters = () => {
+    const applyFilters = (override) => {
+        const next = override ? { ...filters, ...override } : { ...filters };
+        setFilters(next);
         const newParams = new URLSearchParams(searchParams);
         const view = searchParams.get('view');
         ['project_type', 'status', 'station_id', 'developer_id', 'search'].forEach(key => {
-            const v = filters[key];
+            const v = next[key];
             if (v) newParams.set(key, v);
             else newParams.delete(key);
         });
@@ -495,6 +520,7 @@ const ProjectsPage = () => {
         setSearchParams(newParams);
         setPage(1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        setIsSidebarClosing(true);
     };
 
     const clearFilters = () => {
@@ -542,41 +568,46 @@ const ProjectsPage = () => {
     const renderFilterContent = () => {
         return (
             <div className="space-y-6 [&>*:first-child]:mt-0">
-                {/* Advanced Filter Toggle */}
-                <div className="flex items-center justify-between py-4 px-6 bg-white border border-gray-100 rounded-[10px] shadow-sm transition-all duration-300">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-[10px] bg-primary-50 flex items-center justify-center transition-all duration-300">
-                            <AdjustmentsHorizontalIcon className="w-5 h-5 text-primary-600" />
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="text-[14px] font-bold text-gray-900 leading-none">Advanced Filter</div>
-                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">More Options</div>
+                {/* Selected filters — chips with × to remove */}
+                {activeFiltersList.length > 0 && (
+                    <div className="space-y-2">
+                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Selected</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {activeFiltersList.map(({ label, key }) => {
+                                const isExiting = exitingChipKeys.has(key);
+                                const handleRemove = () => {
+                                    setExitingChipKeys(prev => new Set(prev).add(key));
+                                    setTimeout(() => {
+                                        handleFilterChange(key, '');
+                                        setExitingChipKeys(prev => { const n = new Set(prev); n.delete(key); return n; });
+                                    }, 200);
+                                };
+                                return (
+                                    <span
+                                        key={key}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${
+                                            isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
+                                        }`}
+                                        style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
+                                    >
+                                        <span className="break-words max-w-[140px] min-w-0">{label}</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemove}
+                                            className="flex-shrink-0 p-0.5 rounded-full hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors"
+                                            aria-label={`Remove ${label}`}
+                                        >
+                                            <XMarkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                        </button>
+                                    </span>
+                                );
+                            })}
                         </div>
                     </div>
-                    <button
-                        onClick={() => {
-                            const newValue = !isAdvancedFilter;
-                            setIsAdvancedFilter(newValue);
-                            localStorage.setItem('is_advanced_filter_projects', newValue);
-                        }}
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${isAdvancedFilter ? 'bg-primary-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-                    >
-                        <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-300 ease-in-out ${isAdvancedFilter ? 'translate-x-[20px]' : 'translate-x-[4px]'}`}
-                        />
-                    </button>
-                </div>
-
-                {/* Projects Found Counter */}
-                <div className="flex items-center gap-3 px-2 text-primary-600 text-[16px] font-bold transition-all duration-300 mt-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-primary-600 flex items-center justify-center flex-shrink-0">
-                        <CheckIcon className="w-3.5 h-3.5 stroke-[4]" />
-                    </div>
-                    <span>{total} {total === 1 ? 'Project' : 'Projects'} Found</span>
-                </div>
+                )}
 
                 {/* Filter Sections */}
-                <div className="space-y-3">
+                <div className="space-y-10">
 
 
                     {/* PROJECT TYPE - Pill Select */}
@@ -584,7 +615,7 @@ const ProjectsPage = () => {
                         title="Project Type"
                         icon={FilterIcons.propertyType}
                     >
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5">
                             {/* All option */}
                             <FilterPill
                                 label="All Types"
@@ -621,7 +652,7 @@ const ProjectsPage = () => {
                         title="Project Status"
                         icon={FilterIcons.projectStatus}
                     >
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5">
                             {/* All option */}
                             <FilterPill
                                 label="All Statuses"
@@ -660,14 +691,14 @@ const ProjectsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-gray-50 border border-gray-100 rounded-[10px] transition-all group shadow-sm hover:border-primary-500/30 hover:bg-white"
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white border border-gray-200 rounded-full transition-all group hover:border-gray-400"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-primary-600/70 group-hover:text-primary-600 transition-colors" />
-                                    <span className="font-semibold text-gray-500 group-hover:text-gray-700">Search transit station...</span>
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700">Search transit station...</span>
                                 </div>
-                                <div className="bg-primary-600 text-white p-2 rounded-full shadow-md shadow-primary-900/10 active:scale-95 transition-all flex items-center justify-center">
-                                    <MapIcon className="w-5 h-5" strokeWidth={2} />
+                                <div className="bg-white border border-gray-800 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-5 h-5 text-gray-800" strokeWidth={2} />
                                 </div>
                             </button>
 
@@ -682,13 +713,13 @@ const ProjectsPage = () => {
                                             const newIds = currentIds.filter(i => i !== id);
                                             handleFilterChange('station_id', newIds.join(','));
                                         }}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 hover:bg-primary-100 rounded-full transition-colors group"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-800 hover:border-gray-600 rounded-full transition-colors group"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-[#00D06C]" />
-                                        <span className="text-sm font-bold text-primary-600">
+                                        <div className="w-2 h-2 rounded-full bg-gray-800" />
+                                        <span className="text-[13px] font-normal text-gray-900">
                                             {station ? station.label : id}
                                         </span>
-                                        <XMarkIcon className="w-4 h-4 text-primary-500 group-hover:text-primary-600" strokeWidth={2.5} />
+                                        <XMarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-800" strokeWidth={2.5} />
                                     </button>
                                 );
                             })}
@@ -714,31 +745,25 @@ const ProjectsPage = () => {
                     </FilterCard>
 
 
-                    {
-                        isAdvancedFilter && (
-                            <>
-                                {/* DEVELOPER FILTER */}
-                                <FilterCard
-                                    title="Developer"
-                                    icon={FilterIcons.developer}
-                                >
-                                    <ScrollableFilterList
-                                        items={(developers || []).map(d => ({
-                                            id: d.id,
-                                            name: d.name,
-                                            subtitle: d.company || 'Real Estate Developer',
-                                            image: d.logo || d.image,
-                                            isAvatar: true
-                                        }))}
-                                        selectedId={filters.developer_id}
-                                        onSelect={id => handleSelectChange('developer_id', id)}
-                                        placeholder="Search developer..."
-                                        allLabel="All Developers"
-                                    />
-                                </FilterCard>
-                            </>
-                        )
-                    }
+                    {/* DEVELOPER FILTER */}
+                    <FilterCard
+                        title="Developer"
+                        icon={FilterIcons.developer}
+                    >
+                        <ScrollableFilterList
+                            items={(developers || []).map(d => ({
+                                id: d.id,
+                                name: d.name,
+                                subtitle: d.company || 'Real Estate Developer',
+                                image: d.logo || d.image,
+                                isAvatar: true
+                            }))}
+                            selectedId={filters.developer_id}
+                            onSelect={id => handleSelectChange('developer_id', id)}
+                            placeholder="Search developer..."
+                            allLabel="All Developers"
+                        />
+                    </FilterCard>
                     {/* Spacer for bottom of sidebar */}
                     <div className="h-12 pointer-events-none" />
                 </div>
@@ -791,25 +816,25 @@ const ProjectsPage = () => {
                     </div>
                 </div>
             )}
-            {/* --- FILTER SIDEBAR (slide-in from left when Filters clicked) --- */}
-            {isSidebarOpen && (
+            {/* --- FILTER SIDEBAR (slide-in from right when Filters clicked) --- */}
+            {(isSidebarOpen || isSidebarClosing) && (
                 <>
                     <div
-                        className="fixed inset-0 z-[260] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300"
-                        onClick={() => setIsSidebarOpen(false)}
+                        className={`fixed inset-0 z-[260] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 ease-out ${isSidebarClosing ? 'opacity-0' : 'opacity-100'}`}
+                        onClick={closeFilterSidebar}
                         aria-hidden
                     />
                     <aside
-                        className="fixed right-0 top-0 h-full w-full sm:w-[320px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
                         role="dialog"
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-lg font-bold text-gray-900">Filter Settings</h3>
+                            <h3 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
-                                onClick={() => setIsSidebarOpen(false)}
+                                onClick={closeFilterSidebar}
                                 className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                                 aria-label="Close filters"
                             >
@@ -820,24 +845,31 @@ const ProjectsPage = () => {
                         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
-                        {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; desktop keeps centered layout */}
-                        <div className="flex-shrink-0 px-4 py-4 pb-5 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3">
+                        {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
+                        <div
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3 pt-4 pb-5"
+                            style={{
+                                paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
+                                paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
+                                paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
+                                paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                            }}
+                        >
                             <button
                                 onClick={clearFilters}
                                 disabled={!hasActiveFilters}
-                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
-                                    ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActiveFilters
+                                    ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                     : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                     }`}
                             >
-                                Clear all filters
+                                Clear all
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className="order-2 md:order-1 inline-flex items-center justify-center px-6 py-2.5 md:px-8 md:py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                                className="order-2 md:order-1 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
-                                <MagnifyingGlassIcon className="w-4 h-4 mr-1.5" />
-                                <span>Search</span>
+                                <span>Show {total} {total === 1 ? 'project' : 'projects'}</span>
                             </button>
                         </div>
                     </aside>
@@ -848,8 +880,38 @@ const ProjectsPage = () => {
 
             {/* --- STANDARD GRID LAYOUT --- */}
             <div className="w-full bg-white min-h-screen relative">
+                {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
+                <div className={`lg:hidden sticky top-0 z-[100] bg-white py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white border border-gray-200">
+                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                            <input
+                                type="search"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                                placeholder="Search projects & filters"
+                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
+                                aria-label="Search projects"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white hover:border-gray-700' : 'bg-white'}`}
+                            aria-label="Open filters"
+                        >
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                            {activeFiltersList.length > 0 && (
+                                <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                    {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
                 {/* Header Mobile */}
-                <div className="pt-4 pb-2 px-4 lg:hidden">
+                <div className="pt-2 pb-2 px-4 lg:hidden">
                     <div className="flex items-baseline justify-between">
                         <h1 className="text-xl font-semibold text-gray-900">Projects</h1>
                         <span className="text-sm font-medium text-gray-500">{total} results</span>
@@ -863,15 +925,16 @@ const ProjectsPage = () => {
                         total={total}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
-                        onOpenFilters={() => setIsSidebarOpen(true)}
+                        onOpenFilters={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
                         hasActiveFilters={hasActiveFilters}
+                        activeFilterCount={activeFiltersList.length}
                         viewMode={viewMode}
                         onViewModeChange={setViewMode}
                         isGoogleMapOpen={isGoogleMapOpen}
                         onToggleMapView={toggleMapView}
                         isMapTransitioning={isMapTransitioning}
                         navVisible={navVisible}
-                        isScrolled={isScrolled}
+                        isScrolled={layoutScrolled}
                         filters={filters}
                         onFilterChange={handleFilterChange}
                     />,
@@ -894,19 +957,19 @@ const ProjectsPage = () => {
                                 <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
                                         onClick={applyFilters}
-                                        className="px-8 py-3 rounded-full text-[13px] font-bold transition-all duration-300 bg-primary-600 text-white hover:bg-primary-700 border border-primary-600 shadow-sm hover:shadow-md"
+                                        className="px-6 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
                                     >
-                                        Apply Filter
+                                        Show {total} {total === 1 ? 'project' : 'projects'}
                                     </button>
                                     <button
                                         onClick={clearFilters}
                                         disabled={!hasActiveFilters}
                                         className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
-                                            ? 'bg-transparent border-none text-rose-600 hover:text-rose-700'
+                                            ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                             : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                             }`}
                                     >
-                                        Clear all filters
+                                        Clear all
                                     </button>
                                 </div>
                             </div>
@@ -949,7 +1012,7 @@ const ProjectsPage = () => {
                                             <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                                             <h3 className="text-xl font-bold text-gray-900">No projects found</h3>
                                             <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                            <button onClick={clearFilters} className="mt-6 text-primary-600 font-bold underline">Clear all filters</button>
+                                            <button onClick={clearFilters} className="mt-6 text-red-600 font-bold underline hover:text-red-700">Clear all</button>
                                         </div>
                                     )}
                                 </div>
@@ -1016,13 +1079,15 @@ const ProjectsPage = () => {
                 </button>
                 <div className="w-px h-6 bg-gray-700 pointer-events-none" />
                 <button
-                    onClick={() => setIsSidebarOpen(true)}
+                    onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
                     className="pointer-events-auto relative flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
                 >
                     <AdjustmentsHorizontalIcon className="w-5 h-5 text-white stroke-[2]" />
                     <span className="text-sm font-bold tracking-wide">Filters</span>
-                    {hasActiveFilters && (
-                        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-primary-600 rounded-full border-2 border-gray-900 translate-x-1/4 -translate-y-1/4" />
+                    {activeFiltersList.length > 0 && (
+                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-white text-gray-900 text-[11px] font-semibold border-2 border-gray-900 shadow-sm leading-none">
+                            {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
+                        </span>
                     )}
                 </button>
             </div>
@@ -1043,8 +1108,7 @@ const ProjectsPage = () => {
                             </div>
                             <button
                                 onClick={() => toggleMapView(false)}
-                                className="bg-white border border-gray-200 text-gray-700 px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
-                                style={{ borderRadius: 'var(--btn-radius)' }}
+                                className="p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all flex items-center justify-center"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
@@ -1064,7 +1128,7 @@ const ProjectsPage = () => {
 
                             {/* Mobile Legend Overlay - Theme Card Style */}
                             <div className="absolute top-4 left-4 right-4 z-10">
-                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
+                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Rent</span>

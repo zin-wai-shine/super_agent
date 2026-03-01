@@ -2,13 +2,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-    HomeIcon,
     MagnifyingGlassIcon,
     BuildingOfficeIcon,
     UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import {
-    HomeIcon as HomeSolid,
     MagnifyingGlassIcon as SearchSolid,
     BuildingOfficeIcon as BuildingSolid,
     UserCircleIcon as UserSolid,
@@ -54,7 +52,7 @@ const MobileBottomNav = () => {
         }
 
         if (item.name === 'Properties') {
-            return location.pathname === '/listings';
+            return location.pathname === '/' || location.pathname.startsWith('/listings');
         }
 
         // Strict prefix matching for other routes (Profile)
@@ -63,12 +61,6 @@ const MobileBottomNav = () => {
     };
 
     const navItems = [
-        {
-            name: 'Home',
-            path: '/',
-            icon: HomeIcon,
-            activeIcon: HomeSolid
-        },
         {
             name: 'Properties',
             path: '/listings',
@@ -95,8 +87,16 @@ const MobileBottomNav = () => {
 
     return (
         /* Full Width Bottom Nav - Scroll Aware */
-        <div className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 border-t border-gray-200 pb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}>
-            <div className="grid grid-cols-4 h-[72px] items-center px-4">
+        <div
+            className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 border-t border-gray-200 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}
+            style={{
+                paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+                paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
+                paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
+            }}
+        >
+            <div className="grid grid-cols-4 h-[72px] items-center px-4 min-h-[72px]">
                 {allItems.map((item) => {
                     const active = isActive(item);
                     const Icon = active ? item.activeIcon : item.icon;

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -116,7 +117,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		c.Set("is_main_domain", isMainDomain)
 
 		if !isMainDomain {
-			// 1. Try to resolve as a subdomain of main domain
+			// 1. Try to resolve as a subdomain of main domain (e.g. domono.superealestate.localhost)
 			mainDomainWithDot := "." + cfg.MainDomain
 			if strings.HasSuffix(domain, mainDomainWithDot) {
 				subdomain := strings.TrimSuffix(domain, mainDomainWithDot)
@@ -126,6 +127,25 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 						tenantID = agent.ID
 						tenant = &agent
 						foundTenant = true
+					}
+				}
+			}
+			// 1b. Mobile / same network: subdomain.superealestate.<IP> (e.g. domono.superealestate.192.168.1.5)
+			if !foundTenant {
+				mainDomainBase := cfg.MainDomain
+				if idx := strings.Index(cfg.MainDomain, "."); idx > 0 {
+					mainDomainBase = cfg.MainDomain[:idx]
+				}
+				prefix := "." + mainDomainBase + "."
+				if strings.Contains(domain, prefix) {
+					subdomain := strings.Split(domain, prefix)[0]
+					if subdomain != "" && subdomain != "www" && subdomain != "api" {
+						var agent models.Agent
+						if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+							tenantID = agent.ID
+							tenant = &agent
+							foundTenant = true
+						}
 					}
 				}
 			}
@@ -158,6 +178,19 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 					c.Set("tenant_id", agent.ID)
 					c.Set("tenant", &agent)
 					c.Set("is_main_domain", false)
+				}
+			}
+		}
+
+		// Mobile / IP access: when Host is an IP (browser connected by IP), resolve tenant from X-Tenant header
+		if !foundTenant && net.ParseIP(domain) != nil {
+			if subdomain := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomain != "" && subdomain != "www" && subdomain != "api" {
+				var agent models.Agent
+				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+					c.Set("tenant_id", agent.ID)
+					c.Set("tenant", &agent)
+					c.Set("is_main_domain", false)
+					foundTenant = true
 				}
 			}
 		}

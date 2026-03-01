@@ -29,6 +29,7 @@ const FilterBar = ({
     onSearchChange,
     onOpenFilters,
     hasActiveFilters = false,
+    activeFilterCount = 0,
     viewMode = 'grid',
     onViewModeChange,
     isGoogleMapOpen = false,
@@ -137,8 +138,10 @@ const FilterBar = ({
                 />,
                 document.body
             )}
-        <div className={`w-full ${!isModalVariant ? 'fixed left-0 right-0' : ''} z-[100] pointer-events-none transition-all duration-500 ease-in-out ${!isModalVariant && navVisible ? 'top-[4rem]' : !isModalVariant ? 'top-0' : ''} ${!isModalVariant ? 'bg-white' : ''} ${className}`}>
-            <div className="relative w-full transition-all duration-300 pointer-events-auto">
+        <div
+                className={`w-full ${!isModalVariant ? 'fixed left-0 right-0' : ''} z-[100] pointer-events-none transition-all duration-500 ease-in-out ${!isModalVariant && navVisible ? 'top-[4rem]' : !isModalVariant ? 'top-0' : ''} ${!isModalVariant ? 'bg-white' : ''} ${className}`}
+            >
+                <div className={`relative w-full transition-all duration-300 pointer-events-auto ${!isModalVariant && isScrolled ? 'shadow-lg' : ''}`}>
                 {/* Same inner width as nav bar: max-w-[1440px] + px-6 lg:px-12 */}
                 <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
                 <div
@@ -150,9 +153,9 @@ const FilterBar = ({
                         {/* Search Section — centered; 50% → 85% / lg 95% / xl 80% when focused; expand & reduce animated */}
                         <div className={`relative flex-shrink-0 transition-[width] duration-300 ease-in-out ${isFocused ? 'w-[85%] lg:w-[95%] xl:w-[80%]' : 'w-[50%] max-w-[520px] min-w-[260px]'}`}>
                             {/* Search input wrapper */}
-                            <div className={`relative group h-[52px] bg-[#F9FAFC] lg:bg-white border border-primary-500/30 ${isFocused
+                            <div className={`relative group h-[52px] min-h-[44px] bg-[#F9FAFC] lg:bg-white border border-primary-500/30 ${isFocused
                                 ? 'rounded-t-[24px] rounded-b-none border-b-transparent'
-                                : 'rounded-[24px]'
+                                : 'rounded-full'
                                 }`} style={{ transition: 'border-color 0.2s ease, background-color 0.2s ease' }}>
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                                     <MagnifyingGlassIcon className={`w-6 h-6 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
@@ -166,7 +169,7 @@ const FilterBar = ({
                                     onFocus={handleFocus}
                                     onBlur={handleBlur}
                                     placeholder="Search location, name, neighborhood..."
-                                    className="w-full h-full bg-[#F9FAFC] lg:bg-white pl-12 pr-[3.25rem] text-[14px] font-medium text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-[24px]"
+                                    className="w-full h-full min-h-[44px] bg-[#F9FAFC] lg:bg-white pl-12 pr-[3.25rem] text-[15px] sm:text-[14px] font-medium text-gray-700 placeholder-gray-400 outline-none border-none focus:ring-0 rounded-full"
                                 />
 
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px] gap-1">
@@ -174,7 +177,7 @@ const FilterBar = ({
                                     {inputValue && (
                                         <button
                                             onClick={handleClear}
-                                            className="px-2 h-full flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                            className="p-2 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                                         >
                                             <XMarkIcon className="w-4 h-4" />
                                         </button>
@@ -200,7 +203,7 @@ const FilterBar = ({
                                     {/* Left Column: Quick Searches (1/3) */}
                                     <div className="w-[320px] flex-shrink-0 flex flex-col bg-[#F9FAFC] lg:bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
                                         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                                            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
+                                            <p className="text-[13px] sm:text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
                                             <div className="space-y-1">
                                                 {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                                     <button
@@ -210,7 +213,7 @@ const FilterBar = ({
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <Icon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                                                            <span className="text-[13px] text-gray-600 font-medium group-hover:text-gray-900 transition-colors">{label}</span>
+                                                            <span className="text-[15px] sm:text-[13px] text-gray-600 font-medium group-hover:text-gray-900 transition-colors">{label}</span>
                                                         </div>
                                                         <ChevronRightIcon className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
                                                     </button>
@@ -221,7 +224,7 @@ const FilterBar = ({
                                         {/* Footer hint */}
                                         <div className="px-6 py-4 bg-gray-50/80 border-t border-gray-100 flex items-center gap-1.5 mt-auto">
                                             <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-                                            <p className="text-[11px] text-gray-400 font-bold tracking-tight">Press Enter to search all results</p>
+                                            <p className="text-[13px] sm:text-[11px] text-gray-400 font-bold tracking-tight">Press Enter to search all results</p>
                                         </div>
                                     </div>
 
@@ -233,7 +236,7 @@ const FilterBar = ({
                                                 <div className="bg-primary-600 p-1 rounded-full">
                                                     <MapIcon className="w-3.5 h-3.5 text-white" />
                                                 </div>
-                                                <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Transit Explorer</span>
+                                                <span className="text-[13px] sm:text-[11px] font-black text-gray-900 uppercase tracking-widest">Transit Explorer</span>
                                             </div>
                                         </div>
 
@@ -267,14 +270,14 @@ const FilterBar = ({
                         <div className="flex-1 flex items-center justify-end gap-3 min-w-0 pl-2">
                         {!isFocused && (
                         <>
-                        {/* Map View switch — at lg icon + toggle only, no container bg; at xl show text and container */}
+                        {/* Map View switch — hidden on mobile; at lg icon + toggle only; at xl show text and container */}
                         {showMapToggle && onToggleMapView && (
-                            <div className="h-[52px] flex items-center justify-between gap-3 pl-3 pr-2 lg:pl-2 lg:pr-2 lg:min-w-0 py-1.5 rounded-full transition-all duration-300 flex-shrink-0 bg-transparent border-transparent shadow-none">
+                            <div className="hidden md:flex h-[52px] items-center justify-between gap-3 pl-3 pr-2 lg:pl-2 lg:pr-2 lg:min-w-0 py-1.5 rounded-full transition-all duration-300 flex-shrink-0 bg-transparent border-transparent shadow-none">
                                 <div className="flex items-center gap-3 lg:gap-2">
                                     <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
                                         <MapIcon className={`w-6 h-6 text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />
                                     </div>
-                                    <span className="text-[14px] font-medium text-gray-900 lg:hidden xl:inline">Map View</span>
+                                    <span className="text-[15px] sm:text-[14px] font-medium text-gray-900 lg:hidden xl:inline">Map View</span>
                                 </div>
                                 <button
                                     type="button"
@@ -289,8 +292,8 @@ const FilterBar = ({
                             </div>
                         )}
 
-                        {/* Filters — in map view always show; in list view show only at lg; at lg no container bg, at xl show text + container */}
-                        <div className={`h-[52px] flex items-center flex-shrink-0 ${!isGoogleMapOpen ? 'hidden lg:flex' : ''}`}>
+                        {/* Filters — hidden on mobile; in map view show from md; in list view show from lg */}
+                        <div className={`h-[52px] flex items-center flex-shrink-0 hidden ${isGoogleMapOpen ? 'md:flex' : 'lg:flex'}`}>
                             <button
                                 type="button"
                                 onClick={onOpenFilters}
@@ -303,16 +306,15 @@ const FilterBar = ({
                                   relative group"
                                 aria-label="Filters"
                             >
-                                <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-                                    <AdjustmentsHorizontalIcon className="w-6 h-6 text-white" />
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 relative ${activeFilterCount > 0 ? 'border-2 border-gray-800 bg-white group-hover:scale-105 group-hover:border-gray-700' : 'bg-white'}`}>
+                                    <AdjustmentsHorizontalIcon className={`text-gray-800 ${activeFilterCount > 0 ? 'w-5 h-5' : 'w-7 h-7'}`} />
+                                    {activeFilterCount > 0 && (
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                            {activeFilterCount > 99 ? '99+' : activeFilterCount}
+                                        </span>
+                                    )}
                                 </div>
-                                <span className="text-[14px] font-medium text-gray-900 group-hover:text-primary-700 transition-colors lg:hidden xl:inline">Filters</span>
-                                {hasActiveFilters && (
-                                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 z-10">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-white" />
-                                    </span>
-                                )}
+                                <span className="text-[15px] sm:text-[14px] font-medium text-gray-900 group-hover:text-primary-700 transition-colors lg:hidden xl:inline">Filters</span>
                             </button>
                         </div>
                         </>

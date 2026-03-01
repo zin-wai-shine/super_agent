@@ -9,6 +9,28 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { DashboardThemeProvider } from './contexts/DashboardThemeContext';
 import './index.css';
 
+// Suppress benign ResizeObserver loop error (browser quirk when layout triggers more resize callbacks in same frame)
+const resizeObserverErr = (msg) => typeof msg === 'string' && msg.includes('ResizeObserver loop');
+window.addEventListener('error', (e) => {
+    if (resizeObserverErr(e.message)) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return true;
+    }
+}, true);
+const prevOnError = window.onerror;
+window.onerror = function (message, source, lineno, colno, error) {
+    if (resizeObserverErr(message)) return true;
+    return prevOnError ? prevOnError(message, source, lineno, colno, error) : false;
+};
+window.addEventListener('unhandledrejection', (e) => {
+    const msg = e.reason?.message || e.reason?.toString?.() || '';
+    if (typeof msg === 'string' && msg.includes('ResizeObserver loop')) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+}, true);
+
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);

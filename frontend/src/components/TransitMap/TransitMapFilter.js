@@ -17,14 +17,18 @@ const TransitMapFilter = ({
     const [loading, setLoading] = useState(true);
     const stations = externalStations || internalStations;
     const [markers, setMarkers] = useState([]); // Array of {id, x, y}
-    const [zoom, setZoom] = useState(1.15);
+    const [zoom, setZoom] = useState(1.55);
     const [pan, setPan] = useState({ x: 0, y: 0 });
+    const [isInteracting, setIsInteracting] = useState(false); // no transition during drag/zoom for smooth follow
     const [searchTerm, setSearchTerm] = useState('');
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef(null);
 
     const svgContainerRef = useRef(null);
     const mapWrapperRef = useRef(null);
+    const touchStateRef = useRef(null);
+    const panZoomRef = useRef({ pan, zoom });
+    useEffect(() => { panZoomRef.current = { pan, zoom }; }, [pan, zoom]);
 
     // Center on mount
     useEffect(() => {
@@ -39,6 +43,19 @@ const TransitMapFilter = ({
         const initialPanY = (wrapperHeight - mapHeight * zoom) / 2;
 
         setPan({ x: initialPanX, y: initialPanY });
+    }, []);
+
+    // Touch move with passive: false so preventDefault works on mobile (React default is passive: true)
+    useEffect(() => {
+        const el = mapWrapperRef.current;
+        if (!el) return;
+        const handleTouchMove = (e) => {
+            if (touchStateRef.current && (e.touches.length === 1 || e.touches.length === 2)) {
+                e.preventDefault();
+            }
+        };
+        el.addEventListener('touchmove', handleTouchMove, { passive: false });
+        return () => el.removeEventListener('touchmove', handleTouchMove);
     }, []);
 
     // Close search results on click outside
@@ -120,12 +137,17 @@ const TransitMapFilter = ({
             const stationGroup = container.querySelector(`[data-station-id="${id}"]`);
             if (stationGroup) {
                 stationGroup.classList.add('is-selected');
-                const circle = stationGroup.querySelector('circle');
-                if (circle) {
+                const circles = stationGroup.querySelectorAll('circle');
+                if (circles.length > 0) {
+                    let cx = 0, cy = 0;
+                    circles.forEach(c => {
+                        cx += parseFloat(c.getAttribute('cx') || 0);
+                        cy += parseFloat(c.getAttribute('cy') || 0);
+                    });
                     newMarkers.push({
                         id,
-                        x: parseFloat(circle.getAttribute('cx')),
-                        y: parseFloat(circle.getAttribute('cy'))
+                        x: cx / circles.length,
+                        y: cy / circles.length
                     });
                 }
             }
@@ -152,10 +174,15 @@ const TransitMapFilter = ({
 
         const stationGroup = container.querySelector(`[data-station-id="${selectedStation}"]`);
         if (stationGroup) {
-            const circle = stationGroup.querySelector('circle');
-            if (circle) {
-                const cx = parseFloat(circle.getAttribute('cx'));
-                const cy = parseFloat(circle.getAttribute('cy'));
+            const circles = stationGroup.querySelectorAll('circle');
+            if (circles.length > 0) {
+                let cx = 0, cy = 0;
+                circles.forEach(c => {
+                    cx += parseFloat(c.getAttribute('cx') || 0);
+                    cy += parseFloat(c.getAttribute('cy') || 0);
+                });
+                cx /= circles.length;
+                cy /= circles.length;
 
                 // Targeted zoom on selection
                 const targetZoom = 2.5;
@@ -168,13 +195,13 @@ const TransitMapFilter = ({
         }
     }, [selectedStation, loading]);
 
-    // Constrain Pan Logic
+    // Constrain Pan Logic — use actual map size (1368×1340) and small buffer so right/bottom stations are reachable
     const constrainPan = (newPan, currentZoom) => {
         if (!mapWrapperRef.current) return newPan;
 
         const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
-        const mapWidth = 1450;
-        const mapHeight = 1450;
+        const mapWidth = 1368;
+        const mapHeight = 1340;
 
         const scaledWidth = mapWidth * currentZoom;
         const scaledHeight = mapHeight * currentZoom;
@@ -182,7 +209,7 @@ const TransitMapFilter = ({
         let constrainedX = newPan.x;
         let constrainedY = newPan.y;
 
-        const bufferX = wrapperWidth * 0.4;
+        const bufferX = Math.min(24, wrapperWidth * 0.08);
 
         if (scaledWidth <= wrapperWidth) {
             constrainedX = (wrapperWidth - scaledWidth) / 2;
@@ -192,7 +219,7 @@ const TransitMapFilter = ({
             constrainedX = Math.min(maxX, Math.max(minX, newPan.x));
         }
 
-        const bufferY = wrapperHeight * 0.4;
+        const bufferY = Math.min(24, wrapperHeight * 0.08);
 
         if (scaledHeight <= wrapperHeight) {
             constrainedY = (wrapperHeight - scaledHeight) / 2;
@@ -212,7 +239,7 @@ const TransitMapFilter = ({
     };
 
     return (
-        <div className="relative h-full flex flex-col">
+        <div className="relative h-full min-h-0 flex flex-col flex-1">
             {/* Conditional Header with Integrated Search */}
             {!hideHeader && (showTitle || searchable) && (
                 <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 shadow-md flex-shrink-0 z-[110] relative">
@@ -348,7 +375,7 @@ const TransitMapFilter = ({
 
                     <button
                         onClick={() => {
-                            const defaultZoom = 1.15;
+                            const defaultZoom = 1.55;
                             const { width: wrapperWidth, height: wrapperHeight } = mapWrapperRef.current.getBoundingClientRect();
                             const initialPanX = (wrapperWidth - 1368 * defaultZoom) / 2;
                             const initialPanY = (wrapperHeight - 1340 * defaultZoom) / 2;
@@ -370,6 +397,7 @@ const TransitMapFilter = ({
                     className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50 z-10"
                     style={{ overflow: 'hidden', touchAction: 'none' }}
                     onMouseDown={(e) => {
+                        setIsInteracting(true);
                         const startX = e.pageX - pan.x;
                         const startY = e.pageY - pan.y;
 
@@ -381,10 +409,81 @@ const TransitMapFilter = ({
                         const handleMouseUp = () => {
                             window.removeEventListener('mousemove', handleMouseMove);
                             window.removeEventListener('mouseup', handleMouseUp);
+                            setIsInteracting(false);
                         };
 
                         window.addEventListener('mousemove', handleMouseMove);
                         window.addEventListener('mouseup', handleMouseUp);
+                    }}
+                    onTouchStart={(e) => {
+                        setIsInteracting(true);
+                        if (e.touches.length === 1) {
+                            touchStateRef.current = {
+                                type: 'pan',
+                                startPan: { ...panZoomRef.current.pan },
+                                startX: e.touches[0].clientX,
+                                startY: e.touches[0].clientY
+                            };
+                        } else if (e.touches.length === 2) {
+                            const a = e.touches[0], b = e.touches[1];
+                            const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                            touchStateRef.current = {
+                                type: 'pinch',
+                                startZoom: panZoomRef.current.zoom,
+                                startDist: dist,
+                                startPan: { ...panZoomRef.current.pan },
+                                centerX: (a.clientX + b.clientX) / 2,
+                                centerY: (a.clientY + b.clientY) / 2
+                            };
+                        }
+                    }}
+                    onTouchCancel={() => {
+                        touchStateRef.current = null;
+                        setIsInteracting(false);
+                    }}
+                    onTouchMove={(e) => {
+                        const state = touchStateRef.current;
+                        if (!state) return;
+                        e.preventDefault();
+                        if (state.type === 'pan' && e.touches.length === 1) {
+                            const dx = e.touches[0].clientX - state.startX;
+                            const dy = e.touches[0].clientY - state.startY;
+                            const newPan = { x: state.startPan.x + dx, y: state.startPan.y + dy };
+                            setPan(constrainPan(newPan, panZoomRef.current.zoom));
+                        } else if (state.type === 'pinch' && e.touches.length === 2) {
+                            const a = e.touches[0], b = e.touches[1];
+                            const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                            if (state.startDist <= 0) return;
+                            const ratio = dist / state.startDist;
+                            const minZoom = getMinZoom();
+                            const newZoom = Math.max(minZoom, Math.min(2.0, state.startZoom * ratio));
+                            setZoom(newZoom);
+                            setPan(p => constrainPan(p, newZoom));
+                        }
+                    }}
+                    onTouchEnd={(e) => {
+                        if (e.touches.length === 0) {
+                            touchStateRef.current = null;
+                            setIsInteracting(false);
+                        } else if (e.touches.length === 1) {
+                            touchStateRef.current = {
+                                type: 'pan',
+                                startPan: { ...panZoomRef.current.pan },
+                                startX: e.touches[0].clientX,
+                                startY: e.touches[0].clientY
+                            };
+                        } else if (e.touches.length === 2) {
+                            const a = e.touches[0], b = e.touches[1];
+                            const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                            touchStateRef.current = {
+                                type: 'pinch',
+                                startZoom: panZoomRef.current.zoom,
+                                startDist: dist,
+                                startPan: { ...panZoomRef.current.pan },
+                                centerX: (a.clientX + b.clientX) / 2,
+                                centerY: (a.clientY + b.clientY) / 2
+                            };
+                        }
                     }}
                     onWheel={(e) => {
                         e.preventDefault();
@@ -402,7 +501,8 @@ const TransitMapFilter = ({
                             height: '1340px',
                             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                             transformOrigin: '0 0',
-                            transition: 'transform 0.1s ease-out'
+                            transition: isInteracting ? 'none' : 'transform 0.15s ease-out',
+                            willChange: isInteracting ? 'transform' : 'auto'
                         }}
                     >
                         <div
@@ -412,7 +512,7 @@ const TransitMapFilter = ({
                             <TransitMapSVG />
                         </div>
 
-                        {/* Selected Station Markers: 3D Location Pin Design */}
+                        {/* Selected Station Markers: 3D Location Pin Design (reduced size) */}
                         {markers.map(m => (
                             <div
                                 key={m.id}
@@ -425,16 +525,16 @@ const TransitMapFilter = ({
                             >
                                 <div className="relative group">
                                     {/* Ground shadow - static */}
-                                    <div className="absolute top-[85%] left-1/2 -translate-x-1/2 w-3 h-1 bg-black/20 rounded-full blur-[1px]"></div>
+                                    <div className="absolute top-[85%] left-1/2 -translate-x-1/2 w-2 h-0.5 bg-black/20 rounded-full blur-[1px]"></div>
 
                                     {/* Pin shape container - static */}
                                     <div className="relative">
                                         <svg
-                                            width="24"
-                                            height="30"
+                                            width="16"
+                                            height="20"
                                             viewBox="0 0 32 40"
                                             fill="none"
-                                            className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                                            className="drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
                                         >
                                             <path
                                                 d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16344 24.8366 0 16 0Z"

@@ -627,7 +627,7 @@ const SubAgents = () => {
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                     {editingSubAgent ? 'Edit Sub-Agent' : 'Create Sub-Agent'}
                                 </h3>
-                                <button onClick={handleCloseForm} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <button onClick={handleCloseForm} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
                                     <XMarkIcon className="w-5 h-5" />
                                 </button>
                             </div>

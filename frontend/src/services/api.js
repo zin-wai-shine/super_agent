@@ -1,11 +1,18 @@
 import axios from 'axios';
 
 const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
-const currentHostname = window.location.hostname;
+const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
 const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1' && !currentHostname.endsWith('.localhost');
 
-const API_URL = window.location.port === '3000'
-    ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+// When hostname is subdomain.superealestate.<IP>, browser can't resolve it on mobile.
+// Use the IP for connections and send subdomain in X-Tenant so backend can resolve tenant.
+const mainDomainBase = mainDomain.indexOf('.') > 0 ? mainDomain.split('.')[0] : mainDomain;
+const subdomainIpMatch = currentHostname.match(new RegExp(`^(.+)\\.${mainDomainBase}\\.(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})$`));
+const apiHost = subdomainIpMatch ? subdomainIpMatch[2] : currentHostname;
+const tenantSubdomainForIp = subdomainIpMatch ? subdomainIpMatch[1] : null;
+
+const API_URL = (typeof window !== 'undefined' && window.location.port === '3000')
+    ? `${typeof window !== 'undefined' ? window.location.protocol : 'http:'}//${apiHost}:8080/api`
     : '/api';
 
 const api = axios.create({
@@ -16,12 +23,18 @@ const api = axios.create({
     },
 });
 
-// Request interceptor to add auth token
+// Request interceptor: auth token + X-Tenant when connecting by IP
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+        if (tenantSubdomainForIp) {
+            config.headers['X-Tenant'] = tenantSubdomainForIp;
+        } else if (typeof window !== 'undefined' && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(window.location.hostname)) {
+            const tenant = new URLSearchParams(window.location.search).get('tenant');
+            if (tenant) config.headers['X-Tenant'] = tenant;
         }
         return config;
     },

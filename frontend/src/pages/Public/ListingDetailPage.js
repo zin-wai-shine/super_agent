@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
@@ -44,7 +43,6 @@ import {
 import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
 import PropertyShare from '../../components/Listings/PropertyShare';
-import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import Button from '../../components/ui/Button';
 
 import Badge from '../../components/ui/Badge';
@@ -52,6 +50,8 @@ import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import AllPhotosModalContent from '../../components/Listings/AllPhotosModalContent';
 import FilterBar from '../../components/ui/FilterBar';
+import GoogleMapComponent from '../../components/Listings/GoogleMap';
+import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
@@ -87,7 +87,6 @@ import {
 } from "react-icons/md";
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
-import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 import StyledSelect from '../../components/Form/StyledSelect';
 
 // Custom Icons for "cool" look
@@ -180,20 +179,18 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
 
-
-    // 2. Optimized Map Props (Hooks)
     const mapCenter = useMemo(() => {
         if (!listing?.latitude || !listing?.longitude) return undefined;
-        return {
-            lat: parseFloat(listing.latitude),
-            lng: parseFloat(listing.longitude)
-        };
-    }, [listing?.id]); // Only re-calculate when the listing actually changes
+        const lat = parseFloat(listing.latitude);
+        const lng = parseFloat(listing.longitude);
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return undefined;
+        return { lat, lng };
+    }, [listing?.latitude, listing?.longitude]);
 
     const mapOptions = useMemo(() => ({
         gestureHandling: 'cooperative',
-        disableDefaultUI: false,
-        styles: [], // Remove custom grey map styles for detail page
+        disableDefaultUI: true,
+        styles: [],
         mapId: 'DEMO_MAP_ID'
     }), []);
 
@@ -301,10 +298,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsBookingOverlayOpen(false)}
-                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-1.5 px-3 rounded-lg hover:bg-gray-100/50 active:scale-95 group"
+                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-2.5 px-2.5 md:py-2 md:px-2 rounded-full hover:bg-gray-100 active:scale-95 group min-h-[44px] md:min-h-0"
                         >
-                            <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                            <span className="text-sm font-bold">Back</span>
+                            <ArrowLeftIcon className="w-5 h-5 md:w-4 md:h-4 group-hover:-translate-x-0.5 transition-transform" />
+                            <span className="text-base md:text-sm font-bold">Back</span>
                         </button>
                         <span className="text-lg font-bold text-gray-900">Appointment Details</span>
                     </div>
@@ -314,10 +311,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsContactOverlayOpen(false)}
-                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-1.5 px-3 rounded-lg hover:bg-gray-100/50 active:scale-95 group"
+                            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 transition-all py-2.5 px-2.5 md:py-2 md:px-2 rounded-full hover:bg-gray-100 active:scale-95 group min-h-[44px] md:min-h-0"
                         >
-                            <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                            <span className="text-sm font-bold">Back</span>
+                            <ArrowLeftIcon className="w-5 h-5 md:w-4 md:h-4 group-hover:-translate-x-0.5 transition-transform" />
+                            <span className="text-base md:text-sm font-bold">Back</span>
                         </button>
                         <span className="text-lg font-bold text-gray-900">Let's Connect</span>
                     </div>
@@ -469,22 +466,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         setIsBookingOverlayOpen(!isBookingOverlayOpen);
     };
 
-
-    // Map Constants
     const MAP_WIDTH = 1368;
     const MAP_HEIGHT = 1340;
 
     const constrainPan = (newPan, currentZoom) => {
         if (!transitWrapperRef.current) return newPan;
-
         const containerWidth = transitWrapperRef.current.clientWidth;
         const containerHeight = transitWrapperRef.current.clientHeight;
-
         const scaledWidth = MAP_WIDTH * currentZoom;
         const scaledHeight = MAP_HEIGHT * currentZoom;
-
         let minX, maxX, minY, maxY;
-
         if (scaledWidth > containerWidth) {
             minX = containerWidth - scaledWidth;
             maxX = 0;
@@ -492,7 +483,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             minX = (containerWidth - scaledWidth) / 2;
             maxX = minX;
         }
-
         if (scaledHeight > containerHeight) {
             minY = containerHeight - scaledHeight;
             maxY = 0;
@@ -500,7 +490,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             minY = (containerHeight - scaledHeight) / 2;
             maxY = minY;
         }
-
         return {
             x: Math.min(Math.max(newPan.x, minX), maxX),
             y: Math.min(Math.max(newPan.y, minY), maxY)
@@ -515,27 +504,42 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     };
 
     useEffect(() => {
-        if (activeMapTab === 'transit' && listing?.station_id && transitMapRef.current) {
-            // Wait for SVG to be rendered in the next tick
-            setTimeout(() => {
-                const stationEl = transitMapRef.current.querySelector(`[data-station-id="${listing.station_id}"]`);
+        if (activeMapTab === 'transit' && listing?.station_id && transitMapRef.current && transitWrapperRef.current) {
+            const t = setTimeout(() => {
+                const stationEl = transitMapRef.current?.querySelector(`[data-station-id="${listing.station_id}"]`);
                 if (stationEl) {
-                    const circle = stationEl.querySelector('circle') || stationEl.querySelector('rect') || stationEl;
-                    const x = parseFloat(circle.getAttribute('cx') || circle.getAttribute('x') || 0);
-                    const y = parseFloat(circle.getAttribute('cy') || circle.getAttribute('y') || 0);
-
+                    const circles = stationEl.querySelectorAll('circle');
+                    const fallback = stationEl.querySelector('rect');
+                    let x = 0, y = 0;
+                    if (circles.length > 0) {
+                        circles.forEach(c => {
+                            x += parseFloat(c.getAttribute('cx') || 0);
+                            y += parseFloat(c.getAttribute('cy') || 0);
+                        });
+                        x /= circles.length;
+                        y /= circles.length;
+                    } else if (fallback) {
+                        x = parseFloat(fallback.getAttribute('x') || 0) + parseFloat(fallback.getAttribute('width') || 0) / 2;
+                        y = parseFloat(fallback.getAttribute('y') || 0) + parseFloat(fallback.getAttribute('height') || 0) / 2;
+                    }
                     if (x && y) {
+                        const zoomToStation = 1.9;
+                        const w = transitWrapperRef.current?.clientWidth ?? 500;
+                        const h = transitWrapperRef.current?.clientHeight ?? 500;
+                        const rawPan = {
+                            x: -(x * zoomToStation) + w / 2,
+                            y: -(y * zoomToStation) + h / 2
+                        };
                         setMapState(prev => ({
                             ...prev,
                             markerPos: { x, y },
-                            pan: {
-                                x: -(x * prev.zoom) + 250, // Center in 500px height container
-                                y: -(y * prev.zoom) + 250
-                            }
+                            zoom: zoomToStation,
+                            pan: constrainPan(rawPan, zoomToStation)
                         }));
                     }
                 }
             }, 100);
+            return () => clearTimeout(t);
         }
     }, [activeMapTab, listing?.station_id]);
 
@@ -980,10 +984,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {activeBooking ? (
                         <button
                             disabled
-                            className="flex items-center justify-center gap-1.5 w-[90px] py-2 cursor-not-allowed transition-all duration-300"
+                            className="flex items-center justify-center gap-1.5 min-w-[90px] py-2 px-2 cursor-not-allowed transition-all duration-300"
                         >
-                            <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600" />
-                            <span className="text-[13px] font-semibold text-emerald-700">Booked</span>
+                            <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600 flex-shrink-0" />
+                            <span className="text-[13px] font-semibold text-emerald-700 whitespace-nowrap">Viewing requested</span>
                         </button>
                     ) : (
                         <button
@@ -991,7 +995,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             className="flex items-center justify-center gap-1.5 w-[90px] py-2 rounded-lg transition-all duration-300 active:scale-95 group"
                         >
                             <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300" />
-                            <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Booking</span>
+                            <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">Request viewing</span>
                         </button>
                     )}
                 </div>
@@ -1067,9 +1071,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         >
                             <button
                                 onClick={() => setIsBookingOverlayOpen(false)}
-                                className="flex items-center gap-1.5 text-gray-900 hover:text-gray-700 py-2 px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                             >
-                                <ArrowLeftIcon className="w-6 h-6" />
+                                <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6" />
                             </button>
                             <span
                                 className="text-lg font-semibold ml-auto"
@@ -1105,7 +1109,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             className="text-base mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5"
                                             style={{ color: 'var(--menu-text-muted)' }}
                                         >
-                                            You can check your booking information and status at
+                                            You can check your viewing request and status at
                                             <span
                                                 className="group inline-flex items-center gap-1 font-bold cursor-pointer transition-all duration-300 text-base"
                                                 onClick={() => {
@@ -1114,7 +1118,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     window.location.href = '/my-bookings';
                                                 }}
                                             >
-                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300" style={{ color: 'var(--menu-text-primary)' }}>Bookings</span>
+                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300" style={{ color: 'var(--menu-text-primary)' }}>Viewing requests</span>
                                                 <ArrowRightIcon
                                                     className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
                                                     style={{ color: 'var(--primary-color)' }}
@@ -1367,7 +1371,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <h4
                                                     className="text-lg font-semibold text-gray-900 mb-8 flex items-center justify-between"
                                                 >
-                                                    <span>Booking Summary</span>
+                                                    <span>Viewing request summary</span>
                                                     {timeLeft && (
                                                         <span className="inline-flex flex-row items-center gap-2 pl-4 pr-4 py-2 rounded-full bg-rose-500 text-white text-sm font-semibold">
                                                             <span className="w-12 shrink-0 text-left">Locked:</span>
@@ -1486,9 +1490,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 pt-6 z-[60] bg-transparent pointer-events-none">
                     <button
                         onClick={() => onClose ? onClose() : navigate(-1)}
-                        className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
+                        className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
+                        aria-label="Back"
                     >
-                        <ArrowLeftIcon className="w-5 h-5" />
+                        <ArrowLeftIcon className="w-6 h-6 md:w-5 md:h-5" />
                     </button>
                     <div className="flex items-center gap-3 pr-1 pointer-events-auto">
                         <PropertyShare
@@ -1499,19 +1504,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                 url: window.location.href
                             }}
-                            className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
+                            className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
                             showLabel={false}
-                            iconClassName="w-5 h-5 text-gray-900"
+                            iconClassName="w-6 h-6 md:w-5 md:h-5 text-gray-900"
                         />
                         <button
                             onClick={handleToggleSave}
                             disabled={savingListing}
-                            className="w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
+                            className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
+                            aria-label={isSaved ? 'Unsave' : 'Save'}
                         >
                             {isSaved ? (
-                                <HeartSolidIcon className="w-5 h-5 text-rose-500" />
+                                <HeartSolidIcon className="w-6 h-6 md:w-5 md:h-5 text-rose-500" />
                             ) : (
-                                <HeartIcon className="w-5 h-5 text-gray-900" />
+                                <HeartIcon className="w-6 h-6 md:w-5 md:h-5 text-gray-900" />
                             )}
                         </button>
                     </div>
@@ -1589,17 +1595,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="hidden lg:block sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
                     <button
                         onClick={() => navigate(-1)}
-                        className="pointer-events-auto text-gray-400 hover:text-gray-900 transition-all py-2 px-4 rounded-lg hover:bg-gray-100/50 active:scale-95 group flex items-center"
+                        className="pointer-events-auto text-gray-400 hover:text-gray-900 transition-all py-2.5 px-2.5 md:py-2 md:px-2 rounded-full hover:bg-gray-100 active:scale-95 group flex items-center min-h-[44px] md:min-h-0"
                     >
-                        <ArrowLeftIcon className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-bold text-sm">Back</span>
+                        <ArrowLeftIcon className="w-5 h-5 md:w-4 md:h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-bold text-base md:text-sm">Back</span>
                     </button>
                 </div>
             )}
 
-            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-0 sm:px-6' : 'px-0 lg:px-8'} ${isModal ? 'py-0 sm:py-12' : 'py-0 lg:py-6'}`}>
+            <div className={`mx-auto ${isModal ? 'max-w-[1400px] px-0 sm:px-8 lg:px-10 py-0 sm:py-8' : 'max-w-[1600px] px-0 lg:px-8 py-0 lg:py-6'}`}>
                 <div className="flex justify-center">
-                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
+                    <div className={`w-full ${isModal ? 'max-w-5xl' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
                         {/* Details - Header Section (card radius) */}
                         <div className="bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden lg:border lg:border-gray-100 shadow-none lg:shadow-sm px-0 py-8 lg:px-8 lg:p-8 relative z-10 -mt-8 lg:mt-0">
                             {/* Booking Information Bar */}
@@ -1861,7 +1867,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     )}
 
                                     <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t col-span-1 md:col-span-2">
-                                        <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                        <span className="flex-shrink-0 md:flex md:items-center md:justify-center">
+                                            <MapPinIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 hidden md:block" />
+                                            <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0 md:hidden" />
+                                        </span>
                                         <div>
                                             <div className="text-base md:text-lg font-medium text-gray-700 truncate leading-tight">
                                                 {(listing.station_id || listing.station_name)
@@ -1941,7 +1950,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     <Button
                                                                         variant="ghost"
                                                                         onClick={() => setShowAllAmenities(!showAllAmenities)}
-                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-[14px] hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !focus:ring-0 !focus:ring-offset-0 !outline-none border-none"
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-lg hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
                                                                     >
                                                                         {showAllAmenities ? (
                                                                             <>
@@ -1977,7 +1986,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     <Button
                                                                         variant="ghost"
                                                                         onClick={() => setShowAllFacilities(!showAllFacilities)}
-                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-[14px] hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !focus:ring-0 !focus:ring-offset-0 !outline-none border-none"
+                                                                        className="mt-6 flex items-center text-primary-600 font-bold text-lg hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
                                                                     >
                                                                         {showAllFacilities ? (
                                                                             <>
@@ -2023,16 +2032,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 )}
                             </div>
 
-                            {/* Map Section - Tabbed Selector */}
-                            {(listing.map_url || (listing.latitude && listing.longitude) || listing.station_id) && (
+                            {/* Map Section — only when coordinates exist; Google Map + Transit Map tabs */}
+                            {(listing.latitude && listing.longitude) && (
                                 <>
                                     <div className="mt-12">
-                                        {/* Tabs Header */}
                                         <div className="border-b border-gray-100 mb-8">
                                             <nav className="-mb-px flex space-x-10">
                                                 <button
                                                     onClick={() => setActiveMapTab('google')}
-                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[16px] transition-all ${activeMapTab === 'google'
+                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'google'
                                                         ? 'border-primary-500 text-primary-600'
                                                         : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
                                                         }`}
@@ -2041,7 +2049,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </button>
                                                 <button
                                                     onClick={() => setActiveMapTab('transit')}
-                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[16px] transition-all ${activeMapTab === 'transit'
+                                                    className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'transit'
                                                         ? 'border-primary-500 text-primary-600'
                                                         : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
                                                         }`}
@@ -2051,11 +2059,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             </nav>
                                         </div>
 
-                                        {/* Map Content */}
                                         <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
                                             {activeMapTab === 'google' ? (
                                                 <div className="w-full h-full animate-in fade-in duration-700">
                                                     <GoogleMapComponent
+                                                        key={listing.id}
                                                         listings={[listing]}
                                                         center={mapCenter}
                                                         zoom={17}
@@ -2063,27 +2071,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         options={mapOptions}
                                                         useDefaultMarkers={true}
                                                         isVisible={true}
+                                                        hideControls
                                                     />
                                                 </div>
                                             ) : (
                                                 <div className="relative w-full h-full bg-slate-50 flex flex-col animate-in fade-in duration-700">
-                                                    {/* Legend Overlay */}
                                                     <div className="absolute top-4 left-4 z-40 hidden md:flex flex-wrap gap-1.5 max-w-[300px]">
                                                         {[
                                                             { name: 'BTS Sukhumvit', color: '#7FBA00' },
                                                             { name: 'BTS Silom', color: '#006633' },
                                                             { name: 'MRT Blue', color: '#1E50A0' },
                                                         ].map((line) => (
-                                                            <div key={line.name} className="flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm">
+                                                            <div key={line.name} className="flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm">
                                                                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: line.color }} />
                                                                 <span className="text-[14px] font-bold text-gray-700">{line.name}</span>
                                                             </div>
                                                         ))}
                                                     </div>
 
-                                                    {/* Zoom Controls Overlay */}
                                                     <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
-                                                        <div className="flex flex-col bg-white/90 backdrop-blur-sm rounded-xl border border-gray-100 shadow-lg p-1">
+                                                        <div className="flex flex-col bg-white/90 backdrop-blur-sm rounded-full border border-gray-100 shadow-lg p-1 overflow-hidden">
                                                             <button
                                                                 onClick={() => {
                                                                     const nextZoom = Math.min(mapState.zoom + 0.1, 2.0);
@@ -2093,7 +2100,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         pan: constrainPan(prev.pan, nextZoom)
                                                                     }));
                                                                 }}
-                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
+                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white transition-all rounded-full"
                                                             >
                                                                 <span className="text-xl font-bold">+</span>
                                                             </button>
@@ -2108,14 +2115,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         pan: constrainPan(prev.pan, nextZoom)
                                                                     }));
                                                                 }}
-                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
+                                                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white transition-all rounded-full"
                                                             >
                                                                 <span className="text-xl font-bold">−</span>
                                                             </button>
                                                         </div>
                                                     </div>
 
-                                                    {/* Map Component */}
+                                                    <div className="absolute bottom-4 left-4 z-40 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm text-lg font-medium text-gray-500 pointer-events-none">
+                                                        Ctrl + scroll to zoom
+                                                    </div>
+
                                                     <div
                                                         ref={transitWrapperRef}
                                                         className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing"
@@ -2124,10 +2134,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             const startY = e.pageY - mapState.pan.y;
                                                             const handleMouseMove = (mm) => {
                                                                 const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
-                                                                setMapState(prev => ({
-                                                                    ...prev,
-                                                                    pan: constrainPan(newPan, prev.zoom)
-                                                                }));
+                                                                setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
                                                             };
                                                             const handleMouseUp = () => {
                                                                 window.removeEventListener('mousemove', handleMouseMove);
@@ -2138,14 +2145,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         }}
                                                         onWheel={(e) => {
                                                             if (activeMapTab !== 'transit') return;
+                                                            if (!e.ctrlKey) return;
+                                                            e.preventDefault();
                                                             const delta = e.deltaY > 0 ? -0.05 : 0.05;
                                                             const minZoom = getMinZoom();
                                                             const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
-                                                            setMapState(prev => ({
-                                                                ...prev,
-                                                                zoom: nextZoom,
-                                                                pan: constrainPan(prev.pan, nextZoom)
-                                                            }));
+                                                            setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(prev.pan, nextZoom) }));
                                                         }}
                                                     >
                                                         <div
@@ -2157,26 +2162,31 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 transition: 'transform 0.1s ease-out'
                                                             }}
                                                         >
-                                                            <div
-                                                                ref={transitMapRef}
-                                                                className="w-full h-full"
-                                                            >
+                                                            <div ref={transitMapRef} className="w-full h-full">
                                                                 <TransitMapSVG />
                                                             </div>
-
-                                                            {/* Station Marker */}
                                                             {mapState.markerPos && (
                                                                 <div
                                                                     className="absolute pointer-events-none z-50"
                                                                     style={{
                                                                         left: `${mapState.markerPos.x}px`,
                                                                         top: `${mapState.markerPos.y}px`,
-                                                                        transform: 'translate(-50%, -50%)'
+                                                                        transform: 'translate(-50%, -100%)'
                                                                     }}
                                                                 >
-                                                                    <div className="relative flex items-center justify-center">
-                                                                        <div className="w-10 h-10 bg-primary-500/30 rounded-full animate-ping absolute" />
-                                                                        <div className="w-5 h-5 bg-primary-600 rounded-full shadow-lg border-4 border-white relative z-10" />
+                                                                    <div className="relative">
+                                                                        <div className="absolute top-[85%] left-1/2 -translate-x-1/2 w-2 h-0.5 bg-black/20 rounded-full blur-[1px]" />
+                                                                        <svg
+                                                                            width="16"
+                                                                            height="20"
+                                                                            viewBox="0 0 32 40"
+                                                                            fill="none"
+                                                                            className="drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+                                                                        >
+                                                                            <path d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16344 24.8366 0 16 0Z" fill="#EF4444" className="fill-red-600" />
+                                                                            <circle cx="16" cy="16" r="6" fill="white" fillOpacity="0.9" />
+                                                                            <path d="M16 2C8.26801 2 2 8.26801 2 16C2 17.5 2.5 19.5 3.5 21.5L4 22.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.3" />
+                                                                        </svg>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -2186,7 +2196,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             )}
                                         </div>
 
-                                        {/* Map Utilities */}
                                         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                                             <div className="flex items-center gap-6">
                                                 <div className="flex items-center text-[14px] text-gray-500">
@@ -2205,19 +2214,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <a
-                                                    href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="px-5 py-2.5 rounded-full bg-gray-50 text-gray-900 font-bold text-[14px] flex items-center hover:bg-gray-100 transition-all border border-gray-100"
-                                                >
-                                                    View on Google Maps
-                                                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                    </svg>
-                                                </a>
-                                            </div>
+                                            <a
+                                                href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-5 py-2.5 rounded-full bg-gray-50 text-gray-900 font-bold text-[14px] flex items-center hover:bg-gray-100 transition-all border border-gray-100"
+                                            >
+                                                View on Google Maps
+                                                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
                                         </div>
                                     </div>
                                 </>
@@ -2246,7 +2253,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         {/* Related Listings Section */}
                         {!bookingId && relatedListings.length > 0 && (
-                            <div className={`max-w-[1600px] mx-auto ${isModal ? 'px-4 sm:px-6' : 'px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
+                            <div className={`mx-auto ${isModal ? 'max-w-[1400px] px-4 sm:px-8 lg:px-10' : 'max-w-[1600px] px-6 sm:px-12 lg:px-20'} py-12 border-t border-gray-100`}>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
                                 <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}`}>
                                     {relatedListings.map((related) => (
@@ -2262,7 +2269,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         <div className="bg-white overflow-hidden relative min-h-[400px] flex flex-col justify-center">
 
-                            <div className={`max-w-[1600px] w-full mx-auto ${isModal ? 'px-8 sm:px-12' : 'px-8 sm:px-20 lg:px-32'} py-24 relative z-10`}>
+                            <div className={`w-full mx-auto ${isModal ? 'max-w-[1400px] px-6 sm:px-8 lg:px-10' : 'max-w-[1600px] px-8 sm:px-20 lg:px-32'} py-24 relative z-10`}>
                                 {/* Top Row: Intro & Menus */}
                                 <div className="flex flex-col lg:flex-row justify-between gap-16 mb-24">
                                     {/* Intro Text */}
@@ -2477,11 +2484,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 </div>
             </div>
 
-            {/* Sticky Mobile Footer */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 px-6 pt-4 z-[90] flex items-center justify-between pointer-events-auto" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            {/* Sticky Mobile Footer — Apple-style height and safe area */}
+            <div
+                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-[90] flex items-center justify-between pointer-events-auto min-h-[56px] py-3"
+                style={{
+                    paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
+                    paddingBottom: 'max(1.75rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))',
+                    paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
+                    paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                }}
+            >
                     <div className="flex flex-col">
                         <div className="flex items-baseline">
-                            <span className="text-[18px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
+                            <span className="text-[17px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
                             {listing.listing_type === 'rent' && (
                                 <span className="text-gray-900 text-[13px] font-normal ml-1">/month</span>
                             )}
@@ -2489,7 +2504,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </div>
                     <button
                         onClick={handleBookingClick}
-                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-8 py-3 rounded-full"
+                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-6 py-2.5 rounded-full min-h-[44px]"
                     >
                         Request a Viewing
                     </button>

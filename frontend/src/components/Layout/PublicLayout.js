@@ -77,7 +77,6 @@ const PublicLayout = () => {
         { name: 'Plans', href: '/#plans', icon: ChartBarIcon },
         { name: 'Services', href: '/services', icon: FiBriefcase },
     ] : [
-        { name: 'Home', href: '/', icon: HomeIcon },
         ...(isAuthenticated ? [{ name: 'Projects', href: '/projects', icon: BuildingOfficeIcon }] : []),
         { name: 'Properties', href: '/listings', icon: BuildingOfficeIcon },
         { name: 'Services', href: '/services', icon: FiBriefcase },
@@ -121,7 +120,7 @@ const PublicLayout = () => {
     }, [stations]);
 
     const isActive = (path) => {
-        if (path === '/') return location.pathname === '/';
+        if (path === '/listings') return location.pathname === '/' || location.pathname.startsWith('/listings');
         return location.pathname.startsWith(path);
     };
 
@@ -164,6 +163,46 @@ const PublicLayout = () => {
     // Navbar visibility logic (Always visible)
     const [isVisible, setIsVisible] = useState(true);
 
+    // Mobile bottom nav: hide on scroll down, show on scroll up (with animation)
+    const [mobileBottomNavVisible, setMobileBottomNavVisible] = useState(true);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const lastScrollYRef = useRef(0);
+    const tickingRef = useRef(false);
+
+    const isListingsOrProjects = location.pathname === '/' || location.pathname.startsWith('/listings') || location.pathname.startsWith('/projects');
+
+    React.useEffect(() => {
+        const SCROLL_THRESHOLD = 12;
+        const TOP_THRESHOLD = 80;
+        const SHADOW_SCROLL = 6;
+
+        const handleScroll = () => {
+            if (tickingRef.current) return;
+            tickingRef.current = true;
+            requestAnimationFrame(() => {
+                const el = isListingsOrProjects ? scrollContainerRef.current : null;
+                const y = el ? el.scrollTop : (window.scrollY || document.documentElement.scrollTop);
+                const prev = lastScrollYRef.current;
+                setIsScrolled(y > SHADOW_SCROLL);
+                if (y <= TOP_THRESHOLD) {
+                    setMobileBottomNavVisible(true);
+                } else if (y > prev + SCROLL_THRESHOLD) {
+                    setMobileBottomNavVisible(false);
+                } else if (y < prev - SCROLL_THRESHOLD) {
+                    setMobileBottomNavVisible(true);
+                }
+                lastScrollYRef.current = y;
+                tickingRef.current = false;
+            });
+        };
+
+        const el = isListingsOrProjects ? scrollContainerRef.current : null;
+        const target = el || window;
+        target.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => target.removeEventListener('scroll', handleScroll);
+    }, [isListingsOrProjects]);
+
     const [isNavLoading, setIsNavLoading] = useState(true);
     const [filterBarSlot, setFilterBarSlot] = useState(null);
 
@@ -178,8 +217,6 @@ const PublicLayout = () => {
 
     const brandName = theme.headerText || (agent ? (agent.agency_name || agent.name) : 'Super');
 
-    const isListingsOrProjects = location.pathname.startsWith('/listings') || location.pathname.startsWith('/projects');
-
     // Mobile bottom nav active states
     const isSearchTabActive =
         location.pathname === '/' ||
@@ -188,56 +225,21 @@ const PublicLayout = () => {
     const isWishlistTabActive = location.pathname.startsWith('/saved-listings');
     const isBookingsTabActive = location.pathname.startsWith('/my-bookings');
     const isProfileTabActive = location.pathname.startsWith('/profile');
+    const isLoginPage = location.pathname === '/login';
+    const isRegisterPage = location.pathname === '/register';
+    const isAuthPage = isLoginPage || isRegisterPage;
+    const isLoginTabActive = isLoginPage || isRegisterPage;
     const isSavedPage = location.pathname === '/saved-listings';
+    const isProfilePage = location.pathname === '/profile';
+    const isBookingsPage = location.pathname === '/my-bookings';
+    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage;
+    const scrollContainerRef = useRef(null);
     return (
         <div
+            ref={scrollContainerRef}
             className={`flex flex-col bg-white ${isListingsOrProjects ? 'h-screen overflow-y-auto overflow-x-hidden' : 'min-h-screen'}`}
             style={{ fontFamily: theme.fontFamily }}
         >
-            {/* Mobile Header: Listings/Projects use search pill; others keep logo + menu. Hidden on Saved page. */}
-            {!isSavedPage && (
-                <div
-                    className={`md:hidden sticky top-0 z-[200] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
-                    style={{ backgroundColor: '#ffffff' }}
-                >
-                    {isListingsOrProjects ? (
-                        <div className="px-4 h-20 flex items-center">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const params = new URLSearchParams(location.search);
-                                    params.set('mobile_filters', '1');
-                                    const basePath = location.pathname.startsWith('/projects') ? '/projects' : '/listings';
-                                    navigate(`${basePath}?${params.toString()}`);
-                                }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-full bg-[#F3F4F6] border border-gray-200 text-left shadow-[0_2px_6px_rgba(15,23,42,0.05)] active:scale-[0.98] transition-all"
-                            >
-                                <FiSearch className="w-5 h-5 text-gray-500" />
-                                <span className="text-[14px] font-medium text-gray-700 truncate">
-                                    Search properties & filters
-                                </span>
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="px-4 h-16 flex items-center justify-between">
-                            <Link to="/" className="flex items-center gap-2">
-                                {theme.logoUrl ? (
-                                    <img src={getMediaUrl(theme.logoUrl)} alt="Logo" className="w-[50px] h-[50px] object-contain" />
-                                ) : (
-                                    <Logo className="w-[50px] h-[50px]" style={{ color: 'var(--primary-color)' }} />
-                                )}
-                            </Link>
-                            <button
-                                onClick={() => setMobileMenuOpen(true)}
-                                className="text-gray-900 p-1 -mr-1 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <Bars3Icon className="w-6 h-6" />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* Navigation Drawer (Mobile + lg when burger is used) */}
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-[250]">
@@ -258,18 +260,44 @@ const PublicLayout = () => {
                                 </Link>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className="p-2 transition-colors rounded-lg"
-                                    style={{ color: 'var(--menu-text-secondary)', hoverBg: 'var(--menu-hover-bg)' }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    className="p-2 rounded-full transition-colors hover:bg-white/10"
+                                    style={{ color: 'var(--menu-text-secondary)' }}
                                 >
                                     <XMarkIcon className="w-6 h-6" />
                                 </button>
                             </div>
 
-                            {/* Drawer Links */}
+                            {/* Drawer Links — when not logged in (mobile) only Search + Login */}
                             <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-                                {navigation.map((item) => {
+                                {!isAuthenticated ? (
+                                    <>
+                                        <Link
+                                            to="/search"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors`}
+                                            style={{
+                                                color: location.pathname === '/search' ? 'var(--primary-color)' : 'var(--menu-text-primary)',
+                                                backgroundColor: location.pathname === '/search' ? 'rgba(var(--primary-rgb), 0.1)' : 'transparent'
+                                            }}
+                                            onMouseEnter={(e) => location.pathname !== '/search' && (e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)')}
+                                            onMouseLeave={(e) => location.pathname !== '/search' && (e.currentTarget.style.backgroundColor = 'transparent')}
+                                        >
+                                            <FiSearch className="w-5 h-5" />
+                                            <span>Search</span>
+                                        </Link>
+                                        <Link
+                                            to="/login"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors w-full text-left"
+                                            style={{ color: 'var(--menu-text-primary)', backgroundColor: 'transparent' }}
+                                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)')}
+                                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                                        >
+                                            <UserCircleIcon className="w-5 h-5" />
+                                            <span>Login</span>
+                                        </Link>
+                                    </>
+                                ) : navigation.map((item) => {
                                     if (item.name === 'Projects') {
                                         return (
                                             <div key={item.name} className="relative group">
@@ -469,29 +497,19 @@ const PublicLayout = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Link
-                                            to="/login"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex justify-center py-2.5 border font-semibold shadow-sm transition-all"
-                                            style={{
-                                                borderRadius: 'var(--btn-radius)',
-                                                color: 'var(--menu-text-primary)',
-                                                borderColor: 'var(--menu-border)',
-                                                backgroundColor: 'var(--menu-hover-bg)'
-                                            }}
-                                        >
-                                            Sign In
-                                        </Link>
-                                        <Link
-                                            to="/register"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex justify-center py-2.5 bg-primary-600 text-white font-semibold shadow-md hover:bg-primary-700 transition-all"
-                                            style={{ borderRadius: 'var(--btn-radius)' }}
-                                        >
-                                            Sign Up
-                                        </Link>
-                                    </div>
+                                    <Link
+                                        to="/login"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="w-full flex justify-center py-2.5 border font-semibold shadow-sm transition-all"
+                                        style={{
+                                            borderRadius: 'var(--btn-radius)',
+                                            color: 'var(--menu-text-primary)',
+                                            borderColor: 'var(--menu-border)',
+                                            backgroundColor: 'var(--menu-hover-bg)'
+                                        }}
+                                    >
+                                        Login
+                                    </Link>
                                 )}
                             </div>
                         </div>
@@ -499,8 +517,9 @@ const PublicLayout = () => {
                 </div >
             )}
 
-            {/* Desktop: nav bar and filter bar in the same container (listings/projects) */}
-            <div className={`hidden md:block sticky top-0 z-[150] bg-white ${isVisible ? 'translate-y-0' : '-translate-y-full'} transition-all duration-300`} style={{ backgroundColor: '#ffffff' }}>
+            {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
+            {!isAuthPage && (
+            <div className={`hidden md:block sticky top-0 z-[150] bg-white transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_20px_-4px_rgba(0,0,0,0.12)]' : 'shadow-[0_2px_8px_rgba(0,0,0,0.06)]'}`} style={{ backgroundColor: '#ffffff' }}>
                 <nav
                     className={`transition-all duration-300 bg-white/80 backdrop-blur-md ${activeMenu ? 'relative z-[300]' : ''}`}
                     style={{ backgroundColor: '#ffffff' }}
@@ -944,16 +963,16 @@ const PublicLayout = () => {
                                     <div className="flex items-center space-x-4">
                                         {isAuthenticated ? (
                                             <div className="flex items-center gap-1 sm:gap-2">
-                                                {/* Bookings — gray circular glass background behind icon */}
+                                                {/* Viewing requests — gray circular glass background behind icon */}
                                                 <Link
                                                     to="/my-bookings"
                                                     className="group flex items-center gap-2 px-4 py-2 lg:px-0 lg:py-0 text-gray-700 hover:text-[var(--primary-color)] transition-all duration-300"
-                                                    title="Bookings"
+                                                    title="Viewing requests"
                                                 >
                                                     <div className="w-10 h-10 rounded-full bg-gray-200/40 backdrop-blur-md border border-white/40 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200/60 transition-colors">
                                                         <CiCalendar className="w-5 h-5 text-gray-600 group-hover:text-[var(--primary-color)] transition-colors stroke-[0.5]" />
                                                     </div>
-                                                    <span className="text-[14px] font-medium lg:sr-only">Bookings</span>
+                                                    <span className="text-[14px] font-medium lg:sr-only">Viewings</span>
                                                 </Link>
 
                                                 {/* Saved — gray circular glass background behind icon */}
@@ -1331,26 +1350,32 @@ const PublicLayout = () => {
                 {/* Slot for filter bar (listings/projects): portaled from page so nav + filter bar are one container */}
                 {isListingsOrProjects && <div ref={(el) => setFilterBarSlot(el)} />}
             </div>
+            )}
 
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
             <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} pb-20 md:pb-0`}>
-                <Outlet context={{ navVisible: isVisible, filterBarSlot }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled }} />
             </main>
 
-            {/* Mobile Bottom Navigation — Search / Wishlists / Profile (mobile only) */}
-            <div className="fixed inset-x-0 bottom-0 z-[180] md:hidden">
+            {/* Mobile Bottom Navigation — hide on scroll down, show on scroll up (mobile only) */}
+            <div
+                className={`fixed inset-x-0 bottom-0 z-[180] md:hidden transition-transform duration-300 ease-out`}
+                style={{ transform: mobileBottomNavVisible ? 'translateY(0)' : 'translateY(100%)' }}
+            >
                 <div className="pointer-events-none">
                     <nav className="mx-auto max-w-[480px] pointer-events-auto">
                         <div
-                            className="bg-white border-t border-gray-200 px-4"
+                            className="bg-white border-t border-gray-200"
                             style={{
-                                paddingTop: 6,
-                                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
+                                paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
+                                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+                                paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
+                                paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
                             }}
                         >
-                            <div className="flex items-center justify-between">
-                                {/* Search */}
+                            <div className={`flex items-center justify-between ${!isAuthenticated ? 'max-w-[280px] mx-auto' : ''}`}>
+                                {/* Search — always show */}
                                 <Link
                                     to="/listings"
                                     className="flex-1 flex flex-col items-center justify-center py-2"
@@ -1366,64 +1391,80 @@ const PublicLayout = () => {
                                     </span>
                                 </Link>
 
-                                {/* Wishlists */}
-                                <Link
-                                    to="/saved-listings"
-                                    className="flex-1 flex flex-col items-center justify-center py-2"
-                                >
-                                    <FiHeart
-                                        className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400'
-                                            }`}
-                                    />
-                                    <span
-                                        className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500'
-                                            }`}
-                                    >
-                                        Favorites
-                                    </span>
-                                </Link>
+                                {isAuthenticated ? (
+                                    <>
+                                        {/* Favorites */}
+                                        <Link
+                                            to="/saved-listings"
+                                            className="flex-1 flex flex-col items-center justify-center py-2"
+                                        >
+                                            <FiHeart
+                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                    }`}
+                                            />
+                                            <span
+                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                    }`}
+                                            >
+                                                Favorites
+                                            </span>
+                                        </Link>
 
-                                {/* Bookings */}
-                                <Link
-                                    to="/my-bookings"
-                                    className="flex-1 flex flex-col items-center justify-center py-2"
-                                >
-                                    <FiCalendar
-                                        className={`w-6 h-6 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400'
-                                            }`}
-                                    />
-                                    <span
-                                        className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500'
-                                            }`}
-                                    >
-                                        Booking
-                                    </span>
-                                </Link>
+                                        {/* Viewings */}
+                                        <Link
+                                            to="/my-bookings"
+                                            className="flex-1 flex flex-col items-center justify-center py-2"
+                                        >
+                                            <FiCalendar
+                                                className={`w-6 h-6 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                    }`}
+                                            />
+                                            <span
+                                                className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                    }`}
+                                            >
+                                                Viewings
+                                            </span>
+                                        </Link>
 
-                                {/* Profile */}
-                                <Link
-                                    to="/profile"
-                                    className="flex-1 flex flex-col items-center justify-center py-2"
-                                >
-                                    <FiUser
-                                        className={`w-6 h-6 ${isProfileTabActive ? 'text-primary-600' : 'text-gray-400'
-                                            }`}
-                                    />
-                                    <span
-                                        className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500'
-                                            }`}
+                                        {/* Profile */}
+                                        <Link
+                                            to="/profile"
+                                            className="flex-1 flex flex-col items-center justify-center py-2"
+                                        >
+                                            <FiUser
+                                                className={`w-6 h-6 ${isProfileTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                    }`}
+                                            />
+                                            <span
+                                                className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                    }`}
+                                            >
+                                                Profile
+                                            </span>
+                                        </Link>
+                                    </>
+                                ) : (
+                                    /* Login — when not authenticated: go to login page; show active when on /login */
+                                    <Link
+                                        to="/login"
+                                        className="flex-1 flex flex-col items-center justify-center py-2"
                                     >
-                                        Profile
-                                    </span>
-                                </Link>
+                                        <UserCircleIcon className={`w-6 h-6 ${isLoginTabActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                                        <span className={`mt-0.5 text-[11px] font-semibold ${isLoginTabActive ? 'text-primary-600' : 'text-gray-500'}`}>
+                                            Login
+                                        </span>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </nav>
                 </div>
             </div>
 
-            {/* Footer - shown on all pages including listings and projects */}
-            <footer className="bg-white text-gray-900 pt-32 pb-12 relative overflow-hidden flex-shrink-0">
+            {/* Footer - shown on all pages except profile, my-bookings, login, register */}
+            {!hideNavOnPage && (
+            <footer className="bg-white text-gray-900 pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
                 {/* Background Decoration */}
                 <div
                     className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
@@ -1436,7 +1477,7 @@ const PublicLayout = () => {
                 />
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-10">
                     {/* Top Section: Slogan + Links */}
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-8 md:mb-24">
                         <div className="max-w-md">
                             <h2 className="text-3xl md:text-4xl font-normal md:font-medium tracking-tight leading-[1.1]">
                                 Experience the future of<br />real estate management
@@ -1464,14 +1505,14 @@ const PublicLayout = () => {
                     </div>
 
                     {/* Center Section: Massive Typography */}
-                    <div className="mb-24 overflow-hidden">
-                        <h1 className="text-[13vw] sm:text-[11vw] lg:text-[9vw] font-bold tracking-[-0.03em] md:tracking-[-0.04em] leading-[0.9] md:leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-gray-500 to-transparent select-none uppercase inline-block pr-8 pb-4 w-fit">
+                    <div className="mb-8 md:mb-24 overflow-hidden">
+                        <h1 className="text-[8vw] sm:text-[7vw] lg:text-[6vw] font-bold tracking-[-0.03em] md:tracking-[-0.04em] leading-[0.9] md:leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-gray-500 to-transparent select-none uppercase inline-block pr-8 pb-4 w-fit">
                             {brandName}
                         </h1>
                     </div>
 
                     {/* Bottom Section: Logo + Legal */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-6 md:pt-12">
                         <div className="flex items-center gap-3">
                             <span className="text-xl font-bold text-gray-900 tracking-tight">
                                 Super
@@ -1489,6 +1530,7 @@ const PublicLayout = () => {
                     </div>
                 </div>
             </footer>
+            )}
             {/* Cookie Consent Banner */}
             <CookieConsent />
         </div >

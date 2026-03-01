@@ -100,6 +100,11 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 			}
 		}
 	}
+	if bathrooms := c.Query("bathrooms"); bathrooms != "" {
+		if n, err := strconv.Atoi(bathrooms); err == nil {
+			query = query.Where("bathrooms >= ?", n)
+		}
+	}
 
 	// Filter by developer or project
 	if projectID := c.Query("project_id"); projectID != "" {
