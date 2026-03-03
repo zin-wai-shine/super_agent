@@ -1053,7 +1053,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 lockScroll
                 hideHeader
                 fullScreenMobile
-                className="!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:min-w-0 sm:max-w-[1400px] sm:h-[90vh] !max-w-full sm:!max-w-[1400px] overflow-hidden shadow-none sm:shadow-2xl sm:rounded-[24px] transition-all duration-500"
+                fullBleedDesktop
+                className="!p-0 !m-0 w-full h-[100dvh] sm:w-full sm:h-full !max-w-full overflow-hidden shadow-none rounded-none sm:rounded-none transition-all duration-500"
                 overlayZIndex={10040}
             >
                 <div
@@ -1063,7 +1064,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {/* Header - Hide on success; mobile: compact padding */}
                     {!success && (
                         <div
-                            className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 border-b shrink-0"
+                            className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4 border-b shrink-0"
                             style={{
                                 backgroundColor: 'var(--menu-bg-color)',
                                 borderBottomColor: 'var(--menu-divider)'
@@ -1071,22 +1072,28 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         >
                             <button
                                 onClick={() => setIsBookingOverlayOpen(false)}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                                className="z-10 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
                             >
                                 <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6" />
                             </button>
-                            <span
-                                className="text-lg font-semibold ml-auto"
-                                style={{ color: 'var(--menu-text-primary)' }}
-                            >
-                                Request a Viewing
-                            </span>
+
+                            {/* Centered Title */}
+                            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
+                                <span
+                                    className="text-lg font-bold truncate pointer-events-auto"
+                                    style={{ color: 'var(--menu-text-primary)' }}
+                                >
+                                    Request a Viewing
+                                </span>
+                            </div>
+
+                            <div className="w-[44px] md:w-auto" /> {/* Spacer to help centering if icons differ */}
                         </div>
                     )}
 
-                    {/* Content Area - mobile: full width; desktop: centered max-width; z-[60] so scroll lock skips this container */}
+                    {/* Content Area - mobile: full width; desktop: centered (max-w-[1400px]); z-[60] so scroll lock skips this container */}
                     <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className={`w-full max-w-full px-4 py-6 sm:max-w-[1400px] sm:mx-auto sm:p-6 lg:p-12 ${success ? 'h-full flex items-center justify-center' : ''}`}>
+                        <div className={`mx-auto w-full max-w-[1600px] px-4 md:px-8 lg:px-20 py-6 sm:py-8 lg:py-8 ${success ? 'h-full flex items-center justify-center' : ''}`}>
                             {success ? (
                                 <div className="h-full w-full flex items-center justify-center p-6">
                                     <div
@@ -1249,13 +1256,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     type="button"
                                                                     disabled={disabled}
                                                                     onClick={() => !disabled && handleTimeSelect(time)}
-                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${
-                                                                        isSelected
-                                                                            ? 'border-primary-600 bg-primary-50 text-primary-600'
-                                                                            : disabled
-                                                                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
-                                                                    }`}
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
+                                                                        ? 'border-primary-600 bg-primary-50 text-primary-600'
+                                                                        : disabled
+                                                                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                                            : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                        }`}
                                                                 >
                                                                     {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
                                                                 </button>
@@ -1282,13 +1288,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     type="button"
                                                                     disabled={disabled}
                                                                     onClick={() => !disabled && handleTimeSelect(time)}
-                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${
-                                                                        isSelected
-                                                                            ? 'border-primary-600 bg-primary-50 text-primary-600'
-                                                                            : disabled
-                                                                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
-                                                                    }`}
+                                                                    className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
+                                                                        ? 'border-primary-600 bg-primary-50 text-primary-600'
+                                                                        : disabled
+                                                                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                                            : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                        }`}
                                                                 >
                                                                     {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
                                                                 </button>
@@ -1448,7 +1453,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             ref={bookingConfirmRef}
                             className="z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm pt-[max(1.25rem,env(safe-area-inset-top,0px))] pr-[max(2.5rem,env(safe-area-inset-right,0px))] pb-[max(1.75rem,calc(env(safe-area-inset-bottom,0px)+1rem))] pl-[max(2.5rem,env(safe-area-inset-left,0px))] lg:p-6"
                         >
-                            <div className="max-w-[1400px] w-full flex flex-col items-center gap-4">
+                            <div className="max-w-[1600px] mx-auto w-full flex flex-col items-center gap-4">
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -1490,7 +1495,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             {/* Mobile Header (White Nav & Image Carousel) - Visible only on mobile/tablet */}
             <div className="lg:hidden w-full flex flex-col relative">
                 {/* Float Top Nav for Mobile - Buttons over image */}
-                <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 pt-6 z-[60] bg-transparent pointer-events-none">
+                <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-2.5 pt-3 z-[60] bg-transparent pointer-events-none">
                     <button
                         onClick={() => onClose ? onClose() : navigate(-1)}
                         className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
@@ -1543,13 +1548,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 key={`leave-${imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length}`}
                                 src={getMediaUrl(images[imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length].url)}
                                 alt=""
-                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${
-                                    imageTransitionStep === 1
-                                        ? imageSlideDir === 'next'
-                                            ? '-translate-x-full'
-                                            : 'translate-x-full'
-                                        : 'translate-x-0'
-                                }`}
+                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${imageTransitionStep === 1
+                                    ? imageSlideDir === 'next'
+                                        ? '-translate-x-full'
+                                        : 'translate-x-full'
+                                    : 'translate-x-0'
+                                    }`}
                                 draggable={false}
                             />
                             {/* Entering image */}
@@ -1557,9 +1561,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 key={`enter-${currentImageIndex}`}
                                 src={getMediaUrl(images[currentImageIndex].url)}
                                 alt={listing.title}
-                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${
-                                    imageTransitionStep === 1 ? 'translate-x-0' : imageSlideDir === 'next' ? 'translate-x-full' : '-translate-x-full'
-                                }`}
+                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${imageTransitionStep === 1 ? 'translate-x-0' : imageSlideDir === 'next' ? 'translate-x-full' : '-translate-x-full'
+                                    }`}
                                 draggable={false}
                             />
                         </>
@@ -1595,7 +1598,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
             {/* Desktop Back button */}
             {!isModal && (
-                <div className="hidden lg:block sticky top-0 z-[45] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
+                <div className="hidden lg:block sticky top-0 z-[45] w-full px-6 md:px-12 lg:px-20 lg:pt-8 pointer-events-none">
                     <button
                         onClick={() => navigate(-1)}
                         className="pointer-events-auto text-gray-400 hover:text-gray-900 transition-all py-2.5 px-2.5 md:py-2 md:px-2 rounded-full hover:bg-gray-100 active:scale-95 group flex items-center min-h-[44px] md:min-h-0"
@@ -1606,91 +1609,53 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 </div>
             )}
 
-            <div className={`mx-auto ${isModal ? 'w-full px-0 py-0 sm:max-w-[1400px] sm:px-8 sm:py-8 lg:px-10' : 'max-w-[1600px] px-0 lg:px-8 py-0 lg:py-6'}`}>
-                <div className="flex justify-center">
-                    <div className={`w-full ${isModal ? 'max-w-none' : 'max-w-7xl'} space-y-0 lg:space-y-6`}>
-                        {/* Details - Header Section (card radius) */}
-                        <div className="bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden lg:border lg:border-gray-100 shadow-none lg:shadow-sm px-0 py-8 lg:px-8 lg:p-8 relative z-10 -mt-8 lg:mt-0">
-                            {/* Booking Information Bar */}
-                            {bookingId && (
-                                <div ref={bookingBarRef} className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
-                                        {/* Left Side: ID & Status */}
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    ID: {viewedBooking?.id?.toUpperCase() || bookingId.slice(0, 8).toUpperCase()}
-                                                </div>
-                                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${viewedBooking?.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    viewedBooking?.status === 'cancelled' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                        'bg-amber-50 text-amber-600 border-amber-100'
-                                                    }`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${viewedBooking?.status === 'confirmed' ? 'bg-emerald-500' :
-                                                        viewedBooking?.status === 'cancelled' ? 'bg-rose-500' :
-                                                            'bg-amber-500'
-                                                        }`} />
-                                                    {viewedBooking?.status || 'Pending'}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight tracking-tight">
-                                                    {listing.title}
-                                                </h1>
-                                                <div className="flex items-center gap-2 text-gray-500">
-                                                    <MapPinIcon className="w-4 h-4" />
-                                                    <span className="text-base font-semibold">{listing.district}, {listing.city}</span>
-                                                </div>
-                                            </div>
-                                        </div>
+            <div className="w-full px-0 md:px-12 lg:px-20 py-0 sm:py-8 lg:py-8">
+                <div className="max-w-[1440px] mx-auto">
+                    <div className="w-full space-y-0 lg:space-y-6">
+                        {/* Details - Header Section (card radius); desktop: same design size as reference — centered, generous padding */}
+                        <div className="bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden shadow-none px-0 py-8 lg:py-8 relative z-10 -mt-8 lg:mt-0">
+                            {/* Title & Info - same layout for listing and viewing-requested; viewing date/status inline when bookingId */}
+                            <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-6 lg:pt-0">
+                                <div className="flex-1 min-w-0 w-full">
+                                    <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 leading-[1.2] mb-2 tracking-tight">
+                                        {listing.title}
+                                    </h1>
 
-                                        {/* Right Side: Date & Time */}
-                                        <div className="flex items-center gap-8 md:text-right">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Date</span>
-                                                <span className="text-lg font-black text-gray-900">
-                                                    {viewedBooking?.preferred_date ? new Date(viewedBooking.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Loading...'}
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Time</span>
-                                                <span className="text-lg font-black text-gray-900">
-                                                    {viewedBooking?.preferred_time || 'Loading...'}
-                                                </span>
-                                            </div>
+                                    {bookingId && (
+                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3 text-[14px]">
+                                            <span className="text-gray-500">Viewing requested</span>
+                                            <span className="text-gray-300">·</span>
+                                            <span className="font-medium text-gray-800">
+                                                {viewedBooking?.preferred_date ? new Date(viewedBooking.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
+                                            </span>
+                                            {viewedBooking?.preferred_time && <><span className="text-gray-300">·</span><span className="text-gray-700">{viewedBooking.preferred_time}</span></>}
+                                            <span className="text-gray-300">·</span>
+                                            <span className={`font-semibold ${viewedBooking?.status === 'confirmed' ? 'text-emerald-600' : viewedBooking?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                {viewedBooking?.status || 'Pending'}
+                                            </span>
                                         </div>
+                                    )}
+
+                                    <div className="flex items-center text-gray-800 text-[15px] pb-6">
+                                        <span>{listing.bedrooms || 0} bedroom{listing.bedrooms > 1 || !listing.bedrooms ? 's' : ''}</span>
+                                        <span className="mx-1.5 font-bold">·</span>
+                                        <span>{listing.bathrooms || 0} bath{listing.bathrooms > 1 || !listing.bathrooms ? 's' : ''}</span>
+                                        <span className="mx-1.5 font-bold">·</span>
+                                        <span>{listing.area ? `${listing.area} m²` : 'Spacious'}</span>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Title & Info - Airbnb Layout */}
-                            {!bookingId && (
-                                <div className="px-5 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-6 lg:pt-0">
-                                    <div className="flex-1 min-w-0 w-full">
-                                        <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 leading-[1.2] mb-2 tracking-tight">
-                                            {listing.title}
-                                        </h1>
-
-                                        <div className="flex items-center text-gray-800 text-[15px] pb-6">
-                                            <span>{listing.bedrooms || 0} bedroom{listing.bedrooms > 1 || !listing.bedrooms ? 's' : ''}</span>
-                                            <span className="mx-1.5 font-bold">·</span>
-                                            <span>{listing.bathrooms || 0} bath{listing.bathrooms > 1 || !listing.bathrooms ? 's' : ''}</span>
-                                            <span className="mx-1.5 font-bold">·</span>
-                                            <span>{listing.area ? `${listing.area} m²` : 'Spacious'}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="hidden lg:flex flex-wrap items-center gap-2">
-                                        <Badge variant="neutral" className="border border-gray-100 px-2 py-1 rounded-lg">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1">Property</span>
-                                            <span className="text-xs font-black text-gray-900">{listing.id?.toUpperCase() || ''}</span>
-                                        </Badge>
-                                    </div>
+                                <div className="hidden lg:flex flex-wrap items-center gap-2">
+                                    <Badge variant="neutral" className="border border-gray-100 px-2 py-1 rounded-lg">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1">Property</span>
+                                        <span className="text-xs font-black text-gray-900">{listing.id?.toUpperCase() || ''}</span>
+                                    </Badge>
                                 </div>
-                            )}
+                            </div>
 
 
                             {!bookingId && (
-                                <div className="px-5 lg:px-0 flex gap-4 mb-8">
+                                <div className="px-4 md:px-0 lg:px-0 flex gap-4 mb-8">
                                     <div className="mt-0.5">
                                         <CheckBadgeIcon className="w-6 h-6 text-gray-900" />
                                     </div>
@@ -1702,7 +1667,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             )}
 
                             {/* Price for Mobile (Fixed styling) */}
-                            <div className="px-5 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 mb-2 flex items-baseline">
+                            <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 mb-2 flex items-baseline">
                                 {formatPrice(listing.price)}
                                 {listing.listing_type === 'rent' && (
                                     <span className="text-gray-900 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 border-dashed pb-0.5">/month</span>
@@ -1815,7 +1780,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         {renderHeaderActions()}
 
                         {/* Details - Features & Description */}
-                        <div className="px-5 lg:px-0">
+                        <div className="px-4 md:px-0 lg:px-0">
                             {/* Features */}
                             {/* Features Grid */}
                             <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
@@ -2038,7 +2003,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             {/* Map Section — only when coordinates exist; Google Map + Transit Map tabs */}
                             {(listing.latitude && listing.longitude) && (
                                 <>
-                                    <div className="mt-12">
+                                    <div className="mt-12 px-2 md:px-0 lg:px-0">
                                         <div className="border-b border-gray-100 mb-8">
                                             <nav className="-mb-px flex space-x-10">
                                                 <button
@@ -2069,12 +2034,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         key={listing.id}
                                                         listings={[listing]}
                                                         center={mapCenter}
-                                                        zoom={17}
+                                                        zoom={15}
                                                         onMarkerClick={() => { }}
                                                         options={mapOptions}
                                                         useDefaultMarkers={true}
                                                         isVisible={true}
                                                         hideControls
+                                                        fitBoundsOnListingsChange={false}
                                                     />
                                                 </div>
                                             ) : (
@@ -2199,7 +2165,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             )}
                                         </div>
 
-                                        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                                        <div className="mt-6 px-4 md:px-0 lg:px-0 flex flex-wrap items-center justify-between gap-4">
                                             <div className="flex items-center gap-6">
                                                 <div className="flex items-center text-[14px] text-gray-500">
                                                     <MapPinIcon className="w-5 h-5 mr-2 text-primary-500" />
@@ -2254,25 +2220,34 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             document.getElementById('modal-header-extra')
                         )}
 
-                        {/* Related Listings Section */}
+                        {/* Related Listings Section — carousel: 1 card (swipe) on mobile, 2 on md, 3 on lg+ */}
                         {!bookingId && relatedListings.length > 0 && (
-                            <div className={`mx-auto ${isModal ? 'w-full px-4 py-12 sm:max-w-[1400px] sm:px-8 lg:px-10' : 'max-w-[1600px] px-6 sm:px-12 lg:px-20 py-12'} border-t border-gray-100`}>
+                            <div className="hidden md:block w-full px-4 md:px-4 lg:px-8 py-12 border-t border-gray-100">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-                                <div className={`grid grid-cols-1 ${isMapView ? 'lg:grid-cols-2 gap-x-12 gap-y-6' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'}`}>
-                                    {relatedListings.map((related) => (
-                                        <ListingCard
-                                            key={related.id}
-                                            listing={related}
-                                            viewMode={isMapView ? 'map-list' : 'grid'}
-                                        />
-                                    ))}
-                                </div>
+                                {isMapView ? (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
+                                        {relatedListings.map((related) => (
+                                            <ListingCard key={related.id} listing={related} viewMode="map-list" />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-nowrap gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory -mx-4 pl-4 pr-4 sm:mx-0 sm:px-0 sm:gap-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                        {relatedListings.map((related) => (
+                                            <div
+                                                key={related.id}
+                                                className="flex-shrink-0 snap-start w-full min-w-full sm:w-[calc((100%-3rem)/3)] sm:min-w-[calc((100%-3rem)/3)] sm:max-w-[calc((100%-3rem)/3)]"
+                                            >
+                                                <ListingCard listing={related} viewMode="grid" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
 
                         <div className="bg-white overflow-hidden relative min-h-[400px] flex flex-col justify-center">
 
-                            <div className={`w-full mx-auto ${isModal ? 'px-6 py-24 sm:max-w-[1400px] sm:px-8 lg:px-10' : 'max-w-[1600px] px-8 sm:px-20 lg:px-32 py-24'} relative z-10`}>
+                            <div className="w-full px-4 md:px-4 lg:px-8 py-24 relative z-10">
                                 {/* Top Row: Intro & Menus */}
                                 <div className="flex flex-col lg:flex-row justify-between gap-16 mb-24">
                                     {/* Intro Text */}
@@ -2487,31 +2462,38 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 </div>
             </div>
 
-            {/* Sticky Mobile Footer — Apple-style height and safe area */}
+            {/* Sticky Mobile Footer — substantial height and padding (mobile only) */}
             <div
-                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-[90] flex items-center justify-between pointer-events-auto min-h-[56px] py-3"
+                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-[90] flex items-center justify-between pointer-events-auto min-h-[72px] rounded-t-[20px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
                 style={{
                     paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
-                    paddingBottom: 'max(1.75rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))',
+                    paddingBottom: 'max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem))',
                     paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
                     paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
                 }}
             >
-                    <div className="flex flex-col">
-                        <div className="flex items-baseline">
-                            <span className="text-[17px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
-                            {listing.listing_type === 'rent' && (
-                                <span className="text-gray-900 text-[13px] font-normal ml-1">/month</span>
-                            )}
-                        </div>
+                <div className="flex flex-col">
+                    <div className="flex items-baseline">
+                        <span className="text-[17px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
+                        {listing.listing_type === 'rent' && (
+                            <span className="text-gray-900 text-[13px] font-normal ml-1">/month</span>
+                        )}
                     </div>
+                </div>
+                {activeBooking ? (
+                    <div className="flex items-center gap-2 text-primary-600 font-bold text-[15px]">
+                        <LuCalendarCheck2 className="w-5 h-5" />
+                        <span>Viewing Requested</span>
+                    </div>
+                ) : (
                     <button
                         onClick={handleBookingClick}
-                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-6 py-2.5 rounded-full min-h-[44px]"
+                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-6 py-3.5 rounded-full min-h-[48px]"
                     >
                         Request a Viewing
                     </button>
-                </div>
+                )}
+            </div>
         </div >
     );
 };

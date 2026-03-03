@@ -16,7 +16,11 @@ const Modal = ({
     hideCloseButton = false,
     headerExtra,
     headerActions,
+    headerLeading,
+    centerTitle = false,
+    rightTitle = false,
     fullScreenMobile = false,
+    fullBleedDesktop = false,
     overlayZIndex
 }) => {
 
@@ -78,12 +82,12 @@ const Modal = ({
         full: "max-w-full", // Margin now handled cleanly by the wrapper below
     };
 
-    // Show header if not hidden and we have either a title or extra content
-    const hasHeader = !hideHeader && (Boolean(title) || Boolean(headerExtra));
+    // Show header if not hidden and we have either a title, extra content or leading element
+    const hasHeader = !hideHeader && (Boolean(title) || Boolean(headerExtra) || Boolean(headerLeading));
 
     return createPortal(
         <div
-            className={`fixed inset-0 overflow-visible flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-center'}`}
+            className={`fixed inset-0 overflow-visible flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-center'} ${fullBleedDesktop ? 'sm:items-stretch' : ''}`}
             style={{ zIndex: overlayZIndex ?? 1000 }}
         >
             {/* Backdrop */}
@@ -99,39 +103,69 @@ const Modal = ({
 
             {/* Modal Dialog */}
             <div
-                className={`relative transform animate-scale-in w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 h-full sm:h-auto sm:m-4' : 'p-4 sm:p-0'}`}
+                className={`relative transform animate-scale-in w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 h-full sm:h-auto sm:m-4' : 'p-4 sm:p-0'} ${fullBleedDesktop ? 'sm:!m-0 sm:!rounded-none sm:!shadow-none sm:!max-w-none sm:w-full sm:h-full' : ''}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
-                    className={`bg-white text-left shadow-2xl w-full flex flex-col h-full overflow-hidden ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`}
-                    style={{
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-                    }}
+                    className={`bg-white text-left w-full flex flex-col h-full overflow-hidden ${fullBleedDesktop ? 'shadow-none sm:shadow-none rounded-none sm:rounded-none' : `shadow-2xl ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`}`}
+                    style={fullBleedDesktop ? undefined : { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
                 >
-                    {/* Header - Only render if title is provided */}
                     {hasHeader && (
-                        <div className={`items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`} >
-                            <div className="flex items-center gap-3 min-w-0 flex-1" >
-                                <h3 className="text-lg font-semibold text-gray-900 truncate" >
-                                    {title}
-                                </h3>
-                                <div id="modal-header-extra" className="flex items-center gap-2 flex-1" >
-                                    {headerExtra}
+                        <div className={`border-b border-gray-100 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
+                            <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1600px] mx-auto min-h-[64px]">
+                                <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
+                                    {headerLeading && (
+                                        <div className="flex-shrink-0">
+                                            {headerLeading}
+                                        </div>
+                                    )}
+                                    {/* On Desktop: always show title on left (if exists) */}
+                                    {/* On Mobile: only show here if NOT centered AND NOT right-aligned */}
+                                    {title && (
+                                        <h3 className={`text-lg font-bold text-gray-900 truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden lg:block' : 'block'}`}>
+                                            {title}
+                                        </h3>
+                                    )}
+                                    <div id="modal-header-extra" className={`flex items-center gap-2 min-w-0 ${(centerTitle || rightTitle) ? 'hidden lg:flex' : 'flex'}`}>
+                                        {headerExtra}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-center gap-4" >
-                                <div id="modal-header-actions" className="flex items-center gap-2" >
-                                    {headerActions}
-                                </div>
-                                {!hideCloseButton && (
-                                    <button
-                                        onClick={onClose}
-                                        className="text-gray-400 hover:text-gray-500 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <XMarkIcon className="h-6 w-6" />
-                                    </button>
+                                {centerTitle && title && (
+                                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10 lg:hidden">
+                                        <h3 className="text-lg font-semibold text-gray-900 truncate text-center">
+                                            {title}
+                                        </h3>
+                                    </div>
                                 )}
+
+                                {rightTitle && title && (
+                                    <div className={`absolute ${hideCloseButton ? 'right-4' : 'right-16'} flex items-center justify-center max-w-[50%] z-10 lg:hidden`}>
+                                        <h3 className="text-lg font-semibold text-gray-900 truncate text-right">
+                                            {title}
+                                        </h3>
+                                    </div>
+                                )}
+
+                                <div className="flex items-center gap-4 z-20">
+                                    {(centerTitle || rightTitle) && (
+                                        <div id="modal-header-extra" className="hidden lg:flex items-center gap-2 min-w-0">
+                                            {/* Re-render headerExtra on right for desktop if title is centered/right on mobile */}
+                                            {headerExtra}
+                                        </div>
+                                    )}
+                                    <div id="modal-header-actions" className="flex items-center gap-2">
+                                        {headerActions}
+                                    </div>
+                                    {!hideCloseButton && (
+                                        <button
+                                            onClick={onClose}
+                                            className="text-gray-400 hover:text-gray-500 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                        >
+                                            <XMarkIcon className="h-6 w-6" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

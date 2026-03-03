@@ -85,6 +85,27 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
         </div>
     );
 
+    // Grouped category (mobile favorites): 2x2 collage style
+    const renderGroupedSavedCategorySkeleton = () => (
+        <div className="flex flex-col gap-2" style={skeletonStyle}>
+            {/* Collage Container */}
+            <div className="w-full aspect-square bg-white border border-gray-50 rounded-[20px] overflow-hidden p-1.5 shadow-sm">
+                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-[4px] rounded-[14px] overflow-hidden">
+                    <div className={`w-full h-full ${bar}`} />
+                    <div className={`w-full h-full ${barLight}`} />
+                    <div className={`w-full h-full ${barLight}`} />
+                    <div className={`w-full h-full ${bar}`} />
+                </div>
+            </div>
+            {/* Label and Count */}
+            <div className="px-1">
+                <div className={`h-[17px] w-2/3 ${bar} rounded mb-1.5`} />
+                <div className={`h-[14px] w-1/3 ${barLight} rounded`} />
+            </div>
+        </div>
+    );
+
+    if (viewMode === 'grouped-saved-category') return renderGroupedSavedCategorySkeleton();
     if (isSavedGrid) return renderSavedGridSkeleton();
     if (isListView) return renderListSkeleton();
     return renderGridSkeleton();

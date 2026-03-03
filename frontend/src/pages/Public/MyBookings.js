@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { Link, useOutletContext, useNavigate } from 'react-router-dom';
 import { appointmentApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import StyledSelect from '../../components/Form/StyledSelect';
 import Button from '../../components/ui/Button';
+import FilterBar from '../../components/ui/FilterBar';
 import {
     CalendarIcon,
     MapPinIcon,
@@ -19,14 +20,19 @@ import {
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
 
 const MyBookings = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const outletContext = useOutletContext() || {};
+    const { filterBarSlot, navVisible = true, isScrolled: layoutScrolled = false } = outletContext;
+
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
     const [skeletonCount, setSkeletonCount] = useState(2);
     const [error, setError] = useState(null);
-    const { user } = useAuth();
     const [filter, setFilter] = useState('all');
+    const [bookingsSearchTerm, setBookingsSearchTerm] = useState('');
 
     useEffect(() => {
         fetchAppointments();
@@ -67,9 +73,32 @@ const MyBookings = () => {
 
     return (
         <div className="min-h-screen pt-10 pb-20 bg-white">
-            <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+            {/* Filter bar (desktop only): same as Favorites page; search/filters navigate to list page */}
+            {filterBarSlot && createPortal(
+                <div className="hidden lg:block w-full">
+                    <FilterBar
+                        total={appointments.length}
+                        searchTerm={bookingsSearchTerm}
+                        onSearchChange={setBookingsSearchTerm}
+                        onSearchSubmit={(value) => navigate(`/listings${value ? `?search=${encodeURIComponent(value)}` : ''}`)}
+                        onOpenFilters={() => navigate('/listings?open_filters=1')}
+                        hasActiveFilters={false}
+                        activeFilterCount={0}
+                        viewMode="grid"
+                        onViewModeChange={() => { }}
+                        isGoogleMapOpen={false}
+                        onToggleMapView={() => navigate('/listings?view=map')}
+                        navVisible={navVisible}
+                        isScrolled={layoutScrolled}
+                        onClearSearch={() => setBookingsSearchTerm('')}
+                    />
+                </div>,
+                filterBarSlot
+            )}
+
+            <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
                 {/* Header — same design/size as Favorites, left-aligned */}
-                <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20">
+                <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20 px-0">
                     <div>
                         <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
                             My Viewing Requests
@@ -79,27 +108,35 @@ const MyBookings = () => {
                         </p>
                     </div>
 
-                    {/* Filter Dropdown - Standardized StyledSelect */}
-                    {!initialLoading && (
-                        <div className="w-full max-w-xs animate-fadeInUp">
-                            <StyledSelect
-                                options={[
-                                    { value: 'all', label: 'All requests' },
-                                    { value: 'pending', label: 'Pending' },
-                                    { value: 'confirmed', label: 'Confirmed' },
-                                    { value: 'cancelled', label: 'Cancelled' }
-                                ]}
-                                value={filter}
-                                onChange={setFilter}
-                                isSearchable={false}
-                                placeholder="Filter by status"
-                            />
+                    {/* Status filter — pill chips (no select box) */}
+                    <div className="w-full">
+                        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+                            {[
+                                { value: 'all', label: 'All' },
+                                { value: 'pending', label: 'Pending' },
+                                { value: 'confirmed', label: 'Confirmed' },
+                                { value: 'cancelled', label: 'Cancelled' }
+                            ].map(({ value, label }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={filter === value}
+                                    onClick={() => setFilter(value)}
+                                    className={`min-h-[44px] px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-[0.98] ${filter === value
+                                        ? 'bg-slate-900 text-white shadow-md'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {user?.late_cancellation_count >= 3 && !initialLoading && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-[3px] mb-10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="mx-0 lg:mx-0 bg-red-50 border-l-4 border-red-500 p-6 rounded-[3px] mb-10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
                             <div className="shrink-0 bg-red-100 p-2 rounded-full">
                                 <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
@@ -116,7 +153,7 @@ const MyBookings = () => {
                 )}
 
                 {error && (
-                    <div className="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-[3px] mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
+                    <div className="mx-0 bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-[3px] mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
                         <XCircleIcon className="w-6 h-6 shrink-0" />
                         <span className="font-bold">{error}</span>
                     </div>
@@ -169,56 +206,58 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 hover:border-primary-500/30 transition-all duration-300 overflow-hidden rounded-[24px] animate-fadeInUp ${isPast ? 'opacity-90 grayscale-[0.2]' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300 overflow-hidden rounded-2xl animate-fadeInUp relative ${isPast ? 'opacity-85' : ''}`}
                                     >
-                                        {/* Top Section */}
-                                        <div className="p-5 md:p-6 pb-6 bg-white flex-1 relative">
-                                            {/* Status & ID */}
-                                            <div className="flex items-center justify-between mb-5">
-                                                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 tracking-[0.05em] uppercase bg-slate-100/80 px-2.5 py-1.5 rounded-[4px]">
-                                                    ID: {appointment.id.slice(0, 8).toUpperCase()}
-                                                </span>
-                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${appointment.status === 'confirmed' ? 'bg-emerald-50/80 text-emerald-600' :
-                                                    appointment.status === 'completed' ? 'bg-amber-100/80 text-amber-700' :
-                                                        appointment.status === 'cancelled' ? 'bg-rose-50/80 text-rose-600' :
-                                                            'bg-amber-50/80 text-amber-600'
+                                        {/* Status accent bar — left edge */}
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
+                                            appointment.status === 'completed' ? 'bg-amber-500' :
+                                                appointment.status === 'cancelled' ? 'bg-rose-400' :
+                                                    'bg-amber-400'
+                                            }`} aria-hidden />
+
+                                        <div className="flex-1 flex flex-col pl-5 pr-5 pt-5 md:pt-6 pb-4">
+                                            {/* Status pill + ID */}
+                                            <div className="flex items-center justify-between gap-3 mb-4">
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${appointment.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700' :
+                                                    appointment.status === 'completed' ? 'bg-amber-50 text-amber-700' :
+                                                        appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
+                                                            'bg-amber-50 text-amber-700'
                                                     }`}>
-                                                    <div className={`w-[5px] h-[5px] rounded-full ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
+                                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
                                                         appointment.status === 'completed' ? 'bg-amber-500' :
                                                             appointment.status === 'cancelled' ? 'bg-rose-500' :
                                                                 'bg-amber-500'
-                                                        }`}></div>
+                                                        }`} />
                                                     {appointment.status}
-                                                </div>
+                                                </span>
+                                                <span className="text-[10px] font-medium text-slate-400 tabular-nums truncate">
+                                                    {appointment.id.slice(0, 8).toUpperCase()}
+                                                </span>
                                             </div>
 
-                                            {/* Title — smaller and less bold at lg */}
-                                            <div className="mb-2.5">
-                                                <h3 className="text-base md:text-xl lg:text-[16px] font-bold text-[#1e293b] leading-tight group-hover:text-primary-600 transition-colors line-clamp-2">
-                                                    {appointment.listing?.title || 'Unknown Property'}
-                                                </h3>
-                                            </div>
+                                            {/* Title */}
+                                            <h3 className="text-[15px] md:text-[17px] font-bold text-slate-800 leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
+                                                {appointment.listing?.title || 'Unknown Property'}
+                                            </h3>
 
                                             {/* Location */}
-                                            <div className="flex items-center text-slate-500 font-semibold text-[13px] md:text-sm">
-                                                <MapPinIcon className="w-[18px] h-[18px] mr-1.5 text-slate-400" />
+                                            <div className="flex items-center gap-1.5 text-slate-500 text-sm font-medium">
+                                                <MapPinIcon className="w-4 h-4 text-slate-400 shrink-0" />
                                                 <span className="truncate">{appointment.listing?.district || 'Location unavailable'}</span>
                                             </div>
                                         </div>
 
-                                        {/* Bottom Section */}
-                                        <div className="p-4 md:p-6 bg-[#f8fafc] border-t border-slate-200/60 flex items-center justify-between mt-auto">
-                                            <div className="flex flex-col">
-                                                <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Date</div>
-                                                <div className="text-[13px] md:text-[15px] lg:text-[13px] font-bold lg:font-semibold text-[#0f172a]">
+                                        {/* Date & time — clear, scannable row */}
+                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-4 rounded-b-2xl">
+                                            <div className="flex items-center gap-2">
+                                                <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                                                <span className="text-sm font-semibold text-slate-800">
                                                     {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </div>
+                                                </span>
                                             </div>
-                                            <div className="flex flex-col items-end">
-                                                <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Time</div>
-                                                <div className="text-[13px] md:text-[15px] lg:text-[13px] font-bold lg:font-semibold text-[#0f172a]">
-                                                    {appointment.preferred_time}
-                                                </div>
+                                            <div className="flex items-center gap-2">
+                                                <ClockIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                                                <span className="text-sm font-semibold text-slate-800">{appointment.preferred_time}</span>
                                             </div>
                                         </div>
                                     </Link>

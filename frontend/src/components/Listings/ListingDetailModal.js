@@ -7,7 +7,7 @@ const ListingDetailView = lazy(() => import('../../pages/Public/ListingDetailPag
     default: module.ListingDetailView
 })));
 
-const MODAL_SIZE_CLASS = '!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:h-[90vh] sm:w-[94vw] sm:min-w-0 sm:max-w-[1400px] sm:!max-w-[1400px] !max-w-full overflow-hidden shadow-none sm:shadow-2xl sm:rounded-[24px] transition-all duration-500';
+const MODAL_SIZE_CLASS = '!p-0 !m-0 w-full h-[100dvh] sm:h-full sm:w-full !max-w-full overflow-hidden shadow-none rounded-none sm:rounded-none transition-all duration-500';
 
 const ListingDetailModal = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -60,6 +60,7 @@ const ListingDetailModal = () => {
                 hideHeaderOnMobile={true}
                 hideCloseButton={false}
                 fullScreenMobile
+                fullBleedDesktop
                 className={MODAL_SIZE_CLASS}
                 style={{ overscrollBehavior: 'contain' }}
                 title={modalTitle}
@@ -95,7 +96,8 @@ const ListingDetailModal = () => {
                     lockScroll
                     hideHeader
                     fullScreenMobile
-                    className={MODAL_SIZE_CLASS}
+                    fullBleedDesktop
+                    className="!p-0 !m-0 w-full h-[100dvh] sm:w-full sm:h-full !max-w-full overflow-hidden"
                     style={{ overscrollBehavior: 'contain' }}
                     overlayZIndex={10050}
                 >

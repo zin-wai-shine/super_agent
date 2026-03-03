@@ -356,6 +356,16 @@
 }
 
 /* Hide scrollbar but keep scroll/drag (e.g. selected pills) */
+/* Transit modal footer: filter-base padding + safe area on mobile only */
+@media (max-width: 639px) {
+  .transit-modal-footer-safe {
+    padding-left: max(2.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2.5rem, env(safe-area-inset-right, 0px));
+    padding-top: max(1.25rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)));
+  }
+}
+
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -382,6 +392,12 @@
 
 .animate-bounce-subtle {
   animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+/* Map pan loading: dots "..." pulse */
+@keyframes mapLoadingDot {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 @keyframes fade-in-up {

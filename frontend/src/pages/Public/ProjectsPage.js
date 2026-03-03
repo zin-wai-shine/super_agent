@@ -415,6 +415,10 @@ const ProjectsPage = () => {
                 if (!isMapBoundsUpdate && !isSearchTyped) {
                     setInitialLoading(true);
                     setProjects([]); // Clear projects for fresh fetch on page 1
+                } else if (isBoundsTriggeredFetch) {
+                    // For map boundary fetches, we intentionally switch to loading state
+                    // to show the skeletons spinning down during the artificial delay.
+                    setInitialLoading(true);
                 }
             }
             setLoading(true);
@@ -433,18 +437,22 @@ const ProjectsPage = () => {
                 }
 
                 // Call API and artificial delay in parallel for premium "serial" loading feel
-                const [response] = await Promise.all([
-                    publicApi.getProjects(params, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 750)) // Reduced from 1.5s to 0.75s
-                ]);
+                const response = isBoundsTriggeredFetch
+                    ? (await Promise.all([
+                        publicApi.getProjects(params, { signal: controller.signal }),
+                        new Promise(resolve => setTimeout(resolve, 800))
+                    ]))[0]
+                    : (await Promise.all([
+                        publicApi.getProjects(params, { signal: controller.signal }),
+                        new Promise(resolve => setTimeout(resolve, 200)) // No delay for map pans
+                    ]))[0];
 
                 const data = response.data;
 
                 if (page === 1 && initialLoading) {
                     // Trigger exit animation
                     setIsExiting(true);
-                    // Wait for the longest delay (11 * 60ms) + animation duration (600ms) = ~1260ms
-                    await new Promise(resolve => setTimeout(resolve, 650)); // Reduced from 1.3s to 0.65s
+                    await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
                     setProjects(data.projects);
                     setIsExiting(false);
                     setInitialLoading(false);
@@ -585,9 +593,8 @@ const ProjectsPage = () => {
                                 return (
                                     <span
                                         key={key}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${
-                                            isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
-                                        }`}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
+                                            }`}
                                         style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
                                     >
                                         <span className="break-words max-w-[140px] min-w-0">{label}</span>
@@ -830,8 +837,8 @@ const ProjectsPage = () => {
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Filter Settings</h3>
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
+                            <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -842,23 +849,23 @@ const ProjectsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
                         <div
-                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3 pt-4 pb-5"
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
                             style={{
                                 paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
                                 paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
-                                paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
-                                paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                                paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+                                paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                             }}
                         >
                             <button
                                 onClick={clearFilters}
                                 disabled={!hasActiveFilters}
-                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActiveFilters
+                                className={`order-1 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActiveFilters
                                     ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                     : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                     }`}
@@ -867,7 +874,7 @@ const ProjectsPage = () => {
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className="order-2 md:order-1 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
+                                className="order-2 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
                                 <span>Show {total} {total === 1 ? 'project' : 'projects'}</span>
                             </button>
@@ -911,12 +918,7 @@ const ProjectsPage = () => {
                     </div>
                 </div>
                 {/* Header Mobile */}
-                <div className="pt-2 pb-2 px-4 lg:hidden">
-                    <div className="flex items-baseline justify-between">
-                        <h1 className="text-xl font-semibold text-gray-900">Projects</h1>
-                        <span className="text-sm font-medium text-gray-500">{total} results</span>
-                    </div>
-                </div>
+
 
                 {/* Filter bar is portaled into layout (same container as nav) */}
                 {filterBarSlot && createPortal(
@@ -940,15 +942,14 @@ const ProjectsPage = () => {
                     />,
                     filterBarSlot
                 )}
-                <div className="hidden lg:block h-[90px] flex-shrink-0" aria-hidden />
 
                 {/* Main Content Grid — same width as nav: max-w-[1440px] + px-6 lg:px-12 */}
-                <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12">
+                <div className="max-w-[1600px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
                     {/* Main Content Grid — no container padding */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[112px] lg:top-[128px] h-[calc(100vh-112px)] lg:h-[calc(100vh-128px)]' : 'top-[48px] h-[calc(100vh-48px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
@@ -978,11 +979,22 @@ const ProjectsPage = () => {
                         {/* Listings Grid or Map */}
                         <div className={`${isGoogleMapOpen ? 'lg:col-span-12 min-h-0' : 'lg:col-span-9'} transition-all duration-500 relative`}>
                             <div
-                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? 'min-h-0 h-full' : 'min-h-[70vh]'}`}
-                                style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 190 : 130}px)`, minHeight: 0 } : undefined}
+                                className={`flex flex-col lg:flex-row gap-6 lg:gap-8 ${isGoogleMapOpen ? 'min-h-0 h-full pt-0.5' : 'min-h-[70vh]'}`}
+                                style={isGoogleMapOpen ? { height: `calc(100vh - ${navVisible ? 124 : 92}px)`, minHeight: 0 } : undefined}
                             >
                                 {/* Left Side: Project List (map view: scrollable, fills height) */}
-                                <div className={`w-full ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] min-h-0 h-full overflow-y-auto custom-scrollbar p-0' : ''}`}>
+                                <div className={`w-full flex flex-col ${isGoogleMapOpen ? 'hidden lg:block lg:w-[45%] min-h-0 h-full overflow-y-auto custom-scrollbar p-0' : ''}`}>
+                                    {/* Header: Results Count */}
+                                    <div className="mb-4 mt-1 flex justify-end">
+                                        {initialLoading ? (
+                                            <div className={`h-7 w-32 bg-gray-100 rounded animate-pulse ${isExiting ? 'animate-fadeOutDown' : ''}`} />
+                                        ) : (projects || []).length > 0 ? (
+                                            <h2 className="text-[15px] font-bold text-gray-900 animate-fadeInUp">
+                                                {total} {total === 1 ? 'project' : 'projects'}
+                                            </h2>
+                                        ) : null}
+                                    </div>
+
                                     {initialLoading ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
@@ -991,12 +1003,8 @@ const ProjectsPage = () => {
                                         <>
                                             <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}`}>
                                                 {(projects || []).map((l, i) => (
-                                                    <div
-                                                        key={l.id}
-                                                        className="animate-in fade-in fill-mode-both duration-500"
-                                                        style={{ animationDelay: `${(i % 12) * 50}ms` }}
-                                                    >
-                                                        <ProjectCard project={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
+                                                    <div key={l.id}>
+                                                        <ProjectCard index={i} project={l} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} priceFormat={priceFormat} />
                                                     </div>
                                                 ))}
                                                 {loading && !initialLoading && (
@@ -1008,11 +1016,14 @@ const ProjectsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-white rounded-[3px] animate-fadeInUp">
-                                            <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                            <h3 className="text-xl font-bold text-gray-900">No projects found</h3>
-                                            <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                            <button onClick={clearFilters} className="mt-6 text-red-600 font-bold underline hover:text-red-700">Clear all</button>
+                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 border border-dashed border-gray-200 rounded-[24px] animate-fadeInUp text-center flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
+                                            <div className="w-16 h-16 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center mb-5">
+                                                <SparklesIcon className="w-8 h-8 text-gray-400" />
+                                            </div>
+                                            <h3 className="text-[17px] font-bold text-gray-900">No projects found</h3>
+                                            <p className="text-[14px] text-gray-500 mt-1 max-w-[260px] text-center leading-relaxed">
+                                                Try adjusting your search or filters to discover more matching results.
+                                            </p>
                                         </div>
                                     )}
                                 </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     UserCircleIcon,
@@ -8,20 +9,60 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 
+const ProfileSkeleton = () => (
+    <div className="min-h-screen bg-white pt-10 pb-20 px-6 md:px-12 lg:px-20 md:max-w-lg lg:max-w-xl xl:max-w-2xl md:mx-auto">
+        {/* Real title — always visible */}
+        <h1 className="text-[28px] sm:text-3xl lg:text-4xl xl:text-[2.5rem] font-bold text-slate-900 tracking-tight leading-tight mb-4 sm:mb-6 lg:mb-8">Profile</h1>
+
+        {/* Real card container — skeleton content inside */}
+        <div
+            className="bg-white rounded-[24px] border border-gray-100 p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 lg:mb-10"
+            style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 0 28px rgba(0,0,0,0.08)' }}
+        >
+            <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-200 animate-pulse" />
+                <div className="h-6 w-36 bg-gray-200 rounded-lg animate-pulse" />
+                <div className="h-4 w-20 bg-gray-100 rounded-lg animate-pulse" />
+            </div>
+        </div>
+
+        {/* Menu skeletons */}
+        <div className="overflow-hidden">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between py-4 px-4 border-b border-gray-100 last:border-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
+                        <div className="h-4 w-28 bg-gray-200 rounded-lg animate-pulse" />
+                    </div>
+                    <div className="w-4 h-4 rounded bg-gray-100 animate-pulse" />
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
 const UserProfile = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const isAgent = user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin';
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const t = setTimeout(() => setLoading(false), 350);
+        return () => clearTimeout(t);
+    }, []);
+
+    if (loading) return <ProfileSkeleton />;
 
     const menuItemClass = 'flex items-center justify-between w-full py-4 px-4 sm:py-5 sm:px-5 lg:py-6 lg:px-6 text-left text-gray-600 font-medium text-base sm:text-lg rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors';
     const iconClass = 'w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-gray-800 flex-shrink-0';
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-4 pb-28 px-4 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 xl:px-10 xl:pt-10 2xl:px-12 2xl:pt-12 md:max-w-lg lg:max-w-xl xl:max-w-2xl md:mx-auto animate-profile-enter">
-            {/* Header — responsive title (small to huge) */}
+        <div className="min-h-screen bg-white pt-10 pb-20 px-6 md:px-12 lg:px-20 md:max-w-lg lg:max-w-xl xl:max-w-2xl md:mx-auto">
+            {/* Header */}
             <h1 className="text-[28px] sm:text-3xl lg:text-4xl xl:text-[2.5rem] font-bold text-slate-900 tracking-tight leading-tight mb-4 sm:mb-6 lg:mb-8">Profile</h1>
 
-            {/* Profile card — responsive padding and avatar (small to huge) */}
+            {/* Profile card */}
             <div
                 className="bg-white rounded-[24px] border border-gray-100 p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 lg:mb-10"
                 style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 0 28px rgba(0,0,0,0.08)' }}
@@ -44,9 +85,8 @@ const UserProfile = () => {
                 </div>
             </div>
 
-            {/* Menu list — responsive (small to huge) */}
+            {/* Menu list */}
             <div className="overflow-hidden">
-                {/* Agent: Dashboard and View profile */}
                 {isAgent && (
                     <>
                         <Link
@@ -73,7 +113,6 @@ const UserProfile = () => {
                     </>
                 )}
 
-                {/* Log out — for all users */}
                 <button
                     type="button"
                     onClick={logout}

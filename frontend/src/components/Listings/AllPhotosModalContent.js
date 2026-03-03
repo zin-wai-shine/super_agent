@@ -68,6 +68,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
     const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
     const swipeStartX = useRef(0);
+    const swipeEndX = useRef(0); // for two-finger: last touch center X when fingers move
     const focusedMouseStart = useRef({ x: 0, down: false });
     const focusedContainerRef = useRef(null);
     const lastTapTimeRef = useRef(0);
@@ -167,8 +168,18 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
     if (isFocusedView && focusedImage) {
         const currentIdx = focusedImageIndex ?? 0;
         const total = flatImages.length;
+        const getTouchCenterX = (touchList) => {
+            if (!touchList?.length) return 0;
+            let sum = 0;
+            for (let i = 0; i < touchList.length; i++) sum += touchList[i].clientX;
+            return sum / touchList.length;
+        };
         const handleTouchStart = (e) => {
-            swipeStartX.current = e.touches[0].clientX;
+            swipeStartX.current = getTouchCenterX(e.touches);
+            swipeEndX.current = swipeStartX.current;
+        };
+        const handleTouchMove = (e) => {
+            if (e.touches.length > 0) swipeEndX.current = getTouchCenterX(e.touches);
         };
         const tryDoubleTap = (clientX) => {
             const el = focusedContainerRef.current;
@@ -188,10 +199,12 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
         };
         const handleTouchEnd = (e) => {
             const touch = e.changedTouches[0];
-            const dx = touch.clientX - swipeStartX.current;
+            // Use center of all touches (supports two-finger swipe); fallback to lifted finger position
+            const endX = e.touches.length > 0 ? getTouchCenterX(e.touches) : swipeEndX.current;
+            const dx = endX - swipeStartX.current;
             if (dx > SWIPE_THRESHOLD && total > 1) goPrevImage();
             else if (dx < -SWIPE_THRESHOLD && total > 1) goNextImage();
-            else if (Math.abs(dx) <= SWIPE_THRESHOLD) tryDoubleTap(touch.clientX);
+            else if (Math.abs(dx) <= SWIPE_THRESHOLD) tryDoubleTap(touch?.clientX ?? endX);
         };
         const handleMouseDown = (e) => {
             focusedMouseStart.current = { x: e.clientX, down: true };
@@ -214,7 +227,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
 
         return (
             <div className="h-full min-h-0 flex flex-col bg-black overflow-hidden">
-                <header className="relative flex-none flex items-center justify-between px-4 py-3 shrink-0 z-10">
+                <header className="relative flex-none flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-10 shrink-0 z-10">
                     <button
                         type="button"
                         onClick={() => setFocusedImageIndex(null)}
@@ -239,6 +252,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                         ref={focusedContainerRef}
                         className="absolute inset-0 flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-hidden"
                         onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
@@ -279,18 +293,15 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                     )}
                 </div>
                 {total > 1 && (
-                    <div className="flex-none py-3 flex justify-center items-center pointer-events-none">
-                        <div className="flex items-center justify-center gap-1.5" style={{ width: 5 * 14 }}>
-                            {[0, 1, 2, 3, 4].map((i) => {
-                                const imageIndex = currentIdx - 2 + i;
-                                const inRange = imageIndex >= 0 && imageIndex < total;
-                                const isCenter = i === 2;
+                    <div className="flex-none min-h-[72px] pt-2 pb-4 flex justify-center items-center pointer-events-none bg-black">
+                        <div className="flex items-center justify-center gap-2">
+                            {Array.from({ length: total }, (_, i) => {
+                                const isActive = i === currentIdx;
                                 return (
                                     <div
                                         key={i}
-                                        className={`w-1.5 h-1.5 rounded-full transition-all flex-shrink-0 ${
-                                            isCenter ? 'bg-white scale-110' : inRange ? 'bg-white/60' : 'bg-white/30'
-                                        }`}
+                                        className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out ${isActive ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
+                                            }`}
                                         aria-hidden
                                     />
                                 );
@@ -306,7 +317,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
 
     return (
         <div className="h-full min-h-0 flex flex-col bg-white overflow-hidden">
-            <header className="relative flex-none flex items-center justify-between px-4 py-3 md:px-8 lg:px-10 border-b border-gray-100 shrink-0">
+            <header className="relative flex-none flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4 border-b border-gray-100 bg-white shrink-0 z-20">
                 <button
                     type="button"
                     onClick={onClose}
@@ -332,122 +343,124 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose })
                 className="flex-1 min-h-0 overflow-y-scroll overflow-x-hidden overscroll-y-contain"
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
-                {/* Desktop: 30% top block (Photo tour + strip), 70% sections below */}
-                <div className="min-h-full md:flex md:flex-col">
-                    <div className="md:flex-shrink-0 md:min-h-[30%]">
-                        <div className="pl-4 pr-4 pt-5 pb-2 md:px-8 lg:px-10">
-                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Photo tour</h1>
-                        </div>
+                <div className="mx-auto w-full max-w-[1400px]">
+                    {/* Desktop: 30% top block (Photo tour + strip), 70% sections below */}
+                    <div className="min-h-full md:flex md:flex-col">
+                        <div className="md:flex-shrink-0 md:min-h-[30%]">
+                            <div className="px-4 md:px-8 lg:px-20 pt-5 pb-2">
+                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Photo tour</h1>
+                            </div>
 
-                        {/* Horizontal strip: one layer card per section (not per image) */}
-                        <div className="pb-4">
-                            <div
-                                className="flex gap-4 overflow-x-auto pl-4 pr-4 pb-2 md:pl-8 md:pr-8 lg:pl-10 lg:pr-10 -mr-4"
-                                style={{ WebkitOverflowScrolling: 'touch' }}
-                            >
-                                {sections.map((section) => {
-                                    const firstIdx = flatImages.findIndex(
-                                        (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
-                                    );
-                                    return (
-                                        <LayerCard
-                                            key={section.title}
-                                            section={section}
-                                            firstFlatIndex={firstIdx >= 0 ? firstIdx : 0}
-                                            onTap={scrollToIndex}
-                                        />
-                                    );
-                                })}
+                            {/* Horizontal strip: one layer card per section (not per image) */}
+                            <div className="pb-4">
+                                <div
+                                    className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2"
+                                    style={{ WebkitOverflowScrolling: 'touch' }}
+                                >
+                                    {sections.map((section) => {
+                                        const firstIdx = flatImages.findIndex(
+                                            (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
+                                        );
+                                        return (
+                                            <LayerCard
+                                                key={section.title}
+                                                section={section}
+                                                firstFlatIndex={firstIdx >= 0 ? firstIdx : 0}
+                                                onTap={scrollToIndex}
+                                            />
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Main content: 70% on desktop */}
-                    <div className="flex flex-col gap-8 pb-8 md:flex-1 md:min-h-0">
-                    {sections.map((section) => {
-                        const firstFlatIndex = flatImages.findIndex(
-                            (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
-                        );
-                        const firstIdx = firstFlatIndex >= 0 ? firstFlatIndex : 0;
-                        return (
-                            <div
-                                key={section.title}
-                                ref={(el) => { sectionRefs.current[section.title] = el; }}
-                                className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 px-0 md:px-8 lg:px-10"
-                            >
-                                {/* First column (desktop): images — 70% (left); on mobile appears below title via order */}
-                                <div className="flex-1 min-w-0 md:w-[70%] order-2 md:order-1">
-                                {/* One big, two small, one big, two small… */}
-                                <div className="flex flex-col gap-4">
-                                    {(() => {
-                                        const rows = [];
-                                        let i = 0;
-                                        while (i < section.images.length) {
-                                            const img1 = section.images[i];
-                                            const idx1 = globalIndex++;
-                                            rows.push(
-                                                <div
-                                                    key={img1.id || idx1}
-                                                    role="button"
-                                                    tabIndex={0}
-                                                    data-photo-index={idx1}
-                                                    className="shrink-0 cursor-pointer"
-                                                    onClick={() => openFocusedView(idx1)}
-                                                    onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx1)}
-                                                >
-                                                    <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden md:rounded-[24px]">
-                                                        <img src={getMediaUrl(img1.url)} alt="" className="w-full h-full object-cover block" />
-                                                    </div>
-                                                </div>
-                                            );
-                                            if (i + 1 < section.images.length) {
-                                                const img2 = section.images[i + 1];
-                                                const img3 = section.images[i + 2];
-                                                const idx2 = globalIndex++;
-                                                const idx3 = img3 ? globalIndex++ : null;
-                                                rows.push(
-                                                    <div key={img2.id || `row-${idx2}`} className="grid grid-cols-2 gap-3 shrink-0">
-                                                        <div
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            data-photo-index={idx2}
-                                                            className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
-                                                            onClick={() => openFocusedView(idx2)}
-                                                            onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx2)}
-                                                        >
-                                                            <img src={getMediaUrl(img2.url)} alt="" className="w-full h-full object-cover block" />
-                                                        </div>
-                                                        {img3 ? (
+                        {/* Main content: 70% on desktop */}
+                        <div className="flex flex-col gap-8 pb-8 md:flex-1 md:min-h-0">
+                            {sections.map((section) => {
+                                const firstFlatIndex = flatImages.findIndex(
+                                    (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
+                                );
+                                const firstIdx = firstFlatIndex >= 0 ? firstFlatIndex : 0;
+                                return (
+                                    <div
+                                        key={section.title}
+                                        ref={(el) => { sectionRefs.current[section.title] = el; }}
+                                        className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 px-0 md:px-8 lg:px-20"
+                                    >
+                                        {/* First column (desktop): images — 70% (left); on mobile appears below title via order */}
+                                        <div className="flex-1 min-w-0 md:w-[70%] order-2 md:order-1">
+                                            {/* One big, two small, one big, two small… */}
+                                            <div className="flex flex-col gap-4">
+                                                {(() => {
+                                                    const rows = [];
+                                                    let i = 0;
+                                                    while (i < section.images.length) {
+                                                        const img1 = section.images[i];
+                                                        const idx1 = globalIndex++;
+                                                        rows.push(
                                                             <div
+                                                                key={img1.id || idx1}
                                                                 role="button"
                                                                 tabIndex={0}
-                                                                data-photo-index={idx3}
-                                                                className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
-                                                                onClick={() => openFocusedView(idx3)}
-                                                                onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx3)}
+                                                                data-photo-index={idx1}
+                                                                className="shrink-0 cursor-pointer"
+                                                                onClick={() => openFocusedView(idx1)}
+                                                                onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx1)}
                                                             >
-                                                                <img src={getMediaUrl(img3.url)} alt="" className="w-full h-full object-cover block" />
+                                                                <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden md:rounded-[24px]">
+                                                                    <img src={getMediaUrl(img1.url)} alt="" className="w-full h-full object-cover block" />
+                                                                </div>
                                                             </div>
-                                                        ) : (
-                                                            <div className="aspect-[4/3] bg-gray-100 md:rounded-[24px]" />
-                                                        )}
-                                                    </div>
-                                                );
-                                            }
-                                            i += 3;
-                                        }
-                                        return rows;
-                                    })()}
-                                </div>
-                                </div>
-                                {/* Second column (desktop): section title only — 30% (right); on mobile appears first via order; text left-aligned */}
-                                <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left">
-                                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{section.title}</h2>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                                                        );
+                                                        if (i + 1 < section.images.length) {
+                                                            const img2 = section.images[i + 1];
+                                                            const img3 = section.images[i + 2];
+                                                            const idx2 = globalIndex++;
+                                                            const idx3 = img3 ? globalIndex++ : null;
+                                                            rows.push(
+                                                                <div key={img2.id || `row-${idx2}`} className="grid grid-cols-2 gap-3 shrink-0">
+                                                                    <div
+                                                                        role="button"
+                                                                        tabIndex={0}
+                                                                        data-photo-index={idx2}
+                                                                        className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
+                                                                        onClick={() => openFocusedView(idx2)}
+                                                                        onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx2)}
+                                                                    >
+                                                                        <img src={getMediaUrl(img2.url)} alt="" className="w-full h-full object-cover block" />
+                                                                    </div>
+                                                                    {img3 ? (
+                                                                        <div
+                                                                            role="button"
+                                                                            tabIndex={0}
+                                                                            data-photo-index={idx3}
+                                                                            className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
+                                                                            onClick={() => openFocusedView(idx3)}
+                                                                            onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx3)}
+                                                                        >
+                                                                            <img src={getMediaUrl(img3.url)} alt="" className="w-full h-full object-cover block" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="aspect-[4/3] bg-gray-100 md:rounded-[24px]" />
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        }
+                                                        i += 3;
+                                                    }
+                                                    return rows;
+                                                })()}
+                                            </div>
+                                        </div>
+                                        {/* Second column (desktop): section title only — 30% (right); on mobile appears first via order; text left-aligned */}
+                                        <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left">
+                                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{section.title}</h2>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

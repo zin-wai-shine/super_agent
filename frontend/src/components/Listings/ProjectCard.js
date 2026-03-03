@@ -9,7 +9,7 @@ import {
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 
-const ProjectCard = ({ project, viewMode = 'grid', to }) => {
+const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
     const {
         id,
         name,
@@ -103,10 +103,14 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
     if (isMapListView) {
         const detailParams = new URLSearchParams(searchParams);
         detailParams.set('project', id);
+        const animationStyle = { animationDelay: `${index * 50}ms`, animationFillMode: 'both' };
+        const animationClass = 'animate-in fade-in slide-in-from-bottom-4 duration-500';
+
         return (
             <Link
                 to={to || `/projects?${detailParams.toString()}`}
-                className="group flex flex-row gap-3 p-3 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
+                className={`group flex flex-row gap-3 p-3 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 ${animationClass}`}
+                style={animationStyle}
             >
                 {/* Image Section — carousel when multiple images */}
                 <div className="w-[160px] md:w-[240px] aspect-[4/3] relative rounded-[16px] overflow-hidden flex-none">
@@ -185,10 +189,14 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
     if (isListView) {
         const detailParams = new URLSearchParams(searchParams);
         detailParams.set('project', id);
+        const animationStyle = { animationDelay: `${index * 50}ms`, animationFillMode: 'both' };
+        const animationClass = 'animate-in fade-in slide-in-from-bottom-4 duration-500';
+
         return (
             <Link
                 to={to || `/projects?${detailParams.toString()}`}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale"
+                className={`bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-row group hover:shadow-lg transition-all duration-500 h-[135px] md:h-[190px] animate-fade-in-scale transform hover:-translate-y-1 ${animationClass}`}
+                style={animationStyle}
             >
                 {/* Image Section — carousel when multiple images */}
                 <div className="w-[135px] md:w-[35%] h-full relative overflow-hidden flex-none">
@@ -281,8 +289,14 @@ const ProjectCard = ({ project, viewMode = 'grid', to }) => {
     detailParams.set('project', id);
     const linkTo = to || `/projects?${detailParams.toString()}`;
 
+    const animationStyle = { animationDelay: `${index * 50}ms`, animationFillMode: 'both' };
+    const animationClass = 'animate-in fade-in slide-in-from-bottom-4 duration-500';
+
     return (
-        <div className="group bg-white rounded-[var(--card-radius)] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col h-full animate-fade-in-scale transform hover:-translate-y-1">
+        <div
+            className={`group bg-white rounded-[var(--card-radius)] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col h-full animate-fade-in-scale transform hover:-translate-y-1 ${animationClass}`}
+            style={animationStyle}
+        >
             {/* Upper Section: Image carousel with arrows & dots */}
             <Link to={linkTo} className="relative aspect-[4/3] overflow-hidden block">
                 <img

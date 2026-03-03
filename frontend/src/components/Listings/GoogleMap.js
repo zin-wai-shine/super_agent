@@ -24,14 +24,14 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
     const primaryColor = theme?.primaryColor || '#2663EB';
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
 
-    const markerRef = React.useRef(null);
+    const [marker, setMarker] = useState(null);
     const contentRef = React.useRef(null);
     const lastContentRef = React.useRef('');
     const saveBtnListenerRef = React.useRef(null);
 
     // Initial Marker Creation
     React.useEffect(() => {
-        if (!map || !property.latitude || !property.longitude || markerRef.current) return;
+        if (!map || !property.latitude || !property.longitude || marker) return;
 
         let markerContent = null;
         if (!useDefaultMarkers) {
@@ -42,7 +42,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             markerContent = content;
         }
 
-        const marker = new window.google.maps.marker.AdvancedMarkerElement({
+        const newMarker = new window.google.maps.marker.AdvancedMarkerElement({
             map,
             position: {
                 lat: parseFloat(property.latitude),
@@ -50,39 +50,41 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             },
             content: markerContent, // If null/undefined, uses default pin
             title: '', // Remove title to stop the native grey tooltip
+            collisionBehavior: window.google.maps.CollisionBehavior.REQUIRED,
         });
 
-        const listener = marker.addListener('click', () => {
+        const listener = newMarker.addListener('click', () => {
             if (onCardToggle) onCardToggle(property.id);
         });
 
         const handleMouseEnter = () => {
-            if (markerRef.current) {
-                markerRef.current.zIndex = 10000;
+            if (newMarker) {
+                newMarker.zIndex = 10000;
                 if (contentRef.current) contentRef.current.style.zIndex = "10000";
             }
         };
 
         const handleMouseLeave = () => {
-            if (markerRef.current) {
-                markerRef.current.zIndex = 1;
+            if (newMarker) {
+                newMarker.zIndex = 1;
                 if (contentRef.current) contentRef.current.style.zIndex = "1";
             }
         };
 
         const content = contentRef.current;
         if (content) {
-            content.querySelector('.marker-group')?.addEventListener('mouseenter', handleMouseEnter);
-            content.querySelector('.marker-group')?.addEventListener('mouseleave', handleMouseLeave);
+            // Use a slight delay to ensure the DOM is ready if needed, but usually it's immediate
+            setTimeout(() => {
+                const group = content.querySelector('.marker-group');
+                group?.addEventListener('mouseenter', handleMouseEnter);
+                group?.addEventListener('mouseleave', handleMouseLeave);
+            }, 0);
         }
 
-        markerRef.current = marker;
+        setMarker(newMarker);
 
         return () => {
-            if (markerRef.current) {
-                markerRef.current.map = null;
-                markerRef.current = null;
-            }
+            newMarker.map = null;
             if (listener) {
                 listener.remove();
             }
@@ -92,12 +94,12 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 group?.removeEventListener('mouseleave', handleMouseLeave);
             }
         };
-    }, [map, useDefaultMarkers]); // Re-run if useDefaultMarkers changes drastically (though unlikely)
+    }, [map, useDefaultMarkers, property.id, property.latitude, property.longitude]);
 
     // Sync Data (Price/Position)
     React.useEffect(() => {
         // If using default markers, skip content updates
-        if (useDefaultMarkers || !markerRef.current || !contentRef.current) return;
+        if (useDefaultMarkers || !marker || !contentRef.current) return;
 
         const priceFormatted = new Intl.NumberFormat('th-TH', {
             style: 'currency',
@@ -123,75 +125,68 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
 
         const newInnerHTML = `
             <style>
-                /* Initial: pill and nub primary; when card opened: pill and nub dark, card visible (click-only) */
+                @keyframes marker-pulse-in {
+                    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+                    100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+                }
+                .marker-group {
+                    animation: marker-pulse-in 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+                }
+                /* Initial: pill and nub black; when card opened: pill and nub dark, card visible (click-only) */
                 .marker-group .resting-pill {
-                    background: var(--primary-color);
-                    border-color: var(--primary-color);
+                    background: #1a1a1a;
+                    border: none;
                     color: white;
-                    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+                    padding: 5px 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    border-radius: 9999px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    min-width: 65px;
+                    justify-content: center;
                 }
-                .marker-group .resting-pill span { color: white; }
-                .marker-group .resting-pill .resting-pill-icon { stroke: white; }
-                .marker-group .resting-nub { fill: var(--primary-color); transition: fill 0.2s ease; }
-                .marker-group .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.15); }
+                .marker-group .resting-pill .resting-pill-icon { color: white; flex-shrink: 0; }
+                .marker-group .resting-pill .price-text { 
+                    font-size: 13px; 
+                    font-weight: 500; 
+                    white-space: nowrap;
+                    letter-spacing: -0.01em;
+                }
+                .marker-group .resting-nub { fill: #1a1a1a; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); transition: fill 0.2s ease; margin-top: -1px; }
 
-                .marker-group.opened .resting-pill {
-                    background: #1f2937;
-                    border-color: #1f2937;
-                    color: white;
+                .marker-group.opened .resting-pill,
+                .marker-group.list-highlighted .resting-pill,
+                .marker-group:hover .resting-pill {
+                    background: #ffffff;
+                    color: #1a1a1a;
+                    transform: scale(1.05);
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
                 }
-                .marker-group.opened .resting-pill span { color: white; }
-                .marker-group.opened .resting-pill .resting-pill-icon { stroke: white; }
-                .marker-group.opened .resting-nub { fill: #1f2937; }
-                .marker-group.opened .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.2); }
+                .marker-group.opened .resting-nub,
+                .marker-group.list-highlighted .resting-nub,
+                .marker-group:hover .resting-nub { fill: #ffffff; }
 
                 .marker-group.opened .expanded-card { width: 320px; min-height: 320px; opacity: 1; padding: 0; }
                 .marker-group.opened .expanded-content { opacity: 1; }
 
-                /* Price pill (if used elsewhere) */
-                .marker-group:hover .price-pill,
-                .marker-group.opened .price-pill {
-                    background: var(--primary-color);
-                    border-color: var(--primary-color);
-                    color: white;
-                    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-                }
-                .marker-group:hover .price-pill span,
-                .marker-group.opened .price-pill span { color: white; }
-                /* When list card is hovered, target (pill + nub) turns dark like opened state */
-                .marker-group.list-highlighted .resting-pill {
-                    background: #1f2937;
-                    border-color: #1f2937;
-                    color: white;
-                }
-                .marker-group.list-highlighted .resting-pill span { color: white; }
-                .marker-group.list-highlighted .resting-pill .resting-pill-icon { stroke: white; }
-                .marker-group.list-highlighted .resting-nub { fill: #1f2937; }
-                .marker-group.list-highlighted .resting-nub .nub-stroke { stroke: rgba(0,0,0,0.2); }
                 /* Hide hover card when Save is clicked */
                 .marker-group.save-clicked .expanded-card { width: 0; height: 0; opacity: 0; pointer-events: none; overflow: hidden; transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease; }
                 .marker-group.save-clicked .expanded-content { opacity: 0; }
-                .marker-group.save-clicked .resting-pill { background: var(--primary-color); border-color: var(--primary-color); }
-                .marker-group.save-clicked .resting-nub { fill: var(--primary-color); }
             </style>
             <div class="marker-group group ${String(property.id) === String(highlightedMarkerListingId) ? 'list-highlighted' : ''} ${String(property.id) === String(openedMarkerId) ? 'opened' : ''} relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
-                <!-- Resting Pill: icon + price only (initial = primary bg + white text) -->
-                <div class="resting-pill flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 rounded-full transition-all duration-200 z-10 min-w-0 border">
-                    <div class="flex-none flex items-center justify-center">
-                        <svg class="resting-pill-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <span class="text-[13px] font-bold leading-tight whitespace-nowrap">${priceFormatted}</span>
+                <!-- Resting Pill: Price + Baht Icon -->
+                <div class="resting-pill z-10">
+                    <span class="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
+                    <span class="price-text">${priceNumber}</span>
                 </div>
-                <svg class="resting-nub flex-none transition-all duration-200 pointer-events-none" width="18" height="9" viewBox="0 0 18 9">
-                    <polygon points="0,0 18,0 9,9" />
-                    <path class="nub-stroke" d="M0,0 L9,9 L18,0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg class="resting-nub flex-none transition-all duration-200 pointer-events-none" width="12" height="6" viewBox="0 0 16 8">
+                    <polygon points="0,0 16,0 8,8" />
                 </svg>
 
                 <!-- EXPANDED CARD (click to open): image on top, content below; click inside does not toggle -->
-                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[8px] w-0 min-h-0 opacity-0 bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all duration-300 ease-out flex flex-col z-10" style="box-shadow: 8px 0 20px -4px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.12);">
+                <div class="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[12px] w-0 min-h-0 opacity-0 bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all duration-300 ease-out flex flex-col z-10" style="box-shadow: 8px 0 20px -4px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.12);">
                     <!-- Image on top (same as main card) -->
                     <div class="expanded-content opacity-0 transition-opacity duration-300 relative aspect-[16/10] w-full flex-none overflow-hidden">
                         <img src="${imageUrl}" class="w-full h-full object-cover" alt="" />
@@ -287,11 +282,11 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         }
 
         // Raise z-index on hover to ensure expanded card is never clipped by other markers
-        const hoverListener = markerRef.current.addListener('mouseover', () => {
-            markerRef.current.zIndex = 1000;
+        const hoverListener = marker.addListener('mouseover', () => {
+            marker.zIndex = 1000;
         });
-        const outListener = markerRef.current.addListener('mouseout', () => {
-            markerRef.current.zIndex = 1;
+        const outListener = marker.addListener('mouseout', () => {
+            marker.zIndex = 1;
         });
 
         // Update position if it changed
@@ -300,8 +295,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             lng: parseFloat(property.longitude),
         };
 
-        if (markerRef.current.position.lat !== newPos.lat || markerRef.current.position.lng !== newPos.lng) {
-            markerRef.current.position = newPos;
+        if (marker.position.lat !== newPos.lat || marker.position.lng !== newPos.lng) {
+            marker.position = newPos;
         }
 
         return () => {
@@ -316,7 +311,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 saveBtnListenerRef.current = null;
             }
         };
-    }, [property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId, openedMarkerId, onCardToggle, onCloseCard]);
+    }, [marker, property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId, openedMarkerId, onCardToggle, onCloseCard]);
 
     return null;
 }, (prevProps, nextProps) => {
@@ -345,9 +340,23 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
     );
 });
 
-const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false }) => {
+const PADDING = { top: 60, right: 60, bottom: 60, left: 60 };
+const DEFAULT_ZOOM = 12;
+
+const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, fitBoundsOnListingsChange = true, showMapLoading = false }) => {
     const [openedMarkerId, setOpenedMarkerId] = useState(null);
     const [mapType, setMapType] = useState('roadmap');
+    const [displayLoading, setDisplayLoading] = useState(showMapLoading);
+
+    React.useEffect(() => {
+        if (showMapLoading) {
+            setDisplayLoading(true);
+        } else {
+            const timer = setTimeout(() => setDisplayLoading(false), 800);
+            return () => clearTimeout(timer);
+        }
+    }, [showMapLoading]);
+
     const handleCardToggle = useCallback((propertyId) => {
         setOpenedMarkerId((prev) => (String(prev) === String(propertyId) ? null : propertyId));
     }, []);
@@ -404,6 +413,20 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             return () => clearTimeout(t);
         }
     }, [map, isExpanded, isVisible, triggerMapResize]);
+
+    // Fit map bounds to all listing markers when listings change (e.g. new filter results) — smooth, Airbnb-like
+    const listingsWithCoords = useMemo(() => listings.filter(l => l.latitude != null && l.longitude != null), [listings]);
+    const listingsBoundsKey = useMemo(() => listingsWithCoords.map(l => `${l.id}-${l.latitude}-${l.longitude}`).join(','), [listingsWithCoords]);
+    const listingsWithCoordsRef = useRef(listingsWithCoords);
+    listingsWithCoordsRef.current = listingsWithCoords;
+    useEffect(() => {
+        if (!fitBoundsOnListingsChange || !map || !window.google?.maps) return;
+        const withCoords = listingsWithCoordsRef.current;
+        if (withCoords.length === 0) return;
+        const bounds = new window.google.maps.LatLngBounds();
+        withCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
+        map.fitBounds(bounds, PADDING);
+    }, [map, listingsBoundsKey, fitBoundsOnListingsChange]);
 
     useEffect(() => {
         if (map && map.setMapTypeId) {
@@ -503,7 +526,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             clearTimeout(boundsTimeoutRef.current);
         }
 
-        // Debounce: wait 500ms after user stops interacting
+        // Debounce: wait 250ms after user stops interacting so fetch starts sooner and markers appear faster
         boundsTimeoutRef.current = setTimeout(() => {
             const bounds = map.getBounds();
             if (bounds) {
@@ -516,7 +539,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
                     max_lng: ne.lng(),
                 });
             }
-        }, 500);
+        }, 250);
     }, [map, onBoundsChanged]);
 
     const defaultCenter = useMemo(() => ({
@@ -534,7 +557,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             };
         }
 
-        // List view: use first valid listing for center; hasInitiallyCentered only prevents pan-on-idle
+        // List view: use first valid listing for center
         if (listings.length > 0) {
             const validListings = listings.filter(l => l.latitude && l.longitude);
             if (validListings.length > 0) {
@@ -546,6 +569,13 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
         }
         return defaultCenter;
     }, [center, listings, defaultCenter]);
+
+    // When data loads from user pan (fitBoundsOnListingsChange false), don't move map: keep center so map stays where user stopped
+    const frozenCenterRef = useRef(mapCenter);
+    if (fitBoundsOnListingsChange) {
+        frozenCenterRef.current = mapCenter;
+    }
+    const effectiveCenter = fitBoundsOnListingsChange ? mapCenter : frozenCenterRef.current;
 
     if (!isLoaded) {
         return (
@@ -561,9 +591,22 @@ const GoogleMapComponent = ({ listings = [], center, zoom = 12, onMarkerClick, o
             className={`relative w-full h-full ${isFullscreen ? '!w-screen !h-screen !min-w-full !min-h-full bg-gray-100' : ''}`}
             style={isFullscreen ? { width: '100vw', height: '100vh' } : undefined}
         >
+            {/* Loading strip at top when user pans map — "..." animation until data is received */}
+            {displayLoading && (
+                <div className="absolute top-0 left-0 right-0 z-[15] flex justify-center pt-3 pointer-events-none" aria-live="polite" aria-busy="true">
+                    <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-md border border-gray-200 flex items-center gap-1">
+                        <span className="text-gray-600 text-sm font-medium">Loading</span>
+                        <span className="inline-flex gap-0.5" aria-hidden>
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-[mapLoadingDot_0.6s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-[mapLoadingDot_0.6s_ease-in-out_infinite]" style={{ animationDelay: '200ms' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-[mapLoadingDot_0.6s_ease-in-out_infinite]" style={{ animationDelay: '400ms' }} />
+                        </span>
+                    </div>
+                </div>
+            )}
             <GoogleMap
                 mapContainerStyle={mapStyle}
-                center={mapCenter}
+                center={effectiveCenter}
                 zoom={zoom}
                 onLoad={onLoad}
                 onUnmount={onUnmount}

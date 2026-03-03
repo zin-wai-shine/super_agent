@@ -96,52 +96,6 @@ const getSelectedOption = (options, value) => {
     return options.find(opt => opt.value === value) || null;
 };
 
-const MapTransitionOverlay = ({ active, switchActive }) => {
-    return (
-        <div className={`fixed inset-0 z-[200] flex items-center justify-center transition-all duration-700 ease-in-out ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            {/* Background: Glassmorphism + Map Blur Effect */}
-            <div className="absolute inset-0 bg-white/40 backdrop-blur-2xl" />
-
-            {/* Subtle Gradient Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] animate-pulse" />
-
-            {/* Content Container */}
-            <div className="relative flex flex-col items-center gap-8">
-                {/* Globe Icon Container */}
-                <div className="w-20 h-20 bg-white/80 backdrop-blur-lg rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 flex items-center justify-center animate-bounce-subtle">
-                    <GlobeAltIcon className="w-10 h-10 text-gray-400" />
-                </div>
-
-                {/* Visual Dot */}
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-
-                {/* Animated Toggle Icon (Shuttle style) */}
-                <div className="relative w-16 h-8 bg-gray-200/50 rounded-full border border-gray-200/50 p-1 backdrop-blur-sm">
-                    <div className={`w-6 h-6 bg-black rounded-full shadow-lg flex items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${switchActive ? 'translate-x-8' : 'translate-x-0'}`}>
-                        <MapIcon className="w-3.5 h-3.5 text-white" />
-                    </div>
-                </div>
-
-                {/* Text Group */}
-                <div className="flex flex-col items-center gap-3">
-                    <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-gray-900 animate-fade-in-up">
-                        Activating Map
-                    </h2>
-                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">
-                        <span className="flex gap-1">
-                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0s' }} />
-                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                            <span className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                        </span>
-                        Generating View
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
 const ListingsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -156,14 +110,13 @@ const ListingsPage = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
     const [total, setTotal] = useState(0);
+    const [pendingTotal, setPendingTotal] = useState(null); // Count for current sidebar draft (background fetch, no loading UI)
     const [page, setPage] = useState(1);
     const observerTarget = useRef(null);
 
     // Modal States
 
     const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
-    const [isMapTransitioning, setIsMapTransitioning] = useState(false);
-    const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
     const [listHoveredListingId, setListHoveredListingId] = useState(null);
 
@@ -181,24 +134,10 @@ const ListingsPage = () => {
         return () => window.removeEventListener('listing:saved-status-changed', handler);
     }, []);
 
-    // Update local state when searchParams change, except during transition
+    // Sync map view from URL when it changes (e.g. back/forward)
     useEffect(() => {
-        if (!isMapTransitioning) {
-            setIsGoogleMapOpen(searchParams.get('view') === 'map');
-        }
-    }, [searchParams, isMapTransitioning]);
-
-    // Effect for MapTransitionOverlay switch animation
-    useEffect(() => {
-        if (isMapTransitioning) {
-            const timer = setTimeout(() => {
-                setOverlaySwitchActive(true);
-            }, 50);
-            return () => clearTimeout(timer);
-        } else {
-            setOverlaySwitchActive(false);
-        }
-    }, [isMapTransitioning]);
+        setIsGoogleMapOpen(searchParams.get('view') === 'map');
+    }, [searchParams]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
     const [isSidebarClosing, setIsSidebarClosing] = useState(false); // For close animation
@@ -217,6 +156,17 @@ const ListingsPage = () => {
             setSearchParams(next);
         }
     }, [searchParams, setSearchParams]);
+
+    // Open filter sidebar when navigating from Favorites with open_filters=1
+    useEffect(() => {
+        if (searchParams.get('open_filters') === '1') {
+            setIsSidebarOpen(true);
+            setSidebarAnimateIn(true);
+            const next = new URLSearchParams(searchParams);
+            next.delete('open_filters');
+            setSearchParams(next, { replace: true });
+        }
+    }, [searchParams]);
 
     // Filter sidebar open animation: start off-screen then transition in
     useEffect(() => {
@@ -250,6 +200,8 @@ const ListingsPage = () => {
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
+    const prevMapBoundsRef = useRef(null);
+    const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
     const handleMapBoundsChanged = React.useCallback((bounds) => {
         // Simple comparison to prevent identical bounds from triggering a reload
@@ -308,20 +260,13 @@ const ListingsPage = () => {
     }, [isGoogleMapOpen, isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
-        if (isOpen === isGoogleMapOpen || isMapTransitioning) return;
+        if (isOpen === isGoogleMapOpen) return;
 
-        setIsMapTransitioning(true);
-
-        // Update URL immediately so map/list starts loading in background
         const newParams = new URLSearchParams(searchParams);
         if (isOpen) newParams.set('view', 'map');
         else newParams.delete('view');
         setSearchParams(newParams);
-
-        // Premium transition delay
-        setTimeout(() => {
-            setIsMapTransitioning(false);
-        }, 1200);
+        setIsGoogleMapOpen(isOpen);
     };
 
     const [stations, setStations] = useState([]);
@@ -456,11 +401,11 @@ const ListingsPage = () => {
     const propertyTypeIconMap = { '': Squares2X2Icon, condo: BuildingOffice2Icon, house: HomeIcon, townhouse: BuildingOfficeIcon, apartment: BuildingOffice2Icon, land: MapIcon };
 
 
-    // Debounce search — apply quickly so data reloads feel instant
+    // Debounce search — apply quickly so data reloads feel instant; scroll to top when applied
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchTerm !== filters.search) {
-                handleFilterChange('search', searchTerm, false);
+                handleFilterChange('search', searchTerm, true);
             }
         }, 300);
         return () => clearTimeout(timer);
@@ -503,12 +448,46 @@ const ListingsPage = () => {
     useEffect(() => {
         if (isSidebarOpen && !prevSidebarOpenRef.current) {
             setPendingFilters({ ...filters, search: searchTerm });
+            setPendingTotal(total); // show current count until background count returns
         }
+        if (!isSidebarOpen) setPendingTotal(null);
         prevSidebarOpenRef.current = isSidebarOpen;
-    }, [isSidebarOpen, filters, searchTerm]);
+    }, [isSidebarOpen, filters, searchTerm, total]);
+
+    // Background count when sidebar is open and pending filters change — no loading UI, list/map unchanged until "Show X properties"
+    const countAbortRef = useRef(null);
+    const pendingFiltersKey = useMemo(() => JSON.stringify(pendingFilters), [pendingFilters]);
+    useEffect(() => {
+        if (!isSidebarOpen) return;
+        const timer = setTimeout(() => {
+            const params = { ...pendingFilters, page: 1, limit: 1 };
+            if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
+                params.agent_id = user.agent_id;
+            }
+            if (countAbortRef.current) countAbortRef.current.abort();
+            const controller = new AbortController();
+            countAbortRef.current = controller;
+            publicApi.getListings(params, { signal: controller.signal })
+                .then((res) => { setPendingTotal(res.data?.total ?? 0); })
+                .catch((err) => { if (!axios.isCancel(err)) setPendingTotal(null); })
+                .finally(() => { countAbortRef.current = null; });
+        }, 400);
+        return () => {
+            clearTimeout(timer);
+            if (countAbortRef.current) countAbortRef.current.abort();
+        };
+    }, [isSidebarOpen, pendingFiltersKey, user?.agent_id]);
 
 
     useEffect(() => {
+        const prev = prevMapBoundsRef.current;
+        const boundsJustChanged = isGoogleMapOpen && mapBounds && prev &&
+            (prev.min_lat !== mapBounds.min_lat || prev.max_lat !== mapBounds.max_lat ||
+                prev.min_lng !== mapBounds.min_lng || prev.max_lng !== mapBounds.max_lng);
+        fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
+        prevMapBoundsRef.current = mapBounds;
+        const isBoundsTriggeredFetch = !!boundsJustChanged;
+
         const controller = new AbortController();
         const fetchListings = async () => {
             // Optimistic loading: If map is open but bounds aren't ready, wait.
@@ -525,9 +504,14 @@ const ListingsPage = () => {
                 const isMapBoundsUpdate = isGoogleMapOpen && listings.length > 0;
                 const isSearchTyped = searchTerm !== filters.search && listings.length > 0;
 
+                // When panning the map, we want to show skeletons instead of freezing old cards
                 if (!isMapBoundsUpdate && !isSearchTyped) {
                     setInitialLoading(true);
                     setListings([]); // Clear listings for fresh fetch on page 1
+                } else if (isBoundsTriggeredFetch) {
+                    // For map boundary fetches, we intentionally switch to loading state
+                    // to show the skeletons spinning down during the artificial delay.
+                    setInitialLoading(true);
                 }
             }
             setLoading(true);
@@ -545,18 +529,24 @@ const ListingsPage = () => {
                     params.agent_id = user.agent_id;
                 }
 
-                // Call API and minimal delay in parallel
-                const [response] = await Promise.all([
-                    publicApi.getListings(params, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 200))
-                ]);
+                // Map-pan fetch: re-add artificial delay so the user sees the skeleton loading state
+                // giving a perception of deep data processing to feel premium.
+                const response = isBoundsTriggeredFetch
+                    ? (await Promise.all([
+                        publicApi.getListings(params, { signal: controller.signal }),
+                        new Promise(resolve => setTimeout(resolve, 800))
+                    ]))[0]
+                    : (await Promise.all([
+                        publicApi.getListings(params, { signal: controller.signal }),
+                        new Promise(resolve => setTimeout(resolve, 200))
+                    ]))[0];
 
                 const data = response.data;
 
                 if (page === 1 && initialLoading) {
-                    // Trigger exit animation
+                    // Trigger exit animation for skeletons to fade out before revealing cards
                     setIsExiting(true);
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
                     setListings(data.listings);
                     setIsExiting(false);
                     setInitialLoading(false);
@@ -572,6 +562,7 @@ const ListingsPage = () => {
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
+                    // Do not reset fetchTriggeredByBoundsRef here — keeps map from zooming/fitting when pan-load completes
                     // Only set initialLoading false here if it wasn't handled by the animation block
                     if (page !== 1) setInitialLoading(false);
                 }
@@ -688,6 +679,33 @@ const ListingsPage = () => {
     const updatePendingFilters = (partial) => {
         setPendingFilters(prev => ({ ...prev, ...partial }));
     };
+    const togglePendingMultiFilter = (key, valueToToggle) => {
+        setPendingFilters(prev => {
+            const current = (prev[key] || '').toString().split(',').filter(Boolean);
+            const set = new Set(current);
+            if (valueToToggle === '') {
+                return { ...prev, [key]: '' };
+            }
+            if (set.has(valueToToggle)) set.delete(valueToToggle);
+            else set.add(valueToToggle);
+            return { ...prev, [key]: [...set].join(',') };
+        });
+    };
+    const emptyPendingFilters = { type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' };
+    const hasActivePendingFilters = Object.keys(emptyPendingFilters).some(k => (pendingFilters[k] || '') !== '');
+    const clearPendingFilters = () => {
+        setPendingFilters({ ...emptyPendingFilters });
+        setSearchTerm('');
+    };
+    const clearPendingFilterValue = (key, valueToRemove) => {
+        if (valueToRemove != null) {
+            const current = (pendingFilters[key] || '').toString().split(',').filter(Boolean);
+            const next = current.filter(v => v !== valueToRemove).join(',');
+            setPendingFilters(prev => ({ ...prev, [key]: next }));
+        } else {
+            setPendingFilters(prev => ({ ...prev, [key]: '' }));
+        }
+    };
 
     const applyFilters = (override, closeSidebar = true) => {
         const raw = override ? { ...pendingFilters, ...override } : { ...pendingFilters };
@@ -788,31 +806,72 @@ const ListingsPage = () => {
     if (filters.min_area) activeFiltersList.push({ label: `Min Area: ${filters.min_area} sqm`, key: 'min_area' });
     if (filters.max_area) activeFiltersList.push({ label: `Max Area: ${filters.max_area} sqm`, key: 'max_area' });
 
-    // --- Render Helper: Compact Filter Content (Reusable for Sidebar/Modal) ---
+    // Pending filters list for sidebar — chips reflect draft; only "Show X properties" applies
+    const pendingFiltersList = [];
+    if (pendingFilters.search) pendingFiltersList.push({ label: `"${pendingFilters.search}"`, key: 'search' });
+    if (pendingFilters.type) {
+        (pendingFilters.type || '').split(',').filter(Boolean).forEach(v => {
+            const opt = propertyTypeOptions.find(o => o.value === v);
+            if (opt) pendingFiltersList.push({ label: opt.label, key: 'type', valueToRemove: v });
+        });
+    }
+    if (pendingFilters.listing_type) {
+        (pendingFilters.listing_type || '').split(',').filter(Boolean).forEach(v => {
+            const opt = listingTypeOptions.find(o => o.value === v);
+            if (opt) pendingFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+        });
+    }
+    if (pendingFilters.bedrooms) {
+        const opt = bedroomOptions.find(o => o.value === pendingFilters.bedrooms);
+        if (opt) pendingFiltersList.push({ label: `Bedrooms: ${opt.label}`, key: 'bedrooms' });
+    }
+    if (pendingFilters.bathrooms) {
+        const opt = bathroomOptions.find(o => o.value === pendingFilters.bathrooms);
+        if (opt) pendingFiltersList.push({ label: `Bathrooms: ${opt.label}`, key: 'bathrooms' });
+    }
+    if (pendingFilters.min_price) pendingFiltersList.push({ label: `Min: ฿${parseInt(pendingFilters.min_price).toLocaleString()}`, key: 'min_price' });
+    if (pendingFilters.max_price) pendingFiltersList.push({ label: `Max: ฿${parseInt(pendingFilters.max_price).toLocaleString()}`, key: 'max_price' });
+    if (pendingFilters.station_id) {
+        (pendingFilters.station_id || '').split(',').filter(Boolean).forEach(id => {
+            const station = flatStations.find(s => s && s.value === id);
+            if (station) pendingFiltersList.push({ label: station.label, key: 'station_id', valueToRemove: id });
+        });
+    }
+    if (pendingFilters.developer_id) {
+        const d = developers.find(x => x.id === pendingFilters.developer_id);
+        if (d) pendingFiltersList.push({ label: `Dev: ${d.name}`, key: 'developer_id' });
+    }
+    if (pendingFilters.project_id) {
+        const p = projectsList.find(x => x.id === pendingFilters.project_id);
+        if (p) pendingFiltersList.push({ label: `Project: ${p.name}`, key: 'project_id' });
+    }
+    if (pendingFilters.min_area) pendingFiltersList.push({ label: `Min Area: ${pendingFilters.min_area} sqm`, key: 'min_area' });
+    if (pendingFilters.max_area) pendingFiltersList.push({ label: `Max Area: ${pendingFilters.max_area} sqm`, key: 'max_area' });
+
+    // --- Render Helper: Compact Filter Content (Sidebar — draft only; apply on "Show X properties") ---
     const renderFilterContent = () => {
         return (
             <div className="space-y-6 [&>*:first-child]:mt-0">
-                {/* Selected filters — chips with × to remove */}
-                {activeFiltersList.length > 0 && (
+                {/* Selected (pending) filters — chips with × to remove; only updates draft */}
+                {pendingFiltersList.length > 0 && (
                     <div className="space-y-2">
-                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Selected</h2>
+                        <h2 className="text-[15px] md:text-[13px] font-semibold text-gray-900">Selected</h2>
                         <div className="flex flex-wrap gap-2">
-                            {activeFiltersList.map(({ label, key, valueToRemove }) => {
+                            {pendingFiltersList.map(({ label, key, valueToRemove }) => {
                                 const chipKey = valueToRemove != null ? `${key}-${valueToRemove}` : key;
                                 const isExiting = exitingChipKeys.has(chipKey);
                                 const handleRemove = () => {
                                     setExitingChipKeys(prev => new Set(prev).add(chipKey));
                                     setTimeout(() => {
-                                        valueToRemove != null ? clearFilterValue(key, valueToRemove) : handleFilterChange(key, '');
+                                        valueToRemove != null ? clearPendingFilterValue(key, valueToRemove) : handlePendingFilterChange(key, '');
                                         setExitingChipKeys(prev => { const n = new Set(prev); n.delete(chipKey); return n; });
                                     }, 200);
                                 };
                                 return (
                                     <span
                                         key={chipKey}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${
-                                            isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
-                                        }`}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
+                                            }`}
                                         style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
                                     >
                                         <span className="break-words max-w-[140px] min-w-0">{label}</span>
@@ -831,9 +890,9 @@ const ListingsPage = () => {
                     </div>
                 )}
 
-                {/* Text Search — applied only when user clicks Search (Apply) */}
+                {/* Text Search — draft only; applies when "Show X properties" */}
                 <div className="space-y-2">
-                    <label className="block text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Search by text</label>
+                    <label className="block text-[15px] md:text-[13px] font-semibold text-gray-900">Search by text</label>
                     <input
                         type="text"
                         value={pendingFilters.search ?? ''}
@@ -852,14 +911,14 @@ const ListingsPage = () => {
                 <div className="space-y-10">
 
 
-                    {/* LISTING TYPE (Buy/Rent) — multi-select */}
+                    {/* LISTING TYPE (Buy/Rent) — draft only */}
                     <FilterCard
                         title="Listing Type"
                         icon={FilterIcons.tag}
                     >
                         <div className="flex flex-wrap gap-2.5">
                             {listingTypeOptions.map(({ value, label }) => {
-                                const selectedSet = new Set((filters.listing_type || '').split(',').filter(Boolean));
+                                const selectedSet = new Set((pendingFilters.listing_type || '').split(',').filter(Boolean));
                                 const isActive = value === '' ? selectedSet.size === 0 : selectedSet.has(value);
                                 const IconComp = listingTypeIconMap[value];
                                 return (
@@ -867,7 +926,7 @@ const ListingsPage = () => {
                                         key={value || 'all'}
                                         label={label}
                                         isActive={isActive}
-                                        onClick={() => toggleMultiFilter('listing_type', value)}
+                                        onClick={() => togglePendingMultiFilter('listing_type', value)}
                                         icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
                                     />
                                 );
@@ -875,14 +934,14 @@ const ListingsPage = () => {
                         </div>
                     </FilterCard>
 
-                    {/* PROPERTY TYPE — multi-select */}
+                    {/* PROPERTY TYPE — draft only */}
                     <FilterCard
                         title="Property Type"
                         icon={FilterIcons.property}
                     >
                         <div className="flex flex-wrap gap-2.5">
                             {propertyTypeOptions.map(({ value, label }) => {
-                                const selectedSet = new Set((filters.type || '').split(',').filter(Boolean));
+                                const selectedSet = new Set((pendingFilters.type || '').split(',').filter(Boolean));
                                 const isActive = value === '' ? selectedSet.size === 0 : selectedSet.has(value);
                                 const IconComp = propertyTypeIconMap[value];
                                 return (
@@ -890,7 +949,7 @@ const ListingsPage = () => {
                                         key={value || 'all'}
                                         label={label}
                                         isActive={isActive}
-                                        onClick={() => toggleMultiFilter('type', value)}
+                                        onClick={() => togglePendingMultiFilter('type', value)}
                                         icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
                                     />
                                 );
@@ -900,23 +959,20 @@ const ListingsPage = () => {
 
                     {/* ROOMS AND BEDS */}
                     <FilterCard
-                        title="Rooms and beds"
-                        icon={FilterIcons.bed}
-                        titleTag="h2"
-                        titleClassName="font-medium"
+                        titleClassName="font-semibold"
                     >
                         <div className="space-y-4">
                             <RoomStepperRow
                                 label="Bedrooms"
                                 options={bedroomOptions}
-                                value={filters.bedrooms}
-                                onChange={(v) => handleFilterChange('bedrooms', v)}
+                                value={pendingFilters.bedrooms}
+                                onChange={(v) => handlePendingFilterChange('bedrooms', v)}
                             />
                             <RoomStepperRow
                                 label="Bathrooms"
                                 options={bathroomOptions}
-                                value={filters.bathrooms}
-                                onChange={(v) => handleFilterChange('bathrooms', v)}
+                                value={pendingFilters.bathrooms}
+                                onChange={(v) => handlePendingFilterChange('bathrooms', v)}
                             />
                         </div>
                     </FilterCard>
@@ -940,16 +996,16 @@ const ListingsPage = () => {
                                 </div>
                             </button>
 
-                            {/* Selection Pills */}
-                            {(filters.station_id || '').split(',').filter(Boolean).map(id => {
+                            {/* Selection Pills — draft only */}
+                            {(pendingFilters.station_id || '').split(',').filter(Boolean).map(id => {
                                 const station = flatStations.find(s => s.value === id);
                                 return (
                                     <button
                                         key={id}
                                         onClick={() => {
-                                            const currentIds = filters.station_id.split(',');
+                                            const currentIds = (pendingFilters.station_id || '').split(',');
                                             const newIds = currentIds.filter(i => i !== id);
-                                            handleFilterChange('station_id', newIds.join(','));
+                                            handlePendingFilterChange('station_id', newIds.join(','));
                                         }}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-800 hover:border-gray-600 rounded-full transition-colors group"
                                     >
@@ -973,13 +1029,13 @@ const ListingsPage = () => {
                             min={0}
                             max={100000000}
                             step={100000}
-                            initialMin={filters.min_price ? parseInt(filters.min_price) : 0}
-                            initialMax={filters.max_price ? parseInt(filters.max_price) : 100000000}
+                            initialMin={pendingFilters.min_price ? parseInt(pendingFilters.min_price) : 0}
+                            initialMax={pendingFilters.max_price ? parseInt(pendingFilters.max_price) : 100000000}
                             onChange={({ min, max }) => {
-                                applyFilters({
+                                updatePendingFilters({
                                     min_price: min?.toString() || '',
                                     max_price: max?.toString() || ''
-                                }, false);
+                                });
                             }}
                         />
                     </FilterCard>
@@ -993,13 +1049,13 @@ const ListingsPage = () => {
                             min={0}
                             max={500}
                             step={1}
-                            initialMin={filters.min_area ? parseInt(filters.min_area) : 0}
-                            initialMax={filters.max_area ? parseInt(filters.max_area) : 500}
+                            initialMin={pendingFilters.min_area ? parseInt(pendingFilters.min_area) : 0}
+                            initialMax={pendingFilters.max_area ? parseInt(pendingFilters.max_area) : 500}
                             onChange={({ min, max }) => {
-                                applyFilters({
+                                updatePendingFilters({
                                     min_area: min?.toString() || '',
                                     max_area: max?.toString() || ''
-                                }, false);
+                                });
                             }}
                         />
                     </FilterCard>
@@ -1018,8 +1074,8 @@ const ListingsPage = () => {
                                 image: d.logo || d.image,
                                 isAvatar: true
                             }))}
-                            selectedId={filters.developer_id}
-                            onSelect={id => handleFilterChange('developer_id', id)}
+                            selectedId={pendingFilters.developer_id}
+                            onSelect={id => handlePendingFilterChange('developer_id', id)}
                             placeholder="Search developer..."
                             allLabel="All Developers"
                         />
@@ -1038,8 +1094,8 @@ const ListingsPage = () => {
                                 image: p.cover_image || p.image,
                                 isAvatar: false
                             }))}
-                            selectedId={filters.project_id}
-                            onSelect={id => handleFilterChange('project_id', id)}
+                            selectedId={pendingFilters.project_id}
+                            onSelect={id => handlePendingFilterChange('project_id', id)}
                             placeholder="Search project..."
                             allLabel="All Projects"
                         />
@@ -1053,49 +1109,6 @@ const ListingsPage = () => {
 
     return (
         <div className="min-h-screen bg-white flex flex-col font-inter">
-            {/* Map Transition Loading Overlay */}
-            {isMapTransitioning && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-300 animate-in fade-in">
-                    <div className="flex flex-col items-center gap-8">
-                        {/* Map Logo Design */}
-                        <div className="flex flex-col items-center gap-4 mb-2 animate-in fade-in zoom-in duration-700">
-                            <div className="w-20 h-20 bg-primary-50 rounded-[24px] flex items-center justify-center shadow-sm border border-primary-100">
-                                <GlobeAltIcon className="w-12 h-12 text-primary-600 animate-pulse" />
-                            </div>
-                            <div className="w-1.5 h-1.5 bg-primary-600 rounded-full opacity-50" />
-                        </div>
-
-                        {/* Custom Animated Switch Logo */}
-                        <div className="relative w-32 h-16 bg-gray-100 rounded-full p-2 border-2 border-gray-200 shadow-[inner_0_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
-                            <div
-                                className="absolute top-2 w-12 h-12 bg-primary-600 rounded-full shadow-lg transition-all duration-700 ease-in-out flex items-center justify-center text-white"
-                                style={{
-                                    left: overlaySwitchActive
-                                        ? (!isGoogleMapOpen ? 'calc(100% - 3.5rem)' : '0.5rem')
-                                        : (!isGoogleMapOpen ? '0.5rem' : 'calc(100% - 3.5rem)')
-                                }}
-                            >
-                                {overlaySwitchActive
-                                    ? (!isGoogleMapOpen ? <MapIcon className="w-7 h-7" /> : <ListBulletIcon className="w-7 h-7" />)
-                                    : (!isGoogleMapOpen ? <ListBulletIcon className="w-7 h-7" /> : <MapIcon className="w-7 h-7" />)
-                                }
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-2 text-center">
-                            <h3 className="text-xl font-black uppercase tracking-[0.2em] text-primary-600">
-                                {!isGoogleMapOpen ? 'Activating Map' : 'Returning to List'}
-                            </h3>
-                            <div className="flex items-center gap-2 text-gray-400 font-bold text-[10px] uppercase tracking-widest pl-1">
-                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-                                <span>Generating View</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
             {/* --- FILTER SIDEBAR (slide-in from right with open/close animation) --- */}
             {isSidebarOpen && (
                 <>
@@ -1110,8 +1123,8 @@ const ListingsPage = () => {
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Filter Settings</h3>
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
+                            <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -1122,23 +1135,23 @@ const ListingsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 custom-scrollbar modal-scrollable">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
                         <div
-                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between md:justify-center gap-3 pt-4 pb-5"
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
                             style={{
                                 paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
                                 paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
-                                paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
-                                paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                                paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+                                paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                             }}
                         >
                             <button
-                                onClick={clearFilters}
-                                disabled={!hasActiveFilters}
-                                className={`order-1 md:order-2 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActiveFilters
+                                onClick={clearPendingFilters}
+                                disabled={!hasActivePendingFilters}
+                                className={`order-1 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActivePendingFilters
                                     ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                     : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                     }`}
@@ -1146,10 +1159,10 @@ const ListingsPage = () => {
                                 Clear all
                             </button>
                             <button
-                                onClick={closeFilterSidebar}
-                                className="order-2 md:order-1 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
+                                onClick={() => applyFilters()}
+                                className="order-2 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
-                                <span>Show {total} {total === 1 ? 'property' : 'properties'}</span>
+                                <span>Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}</span>
                             </button>
                         </div>
                     </aside>
@@ -1169,7 +1182,7 @@ const ListingsPage = () => {
                                 type="search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
                                 placeholder="Search properties & filters"
                                 className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
                                 aria-label="Search properties"
@@ -1191,12 +1204,7 @@ const ListingsPage = () => {
                     </div>
                 </div>
                 {/* Header Mobile */}
-                <div className="pt-2 pb-2 px-4 lg:hidden">
-                    <div className="flex items-baseline justify-between">
-                        <h1 className="text-xl font-semibold text-gray-900">Properties</h1>
-                        <span className="text-sm font-medium text-gray-500">{total} results</span>
-                    </div>
-                </div>
+
 
                 {/* Filter bar: portaled into layout so it sits in same container as nav bar */}
                 {filterBarSlot && createPortal(
@@ -1216,7 +1224,6 @@ const ListingsPage = () => {
                         onViewModeChange={setViewMode}
                         isGoogleMapOpen={isGoogleMapOpen}
                         onToggleMapView={toggleMapView}
-                        isMapTransitioning={isMapTransitioning}
                         navVisible={navVisible}
                         isScrolled={layoutScrolled}
                         filters={filters}
@@ -1225,16 +1232,14 @@ const ListingsPage = () => {
                     />,
                     filterBarSlot
                 )}
-                {/* Spacer so content doesn't sit under the fixed filter bar (bar height 90px) */}
-                <div className="hidden lg:block h-[90px] flex-shrink-0" aria-hidden />
 
-                {/* Main Content Grid — same width as nav: max-w-[1440px] + px-6 lg:px-12 */}
-                <div className="max-w-[1440px] mx-auto w-full px-4 lg:px-12 mt-2 lg:mt-5">
+                {/* Main Content Grid — same width as nav: max-w-[1440px]; mobile: left/right padding */}
+                <div className="max-w-[1600px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
                     {/* Main Content Grid — at lg only: no sidebar (use Filters drawer); at xl: sidebar visible again */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar — removed from list page; use Filters button to open filter drawer */}
                         <div className={`hidden transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[154px] h-[calc(100vh-154px)]' : 'top-[90px] h-[calc(100vh-90px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[112px] lg:top-[128px] h-[calc(100vh-112px)] lg:h-[calc(100vh-128px)]' : 'top-[48px] h-[calc(100vh-48px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
@@ -1242,15 +1247,15 @@ const ListingsPage = () => {
                                 {/* Desktop Sidebar Fixed Footer */}
                                 <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
-                                        onClick={closeFilterSidebar}
+                                        onClick={() => applyFilters()}
                                         className="px-6 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
                                     >
-                                        Show {total} {total === 1 ? 'property' : 'properties'}
+                                        Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}
                                     </button>
                                     <button
-                                        onClick={clearFilters}
-                                        disabled={!hasActiveFilters}
-                                        className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
+                                        onClick={clearPendingFilters}
+                                        disabled={!hasActivePendingFilters}
+                                        className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActivePendingFilters
                                             ? 'bg-transparent border-none text-red-600 hover:text-red-700'
                                             : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
                                             }`}
@@ -1263,33 +1268,36 @@ const ListingsPage = () => {
 
                         {/* Listings Grid or Map — full width at lg; at xl sidebar visible so 9 cols */}
                         <div className="lg:col-span-12 transition-all duration-500 relative">
-                            <div
-                                className={`flex flex-col lg:flex-row gap-8 ${isGoogleMapOpen ? 'min-h-[80vh]' : 'min-h-[70vh]'}`}
-                            >
+                            <div className={`flex flex-col lg:flex-row gap-6 lg:gap-8 relative ${isGoogleMapOpen ? 'min-h-[85vh] pt-0.5' : 'min-h-[70vh]'}`}>
                                 {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
-                                <div className={`w-full ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[42%] xl:w-[52%] p-0') : ''}`}>
+                                <div className={`w-full flex flex-col ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[42%] xl:w-[52%] h-full p-0') : ''}`}>
+                                    {/* Header: Results Count */}
+                                    <div className="mb-4 mt-1 flex justify-end">
+                                        {initialLoading ? (
+                                            <div className={`h-7 w-32 bg-gray-100 rounded animate-pulse ${isExiting ? 'animate-fadeOutDown' : ''}`} />
+                                        ) : (listings || []).length > 0 ? (
+                                            <h2 className="text-[15px] font-bold text-gray-900 animate-fadeInUp">
+                                                {total} {total === 1 ? 'property' : 'properties'}
+                                            </h2>
+                                        ) : null}
+                                    </div>
+
                                     {initialLoading ? (
-                                        isGoogleMapOpen ? (
-                                            <div className="flex items-center justify-center py-16 lg:py-24">
-                                                <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-200 border-t-primary-600" />
-                                            </div>
-                                        ) : (
-                                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-                                                {[...Array(12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={viewMode} isExiting={isExiting} />)}
-                                            </div>
-                                        )
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
+                                            {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
+                                        </div>
+
                                     ) : (listings || []).length > 0 ? (
                                         <>
                                             <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                                 {(listings || []).map((l, i) => (
                                                     <div
                                                         key={l.id}
-                                                        className="animate-in fade-in fill-mode-both duration-500"
-                                                        style={{ animationDelay: `${(i % 12) * 50}ms` }}
                                                         onMouseEnter={() => isGoogleMapOpen && setListHoveredListingId(l.id)}
                                                         onMouseLeave={() => setListHoveredListingId(null)}
                                                     >
                                                         <ListingCard
+                                                            index={i}
                                                             listing={l}
                                                             viewMode={isGoogleMapOpen ? 'map-list' : viewMode}
                                                             priceFormat={priceFormat}
@@ -1310,18 +1318,21 @@ const ListingsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className="text-center py-20 bg-white rounded-[24px] animate-fadeInUp">
-                                            <SparklesIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                            <h3 className="text-xl font-bold text-gray-900">No properties found</h3>
-                                            <p className="text-gray-500 mt-2">Try adjusting your filters to find more results</p>
-                                            <button onClick={clearFilters} className="mt-6 text-red-600 font-bold underline hover:text-red-700">Clear all</button>
+                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 border border-dashed border-gray-200 rounded-[24px] animate-fadeInUp flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
+                                            <div className="w-16 h-16 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center mb-5">
+                                                <SparklesIcon className="w-8 h-8 text-gray-400" />
+                                            </div>
+                                            <h3 className="text-[17px] font-bold text-gray-900">No properties found</h3>
+                                            <p className="text-[14px] text-gray-500 mt-1 max-w-[260px] text-center leading-relaxed">
+                                                Try adjusting your search or filters to discover more matching results.
+                                            </p>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Right Side: Map — sticky below filter bar: moves up with initial scroll then stops under filter bar */}
-                                {((isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map'))) && (
-                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative h-[80vh] min-h-[80vh] lg:h-[calc(100vh-12.5rem)] lg:min-h-[calc(100vh-12.5rem)] xl:h-[80vh] xl:min-h-[80vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[80vh] min-h-[80vh] lg:h-[calc(100vh-12.5rem)] lg:min-h-[calc(100vh-12.5rem)] xl:h-[80vh] xl:min-h-[80vh] ${navVisible ? 'lg:top-[154px]' : 'lg:top-[90px]'}`}`}>
+                                {isGoogleMapOpen && (
+                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh] ${navVisible ? 'lg:top-[112px]' : 'lg:top-[80px]'}`}`}>
                                         <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
@@ -1333,10 +1344,12 @@ const ListingsPage = () => {
                                                 onBoundsChanged={handleMapBoundsChanged}
                                                 onExpandClick={() => setIsMapExpanded(true)}
                                                 isExpanded={isMapExpanded}
-                                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                                isVisible={isGoogleMapOpen}
                                                 onSaveClick={handleMapSaveClick}
                                                 savedListingIds={savedListingIds}
                                                 highlightedMarkerListingId={listHoveredListingId}
+                                                fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
+                                                showMapLoading={loading && fetchTriggeredByBoundsRef.current}
                                             />
                                             {/* X close when map expanded full width */}
                                             {isMapExpanded && (
@@ -1390,7 +1403,7 @@ const ListingsPage = () => {
 
             {/* Google Maps Modal (Mobile Only) */}
             {
-                (isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')) && (
+                isGoogleMapOpen && (
                     <div className="fixed inset-0 z-[120] bg-white flex flex-col items-center lg:!hidden pointer-events-auto lg:pointer-events-none lg:opacity-0">
                         <div className="w-full bg-white border-b px-4 py-4 flex items-center justify-between shadow-sm z-10 transition-all duration-300">
                             <div className="flex items-center gap-4">
@@ -1422,7 +1435,9 @@ const ListingsPage = () => {
                                 onSaveClick={handleMapSaveClick}
                                 savedListingIds={savedListingIds}
                                 highlightedMarkerListingId={listHoveredListingId}
-                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                isVisible={isGoogleMapOpen}
+                                fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
+                                showMapLoading={loading && fetchTriggeredByBoundsRef.current}
                             />
 
                             {/* Mobile Legend Overlay - Theme Card Style */}
@@ -1453,14 +1468,11 @@ const ListingsPage = () => {
                     </div>
                 )
             }
-            {/* Status Overlays */}
-            <MapTransitionOverlay active={isMapTransitioning} switchActive={overlaySwitchActive} />
-
             <TransitFilterModal
                 isOpen={isTransitModalOpen}
                 onClose={() => setIsTransitModalOpen(false)}
-                initialSelected={filters.station_id ? filters.station_id.split(',') : []}
-                onApply={handleStationSelect}
+                initialSelected={(pendingFilters.station_id || '').split(',').filter(Boolean)}
+                onApply={(ids) => handlePendingFilterChange('station_id', Array.isArray(ids) ? ids.join(',') : ids)}
             />
 
             <ListingDetailModal />

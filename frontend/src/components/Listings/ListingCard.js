@@ -21,7 +21,7 @@ import { TbTrain } from "react-icons/tb";
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
-const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '' }) => {
+const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
@@ -222,11 +222,18 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     const renderUnifiedCard = (cardLink) => {
         const isSavedMode = viewMode === 'saved-grid';
 
+        const animationStyle = { animationDelay: `${index * 50}ms`, animationFillMode: 'both' };
+        const animationClass = 'animate-in fade-in slide-in-from-bottom-4 duration-500';
+
         if (isSavedMode || isListView) {
             return (
-                <div className="bg-white rounded-none overflow-hidden group">
-                    <div className="relative aspect-[5/3.8] md:aspect-[5/4] rounded-[23px] overflow-hidden mb-2">
+                <div
+                    className={`bg-white rounded-none overflow-hidden group ${animationClass}`}
+                    style={animationStyle}
+                >
+                    <div className="relative aspect-[5/4.2] md:aspect-[5/4.7] rounded-[23px] overflow-hidden mb-2">
                         <Link to={cardLink}>
+
                             <img
                                 src={listingImages[0]}
                                 alt={title}
@@ -234,9 +241,9 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                             />
                         </Link>
 
-                        {/* Status Badge (Rent/Sale) */}
+                        {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
                         <div className="absolute top-3.5 left-3.5">
-                            <span className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[15px] md:text-[11px] font-medium text-gray-900 shadow-sm">
+                            <span className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] md:text-[11px] font-medium text-gray-900 shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
@@ -272,48 +279,52 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
             );
         }
 
-    const SWIPE_THRESHOLD = 40;
-    const handleCardImageDragStart = (clientX, clientY) => {
-        dragStartRef.current = { x: clientX, y: clientY };
-        didDragRef.current = false;
-    };
-    const handleCardImageDragMove = (e, clientX, clientY) => {
-        const start = dragStartRef.current;
-        if (!start) return;
-        const deltaX = Math.abs(clientX - start.x);
-        const deltaY = Math.abs(clientY - start.y);
-        if (deltaX > 15 && deltaX > deltaY) didDragRef.current = true;
-        if (deltaX > SWIPE_THRESHOLD && deltaX > deltaY && e?.cancelable) e.preventDefault();
-    };
-    const handleCardImageDragEnd = (e, clientX, clientY) => {
-        const start = dragStartRef.current;
-        if (!start || listingImages.length <= 1) {
+        const SWIPE_THRESHOLD = 40;
+        const handleCardImageDragStart = (clientX, clientY) => {
+            dragStartRef.current = { x: clientX, y: clientY };
+            didDragRef.current = false;
+        };
+        const handleCardImageDragMove = (e, clientX, clientY) => {
+            const start = dragStartRef.current;
+            if (!start) return;
+            const deltaX = Math.abs(clientX - start.x);
+            const deltaY = Math.abs(clientY - start.y);
+            if (deltaX > 15 && deltaX > deltaY) didDragRef.current = true;
+            if (deltaX > SWIPE_THRESHOLD && deltaX > deltaY && e?.cancelable) e.preventDefault();
+        };
+        const handleCardImageDragEnd = (e, clientX, clientY) => {
+            const start = dragStartRef.current;
+            if (!start || listingImages.length <= 1) {
+                dragStartRef.current = null;
+                return;
+            }
+            const deltaX = clientX - start.x;
+            const deltaY = clientY - start.y;
+            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+                didDragRef.current = true;
+                if (e && e.cancelable) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                if (deltaX > 0) {
+                    setCurrentImageIndex(i => (i - 1 + listingImages.length) % listingImages.length);
+                } else {
+                    setCurrentImageIndex(i => (i + 1) % listingImages.length);
+                }
+            }
             dragStartRef.current = null;
-            return;
-        }
-        const deltaX = clientX - start.x;
-        const deltaY = clientY - start.y;
-        if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-            didDragRef.current = true;
-            if (e && e.cancelable) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            if (deltaX > 0) {
-                setCurrentImageIndex(i => (i - 1 + listingImages.length) % listingImages.length);
-            } else {
-                setCurrentImageIndex(i => (i + 1) % listingImages.length);
-            }
-        }
-        dragStartRef.current = null;
-    };
+        };
 
-    return (
-            <div className={`group relative flex flex-col transition-all duration-300 ${cardClassName}`}>
+        return (
+            <div
+                className={`group relative flex flex-col transition-all duration-300 ${cardClassName} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+            >
                 <div className="flex flex-col w-full bg-white rounded-none border-none">
                     <Link
                         to={cardLink}
-                        className="relative aspect-[4/3.4] md:aspect-[4/3] w-full overflow-hidden rounded-[23px] block"
+
+                        className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block"
                         onClick={(e) => { if (didDragRef.current) { e.preventDefault(); didDragRef.current = false; } }}
                     >
                         <div
@@ -395,9 +406,8 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
                                     return (
                                         <div
                                             key={i}
-                                            className={`w-1.5 h-1.5 rounded-full transition-all flex-shrink-0 ${
-                                                isCenter ? 'bg-white scale-110' : inRange ? 'bg-white/60' : 'bg-white/30'
-                                            }`}
+                                            className={`w-1.5 h-1.5 rounded-full transition-all flex-shrink-0 ${isCenter ? 'bg-white scale-110' : inRange ? 'bg-white/60' : 'bg-white/30'
+                                                }`}
                                             aria-hidden
                                         />
                                     );
@@ -445,9 +455,13 @@ const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSa
     // List view: horizontal row (image left, content right)
     if (isListView) {
         return (
-            <div className={`group bg-white rounded-none border-b border-gray-100 flex flex-col transition-all duration-300 ${cardClassName}`}>
+            <div
+                className={`group bg-white rounded-none border-b border-gray-100 flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 ${cardClassName}`}
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+            >
                 <div className="p-4 flex gap-5">
-                    <Link to={linkTo} className="relative aspect-[4/3] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
+                    <Link to={linkTo} className="relative aspect-[4/3.5] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
+
                         <img
                             src={listingImages[0]}
                             alt={title}
