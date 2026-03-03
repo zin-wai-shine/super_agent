@@ -2037,7 +2037,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         zoom={15}
                                                         onMarkerClick={() => { }}
                                                         options={mapOptions}
-                                                        useDefaultMarkers={true}
+                                                        useDefaultMarkers={false}
+                                                        markerType="home"
+                                                        disableMarkerExpansion={true}
                                                         isVisible={true}
                                                         hideControls
                                                         fitBoundsOnListingsChange={false}

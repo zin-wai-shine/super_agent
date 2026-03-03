@@ -19,7 +19,7 @@ const options = {
     mapId: 'DEMO_MAP_ID'
 };
 
-const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedListingIds = [], useDefaultMarkers, highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard }) => {
+const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedListingIds = [], useDefaultMarkers, highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard, markerType = 'price' }) => {
     const { theme } = useTheme();
     const primaryColor = theme?.primaryColor || '#2663EB';
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
@@ -147,6 +147,23 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                     min-width: 65px;
                     justify-content: center;
                 }
+                .marker-group .home-marker {
+                    background: #1a1a1a;
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+                    border: 2px solid white;
+                    color: white;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .marker-group .home-marker svg {
+                    width: 22px;
+                    height: 22px;
+                }
                 .marker-group .resting-pill .resting-pill-icon { color: white; flex-shrink: 0; }
                 .marker-group .resting-pill .price-text { 
                     font-size: 13px; 
@@ -166,7 +183,14 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 }
                 .marker-group.opened .resting-nub,
                 .marker-group.list-highlighted .resting-nub,
-                .marker-group:hover .resting-nub { fill: #ffffff; }
+                .marker-group:hover .resting-nub,
+                .marker-group.opened .home-marker,
+                .marker-group:hover .home-marker { 
+                    fill: #ffffff; 
+                    background: #ffffff;
+                    color: #1a1a1a;
+                    transform: scale(1.05);
+                }
 
                 .marker-group.opened .expanded-card { width: 320px; min-height: 320px; opacity: 1; padding: 0; }
                 .marker-group.opened .expanded-content { opacity: 1; }
@@ -177,10 +201,19 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
             </style>
             <div class="marker-group group ${String(property.id) === String(highlightedMarkerListingId) ? 'list-highlighted' : ''} ${String(property.id) === String(openedMarkerId) ? 'opened' : ''} relative cursor-pointer flex flex-col items-center" style="transform: translate(-50%, -100%);">
                 <!-- Resting Pill: Price + Baht Icon -->
-                <div class="resting-pill z-10">
-                    <span class="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
-                    <span class="price-text">${priceNumber}</span>
-                </div>
+                ${markerType === 'home' ? `
+                    <div class="home-marker z-10">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                        </svg>
+                    </div>
+                ` : `
+                    <div class="resting-pill z-10">
+                        <span class="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
+                        <span class="price-text">${priceNumber}</span>
+                    </div>
+                `}
                 <svg class="resting-nub flex-none transition-all duration-200 pointer-events-none" width="12" height="6" viewBox="0 0 16 8">
                     <polygon points="0,0 16,0 8,8" />
                 </svg>
@@ -311,7 +344,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 saveBtnListenerRef.current = null;
             }
         };
-    }, [marker, property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId, openedMarkerId, onCardToggle, onCloseCard]);
+    }, [marker, property.id, property.price, property.listing_type, property.latitude, property.longitude, property.title, property.property_type, property.media, property.district, property.station, property.station_name, property.bedrooms, property.bathrooms, property.area, useDefaultMarkers, onSaveClick, initialSaved, savedListingIds, highlightedMarkerListingId, openedMarkerId, onCardToggle, onCloseCard, markerType]);
 
     return null;
 }, (prevProps, nextProps) => {
@@ -336,7 +369,8 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
         prevProps.highlightedMarkerListingId === nextProps.highlightedMarkerListingId &&
         prevProps.openedMarkerId === nextProps.openedMarkerId &&
         prevProps.onCardToggle === nextProps.onCardToggle &&
-        prevProps.onCloseCard === nextProps.onCloseCard
+        prevProps.onCloseCard === nextProps.onCloseCard &&
+        prevProps.markerType === nextProps.markerType
     );
 });
 
@@ -345,7 +379,7 @@ const MOBILE_PADDING = { top: 150, right: 40, bottom: 250, left: 40 };
 const DEFAULT_ZOOM = 12;
 const DEFAULT_MOBILE_ZOOM = 10;
 
-const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, hideCustomControls = false, fitBoundsOnListingsChange = true, showMapLoading = false, openedMarkerId: externalOpenedMarkerId, onOpenedMarkerChange, onClick, disableMarkerExpansion = false }) => {
+const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, hideCustomControls = false, fitBoundsOnListingsChange = true, showMapLoading = false, openedMarkerId: externalOpenedMarkerId, onOpenedMarkerChange, onClick, disableMarkerExpansion = false, markerType = 'price' }) => {
     const isMobile = window.innerWidth < 768;
     const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
     const effectivePadding = isMobile ? MOBILE_PADDING : PADDING;
@@ -655,6 +689,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoun
                         openedMarkerId={openedMarkerId}
                         onCardToggle={handleCardToggle}
                         onCloseCard={handleCloseCard}
+                        markerType={markerType}
                     />
                 ))}
             </GoogleMap>
