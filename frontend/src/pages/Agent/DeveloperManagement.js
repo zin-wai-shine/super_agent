@@ -235,12 +235,12 @@ const DeveloperManagement = () => {
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search developers..."
-                            className="w-full h-[34px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-[12px] focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400"
+                            className="w-full h-[38px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-[12px] focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400"
                         />
                     </div>
                     <button
                         onClick={() => handleOpenForm()}
-                        className="w-full sm:w-auto px-4 h-[34px] bg-primary-600 hover:bg-primary-700 text-white text-[12px] font-bold rounded-[3px] flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md"
+                        className="w-full sm:w-auto px-4 h-[38px] bg-primary-600 hover:bg-primary-700 text-white text-[12px] font-bold rounded-[3px] flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md"
                     >
                         <PlusIcon className="w-4 h-4" />
                         Add Developer
@@ -343,8 +343,8 @@ const DeveloperManagement = () => {
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                 {editingDev ? 'Edit Developer' : 'Add Developer'}
                             </h3>
-<button onClick={handleCloseForm} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
-                            <XMarkIcon className="w-5 h-5" />
+                            <button onClick={handleCloseForm} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">

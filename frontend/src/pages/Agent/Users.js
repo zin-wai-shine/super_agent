@@ -533,7 +533,7 @@ const Users = () => {
                         value={globalFilter ?? ''}
                         onChange={(e) => setGlobalFilter(e.target.value)}
                         placeholder="Search visitor..."
-                        className="w-full h-[34px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400 shadow-sm"
+                        className="w-full h-[38px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400 shadow-sm"
                     />
                 </div>
             </div>

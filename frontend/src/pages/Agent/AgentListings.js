@@ -579,7 +579,7 @@ const AgentListings = () => {
                             value={globalFilter}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search listings..."
-                            className="input-field pl-9 h-[34px] text-[12px] flex items-center"
+                            className="input-field pl-9 h-[38px] text-[12px] flex items-center"
                         />
                     </div>
 
