@@ -738,7 +738,7 @@ const PublicLayout = () => {
 
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
-            <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} pb-20 md:pb-0`}>
+            <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible ? 'pb-20' : 'pb-0'} md:pb-0`}>
                 <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, setMobileBottomNavVisible }} />
             </main>
 
@@ -747,12 +747,12 @@ const PublicLayout = () => {
                 <>
                     {showViewPanel && (
                         <div
-                            className="md:hidden fixed inset-0 z-[170] bg-black/30 backdrop-blur-[2px]"
+                            className="md:hidden fixed inset-0 z-[208] bg-black/30 backdrop-blur-[2px]"
                             onClick={() => setShowViewPanel(false)}
                         />
                     )}
                     <div
-                        className="md:hidden fixed left-0 right-0 z-[175] bg-white rounded-t-[32px] shadow-2xl pb-safe"
+                        className="md:hidden fixed left-0 right-0 z-[209] bg-white rounded-t-[32px] pb-safe"
                         style={{
                             bottom: '80px',
                             transform: showViewPanel ? 'translateY(0)' : 'translateY(calc(100% + 80px))',
@@ -765,13 +765,13 @@ const PublicLayout = () => {
                         >
                             <div className="w-10 h-1.5 rounded-full bg-gray-300" />
                         </div>
-                        <div className="px-6 pt-10 pb-20">
+                        <div className="px-6 pt-3 pb-8">
 
                             {/* Single Unified Toggle Switch */}
                             <div className="max-w-[320px] mx-auto bg-gray-50/80 backdrop-blur-xl p-2 rounded-full flex items-center relative isolation-auto border border-gray-100">
                                 {/* Sliding Background */}
                                 <div
-                                    className={`absolute inset-y-2 w-[calc(50%-8px)] bg-white rounded-full shadow-sm border border-gray-100/50 transition-transform duration-300 ease-out`}
+                                    className={`absolute inset-y-2 w-[calc(50%-8px)] bg-white rounded-full border border-gray-100/50 transition-transform duration-300 ease-out`}
                                     style={{
                                         transform: isMapView ? 'translateX(calc(100% + 8px))' : 'translateX(8px)'
                                     }}
@@ -806,7 +806,7 @@ const PublicLayout = () => {
 
             {/* Mobile Bottom Navigation */}
             <div
-                className={`fixed inset-x-0 bottom-0 z-[205] md:hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]`}
+                className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]`}
                 style={{ transform: mobileBottomNavVisible ? 'translateY(0)' : 'translateY(100%)' }}
             >
                 <div className="pointer-events-none">
@@ -863,13 +863,12 @@ const PublicLayout = () => {
                                                 onClick={() => setShowViewPanel(p => !p)}
                                                 className="flex-1 flex flex-col items-center justify-center py-2 relative"
                                             >
-                                                {isMapView
-                                                    ? <LuTextSearch className={`w-6 h-6 ${showViewPanel ? 'text-primary-600' : 'text-gray-400'}`} strokeWidth={2} />
-                                                    : <TbMapSearch className={`w-6 h-6 ${showViewPanel ? 'text-primary-600' : 'text-gray-400'}`} strokeWidth={2} />
-                                                }
-                                                <span className={`mt-0.5 text-[11px] font-semibold ${showViewPanel ? 'text-primary-600' : 'text-gray-500'}`}>
-                                                    {isMapView ? 'List' : 'Map'}
-                                                </span>
+                                                <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 shadow-lg ${showViewPanel ? 'bg-primary-600 text-white' : 'bg-gray-900 text-white'}`}>
+                                                    {isMapView
+                                                        ? <LuTextSearch className="w-6 h-6" strokeWidth={2.5} />
+                                                        : <TbMapSearch className="w-6 h-6" strokeWidth={2.5} />
+                                                    }
+                                                </div>
                                             </button>
                                         )}
 

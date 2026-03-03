@@ -137,7 +137,7 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                     background: #1a1a1a;
                     border: none;
                     color: white;
-                    padding: 5px 12px;
+                    padding: 7px 12px;
                     display: flex;
                     align-items: center;
                     gap: 6px;
@@ -345,12 +345,12 @@ const MOBILE_PADDING = { top: 150, right: 40, bottom: 250, left: 40 };
 const DEFAULT_ZOOM = 12;
 const DEFAULT_MOBILE_ZOOM = 10;
 
-const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, hideCustomControls = false, fitBoundsOnListingsChange = true, showMapLoading = false, openedMarkerId: externalOpenedMarkerId, onOpenedMarkerChange, onClick }) => {
+const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, hideCustomControls = false, fitBoundsOnListingsChange = true, showMapLoading = false, openedMarkerId: externalOpenedMarkerId, onOpenedMarkerChange, onClick, disableMarkerExpansion = false }) => {
     const isMobile = window.innerWidth < 768;
     const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
     const effectivePadding = isMobile ? MOBILE_PADDING : PADDING;
     const [internalOpenedMarkerId, setInternalOpenedMarkerId] = useState(null);
-    const openedMarkerId = externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId;
+    const openedMarkerId = disableMarkerExpansion ? null : (externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId);
 
     const [mapType, setMapType] = useState('roadmap');
     const [displayLoading, setDisplayLoading] = useState(showMapLoading);

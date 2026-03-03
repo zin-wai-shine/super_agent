@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     MagnifyingGlassIcon,
@@ -8,6 +8,8 @@ import {
     MapIcon,
     ListBulletIcon,
     XMarkIcon,
+    HeartIcon,
+    CalendarIcon,
 } from '@heroicons/react/24/outline';
 import {
     MagnifyingGlassIcon as SearchSolid,
@@ -15,10 +17,13 @@ import {
     UserCircleIcon as UserSolid,
     MapIcon as MapSolid,
     ListBulletIcon as ListSolid,
+    HeartIcon as HeartSolid,
+    CalendarIcon as CalendarSolid,
 } from '@heroicons/react/24/solid';
 
 const MobileBottomNav = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
 
@@ -63,18 +68,17 @@ const MobileBottomNav = () => {
         return false;
     };
 
-    const navItems = [
-        { name: 'Properties', path: '/listings', icon: BuildingOfficeIcon, activeIcon: BuildingSolid },
+    const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
+        { name: 'Favorites', path: '/saved-listings', icon: HeartIcon, activeIcon: HeartSolid },
+        { name: 'Viewings', path: '/my-bookings', icon: CalendarIcon, activeIcon: CalendarSolid },
+        { name: 'Profile', path: '/profile', icon: UserCircleIcon, activeIcon: UserSolid },
+    ] : [
+        { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
+        { name: 'Login', path: '/login', icon: UserCircleIcon, activeIcon: UserSolid },
     ];
-    const profileItem = {
-        name: 'Profile',
-        path: !isAuthenticated ? '/login' : '/profile',
-        icon: UserCircleIcon,
-        activeIcon: UserSolid,
-    };
-    const allItems = [...navItems, profileItem];
-    const gridCols = isOnListings ? 'grid-cols-5' : 'grid-cols-4';
+
+    const gridCols = isAuthenticated ? 'grid-cols-4' : (isOnListings ? 'grid-cols-3' : 'grid-cols-2');
 
     const NavLink = ({ item }) => {
         const active = isActive(item);
@@ -189,34 +193,48 @@ const MobileBottomNav = () => {
                     paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
                 }}
             >
-                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px]`}>
-                    {/* Left two items */}
-                    {allItems.slice(0, 2).map(item => <NavLink key={item.name} item={item} />)}
+                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px] gap-2`}>
+                    {/* First item: always Search */}
+                    <NavLink item={navItems[0]} />
 
-                    {/* Centre: Map/List toggle button — only on /listings */}
-                    {isOnListings && (
-                        <button
-                            type="button"
-                            onClick={() => setShowPanel(p => !p)}
-                            className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
-                        >
-                            {/* Dark pill background */}
-                            <div className={`absolute inset-x-1 inset-y-2 rounded-2xl -z-10 transition-colors duration-200 ${showPanel ? 'bg-slate-700' : 'bg-slate-900'}`} />
+                    {/* Guest specific items */}
+                    {!isAuthenticated && (
+                        <>
+                            {/* Centre: Map/List toggle button — only on /listings or to go to /listings */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (isOnListings) {
+                                        setShowPanel(p => !p);
+                                    } else {
+                                        navigate('/listings');
+                                    }
+                                }}
+                                className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
+                            >
+                                {/* Dark pill background */}
+                                <div className={`absolute inset-x-1 inset-y-2 rounded-2xl -z-10 transition-colors duration-200 ${showPanel ? 'bg-slate-700' : 'bg-slate-900'}`} />
 
-                            {/* Flipped stacked icons */}
-                            <div className="relative z-10 flex flex-col items-center mb-0.5">
-                                <MapSolid className="w-3.5 h-3.5 text-white/90 -mb-0.5" />
-                                <ListSolid className="w-3.5 h-3.5 text-white/60 -mt-0.5" />
-                            </div>
+                                {/* Flipped stacked icons */}
+                                <div className="relative z-10 flex flex-col items-center mb-0.5">
+                                    <MapSolid className="w-3.5 h-3.5 text-white/90 -mb-0.5" />
+                                    <ListSolid className="w-3.5 h-3.5 text-white/60 -mt-0.5" />
+                                </div>
 
-                            <span className="text-[10px] font-extrabold tracking-tight text-white opacity-90">
-                                {isMapView ? 'Map' : 'List'}
-                            </span>
-                        </button>
+                                <span className="text-[10px] font-extrabold tracking-tight text-white opacity-90">
+                                    {isOnListings ? (isMapView ? 'Map' : 'List') : 'List/Map'}
+                                </span>
+                            </button>
+
+                            {/* Login */}
+                            <NavLink item={navItems[1]} />
+                        </>
                     )}
 
-                    {/* Right: Profile */}
-                    <NavLink item={allItems[2]} />
+                    {/* Authenticated items */}
+                    {isAuthenticated && navItems.slice(1).map(item => (
+                        <NavLink key={item.name} item={item} />
+                    ))}
                 </div>
             </div>
         </>
