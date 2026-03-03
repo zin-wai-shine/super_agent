@@ -20,6 +20,7 @@
 
   /* Prevent iOS Safari zoom on input focus (zooms when font-size < 16px) */
   @media screen and (max-width: 768px) {
+
     input,
     select,
     textarea {
@@ -104,7 +105,7 @@
 
   /* Input styles — rounded-full, consistent height for UI */
   .input-field {
-    @apply w-full px-4 py-2 min-h-[44px] bg-white border border-gray-200 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-2 min-h-[44px] bg-white border border-gray-200 rounded-[3px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
   }
 
   .input-label {
@@ -370,6 +371,7 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -396,8 +398,17 @@
 
 /* Map pan loading: dots "..." pulse */
 @keyframes mapLoadingDot {
-  0%, 100% { opacity: 0.35; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.1); }
+
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 @keyframes fade-in-up {
@@ -518,7 +529,8 @@
   border-radius: 9999px !important;
   overflow: hidden;
 }
-.map-overlays-rounded .gm-style .gmnoprint > div {
+
+.map-overlays-rounded .gm-style .gmnoprint>div {
   border-radius: 9999px !important;
   overflow: hidden;
 }
