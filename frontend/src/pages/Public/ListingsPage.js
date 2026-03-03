@@ -44,11 +44,14 @@ import {
     BanknotesIcon,
     KeyIcon,
     HomeIcon,
+    ChevronLeftIcon,
 } from '@heroicons/react/24/outline';
 
 import {
     CheckCircleIcon
 } from '@heroicons/react/24/solid';
+import { TbMapSearch } from "react-icons/tb";
+import { LuTextSearch } from "react-icons/lu";
 import Logo from '../../components/Common/Logo';
 
 // Static Options moved outside to prevent recreation
@@ -101,7 +104,7 @@ const ListingsPage = () => {
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot, isScrolled: layoutScrolled } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
@@ -116,9 +119,48 @@ const ListingsPage = () => {
 
     // Modal States
 
-    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
+    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => {
+        const urlView = searchParams.get('view');
+        if (urlView) return urlView === 'map';
+        return localStorage.getItem('preferredView') === 'map';
+    });
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
     const [listHoveredListingId, setListHoveredListingId] = useState(null);
+    const [selectedListingId, setSelectedListingId] = useState(null);
+    const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
+        return localStorage.getItem('isMapListExpanded') === 'true';
+    });
+    const [mapTouchStartY, setMapTouchStartY] = useState(0);
+
+    const handleMapTouchStart = (e) => setMapTouchStartY(e.touches[0].clientY);
+    const handleMapTouchEnd = (e) => {
+        const touchEndY = e.changedTouches[0].clientY;
+        if (mapTouchStartY - touchEndY > 40) setIsMapListExpanded(true); // Swiped up
+        if (touchEndY - mapTouchStartY > 40) setIsMapListExpanded(false); // Swiped down
+    };
+
+    // Persist expansion state
+    useEffect(() => {
+        localStorage.setItem('isMapListExpanded', isMapListExpanded);
+    }, [isMapListExpanded]);
+
+    const expandedSheetRef = useRef(null);
+
+    // Persist scroll position of the expanded sheet
+    useEffect(() => {
+        if (isMapListExpanded && expandedSheetRef.current) {
+            const savedScroll = localStorage.getItem('mapListExpandedScroll');
+            if (savedScroll) {
+                expandedSheetRef.current.scrollTop = parseInt(savedScroll, 10);
+            }
+        }
+    }, [isMapListExpanded, listings.length]); // Also trigger when listings load
+
+    const handleSheetScroll = (e) => {
+        if (isMapListExpanded) {
+            localStorage.setItem('mapListExpandedScroll', e.target.scrollTop);
+        }
+    };
 
     // Sync savedListingIds when list cards dispatch save status (so map markers stay in sync)
     useEffect(() => {
@@ -134,9 +176,45 @@ const ListingsPage = () => {
         return () => window.removeEventListener('listing:saved-status-changed', handler);
     }, []);
 
+    // Sync mobile bottom nav visibility with map sheet expansion state
+    useEffect(() => {
+        if (!setMobileBottomNavVisible) return;
+
+        let timeoutId;
+
+        if (isGoogleMapOpen) {
+            if (isMapListExpanded) {
+                // Delay showing when expanding
+                timeoutId = setTimeout(() => {
+                    setMobileBottomNavVisible(true);
+                }, 300);
+            } else {
+                // Hide immediately when collapsing
+                setMobileBottomNavVisible(false);
+            }
+        } else {
+            setMobileBottomNavVisible(true);
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [isGoogleMapOpen, isMapListExpanded, setMobileBottomNavVisible]);
+
     // Sync map view from URL when it changes (e.g. back/forward)
     useEffect(() => {
-        setIsGoogleMapOpen(searchParams.get('view') === 'map');
+        const urlView = searchParams.get('view');
+        if (urlView) {
+            const toMap = urlView === 'map';
+            setIsGoogleMapOpen(toMap);
+            localStorage.setItem('preferredView', toMap ? 'map' : 'list');
+        } else {
+            // If URL doesn't have view param, use localStorage or default to false
+            const stored = localStorage.getItem('preferredView');
+            if (stored) {
+                setIsGoogleMapOpen(stored === 'map');
+            }
+        }
     }, [searchParams]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
@@ -202,6 +280,7 @@ const ListingsPage = () => {
     const lastBoundsRef = useRef(null);
     const prevMapBoundsRef = useRef(null);
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
+    const lastFetchedParamsRef = useRef(null); // Ref to avoid redundant fetches on back-nav
 
     const handleMapBoundsChanged = React.useCallback((bounds) => {
         // Simple comparison to prevent identical bounds from triggering a reload
@@ -264,7 +343,10 @@ const ListingsPage = () => {
 
         const newParams = new URLSearchParams(searchParams);
         if (isOpen) newParams.set('view', 'map');
-        else newParams.delete('view');
+        else {
+            newParams.delete('view');
+            setIsMapListExpanded(false); // Reset bottom sheet when returning to normal list
+        }
         setSearchParams(newParams);
         setIsGoogleMapOpen(isOpen);
     };
@@ -490,6 +572,25 @@ const ListingsPage = () => {
 
         const controller = new AbortController();
         const fetchListings = async () => {
+            const params = { ...filters, page, limit: 12 };
+            if (mapBounds && isGoogleMapOpen) {
+                params.min_lat = mapBounds.min_lat;
+                params.max_lat = mapBounds.max_lat;
+                params.min_lng = mapBounds.min_lng;
+                params.max_lng = mapBounds.max_lng;
+            }
+            if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
+                params.agent_id = user.agent_id;
+            }
+
+            // Check if we already have this data (e.g. just closing a detail modal)
+            const currentParamsKey = JSON.stringify(params);
+            if (lastFetchedParamsRef.current === currentParamsKey && listings.length > 0) {
+                setLoading(false);
+                setInitialLoading(false);
+                return;
+            }
+
             // Optimistic loading: If map is open but bounds aren't ready, wait.
             // This prevents "showing all properties" flash on reload in Map View.
             if (isGoogleMapOpen && !mapBounds) {
@@ -500,35 +601,19 @@ const ListingsPage = () => {
             // Only show initial skeletons if we are on page 1
             if (page === 1) {
                 // Avoid "flash" in map view OR during typing search.
-                // If map is open OR filters.search is changing, we don't clear results.
                 const isMapBoundsUpdate = isGoogleMapOpen && listings.length > 0;
                 const isSearchTyped = searchTerm !== filters.search && listings.length > 0;
 
-                // When panning the map, we want to show skeletons instead of freezing old cards
                 if (!isMapBoundsUpdate && !isSearchTyped) {
                     setInitialLoading(true);
                     setListings([]); // Clear listings for fresh fetch on page 1
                 } else if (isBoundsTriggeredFetch) {
-                    // For map boundary fetches, we intentionally switch to loading state
-                    // to show the skeletons spinning down during the artificial delay.
                     setInitialLoading(true);
                 }
             }
             setLoading(true);
 
             try {
-                const params = { ...filters, page, limit: 12 };
-                // Add map bounds to params if available and map is open
-                if (mapBounds && isGoogleMapOpen) {
-                    params.min_lat = mapBounds.min_lat;
-                    params.max_lat = mapBounds.max_lat;
-                    params.min_lng = mapBounds.min_lng;
-                    params.max_lng = mapBounds.max_lng;
-                }
-                if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
-                    params.agent_id = user.agent_id;
-                }
-
                 // Map-pan fetch: re-add artificial delay so the user sees the skeleton loading state
                 // giving a perception of deep data processing to feel premium.
                 const response = isBoundsTriggeredFetch
@@ -552,10 +637,11 @@ const ListingsPage = () => {
                     setInitialLoading(false);
                 } else {
                     setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
-                    if (page === 1) setInitialLoading(false); // always clear so cards show (closure may have stale initialLoading)
+                    if (page === 1) setInitialLoading(false);
                 }
 
                 setTotal(data.total || 0);
+                lastFetchedParamsRef.current = currentParamsKey;
             } catch (error) {
                 if (axios.isCancel(error)) return;
                 console.error('Failed to fetch listings', error);
@@ -1123,7 +1209,7 @@ const ListingsPage = () => {
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
                             <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
@@ -1135,7 +1221,7 @@ const ListingsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-6 custom-scrollbar modal-scrollable">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable">
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
@@ -1404,45 +1490,61 @@ const ListingsPage = () => {
             {/* Google Maps Modal (Mobile Only) */}
             {
                 isGoogleMapOpen && (
-                    <div className="fixed inset-0 z-[120] bg-white flex flex-col items-center lg:!hidden pointer-events-auto lg:pointer-events-none lg:opacity-0">
-                        <div className="w-full bg-white border-b px-4 py-4 flex items-center justify-between shadow-sm z-10 transition-all duration-300">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-primary-50 w-12 h-12 rounded-[20px] shadow-sm flex items-center justify-center">
-                                    <GlobeAltIcon className="w-6 h-6 text-primary-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-sm font-black uppercase tracking-widest text-gray-900 leading-none">Map Explorer</h2>
-                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-tighter">Found {total} locations</p>
-                                </div>
+                    <div className="fixed inset-0 z-[200] bg-gray-100 flex flex-col items-center lg:!hidden pointer-events-auto overflow-hidden">
+                        {/* MAP EXPLORER Header */}
+                        {/* Mobile Header: Back button + Search Bar + Filter Icon */}
+                        <div className={`absolute top-0 w-full bg-white/95 backdrop-blur-md border-b px-4 py-5 flex items-center gap-2 shadow-sm z-[205] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMapListExpanded ? 'rounded-b-[32px]' : 'rounded-b-0'}`}>
+                            <div className="flex-1 flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-full bg-white border border-gray-200">
+                                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                <input
+                                    type="search"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search properties & filters"
+                                    className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
+                                    aria-label="Search properties"
+                                />
                             </div>
                             <button
-                                onClick={() => toggleMapView(false)}
-                                className="p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all flex items-center justify-center"
+                                onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
+                                className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white hover:border-gray-700' : 'bg-white'}`}
+                                aria-label="Open filters"
                             >
-                                <XMarkIcon className="w-6 h-6" />
+                                <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                                {activeFiltersList.length > 0 && (
+                                    <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                        {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
+                                    </span>
+                                )}
                             </button>
                         </div>
 
-                        <div className="flex-1 w-full relative">
+                        {/* Map Container - fills behind header and sheet */}
+                        <div className="absolute inset-0 z-[201] pt-[88px]">
                             <GoogleMap
                                 listings={listings}
                                 onMarkerClick={(property) => {
-                                    const newParams = new URLSearchParams(searchParams);
-                                    newParams.set('detail', property.id);
-                                    setSearchParams(newParams);
+                                    if (property && property.id) {
+                                        setSelectedListingId(property.id);
+                                    }
                                 }}
                                 onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
+                                onOpenedMarkerChange={setSelectedListingId}
+                                openedMarkerId={selectedListingId}
+                                onClick={() => setSelectedListingId(null)}
                                 onSaveClick={handleMapSaveClick}
                                 savedListingIds={savedListingIds}
-                                highlightedMarkerListingId={listHoveredListingId}
+                                highlightedMarkerListingId={selectedListingId || listHoveredListingId}
                                 isVisible={isGoogleMapOpen}
                                 fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                                 showMapLoading={loading && fetchTriggeredByBoundsRef.current}
+                                hideControls={true}
+                                hideCustomControls={true}
                             />
 
-                            {/* Mobile Legend Overlay - Theme Card Style */}
-                            <div className="absolute top-4 left-4 right-4 z-10">
-                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-xl border border-white/50 flex items-center justify-center gap-8 animate-slide-up">
+                            {/* Mobile Legend Overlay - Move below header */}
+                            <div className="absolute top-4 left-4 right-4 z-[202] pointer-events-none">
+                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-lg border border-white/50 flex items-center justify-center gap-8 animate-slide-up pointer-events-auto max-w-max mx-auto">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Rent</span>
@@ -1456,14 +1558,137 @@ const ListingsPage = () => {
                             </div>
                         </div>
 
-                        {/* Quick Action Footer */}
-                        <div className="w-full p-4 bg-white border-t flex flex-col gap-4 safe-area-bottom">
-                            <button
-                                onClick={() => toggleMapView(false)}
-                                className="w-full bg-primary-600 text-white py-4.5 rounded-[20px] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-200 active:scale-95 transition-all text-center flex items-center justify-center h-14"
+                        {/* Soft Dark Backdrop (appears when sheet is expanded) */}
+                        <div
+                            className={`absolute inset-0 bg-black/30 backdrop-blur-[1px] z-[202] transition-opacity duration-500 ${isMapListExpanded ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                            onClick={() => setIsMapListExpanded(false)}
+                        />
+
+                        {/* Draggable Bottom Sheet */}
+                        <div
+                            className="absolute left-0 right-0 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col z-[203] rounded-t-[32px]"
+                            style={{
+                                bottom: 0,
+                                height: isMapListExpanded ? '88vh' : 'auto',
+                            }}
+                        >
+                            {/* Drag Header Area */}
+                            <div
+                                className="flex flex-col items-center pt-6 pb-2 cursor-pointer touch-none select-none z-10 bg-white rounded-t-[32px] shrink-0"
+                                onClick={() => setIsMapListExpanded(!isMapListExpanded)}
+                                onTouchStart={handleMapTouchStart}
+                                onTouchEnd={handleMapTouchEnd}
                             >
-                                Back to List
-                            </button>
+                                <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+                            </div>
+
+
+                            {/* Collapsed Content */}
+                            {!isMapListExpanded && (
+                                <div className="px-4 pb-12 pt-2 pb-safe animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                    {selectedListingId ? (() => {
+                                        const listing = listings.find(l => String(l.id) === String(selectedListingId));
+                                        if (!listing) return null;
+                                        const featuredImage = getMediaUrl(listing.media?.find((m) => m.type === 'image')?.url);
+                                        const formatPrice = (p) => p ? p.toLocaleString() : 'N/A';
+                                        const nearestStationName = (listing.station?.name_en || listing.station_name || '').split('(')[0].trim() || '';
+
+                                        return (
+                                            <div
+                                                key={`preview-${listing.id}`}
+                                                className="bg-white rounded-3xl shadow-xl border border-gray-100 p-3 flex gap-4 relative pointer-events-auto active:scale-[0.98] transition-transform animate-in fade-in slide-in-from-bottom-6 slide-in-from-right-2 duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                                                onClick={() => {
+                                                    const newParams = new URLSearchParams(searchParams);
+                                                    newParams.set('detail', listing.id);
+                                                    setSearchParams(newParams);
+                                                }}
+                                            >
+                                                {/* Image */}
+                                                <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
+                                                    <img src={featuredImage} alt={listing.title} className="w-full h-full object-cover" />
+                                                </div>
+
+                                                {/* Content */}
+                                                <div className="flex-1 min-w-0 pr-6 py-0.5 flex flex-col justify-between">
+                                                    <div>
+                                                        <h3 className="text-sm font-bold text-gray-900 truncate leading-tight mb-0.5">{listing.title}</h3>
+                                                        <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+                                                            <MapPinIcon className="w-3 h-3 flex-shrink-0" />
+                                                            <span className="truncate">{listing.district || 'Bangkok'}</span>
+                                                            {nearestStationName && <span className="truncate"> · {nearestStationName}</span>}
+                                                        </div>
+                                                        <div className="text-[11px] font-medium text-gray-600">
+                                                            {listing.bedrooms} Bed · {listing.bathrooms} Bath · {listing.area} Sqm
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-baseline gap-1 mt-auto">
+                                                        <span className="text-sm font-black text-gray-900">฿{formatPrice(listing.price)}</span>
+                                                        {listing.listing_type === 'rent' && <span className="text-[10px] text-gray-500 font-medium">/mo</span>}
+                                                    </div>
+                                                </div>
+
+                                                {/* Close Button */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedListingId(null);
+                                                    }}
+                                                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 active:bg-gray-200 transition-colors"
+                                                >
+                                                    <XMarkIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })() : (
+                                        <div
+                                            key="homes-count"
+                                            className="text-center font-bold text-gray-900 cursor-pointer py-4 animate-in fade-in slide-in-from-top-2 duration-500 ease-out"
+                                            onClick={() => setIsMapListExpanded(true)}
+                                        >
+                                            Over {total > 1000 ? '1,000' : total} homes
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Expanded Content */}
+                            {isMapListExpanded && (
+                                <div
+                                    ref={expandedSheetRef}
+                                    onScroll={handleSheetScroll}
+                                    className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 pb-12 animate-in fade-in duration-300 bg-white shadow-xl isolate pointer-events-auto overscroll-contain rounded-t-[23px]"
+                                >
+                                    {/* Listings Stream */}
+                                    <div className="flex flex-col gap-6 pb-32 mt-2 w-full max-w-lg mx-auto">
+                                        {listings.filter(p => p && p.id).map((property) => (
+                                            <ListingCard
+                                                key={property.id}
+                                                listing={property}
+                                                viewMode="grid"
+                                                onHover={setListHoveredListingId}
+                                                to={`${location.pathname}?${(function () {
+                                                    const p = new URLSearchParams(searchParams);
+                                                    p.set('detail', property.id);
+                                                    return p.toString();
+                                                })()}`}
+                                            />
+                                        ))}
+                                        {loading && (
+                                            <div className="flex flex-col gap-6 w-full">
+                                                <ListingSkeleton />
+                                                <ListingSkeleton />
+                                                <ListingSkeleton />
+                                            </div>
+                                        )}
+                                        {/* Simple subtle load more if they reach end */}
+                                        {!loading && listings.length < total && (
+                                            <button onClick={() => setPage(p => p + 1)} className="w-full py-4 text-center font-bold text-primary-600 mt-4 rounded-xl border border-primary-100 bg-primary-50">
+                                                Load More Results
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )

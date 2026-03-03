@@ -1,139 +1,225 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     MagnifyingGlassIcon,
     BuildingOfficeIcon,
     UserCircleIcon,
+    MapIcon,
+    ListBulletIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
     MagnifyingGlassIcon as SearchSolid,
     BuildingOfficeIcon as BuildingSolid,
     UserCircleIcon as UserSolid,
+    MapIcon as MapSolid,
+    ListBulletIcon as ListSolid,
 } from '@heroicons/react/24/solid';
 
 const MobileBottomNav = () => {
     const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
-    // Scroll state
+
     const [isVisible, setIsVisible] = React.useState(true);
     const [lastScrollY, setLastScrollY] = React.useState(0);
+    const [showPanel, setShowPanel] = React.useState(false);
 
     React.useEffect(() => {
         const controlNavbar = () => {
             if (typeof window !== 'undefined') {
                 const currentScrollY = window.scrollY;
-
                 if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                    // if scroll down hide the navbar
                     setIsVisible(false);
                 } else {
-                    // if scroll up show the navbar
                     setIsVisible(true);
                 }
-
-                // remember current page location to use in the next move
                 setLastScrollY(currentScrollY);
             }
         };
-
         window.addEventListener('scroll', controlNavbar);
+        return () => window.removeEventListener('scroll', controlNavbar);
+    }, [lastScrollY]);
 
-        // cleanup function
-        return () => {
-            window.removeEventListener('scroll', controlNavbar);
-        };
-    }, []);
+    const isOnListings = location.pathname.startsWith('/listings');
+    const isMapView = searchParams.get('view') === 'map';
+
+    const switchView = (toMap) => {
+        const next = new URLSearchParams(searchParams);
+        if (toMap) {
+            next.set('view', 'map');
+        } else {
+            next.delete('view');
+        }
+        setSearchParams(next, { replace: true });
+        setShowPanel(false);
+    };
+
     const isActive = (item) => {
-        if (item.path === '/' && location.pathname === '/') return true;
-
-        if (item.name === 'Search') {
-            return location.pathname === '/search';
-        }
-
-        if (item.name === 'Properties') {
-            return location.pathname === '/' || location.pathname.startsWith('/listings');
-        }
-
-        // Strict prefix matching for other routes (Profile)
+        if (item.name === 'Search') return location.pathname === '/search';
+        if (item.name === 'Properties') return location.pathname === '/' || location.pathname.startsWith('/listings');
         if (item.path !== '/' && location.pathname.startsWith(item.path)) return true;
         return false;
     };
 
     const navItems = [
-        {
-            name: 'Properties',
-            path: '/listings',
-            icon: BuildingOfficeIcon,
-            activeIcon: BuildingSolid
-        },
-        {
-            name: 'Search',
-            path: '/search',
-            icon: MagnifyingGlassIcon,
-            activeIcon: SearchSolid
-        },
+        { name: 'Properties', path: '/listings', icon: BuildingOfficeIcon, activeIcon: BuildingSolid },
+        { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
     ];
-
-    // Profile Item - ALWAYS goes to /profile (if auth), Dashboard access is INSIDE profile page
     const profileItem = {
         name: 'Profile',
         path: !isAuthenticated ? '/login' : '/profile',
         icon: UserCircleIcon,
-        activeIcon: UserSolid
+        activeIcon: UserSolid,
+    };
+    const allItems = [...navItems, profileItem];
+    const gridCols = isOnListings ? 'grid-cols-5' : 'grid-cols-4';
+
+    const NavLink = ({ item }) => {
+        const active = isActive(item);
+        const Icon = active ? item.activeIcon : item.icon;
+        return (
+            <Link
+                to={item.path}
+                onClick={() => setShowPanel(false)}
+                className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
+            >
+                {active && (
+                    <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
+                )}
+                <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
+                    <Icon className={`w-6 h-6 transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                </div>
+                <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 ${active ? 'text-primary-600 opacity-100' : 'text-gray-400 opacity-80'}`}>
+                    {item.name}
+                </span>
+            </Link>
+        );
     };
 
-    const allItems = [...navItems, profileItem];
-
     return (
-        /* Full Width Bottom Nav - Scroll Aware */
-        <div
-            className={`md:hidden fixed z-50 bottom-0 left-0 right-0 backdrop-blur-xl bg-white/75 border-t border-gray-200 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full tracking-wider'}`}
-            style={{
-                paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
-                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
-                paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
-                paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
-            }}
-        >
-            <div className="grid grid-cols-4 h-[72px] items-center px-4 min-h-[72px]">
-                {allItems.map((item) => {
-                    const active = isActive(item);
-                    const Icon = active ? item.activeIcon : item.icon;
+        <>
+            {/* ── Bottom sheet panel ── */}
+            {isOnListings && (
+                <>
+                    {/* Backdrop */}
+                    {showPanel && (
+                        <div
+                            className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
+                            onClick={() => setShowPanel(false)}
+                        />
+                    )}
 
-                    return (
-                        <Link
-                            key={item.name}
-                            to={item.path}
-                            className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
-                        >
-                            {/* Active Indicator Background Pill */}
-                            {active && (
-                                <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
-                            )}
+                    {/* Panel — slides up from bottom, sits just above the nav */}
+                    <div
+                        className={`md:hidden fixed left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-400 ease-out`}
+                        style={{
+                            bottom: showPanel ? '80px' : '-100%',
+                            transform: showPanel ? 'translateY(0)' : 'translateY(100%)',
+                            transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+                            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                        }}
+                    >
+                        {/* Handle */}
+                        <div className="flex justify-center pt-3 pb-1">
+                            <div className="w-10 h-1 rounded-full bg-gray-300" />
+                        </div>
 
-                            {/* Icon */}
-                            <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
-                                <Icon
-                                    className={`w-6 h-6 transition-colors duration-300 ${active
-                                        ? 'text-primary-600'
-                                        : 'text-gray-400 group-hover:text-gray-600'
-                                        }`}
-                                />
+                        <div className="px-6 pt-3 pb-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-base font-bold text-gray-900">View mode</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPanel(false)}
+                                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+                                >
+                                    <XMarkIcon className="w-5 h-5" />
+                                </button>
                             </div>
 
-                            {/* Label */}
-                            <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 ${active
-                                ? 'text-primary-600 opacity-100'
-                                : 'text-gray-400 opacity-80'
-                                }`}>
-                                {item.name}
+                            {/* Toggle buttons */}
+                            <div className="flex gap-3">
+                                {/* List mode */}
+                                <button
+                                    type="button"
+                                    onClick={() => switchView(false)}
+                                    className={`flex-1 flex flex-col items-center gap-3 py-5 rounded-2xl border-2 transition-all duration-200
+                                        ${!isMapView
+                                            ? 'bg-slate-900 border-slate-900 text-white shadow-lg'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                        }`}
+                                >
+                                    {!isMapView
+                                        ? <ListSolid className="w-7 h-7" />
+                                        : <ListBulletIcon className="w-7 h-7" />
+                                    }
+                                    <span className="text-sm font-bold">List</span>
+                                </button>
+
+                                {/* Map mode */}
+                                <button
+                                    type="button"
+                                    onClick={() => switchView(true)}
+                                    className={`flex-1 flex flex-col items-center gap-3 py-5 rounded-2xl border-2 transition-all duration-200
+                                        ${isMapView
+                                            ? 'bg-slate-900 border-slate-900 text-white shadow-lg'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                        }`}
+                                >
+                                    {isMapView
+                                        ? <MapSolid className="w-7 h-7" />
+                                        : <MapIcon className="w-7 h-7" />
+                                    }
+                                    <span className="text-sm font-bold">Map</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* ── Bottom Nav Bar ── */}
+            <div
+                className={`md:hidden fixed z-[60] bottom-0 left-0 right-0 backdrop-blur-xl bg-white/80 border-t border-gray-200 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}
+                style={{
+                    paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
+                    paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+                    paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
+                    paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
+                }}
+            >
+                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px]`}>
+                    {/* Left two items */}
+                    {allItems.slice(0, 2).map(item => <NavLink key={item.name} item={item} />)}
+
+                    {/* Centre: Map/List toggle button — only on /listings */}
+                    {isOnListings && (
+                        <button
+                            type="button"
+                            onClick={() => setShowPanel(p => !p)}
+                            className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
+                        >
+                            {/* Dark pill background */}
+                            <div className={`absolute inset-x-1 inset-y-2 rounded-2xl -z-10 transition-colors duration-200 ${showPanel ? 'bg-slate-700' : 'bg-slate-900'}`} />
+
+                            {/* Flipped stacked icons */}
+                            <div className="relative z-10 flex flex-col items-center mb-0.5">
+                                <MapSolid className="w-3.5 h-3.5 text-white/90 -mb-0.5" />
+                                <ListSolid className="w-3.5 h-3.5 text-white/60 -mt-0.5" />
+                            </div>
+
+                            <span className="text-[10px] font-extrabold tracking-tight text-white opacity-90">
+                                {isMapView ? 'Map' : 'List'}
                             </span>
-                        </Link>
-                    );
-                })}
+                        </button>
+                    )}
+
+                    {/* Right: Profile */}
+                    <NavLink item={allItems[2]} />
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

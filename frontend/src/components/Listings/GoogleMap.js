@@ -341,10 +341,17 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
 });
 
 const PADDING = { top: 60, right: 60, bottom: 60, left: 60 };
+const MOBILE_PADDING = { top: 150, right: 40, bottom: 250, left: 40 };
 const DEFAULT_ZOOM = 12;
+const DEFAULT_MOBILE_ZOOM = 10;
 
-const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, fitBoundsOnListingsChange = true, showMapLoading = false }) => {
-    const [openedMarkerId, setOpenedMarkerId] = useState(null);
+const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoundsChanged, onExpandClick, isExpanded, mapStyle = mapContainerStyle, options: customOptions, useDefaultMarkers = false, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, isVisible = true, hideControls = false, hideCustomControls = false, fitBoundsOnListingsChange = true, showMapLoading = false, openedMarkerId: externalOpenedMarkerId, onOpenedMarkerChange, onClick }) => {
+    const isMobile = window.innerWidth < 768;
+    const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
+    const effectivePadding = isMobile ? MOBILE_PADDING : PADDING;
+    const [internalOpenedMarkerId, setInternalOpenedMarkerId] = useState(null);
+    const openedMarkerId = externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId;
+
     const [mapType, setMapType] = useState('roadmap');
     const [displayLoading, setDisplayLoading] = useState(showMapLoading);
 
@@ -358,9 +365,21 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
     }, [showMapLoading]);
 
     const handleCardToggle = useCallback((propertyId) => {
-        setOpenedMarkerId((prev) => (String(prev) === String(propertyId) ? null : propertyId));
-    }, []);
-    const handleCloseCard = useCallback(() => setOpenedMarkerId(null), []);
+        const newValue = String(openedMarkerId) === String(propertyId) ? null : propertyId;
+        if (onOpenedMarkerChange) {
+            onOpenedMarkerChange(newValue);
+        } else {
+            setInternalOpenedMarkerId(newValue);
+        }
+    }, [openedMarkerId, onOpenedMarkerChange]);
+
+    const handleCloseCard = useCallback(() => {
+        if (onOpenedMarkerChange) {
+            onOpenedMarkerChange(null);
+        } else {
+            setInternalOpenedMarkerId(null);
+        }
+    }, [onOpenedMarkerChange]);
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -425,8 +444,8 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
         if (withCoords.length === 0) return;
         const bounds = new window.google.maps.LatLngBounds();
         withCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
-        map.fitBounds(bounds, PADDING);
-    }, [map, listingsBoundsKey, fitBoundsOnListingsChange]);
+        map.fitBounds(bounds, effectivePadding);
+    }, [map, listingsBoundsKey, fitBoundsOnListingsChange, effectivePadding]);
 
     useEffect(() => {
         if (map && map.setMapTypeId) {
@@ -491,7 +510,16 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
     const mapOptions = useMemo(() => {
         const merged = {
             ...options,
-            ...customOptions
+            ...customOptions,
+            ...(hideControls ? {
+                mapTypeControl: false,
+                fullscreenControl: false,
+                zoomControl: false,
+                streetViewControl: false,
+                scaleControl: false,
+                rotateControl: false,
+                panControl: false
+            } : {})
         };
 
         // CRITICAL: A map cannot have both 'styles' and 'mapId' set at the same time.
@@ -607,11 +635,12 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
             <GoogleMap
                 mapContainerStyle={mapStyle}
                 center={effectiveCenter}
-                zoom={zoom}
+                zoom={effectiveZoom}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 options={mapOptions}
                 onIdle={handleBoundsChanged}
+                onClick={onClick}
             >
                 {listings.filter(l => l.latitude && l.longitude).map((property) => (
                     <PropertyMarker
@@ -641,7 +670,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
                 </button>
             )}
             {/* Detail map: Map/Satellite pill (rounded-full) + fullscreen (rounded-full) only */}
-            {hideControls && map && (
+            {hideControls && !hideCustomControls && map && (
                 <>
                     <div className="absolute top-4 left-4 z-[10] pointer-events-auto isolate flex rounded-full overflow-hidden bg-white shadow-md border border-gray-200" style={{ isolation: 'isolate', transform: 'translateZ(0)' }}>
                         <button
@@ -685,7 +714,7 @@ const GoogleMapComponent = ({ listings = [], center, zoom = DEFAULT_ZOOM, onMark
                 </>
             )}
             {/* List/projects map: fullscreen + zoom controls */}
-            {!hideControls && map && (
+            {!hideControls && !hideCustomControls && map && (
                 <div className="absolute right-4 bottom-4 flex flex-col gap-2 z-[10] pointer-events-auto isolate">
                     <button
                         type="button"

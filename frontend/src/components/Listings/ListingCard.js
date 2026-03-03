@@ -21,7 +21,8 @@ import { TbTrain } from "react-icons/tb";
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
-const ListingCard = ({ listing, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
+const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
+    if (!listing || Object.keys(listing).length === 0 || !listing.id) return null; // Defensive check for undefined listings
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,

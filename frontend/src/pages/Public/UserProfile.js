@@ -1,51 +1,62 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../../components/Common/Logo';
 import {
     UserCircleIcon,
     ArrowLeftOnRectangleIcon,
     ChevronRightIcon,
     Squares2X2Icon,
-    UserIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getMediaUrl } from '../../utils/media';
 
+/* ─── Skeleton ─────────────────────────────────────────────── */
 const ProfileSkeleton = () => (
-    <div className="min-h-screen bg-white pt-10 pb-20 px-6 md:px-12 lg:px-20 md:max-w-lg lg:max-w-xl xl:max-w-2xl md:mx-auto">
-        {/* Real title — always visible */}
-        <h1 className="text-[28px] sm:text-3xl lg:text-4xl xl:text-[2.5rem] font-bold text-slate-900 tracking-tight leading-tight mb-4 sm:mb-6 lg:mb-8">Profile</h1>
-
-        {/* Real card container — skeleton content inside */}
-        <div
-            className="bg-white rounded-[24px] border border-gray-100 p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 lg:mb-10"
-            style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 0 28px rgba(0,0,0,0.08)' }}
-        >
-            <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-200 animate-pulse" />
-                <div className="h-6 w-36 bg-gray-200 rounded-lg animate-pulse" />
-                <div className="h-4 w-20 bg-gray-100 rounded-lg animate-pulse" />
-            </div>
-        </div>
-
-        {/* Menu skeletons */}
-        <div className="overflow-hidden">
-            {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between py-4 px-4 border-b border-gray-100 last:border-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
-                        <div className="h-4 w-28 bg-gray-200 rounded-lg animate-pulse" />
-                    </div>
-                    <div className="w-4 h-4 rounded bg-gray-100 animate-pulse" />
+    <div className="min-h-screen bg-white flex flex-col">
+        <div className="flex-1 max-w-[1200px] mx-auto w-full px-6 md:px-12 lg:px-20 pt-10 pb-6 flex flex-col lg:flex-row lg:gap-16">
+            {/* Left sidebar skeleton  — desktop only */}
+            <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
+                <div className="h-8 w-24 bg-gray-200 rounded-lg animate-pulse mb-8" />
+                <div className="space-y-2">
+                    {[1, 2].map(i => (
+                        <div key={i} className="flex items-center gap-3 py-3 px-3">
+                            <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
+                            <div className="h-4 w-24 bg-gray-200 rounded-lg animate-pulse" />
+                        </div>
+                    ))}
                 </div>
-            ))}
+            </div>
+
+            {/* Divider */}
+            <div className="hidden lg:block lg:w-px bg-gray-100 self-stretch flex-shrink-0" />
+
+            {/* Right content skeleton */}
+            <div className="flex-1">
+                <div className="h-7 w-32 bg-gray-200 rounded-lg animate-pulse mb-8" />
+                <div className="bg-white border border-gray-100 rounded-[24px] p-6 flex items-center gap-6 mb-8"
+                    style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 2px 24px rgba(0,0,0,0.06)' }}>
+                    <div className="w-20 h-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
+                    <div className="flex flex-col gap-2">
+                        <div className="h-6 w-36 bg-gray-200 rounded-lg animate-pulse" />
+                        <div className="h-4 w-20 bg-gray-100 rounded-lg animate-pulse" />
+                    </div>
+                </div>
+                <div className="h-px bg-gray-100 mb-6" />
+                <div className="h-4 w-32 bg-gray-100 rounded-lg animate-pulse" />
+            </div>
         </div>
     </div>
 );
 
+/* ─── Component ─────────────────────────────────────────────── */
 const UserProfile = () => {
     const { user, logout } = useAuth();
+    const { theme } = useTheme();
     const navigate = useNavigate();
     const isAgent = user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin';
     const [loading, setLoading] = useState(true);
+    const [activeSection, setActiveSection] = useState('about');
 
     useEffect(() => {
         const t = setTimeout(() => setLoading(false), 350);
@@ -54,77 +65,149 @@ const UserProfile = () => {
 
     if (loading) return <ProfileSkeleton />;
 
-    const menuItemClass = 'flex items-center justify-between w-full py-4 px-4 sm:py-5 sm:px-5 lg:py-6 lg:px-6 text-left text-gray-600 font-medium text-base sm:text-lg rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors';
-    const iconClass = 'w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-gray-800 flex-shrink-0';
+    const roleLabel = user?.role === 'super_admin' ? 'Admin' : user?.role?.replace('_', ' ') || 'Guest';
+    const initial = user?.first_name?.[0]?.toUpperCase() || '?';
+
+    // Desktop sidebar nav: About + Dashboard for agents (no View profile)
+    const navItems = [
+        { id: 'about', label: 'About', icon: <UserCircleIcon className="w-5 h-5" /> },
+        ...(isAgent ? [
+            { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-5 h-5" /> },
+        ] : []),
+    ];
+
+    const handleNavClick = (id) => {
+        if (id === 'dashboard') {
+            navigate(user?.role === 'super_admin' ? '/admin' : '/agent');
+        } else {
+            setActiveSection(id);
+        }
+    };
+
+    // Shared icon-only hover button style (no row bg)
+    const menuRowClass = 'flex items-center gap-3 group py-3 px-2 rounded-xl transition-colors duration-200 w-full';
 
     return (
-        <div className="min-h-screen bg-white pt-10 pb-20 px-6 md:px-12 lg:px-20 md:max-w-lg lg:max-w-xl xl:max-w-2xl md:mx-auto">
-            {/* Header */}
-            <h1 className="text-[28px] sm:text-3xl lg:text-4xl xl:text-[2.5rem] font-bold text-slate-900 tracking-tight leading-tight mb-4 sm:mb-6 lg:mb-8">Profile</h1>
+        <div className="min-h-screen bg-white flex flex-col">
+            <div className="flex-1 max-w-[1200px] mx-auto w-full px-6 md:px-12 lg:px-20 pt-10 pb-6 flex flex-col lg:flex-row lg:gap-16">
 
-            {/* Profile card */}
-            <div
-                className="bg-white rounded-[24px] border border-gray-100 p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 lg:mb-10"
-                style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 0 28px rgba(0,0,0,0.08)' }}
-            >
-                <div className="flex flex-col items-center text-center">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full bg-primary-100 flex items-center justify-center mb-3 sm:mb-4">
-                        <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary-700">
-                            {user?.first_name?.[0]?.toUpperCase() || '?'}
-                        </span>
-                        {!user?.first_name && (
-                            <UserCircleIcon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-primary-500" />
-                        )}
+                {/* ── Left sidebar — desktop only ── */}
+                <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
+                    <h1 className="text-[28px] font-bold text-slate-900 tracking-tight mb-8">Profile</h1>
+
+                    <nav className="space-y-1">
+                        {navItems.map(item => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleNavClick(item.id)}
+                                className={`flex items-center gap-3 group w-full py-3 px-3 rounded-xl text-left text-[15px] font-medium transition-colors duration-200
+                                    ${activeSection === item.id && item.id === 'about' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                            >
+                                {/* Icon circle: dark on active/hover, light otherwise */}
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200
+                                    ${activeSection === item.id && item.id === 'about'
+                                        ? 'bg-slate-900 text-white'
+                                        : 'bg-gray-100 text-gray-600 group-hover:bg-slate-900 group-hover:text-white'}`}>
+                                    {item.icon}
+                                </div>
+                                {item.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+
+                {/* ── Vertical divider — desktop only ── */}
+                <div className="hidden lg:block w-px bg-gray-100 self-stretch flex-shrink-0" />
+
+                {/* ── Right content ── */}
+                <div className="flex-1 min-w-0">
+                    {/* About heading — desktop only */}
+                    <div className="hidden lg:flex items-center mb-8">
+                        <h2 className="text-2xl font-semibold text-slate-900">About</h2>
                     </div>
-                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                        {user?.first_name} {user?.last_name}
-                    </h2>
-                    <p className="text-base sm:text-lg lg:text-xl text-gray-500 font-medium capitalize mt-0.5 sm:mt-1">
-                        {user?.role === 'super_admin' ? 'Admin' : user?.role?.replace('_', ' ') || 'Guest'}
-                    </p>
+                    {/* Profile title — mobile only */}
+                    <h1 className="text-[26px] font-bold text-slate-900 tracking-tight mb-8 lg:hidden">Profile</h1>
+
+                    {/* Profile card */}
+                    <div
+                        className="bg-white border border-gray-100 rounded-[24px] p-6 lg:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6"
+                        style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 2px 24px rgba(0,0,0,0.06)' }}
+                    >
+                        <div className="w-20 h-20 rounded-full bg-primary-50 border-4 border-primary-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            {user?.first_name ? (
+                                <span className="text-3xl font-bold text-primary-700">{initial}</span>
+                            ) : (
+                                <UserCircleIcon className="w-12 h-12 text-primary-400" />
+                            )}
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                                {user?.first_name} {user?.last_name}
+                            </h3>
+                            <span className="inline-block mt-2 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-semibold capitalize">
+                                {roleLabel}
+                            </span>
+                            {user?.email && (
+                                <p className="mt-3 text-sm text-gray-400 font-medium">{user.email}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Mobile: Dashboard link (agents only) */}
+                    {isAgent && (
+                        <Link
+                            to={user?.role === 'super_admin' ? '/admin' : '/agent'}
+                            className={`${menuRowClass} text-gray-800 lg:hidden mb-2`}
+                        >
+                            <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900">
+                                <Squares2X2Icon className="w-5 h-5 text-slate-600 transition-colors duration-200 group-hover:text-white" />
+                            </div>
+                            <div className="text-left">
+                                <p className="font-semibold text-[15px] leading-tight">Dashboard</p>
+                                <p className="text-xs text-gray-400 mt-0.5">Manage listings and bookings</p>
+                            </div>
+                            <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform duration-200" />
+                        </Link>
+                    )}
+
+                    {/* Logout */}
+                    <div className="border-t border-gray-100 pt-5 mt-2">
+                        <button
+                            type="button"
+                            onClick={logout}
+                            className={`${menuRowClass} text-rose-600`}
+                        >
+                            <div className="w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-rose-600">
+                                <ArrowLeftOnRectangleIcon className="w-5 h-5 text-rose-500 transition-colors duration-200 group-hover:text-white" />
+                            </div>
+                            <div className="text-left">
+                                <p className="font-semibold text-[15px] leading-tight">Log out</p>
+                                <p className="text-xs text-rose-400 mt-0.5">End your current session</p>
+                            </div>
+                            <ChevronRightIcon className="w-4 h-4 text-rose-300 ml-auto group-hover:translate-x-0.5 transition-transform duration-200" />
+                        </button>
+                    </div>
+
+                    {/* Mobile-only logo — below logout, centered, larger */}
+                    <div className="lg:hidden flex flex-col items-center justify-center pt-16 pb-2 opacity-10">
+                        <Link to="/" className="flex flex-col items-center gap-3">
+                            <div
+                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                            >
+                                {!theme?.logoUrl && (
+                                    <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                )}
+                            </div>
+                            {!theme?.logoUrl && (
+                                <span className="text-lg font-bold text-gray-700 tracking-tight">StayNest</span>
+                            )}
+                        </Link>
+                    </div>
                 </div>
             </div>
 
-            {/* Menu list */}
-            <div className="overflow-hidden">
-                {isAgent && (
-                    <>
-                        <Link
-                            to={user?.role === 'super_admin' ? '/admin' : '/agent'}
-                            className={`${menuItemClass} border-b border-gray-100`}
-                        >
-                            <span className="flex items-center gap-3">
-                                <Squares2X2Icon className={iconClass} />
-                                Dashboard
-                            </span>
-                            <ChevronRightIcon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 flex-shrink-0" />
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => navigate(-1)}
-                            className={menuItemClass}
-                        >
-                            <span className="flex items-center gap-3">
-                                <UserIcon className={iconClass} />
-                                View profile
-                            </span>
-                            <ChevronRightIcon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 flex-shrink-0" />
-                        </button>
-                    </>
-                )}
-
-                <button
-                    type="button"
-                    onClick={logout}
-                    className={`${menuItemClass} ${isAgent ? 'border-t border-gray-100' : ''} text-red-600 hover:bg-red-50 active:bg-red-100`}
-                >
-                    <span className="flex items-center gap-3">
-                        <ArrowLeftOnRectangleIcon className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-red-600 flex-shrink-0" />
-                        Log out
-                    </span>
-                    <ChevronRightIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 flex-shrink-0" />
-                </button>
-            </div>
         </div>
     );
 };

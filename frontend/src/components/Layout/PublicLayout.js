@@ -44,6 +44,7 @@ import {
     FiSettings,
     FiBarChart2,
     FiLogOut,
+    FiList,
 } from 'react-icons/fi';
 import {
     HiOutlineBuildingOffice2,
@@ -51,6 +52,8 @@ import {
     HiOutlineBuildingStorefront,
     HiOutlineGlobeAsiaAustralia,
 } from 'react-icons/hi2';
+import { LuTextSearch } from "react-icons/lu";
+import { TbSquares, TbListDetails, TbMapSearch } from "react-icons/tb";
 import Logo from '../Common/Logo';
 import { getMediaUrl } from '../../utils/media';
 import { publicApi } from '../../services/api';
@@ -72,6 +75,21 @@ const PublicLayout = () => {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const isMapView = searchParams.get('view') === 'map';
+    const isOnListings = location.pathname === '/listings';
+    const [showViewPanel, setShowViewPanel] = React.useState(false);
+
+    const switchView = (toMap) => {
+        const next = new URLSearchParams(location.search);
+        if (toMap) {
+            next.set('view', 'map');
+            localStorage.setItem('preferredView', 'map');
+        } else {
+            next.delete('view');
+            localStorage.setItem('preferredView', 'list');
+        }
+        navigate(`/listings?${next.toString()}`);
+        setShowViewPanel(false);
+    };
 
     const navigation = isMainDomain ? [
         { name: 'Features', href: '/#features', icon: BuildingOfficeIcon },
@@ -134,8 +152,10 @@ const PublicLayout = () => {
         const params = new URLSearchParams(location.search);
         if (isMapView) {
             params.delete('view');
+            localStorage.setItem('preferredView', 'list');
         } else {
             params.set('view', 'map');
+            localStorage.setItem('preferredView', 'map');
         }
         navigate(`/listings?${params.toString()}`);
     };
@@ -185,6 +205,14 @@ const PublicLayout = () => {
                 const y = el ? el.scrollTop : (window.scrollY || document.documentElement.scrollTop);
                 const prev = lastScrollYRef.current;
                 setIsScrolled(y > SHADOW_SCROLL);
+
+                // If we are on map view, don't let scroll logic interfere
+                // as the ListingsPage will manually manage visibility
+                if (isMapView) {
+                    tickingRef.current = false;
+                    return;
+                }
+
                 if (y <= TOP_THRESHOLD) {
                     setMobileBottomNavVisible(true);
                 } else if (y > prev + SCROLL_THRESHOLD) {
@@ -199,10 +227,13 @@ const PublicLayout = () => {
 
         const el = isListingsOrProjects ? scrollContainerRef.current : null;
         const target = el || window;
+
+        // If we are on map and it's not explicitly expanded, we might want to hide it
+        // But the scroll handler will still run. Let's make it smarter.
         target.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
         return () => target.removeEventListener('scroll', handleScroll);
-    }, [isListingsOrProjects]);
+    }, [isListingsOrProjects, isMapView]); // Re-run when view changes
 
     const [isNavLoading, setIsNavLoading] = useState(true);
     const [filterBarSlot, setFilterBarSlot] = useState(null);
@@ -255,7 +286,7 @@ const PublicLayout = () => {
                         <div className="flex flex-col h-full">
                             {/* Drawer Header */}
                             <div className="h-16 flex items-center justify-between px-4 border-b" style={{ borderColor: 'var(--menu-border)' }}>
-                                <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                                <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                                     <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                                     <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>Super</span>
                                 </Link>
@@ -346,15 +377,15 @@ const PublicLayout = () => {
 
                                                         {/* Property Types */}
                                                         <div className="flex flex-col gap-1 mb-4">
-                                                            <Link to="/listings" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                            <Link to={localStorage.getItem('preferredView') === 'map' ? '/listings?view=map' : '/listings'} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                                                                 <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>All Properties</span>
                                                                 <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
-                                                            <Link to="/listings?type=rent" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                            <Link to={localStorage.getItem('preferredView') === 'map' ? '/listings?type=rent&view=map' : '/listings?type=rent'} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                                                                 <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>To Rent</span>
                                                                 <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
-                                                            <Link to="/listings?type=sale" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                            <Link to={localStorage.getItem('preferredView') === 'map' ? '/listings?type=sale&view=map' : '/listings?type=sale'} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors group/link" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                                                                 <span className="font-medium" style={{ color: 'var(--menu-text-primary)' }}>To Buy</span>
                                                                 <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" style={{ color: 'var(--menu-text-primary)' }} />
                                                             </Link>
@@ -553,7 +584,7 @@ const PublicLayout = () => {
                                     <>
                                         <div className="flex items-center xl:gap-8 lg:gap-6 md:gap-4">
                                             {/* Logo — triple size on desktop only */}
-                                            <Link to="/" className="flex items-center group pr-4 md:pr-8">
+                                            <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center group pr-4 md:pr-8">
                                                 <div
                                                     className="w-[55px] h-[51px] md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
                                                     style={theme.logoUrl ? {
@@ -708,12 +739,74 @@ const PublicLayout = () => {
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
             <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} pb-20 md:pb-0`}>
-                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, setMobileBottomNavVisible }} />
             </main>
 
-            {/* Mobile Bottom Navigation — hide on scroll down, show on scroll up (mobile only) */}
+            {/* Map/List bottom sheet panel — slides up above the nav on /listings */}
+            {isOnListings && (
+                <>
+                    {showViewPanel && (
+                        <div
+                            className="md:hidden fixed inset-0 z-[170] bg-black/30 backdrop-blur-[2px]"
+                            onClick={() => setShowViewPanel(false)}
+                        />
+                    )}
+                    <div
+                        className="md:hidden fixed left-0 right-0 z-[175] bg-white rounded-t-[32px] shadow-2xl pb-safe"
+                        style={{
+                            bottom: '80px',
+                            transform: showViewPanel ? 'translateY(0)' : 'translateY(calc(100% + 80px))',
+                            transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+                        }}
+                    >
+                        <div
+                            className="flex justify-center pt-6 pb-2 cursor-pointer"
+                            onClick={() => setShowViewPanel(false)}
+                        >
+                            <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+                        </div>
+                        <div className="px-6 pt-10 pb-20">
+
+                            {/* Single Unified Toggle Switch */}
+                            <div className="max-w-[320px] mx-auto bg-gray-50/80 backdrop-blur-xl p-2 rounded-full flex items-center relative isolation-auto border border-gray-100">
+                                {/* Sliding Background */}
+                                <div
+                                    className={`absolute inset-y-2 w-[calc(50%-8px)] bg-white rounded-full shadow-sm border border-gray-100/50 transition-transform duration-300 ease-out`}
+                                    style={{
+                                        transform: isMapView ? 'translateX(calc(100% + 8px))' : 'translateX(8px)'
+                                    }}
+                                />
+
+                                {/* List Option */}
+                                <button
+                                    type="button"
+                                    onClick={() => switchView(false)}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full relative z-10 transition-colors duration-200 ${!isMapView ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                >
+                                    <LuTextSearch className={`w-5 h-5 ${!isMapView ? 'text-primary-600' : ''}`} strokeWidth={2} />
+                                    <span className={`text-base tracking-tight ${!isMapView ? 'font-bold' : 'font-medium'}`}>List View</span>
+                                </button>
+
+                                {/* Map Option */}
+                                <button
+                                    type="button"
+                                    onClick={() => switchView(true)}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full relative z-10 transition-colors duration-200 ${isMapView ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                >
+                                    <TbMapSearch className={`w-5 h-5 ${isMapView ? 'text-primary-600' : ''}`} strokeWidth={2} />
+                                    <span className={`text-sm ${isMapView ? 'font-bold' : 'font-medium'}`}>Map View</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Mobile Bottom Navigation */}
             <div
-                className={`fixed inset-x-0 bottom-0 z-[180] md:hidden transition-transform duration-300 ease-out`}
+                className={`fixed inset-x-0 bottom-0 z-[205] md:hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]`}
                 style={{ transform: mobileBottomNavVisible ? 'translateY(0)' : 'translateY(100%)' }}
             >
                 <div className="pointer-events-none">
@@ -730,7 +823,7 @@ const PublicLayout = () => {
                             <div className={`flex items-center justify-between ${!isAuthenticated ? 'max-w-[280px] mx-auto' : ''}`}>
                                 {/* Search — always show */}
                                 <Link
-                                    to="/listings"
+                                    to={localStorage.getItem('preferredView') === 'map' ? '/listings?view=map' : '/listings'}
                                     className="flex-1 flex flex-col items-center justify-center py-2"
                                 >
                                     <FiSearch
@@ -762,6 +855,23 @@ const PublicLayout = () => {
                                                 Favorites
                                             </span>
                                         </Link>
+
+                                        {/* Map/List toggle — after Favorites, only on /listings */}
+                                        {isOnListings && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowViewPanel(p => !p)}
+                                                className="flex-1 flex flex-col items-center justify-center py-2 relative"
+                                            >
+                                                {isMapView
+                                                    ? <LuTextSearch className={`w-6 h-6 ${showViewPanel ? 'text-primary-600' : 'text-gray-400'}`} strokeWidth={2} />
+                                                    : <TbMapSearch className={`w-6 h-6 ${showViewPanel ? 'text-primary-600' : 'text-gray-400'}`} strokeWidth={2} />
+                                                }
+                                                <span className={`mt-0.5 text-[11px] font-semibold ${showViewPanel ? 'text-primary-600' : 'text-gray-500'}`}>
+                                                    {isMapView ? 'List' : 'Map'}
+                                                </span>
+                                            </button>
+                                        )}
 
                                         {/* Viewings */}
                                         <Link
@@ -867,8 +977,19 @@ const PublicLayout = () => {
 
                             {/* Bottom Section: Logo + Legal */}
                             <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-6 md:pt-12">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xl font-bold text-gray-900 tracking-tight">
+                                <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-3">
+                                    {/* Logo icon — mobile only */}
+                                    <div className="md:hidden flex items-center justify-center mb-1">
+                                        <div
+                                            className="w-40 h-40 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                            style={theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                        >
+                                            {!theme.logoUrl && (
+                                                <Logo className="w-40 h-40" style={{ color: 'var(--primary-color)' }} />
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className="hidden md:block text-xl font-bold text-gray-900 tracking-tight">
                                         Super
                                     </span>
                                 </div>

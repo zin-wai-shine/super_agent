@@ -2227,7 +2227,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {isMapView ? (
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
                                         {relatedListings.map((related) => (
-                                            <ListingCard key={related.id} listing={related} viewMode="map-list" />
+                                            <ListingCard
+                                                key={related.id}
+                                                listing={related}
+                                                viewMode="map-list"
+                                                to={isModal ? `${location.pathname}?${(function () {
+                                                    const p = new URLSearchParams(searchParams);
+                                                    p.set('detail', related.id);
+                                                    return p.toString();
+                                                })()}` : `/listings/${related.id}`}
+                                            />
                                         ))}
                                     </div>
                                 ) : (
@@ -2237,7 +2246,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 key={related.id}
                                                 className="flex-shrink-0 snap-start w-full min-w-full sm:w-[calc((100%-3rem)/3)] sm:min-w-[calc((100%-3rem)/3)] sm:max-w-[calc((100%-3rem)/3)]"
                                             >
-                                                <ListingCard listing={related} viewMode="grid" />
+                                                <ListingCard
+                                                    listing={related}
+                                                    viewMode="grid"
+                                                    to={isModal ? `${location.pathname}?${(function () {
+                                                        const p = new URLSearchParams(searchParams);
+                                                        p.set('detail', related.id);
+                                                        return p.toString();
+                                                    })()}` : `/listings/${related.id}`}
+                                                />
                                             </div>
                                         ))}
                                     </div>
