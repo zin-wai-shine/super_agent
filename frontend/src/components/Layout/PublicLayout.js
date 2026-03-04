@@ -75,8 +75,46 @@ const PublicLayout = () => {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const isMapView = searchParams.get('view') === 'map';
-    const isOnListings = location.pathname === '/listings';
+    const isListingsPath = (pathname) =>
+        pathname === '/listings' || (!isMainDomain && pathname === '/');
+    const isOnListings = isListingsPath(location.pathname);
+    const [navButtonVisible, setNavButtonVisible] = React.useState(isListingsPath(location.pathname));
     const [showViewPanel, setShowViewPanel] = React.useState(false);
+
+    const initialHeight = React.useRef(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    const [isKeyboardOpen, setIsKeyboardOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleViewportChange = () => {
+            const viewport = window.visualViewport;
+            if (!viewport) return;
+
+            // Compare current height to the height we started with. 
+            // If more than 150px is missing, the keyboard is definitely open.
+            const isKeyboardVisible = viewport.height < initialHeight.current - 150;
+            setIsKeyboardOpen(isKeyboardVisible);
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+        } else {
+            window.addEventListener('resize', handleViewportChange);
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+            } else {
+                window.removeEventListener('resize', handleViewportChange);
+            }
+        };
+    }, []);
+
+    // Only update button visibility and close panel when the ROUTE changes — never on data re-renders
+    React.useEffect(() => {
+        setNavButtonVisible(isListingsPath(location.pathname));
+        setShowViewPanel(false);
+    }, [location.pathname, isMainDomain]);
 
     const switchView = (toMap) => {
         const next = new URLSearchParams(location.search);
@@ -157,7 +195,7 @@ const PublicLayout = () => {
             params.set('view', 'map');
             localStorage.setItem('preferredView', 'map');
         }
-        navigate(`/listings?${params.toString()}`);
+        navigate(`${location.pathname}?${params.toString()}`);
     };
 
     // Dropdown Logic
@@ -268,6 +306,7 @@ const PublicLayout = () => {
     const scrollContainerRef = useRef(null);
     return (
         <div
+            id="main-scroll-container"
             ref={scrollContainerRef}
             className={`flex flex-col bg-white ${isListingsOrProjects ? 'h-screen overflow-y-auto overflow-x-hidden' : 'min-h-screen'}`}
             style={{ fontFamily: theme.fontFamily }}
@@ -551,7 +590,7 @@ const PublicLayout = () => {
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
             {!isAuthPage && (
-                <div className={`hidden md:block sticky top-0 z-[150] bg-white transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_20px_-4px_rgba(0,0,0,0.12)]' : 'shadow-none'}`} style={{ backgroundColor: '#ffffff' }}>
+                <div className={`hidden md:block sticky top-0 z-[150] bg-white transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isScrolled ? 'border-b border-gray-100' : ''}`} style={{ backgroundColor: '#ffffff' }}>
                     <nav
                         className={`transition-all duration-300 bg-white/80 backdrop-blur-md ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
                         style={{ backgroundColor: '#ffffff' }}
@@ -752,51 +791,58 @@ const PublicLayout = () => {
                         />
                     )}
                     <div
-                        className="md:hidden fixed left-0 right-0 z-[209] bg-white rounded-t-[32px] pb-safe"
+                        className="md:hidden fixed left-0 right-0 z-[209] bg-white rounded-t-[36px] overflow-y-auto"
                         style={{
                             bottom: '80px',
+                            maxHeight: 'calc(80vh - 80px)',
                             transform: showViewPanel ? 'translateY(0)' : 'translateY(calc(100% + 80px))',
                             transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+                            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                         }}
                     >
+                        {/* Handle */}
                         <div
-                            className="flex justify-center pt-6 pb-2 cursor-pointer"
+                            className="flex justify-center pt-5 pb-4 cursor-pointer"
                             onClick={() => setShowViewPanel(false)}
                         >
-                            <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+                            <div className="w-10 h-1.5 rounded-full bg-gray-200" />
                         </div>
-                        <div className="px-6 pt-3 pb-8">
 
-                            {/* Single Unified Toggle Switch */}
-                            <div className="max-w-[320px] mx-auto bg-gray-50/80 backdrop-blur-xl p-2 rounded-full flex items-center relative isolation-auto border border-gray-100">
-                                {/* Sliding Background */}
-                                <div
-                                    className={`absolute inset-y-2 w-[calc(50%-8px)] bg-white rounded-full border border-gray-100/50 transition-transform duration-300 ease-out`}
-                                    style={{
-                                        transform: isMapView ? 'translateX(calc(100% + 8px))' : 'translateX(8px)'
-                                    }}
-                                />
-
-                                {/* List Option */}
+                        {/* Pill segmented control */}
+                        <div className="px-6 pb-20 pt-4 mb-6">
+                            <div className="flex items-center bg-gray-100 rounded-full p-1 gap-1 max-w-[240px] mx-auto">
+                                {/* List View */}
                                 <button
                                     type="button"
                                     onClick={() => switchView(false)}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full relative z-10 transition-colors duration-200 ${!isMapView ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-[13px] transition-all duration-250 active:scale-95 ${!isMapView
+                                        ? 'bg-primary-50 text-primary-700 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
-                                    <LuTextSearch className={`w-5 h-5 ${!isMapView ? 'text-primary-600' : ''}`} strokeWidth={2} />
-                                    <span className={`text-base tracking-tight ${!isMapView ? 'font-bold' : 'font-medium'}`}>List View</span>
+                                    {!isMapView && (
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                    <span className="font-normal">List View</span>
                                 </button>
 
-                                {/* Map Option */}
+                                {/* Map View */}
                                 <button
                                     type="button"
                                     onClick={() => switchView(true)}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-full relative z-10 transition-colors duration-200 ${isMapView ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-[13px] transition-all duration-250 active:scale-95 ${isMapView
+                                        ? 'bg-primary-50 text-primary-700 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
-                                    <TbMapSearch className={`w-5 h-5 ${isMapView ? 'text-primary-600' : ''}`} strokeWidth={2} />
-                                    <span className={`text-sm ${isMapView ? 'font-bold' : 'font-medium'}`}>Map View</span>
+                                    {isMapView && (
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                    <span className="font-normal">Map View</span>
                                 </button>
                             </div>
                         </div>
@@ -806,22 +852,21 @@ const PublicLayout = () => {
 
             {/* Mobile Bottom Navigation */}
             <div
-                className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]`}
-                style={{ transform: mobileBottomNavVisible ? 'translateY(0)' : 'translateY(100%)' }}
+                className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'translate-y-full duration-0' : 'duration-500'}`}
+                style={{ transform: (mobileBottomNavVisible && !isKeyboardOpen) ? 'translateY(0)' : 'translateY(100%)' }}
             >
-                <div className="pointer-events-none">
-                    <nav className="mx-auto max-w-[480px] pointer-events-auto">
+                <div>
+                    <nav className="w-full">
                         <div
                             className="bg-white border-t border-gray-200"
                             style={{
                                 paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
                                 paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
-                                paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
-                                paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
+                                paddingLeft: 'env(safe-area-inset-left, 0px)',
+                                paddingRight: 'env(safe-area-inset-right, 0px)',
                             }}
                         >
-                            <div className={`flex items-center justify-between ${!isAuthenticated ? 'max-w-[280px] mx-auto' : ''}`}>
-                                {/* Search — always show */}
+                            <div className="flex items-center justify-between min-h-[72px]">
                                 <Link
                                     to={localStorage.getItem('preferredView') === 'map' ? '/listings?view=map' : '/listings'}
                                     className="flex-1 flex flex-col items-center justify-center py-2"
@@ -856,21 +901,18 @@ const PublicLayout = () => {
                                             </span>
                                         </Link>
 
-                                        {/* Map/List toggle — after Favorites, only on /listings */}
-                                        {isOnListings && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowViewPanel(p => !p)}
-                                                className="flex-1 flex flex-col items-center justify-center py-2 relative"
-                                            >
-                                                <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 shadow-lg ${showViewPanel ? 'bg-primary-600 text-white' : 'bg-gray-900 text-white'}`}>
-                                                    {isMapView
-                                                        ? <LuTextSearch className="w-6 h-6" strokeWidth={2.5} />
-                                                        : <TbMapSearch className="w-6 h-6" strokeWidth={2.5} />
-                                                    }
-                                                </div>
-                                            </button>
-                                        )}
+                                        {/* Map/List toggle — shown only on /listings */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowViewPanel(p => !p)}
+                                            className={`flex flex-col items-center justify-center py-2 relative transition-[width,flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${navButtonVisible ? 'flex-1 pointer-events-auto' : 'w-0 flex-none overflow-hidden pointer-events-none'}`}
+                                        >
+                                            {/* Circle + icons scale together in sync with wrapper */}
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
+                                                <LuTextSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'}`} strokeWidth={2.5} />
+                                                <TbMapSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'}`} strokeWidth={2.5} />
+                                            </div>
+                                        </button>
 
                                         {/* Viewings */}
                                         <Link
@@ -907,16 +949,30 @@ const PublicLayout = () => {
                                         </Link>
                                     </>
                                 ) : (
-                                    /* Login — when not authenticated: go to login page; show active when on /login */
-                                    <Link
-                                        to="/login"
-                                        className="flex-1 flex flex-col items-center justify-center py-2"
-                                    >
-                                        <UserCircleIcon className={`w-6 h-6 ${isLoginTabActive ? 'text-primary-600' : 'text-gray-400'}`} />
-                                        <span className={`mt-0.5 text-[11px] font-semibold ${isLoginTabActive ? 'text-primary-600' : 'text-gray-500'}`}>
-                                            Login
-                                        </span>
-                                    </Link>
+                                    <>
+                                        {/* Center map/list toggle — unauthenticated */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowViewPanel(p => !p)}
+                                            className={`flex flex-col items-center justify-center py-2 relative transition-[width,flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${navButtonVisible ? 'flex-1 pointer-events-auto' : 'w-0 flex-none overflow-hidden pointer-events-none'}`}
+                                        >
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
+                                                <LuTextSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'}`} strokeWidth={2.5} />
+                                                <TbMapSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'}`} strokeWidth={2.5} />
+                                            </div>
+                                        </button>
+
+                                        {/* Login */}
+                                        <Link
+                                            to="/login"
+                                            className="flex-1 flex flex-col items-center justify-center py-2"
+                                        >
+                                            <UserCircleIcon className={`w-6 h-6 ${isLoginTabActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                                            <span className={`mt-0.5 text-[11px] font-semibold ${isLoginTabActive ? 'text-primary-600' : 'text-gray-500'}`}>
+                                                Login
+                                            </span>
+                                        </Link>
+                                    </>
                                 )}
                             </div>
                         </div>

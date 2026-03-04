@@ -41,36 +41,48 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
             <div className="w-full aspect-square bg-white border border-gray-100 shadow-sm rounded-[20px] overflow-hidden p-1.5">
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-[4px] rounded-[14px] overflow-hidden">
                     {/* Slot 1: First image */}
-                    {images[0] ? (
-                        <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${images[0]})` }} />
-                    ) : (
-                        <div className="w-full h-full bg-gray-100" />
-                    )}
+                    <div className="w-full h-full overflow-hidden relative bg-gray-100">
+                        {images[0] ? (
+                            <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                style={{ backgroundImage: `url(${images[0]})` }}
+                            />
+                        ) : null}
+                    </div>
 
                     {/* Slot 2: Second image */}
-                    {images[1] ? (
-                        <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${images[1]})` }} />
-                    ) : (
-                        <div className="w-full h-full bg-gray-50" />
-                    )}
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                        {images[1] ? (
+                            <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                style={{ backgroundImage: `url(${images[1]})` }}
+                            />
+                        ) : null}
+                    </div>
 
                     {/* Slot 3: Third image */}
-                    {images[2] ? (
-                        <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${images[2]})` }} />
-                    ) : (
-                        <div className="w-full h-full bg-gray-50" />
-                    )}
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                        {images[2] ? (
+                            <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                style={{ backgroundImage: `url(${images[2]})` }}
+                            />
+                        ) : null}
+                    </div>
 
                     {/* Slot 4: Count or Fourth image */}
-                    {remainingCount > 0 ? (
-                        <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-500 relative overflow-hidden group-hover:bg-gray-200 transition-colors">
-                            <span className="text-[18px] font-bold text-gray-700">+{remainingCount}</span>
-                        </div>
-                    ) : images[3] ? (
-                        <div className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${images[3]})` }} />
-                    ) : (
-                        <div className="w-full h-full bg-gray-50" />
-                    )}
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                        {remainingCount > 0 ? (
+                            <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-500 transition-colors group-hover:bg-gray-200">
+                                <span className="text-[18px] font-bold text-gray-700">+{remainingCount}</span>
+                            </div>
+                        ) : images[3] ? (
+                            <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                style={{ backgroundImage: `url(${images[3]})` }}
+                            />
+                        ) : null}
+                    </div>
                 </div>
             </div>
             <div className="px-1 relative">
@@ -116,7 +128,7 @@ const SavedListingsPage = () => {
         yesterday.setDate(yesterday.getDate() - 1);
 
         listings.forEach(listing => {
-            const date = new Date(listing.created_at || new Date());
+            const date = new Date(listing.saved_at || listing.created_at || new Date());
             date.setHours(0, 0, 0, 0);
 
             if (date.getTime() === today.getTime()) {
@@ -216,7 +228,8 @@ const SavedListingsPage = () => {
     }, [user]);
 
     return (
-        <div className="min-h-screen bg-white pt-10 pb-20">
+        <div className="min-h-screen bg-white pb-20">
+            {/* Filter bar (desktop only): same as list page; search/filters navigate to list page */}
             {/* Filter bar (desktop only): same as list page; search/filters navigate to list page */}
             {filterBarSlot && createPortal(
                 <div className="hidden lg:block w-full">
@@ -230,8 +243,12 @@ const SavedListingsPage = () => {
                         activeFilterCount={0}
                         viewMode="grid"
                         onViewModeChange={() => { }}
-                        isGoogleMapOpen={false}
-                        onToggleMapView={() => navigate('/listings?view=map')}
+                        isGoogleMapOpen={localStorage.getItem('preferredView') === 'map'}
+                        onToggleMapView={() => {
+                            const newPreference = localStorage.getItem('preferredView') === 'map' ? 'list' : 'map';
+                            localStorage.setItem('preferredView', newPreference);
+                            navigate(`/listings?view=${newPreference}`);
+                        }}
                         navVisible={navVisible}
                         isScrolled={layoutScrolled}
                         onClearSearch={() => setFavoritesSearchTerm('')}
@@ -239,25 +256,18 @@ const SavedListingsPage = () => {
                 </div>,
                 filterBarSlot
             )}
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
-                {/* Header - Simplified for app-like look when navbar is hidden */}
-                <div className="mb-0 flex flex-col items-start px-0">
-                    <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-                        Favorites
-                    </h1>
-                </div>
-
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-8 md:pt-12">
                 {/* Content Area */}
-                <div className="relative min-h-[400px] mt-6">
+                <div className="relative min-h-[400px]">
                     {initialLoading && !currentGroup ? (
                         /* Skeletons for main grid view */
-                        <div className={`grid ${isDesktop ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-2'} gap-4 pointer-events-none`}>
-                            {[...Array(6)].map((_, index) => (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pointer-events-none">
+                            {[...Array(8)].map((_, index) => (
                                 <div key={`skeleton-wrapper-${index}`} className="min-w-0">
                                     <ListingSkeleton
                                         key={`skeleton-${index}`}
                                         index={index}
-                                        viewMode="grouped-saved-category"
+                                        viewMode="grid"
                                         isExiting={isExiting}
                                     />
                                 </div>
@@ -266,119 +276,130 @@ const SavedListingsPage = () => {
                     ) : (listings.length > 0 || currentGroup) ? (
                         /* Content */
                         <>
-                            {currentGroup && (
+                            {currentGroup && !isDesktop && (
                                 <div className="fixed inset-0 z-[200] bg-white flex flex-col h-[100dvh]">
-                                    {/* Sticky Header */}
-                                    <div className="sticky flex-shrink-0 top-0 left-0 right-0 py-3 lg:py-4 bg-white/90 backdrop-blur-md border-b border-gray-100 z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
-                                        <div className="max-w-[1440px] mx-auto h-full px-6 md:px-12 lg:px-20 flex items-center justify-between relative">
+                                    {/* App-style Mobile Header */}
+                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 z-20" style={{ paddingTop: 'env(safe-area-inset-top, 0.75rem)' }}>
+                                        <div className="px-5 h-14 flex items-center justify-between relative">
                                             <button
                                                 onClick={() => {
                                                     const newParams = new URLSearchParams(searchParams);
                                                     newParams.delete('group');
                                                     setSearchParams(newParams);
                                                 }}
-                                                className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-all duration-200"
+                                                className="w-10 h-10 -ml-2 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
                                             >
-                                                <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900" />
+                                                <ArrowLeftIcon className="w-6 h-6 text-gray-900" />
                                             </button>
                                             <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                                                <h2 className="text-lg md:text-base font-semibold text-gray-900 truncate max-w-[50vw] leading-none">{currentGroup}</h2>
+                                                <h2 className="text-base font-bold text-gray-900 truncate max-w-[50vw]">{currentGroup}</h2>
                                             </div>
-                                            <div className="text-[14px] font-semibold text-gray-500 min-w-[60px] flex justify-end">
-                                                {activeGroup ? (
-                                                    `${activeGroup.items.length} places`
-                                                ) : (
-                                                    <div className="h-5 w-16 bg-gray-100 rounded-full animate-pulse" />
-                                                )}
+                                            <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap">
+                                                {activeGroup?.items.length || 0} places
                                             </div>
                                         </div>
                                     </div>
-                                    {/* Scrollable Listings */}
+                                    {/* Scrollable Content */}
                                     <div className="flex-1 overflow-y-auto">
-                                        <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-6 pb-24">
+                                        <div className="px-5 pt-6 pb-24">
                                             {initialLoading || !activeGroup ? (
-                                                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                                    {[...Array(6)].map((_, i) => (
-                                                        <ListingSkeleton key={`group-skel-${i}`} viewMode="saved-grid" />
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {[...Array(4)].map((_, i) => (
+                                                        <ListingSkeleton key={`mob-skel-${i}`} viewMode="grid" />
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <>
-                                                    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                                        {activeGroup.items.map((listing) => (
-                                                            <div
-                                                                key={listing.id}
-                                                                className={`min-w-0 transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : ''}`}
-                                                            >
-                                                                <ListingCard
-                                                                    listing={listing}
-                                                                    viewMode="saved-grid"
-                                                                    showSave={true}
-                                                                    initialSaved={true}
-                                                                    onSaveToggle={(id, saved) => {
-                                                                        if (!saved) {
-                                                                            handleUnsave(id);
-                                                                        }
-                                                                    }}
-                                                                    to={isDesktop ? `?detail=${listing.id}` : undefined}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    {activeGroup.items.length === 0 && (
-                                                        <div className="text-center py-10">
-                                                            <p className="text-gray-500">No properties left in this group.</p>
-                                                            <button
-                                                                onClick={() => {
-                                                                    const newParams = new URLSearchParams(searchParams);
-                                                                    newParams.delete('group');
-                                                                    setSearchParams(newParams);
-                                                                }}
-                                                                className="mt-4 text-primary-600 font-bold"
-                                                            >
-                                                                Go back
-                                                            </button>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {activeGroup.items.map((listing) => (
+                                                        <div key={listing.id} className={removingId === listing.id ? 'animate-fadeOutDown' : ''}>
+                                                            <ListingCard
+                                                                listing={listing}
+                                                                viewMode="saved-grid"
+                                                                showSave={true}
+                                                                initialSaved={true}
+                                                                onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
+                                                            />
                                                         </div>
-                                                    )}
-                                                </>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Main Listings View (Grouped Date Cards) */}
-                            <div className={`space-y-10 ${currentGroup ? 'hidden' : 'block'}`}>
-                                {(() => {
-                                    // Grouping logic
-                                    const groups = {
-                                        Today: [],
-                                        Yesterday: [],
-                                        Earlier: []
-                                    };
+                            {currentGroup && isDesktop ? (
+                                <div className="flex flex-col animate-fadeInUp">
+                                    {/* Desktop Sub-header: Centered title, Right count */}
+                                    <div className="mb-10 flex items-center justify-between relative min-h-[48px]">
+                                        <button
+                                            onClick={() => {
+                                                const newParams = new URLSearchParams(searchParams);
+                                                newParams.delete('group');
+                                                setSearchParams(newParams);
+                                            }}
+                                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50/80 backdrop-blur-sm border border-gray-100 shadow-sm hover:bg-gray-100 active:scale-95 transition-all z-10"
+                                        >
+                                            <ArrowLeftIcon className="w-5 h-5 text-gray-700 stroke-[2]" />
+                                        </button>
 
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    const yesterday = new Date(today);
-                                    yesterday.setDate(yesterday.getDate() - 1);
+                                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+                                            <h1 className="text-[20px] font-semibold text-gray-900 tracking-tight">{currentGroup}</h1>
+                                        </div>
 
-                                    listings.forEach(listing => {
-                                        const date = new Date(listing.created_at || new Date());
-                                        date.setHours(0, 0, 0, 0);
+                                        <div className="text-[14px] text-gray-500 font-medium z-10">
+                                            {activeGroup?.items.length || 0} listing{activeGroup?.items.length !== 1 ? 's' : ''} saved
+                                        </div>
+                                    </div>
 
-                                        if (date.getTime() === today.getTime()) {
-                                            groups.Today.push(listing);
-                                        } else if (date.getTime() === yesterday.getTime()) {
-                                            groups.Yesterday.push(listing);
-                                        } else {
-                                            groups.Earlier.push(listing);
-                                        }
-                                    });
+                                    {/* Desktop Listings Grid */}
+                                    {initialLoading || !activeGroup ? (
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                            {[...Array(4)].map((_, i) => (
+                                                <ListingSkeleton key={`group-skel-${i}`} viewMode="grid" />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                            {activeGroup.items.map((listing) => (
+                                                <div
+                                                    key={listing.id}
+                                                    className={`min-w-0 transition-all duration-500 ${removingId === listing.id ? 'animate-fadeOutDown pointer-events-none' : ''}`}
+                                                >
+                                                    <ListingCard
+                                                        listing={listing}
+                                                        viewMode="saved-grid"
+                                                        showSave={true}
+                                                        initialSaved={true}
+                                                        onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
+                                                        to={window.innerWidth >= 1024 ? `/listings/${listing.id}` : `?detail=${listing.id}`}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : !currentGroup && (
+                                /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */
+                                <div className="animate-fadeInUp">
+                                    <div className="mb-10">
+                                        <h1 className="text-[24px] font-semibold text-gray-900 tracking-tight">Favorites</h1>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
+                                        {(() => {
+                                            const groups = { Today: [], Yesterday: [], Earlier: [] };
+                                            const today = new Date(); today.setHours(0, 0, 0, 0);
+                                            const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
 
-                                    // Always render as grouped cards
-                                    return (
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
-                                            {Object.entries(groups).map(([label, items]) => {
+                                            listings.forEach(listing => {
+                                                const date = new Date(listing.saved_at || listing.created_at || new Date());
+                                                date.setHours(0, 0, 0, 0);
+                                                if (date.getTime() === today.getTime()) groups.Today.push(listing);
+                                                else if (date.getTime() === yesterday.getTime()) groups.Yesterday.push(listing);
+                                                else groups.Earlier.push(listing);
+                                            });
+
+                                            return Object.entries(groups).map(([label, items]) => {
                                                 if (items.length === 0) return null;
                                                 return (
                                                     <GroupedSavedCard
@@ -388,25 +409,25 @@ const SavedListingsPage = () => {
                                                         onClick={() => handleGroupClick(label)}
                                                     />
                                                 );
-                                            })}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
+                                            });
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         /* Empty State */
-                        <div className="text-center py-16 animate-fadeInUp">
-                            <FiHeart className="mx-auto h-20 w-20 text-gray-300" />
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">No favorites listings</h3>
-                            <p className="mt-2 text-gray-500">
-                                Start favoriting properties you're interested in to view them here.
+                        <div className="text-center py-24 animate-fadeInUp">
+                            <FiHeart className="mx-auto h-20 w-20 text-gray-200" />
+                            <h2 className="mt-4 text-xl font-semibold text-gray-900">No favorites yet</h2>
+                            <p className="mt-2 text-gray-500 max-w-sm mx-auto">
+                                Save properties you like by clicking the heart icon, and they'll show up here.
                             </p>
                             <button
                                 onClick={() => navigate('/listings')}
-                                className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                                className="mt-8 inline-flex items-center px-8 py-3 rounded-full text-white bg-slate-900 hover:bg-slate-800 font-bold transition-all shadow-lg active:scale-95"
                             >
-                                Browse Listings
+                                Start Browsing
                             </button>
                         </div>
                     )}

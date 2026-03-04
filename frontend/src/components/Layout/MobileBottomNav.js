@@ -78,7 +78,31 @@ const MobileBottomNav = () => {
         { name: 'Login', path: '/login', icon: UserCircleIcon, activeIcon: UserSolid },
     ];
 
-    const gridCols = isAuthenticated ? 'grid-cols-4' : (isOnListings ? 'grid-cols-3' : 'grid-cols-2');
+    const isSearchActive = location.pathname.startsWith('/search') || location.pathname.startsWith('/listings') || location.pathname === '/';
+    const showToggleButton = isSearchActive;
+
+    const gridCols = isAuthenticated ? 'grid-cols-5' : 'grid-cols-3';
+
+    const renderNavItems = () => {
+        if (!isAuthenticated) {
+            return (
+                <>
+                    <NavLink item={navItems[0]} />
+                    <div className="w-full h-full pointer-events-none" /> {/* Empty spacing for center button */}
+                    <NavLink item={navItems[1]} />
+                </>
+            );
+        }
+        return (
+            <>
+                <NavLink item={navItems[0]} />
+                <NavLink item={navItems[1]} />
+                <div className="w-full h-full pointer-events-none" /> {/* Empty spacing for center button */}
+                <NavLink item={navItems[2]} />
+                <NavLink item={navItems[3]} />
+            </>
+        );
+    };
 
     const NavLink = ({ item }) => {
         const active = isActive(item);
@@ -115,14 +139,14 @@ const MobileBottomNav = () => {
                         />
                     )}
 
-                    {/* Panel — slides up from bottom, sits just above the nav */}
+                    {/* Panel — slides up from bottom, full-width edge-to-edge */}
                     <div
-                        className={`md:hidden fixed left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-400 ease-out`}
+                        className={`md:hidden fixed left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl`}
                         style={{
-                            bottom: showPanel ? '80px' : '-100%',
+                            bottom: 0,
                             transform: showPanel ? 'translateY(0)' : 'translateY(100%)',
                             transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
-                            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                            paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
                         }}
                     >
                         {/* Handle */}
@@ -193,48 +217,35 @@ const MobileBottomNav = () => {
                     paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
                 }}
             >
-                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px] gap-2`}>
-                    {/* First item: always Search */}
-                    <NavLink item={navItems[0]} />
+                {/* Floating Map/List Toggle Button */}
+                <div
+                    className={`absolute left-1/2 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-10 pointer-events-none ${showToggleButton
+                        ? 'translate-y-[-24px] opacity-100 scale-100'
+                        : 'translate-y-[40px] opacity-0 scale-50'
+                        }`}
+                >
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (isOnListings) {
+                                setShowPanel(p => !p);
+                            } else {
+                                navigate('/listings');
+                            }
+                        }}
+                        className={`pointer-events-auto bg-slate-900 text-white rounded-full w-[56px] h-[56px] shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center outline-none ring-[6px] ring-white transition-all duration-300 active:scale-95`}
+                    >
+                        <div className="relative flex items-center justify-center">
+                            <MapSolid className="w-6 h-6 text-white" />
+                            <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-[2px]">
+                                <SearchSolid className="w-3 h-3 text-white" strokeWidth={4} />
+                            </div>
+                        </div>
+                    </button>
+                </div>
 
-                    {/* Guest specific items */}
-                    {!isAuthenticated && (
-                        <>
-                            {/* Centre: Map/List toggle button — only on /listings or to go to /listings */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (isOnListings) {
-                                        setShowPanel(p => !p);
-                                    } else {
-                                        navigate('/listings');
-                                    }
-                                }}
-                                className="relative flex flex-col items-center justify-center w-full h-full group outline-none"
-                            >
-                                {/* Dark pill background */}
-                                <div className={`absolute inset-x-1 inset-y-2 rounded-2xl -z-10 transition-colors duration-200 ${showPanel ? 'bg-slate-700' : 'bg-slate-900'}`} />
-
-                                {/* Flipped stacked icons */}
-                                <div className="relative z-10 flex flex-col items-center mb-0.5">
-                                    <MapSolid className="w-3.5 h-3.5 text-white/90 -mb-0.5" />
-                                    <ListSolid className="w-3.5 h-3.5 text-white/60 -mt-0.5" />
-                                </div>
-
-                                <span className="text-[10px] font-extrabold tracking-tight text-white opacity-90">
-                                    {isOnListings ? (isMapView ? 'Map' : 'List') : 'List/Map'}
-                                </span>
-                            </button>
-
-                            {/* Login */}
-                            <NavLink item={navItems[1]} />
-                        </>
-                    )}
-
-                    {/* Authenticated items */}
-                    {isAuthenticated && navItems.slice(1).map(item => (
-                        <NavLink key={item.name} item={item} />
-                    ))}
+                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px] gap-2 relative`}>
+                    {renderNavItems()}
                 </div>
             </div>
         </>

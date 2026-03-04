@@ -129,7 +129,19 @@ const ProjectsPage = () => {
 
     // Modal States
 
-    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(searchParams.get('view') === 'map');
+    const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => {
+        // 1. First, respect the user's explicit saved preference if it exists
+        const savedPreference = localStorage.getItem('preferredView');
+        if (savedPreference) {
+            return savedPreference === 'map';
+        }
+        // 2. Fallback to URL params if no saved preference
+        const urlView = searchParams.get('view');
+        if (urlView) return urlView === 'map';
+
+        // 3. Default state (List mode)
+        return false;
+    });
     const [isMapTransitioning, setIsMapTransitioning] = useState(false);
     const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
@@ -243,6 +255,9 @@ const ProjectsPage = () => {
         if (isOpen === isGoogleMapOpen || isMapTransitioning) return;
 
         setIsMapTransitioning(true);
+
+        // Persist the user's explicit choice globally
+        localStorage.setItem('preferredView', isOpen ? 'map' : 'list');
 
         // Update URL immediately so map/list starts loading in background
         const newParams = new URLSearchParams(searchParams);

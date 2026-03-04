@@ -58,6 +58,9 @@ import { LuTextSearch } from "react-icons/lu";
 import Logo from '../../components/Common/Logo';
 
 // Static Options moved outside to prevent recreation
+// Module-level cache to preserve list state and scroll position across navigations
+// on the same browser tab without relying on heavy global context.
+export let globalListCache = null;
 const propertyTypeOptions = [
     { value: '', label: 'All Types' },
     { value: 'condo', label: 'Condo' },
@@ -120,24 +123,134 @@ const ListingsPage = () => {
     const [pendingTotal, setPendingTotal] = useState(null); // Count for current sidebar draft (background fetch, no loading UI)
     const [page, setPage] = useState(1);
     const observerTarget = useRef(null);
+    const stateCacheRef = useRef({ listings: [], page: 1, total: 0, searchParamsString: '' });
+    const scrollPositionRef = useRef(0);
+    const hasRestoredScrollRef = useRef(false);
+
+    // Initial check to see if we should restore from cache
+    const isCacheValid = useMemo(() => {
+        if (!globalListCache) return false;
+        // Only valid if we returned to the exact same URL parameters
+        return globalListCache.searchParamsString === searchParams.toString();
+    }, [searchParams]);
+
+    // Override initial states if cache is valid to prevent layout shift
+    useState(() => {
+        if (isCacheValid && globalListCache) {
+            setListings(globalListCache.listings);
+            setPage(globalListCache.page);
+            setTotal(globalListCache.total);
+            setInitialLoading(false); // Skip initial loading skeleton
+        }
+    });
+
+    // Track state for caching on unmount
+    useEffect(() => {
+        stateCacheRef.current = {
+            listings,
+            page,
+            total,
+            searchParamsString: searchParams.toString()
+        };
+    }, [listings, page, total, searchParams]);
+
+    // Track scroll position continuously
+    useEffect(() => {
+        const handleScroll = () => {
+            const container = document.getElementById('main-scroll-container');
+            if (container) {
+                scrollPositionRef.current = container.scrollTop;
+            } else {
+                scrollPositionRef.current = window.scrollY;
+            }
+        };
+        const container = document.getElementById('main-scroll-container') || window;
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Save cache on unmount
+    useEffect(() => {
+        return () => {
+            // Only save if we actually have populated data
+            if (stateCacheRef.current.listings.length > 0) {
+                globalListCache = {
+                    ...stateCacheRef.current,
+                    scrollY: scrollPositionRef.current
+                };
+            }
+        };
+    }, []);
+
+    // Restore scroll position once data is mounted from cache
+    useEffect(() => {
+        if (isCacheValid && globalListCache && !hasRestoredScrollRef.current) {
+            // Slight delay ensures DOM is fully painted with restored listings
+            setTimeout(() => {
+                const container = document.getElementById('main-scroll-container');
+                if (container) {
+                    container.scrollTo({ top: globalListCache.scrollY, behavior: 'auto' });
+                } else {
+                    window.scrollTo({ top: globalListCache.scrollY, behavior: 'auto' });
+                }
+                hasRestoredScrollRef.current = true;
+            }, 10);
+        }
+    }, [isCacheValid, listings.length]);
 
     // Modal States
 
     const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => {
+        // 1. First, respect the user's explicit saved preference if it exists
+        const savedPreference = localStorage.getItem('preferredView');
+        if (savedPreference) {
+            return savedPreference === 'map';
+        }
+        // 2. Fallback to URL params if no saved preference
         const urlView = searchParams.get('view');
         if (urlView) return urlView === 'map';
-        return localStorage.getItem('preferredView') === 'map';
+
+        // 3. Default state (List mode)
+        return false;
     });
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
     const [listHoveredListingId, setListHoveredListingId] = useState(null);
     const [selectedListingId, setSelectedListingId] = useState(null);
     const [sheetOffset, setSheetOffset] = useState(48); // Percentage from top (48% = 52vh visible)
     const [showMapButton, setShowMapButton] = useState(false);
+
     const isMapView = searchParams.get('view') === 'map';
 
     const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
         return localStorage.getItem('isMapListExpanded') === 'true';
     });
+
+    const initialHeight = React.useRef(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+    React.useEffect(() => {
+        const handleViewportChange = () => {
+            const viewport = window.visualViewport;
+            if (!viewport) return;
+            // Detect if height dropped by more than 150px (typical keyboard height)
+            const isKeyboardVisible = viewport.height < initialHeight.current - 150;
+            setIsKeyboardOpen(isKeyboardVisible);
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+        } else {
+            window.addEventListener('resize', handleViewportChange);
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+            } else {
+                window.removeEventListener('resize', handleViewportChange);
+            }
+        };
+    }, []);
 
     const handleSwitchToMap = () => {
         if (!isMapView) {
@@ -417,12 +530,17 @@ const ListingsPage = () => {
     const toggleMapView = (isOpen) => {
         if (isOpen === isGoogleMapOpen) return;
 
+        // Persist the user's explicit choice
+        localStorage.setItem('preferredView', isOpen ? 'map' : 'list');
+
         const newParams = new URLSearchParams(searchParams);
-        if (isOpen) newParams.set('view', 'map');
-        else {
+        if (isOpen) {
+            newParams.set('view', 'map');
+        } else {
             newParams.delete('view');
             setIsMapListExpanded(false); // Reset bottom sheet when returning to normal list
         }
+
         setSearchParams(newParams);
         setIsGoogleMapOpen(isOpen);
     };
@@ -661,6 +779,13 @@ const ListingsPage = () => {
 
             // Check if we already have this data (e.g. just closing a detail modal)
             const currentParamsKey = JSON.stringify(params);
+
+            // Bypass fetch if we just restored a valid cache for this exact URL
+            if (isCacheValid && page === globalListCache.page && !hasRestoredScrollRef.current) {
+                lastFetchedParamsRef.current = currentParamsKey;
+                return;
+            }
+
             if (lastFetchedParamsRef.current === currentParamsKey && listings.length > 0) {
                 setLoading(false);
                 setInitialLoading(false);
@@ -1396,7 +1521,7 @@ const ListingsPage = () => {
                 )}
 
                 {/* Main Content Grid — same width as nav: max-w-[1440px]; mobile: left/right padding */}
-                <div className="max-w-[1600px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
+                <div className="max-w-[1440px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
                     {/* Main Content Grid — at lg only: no sidebar (use Filters drawer); at xl: sidebar visible again */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar — removed from list page; use Filters button to open filter drawer */}
@@ -1463,7 +1588,7 @@ const ListingsPage = () => {
                                                             listing={l}
                                                             viewMode={isGoogleMapOpen ? 'map-list' : viewMode}
                                                             priceFormat={priceFormat}
-                                                            to={`${location.pathname}?${(function () {
+                                                            to={window.innerWidth >= 1024 ? `/listings/${l.id}` : `${location.pathname}?${(function () {
                                                                 const p = new URLSearchParams(searchParams);
                                                                 p.set('detail', l.id);
                                                                 return p.toString();
@@ -1620,7 +1745,7 @@ const ListingsPage = () => {
                             />
 
                             {/* Mobile Legend Overlay - Move below header */}
-                            <div className="absolute top-4 left-4 right-4 z-[202] pointer-events-none">
+                            <div className="absolute top-4 left-0 right-0 z-[202] pointer-events-none">
                                 <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-lg border border-white/50 flex items-center justify-center gap-8 animate-slide-up pointer-events-auto max-w-max mx-auto">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
@@ -1677,7 +1802,7 @@ const ListingsPage = () => {
                                     {!selectedListingId ? (
                                         <div
                                             key="homes-count"
-                                            className="text-center font-black text-[15px] text-gray-900 cursor-pointer py-4 animate-in fade-in slide-in-from-top-2 duration-500 ease-out tracking-tight pointer-events-auto"
+                                            className="text-center font-bold text-[15px] text-gray-900 cursor-pointer pt-1 pb-5 animate-in fade-in slide-in-from-top-2 duration-500 ease-out tracking-tight pointer-events-auto"
                                             onClick={() => setIsMapListExpanded(true)}
                                         >
                                             Over {total > 1000 ? '1,000' : total} homes
@@ -1751,6 +1876,7 @@ const ListingsPage = () => {
                                     ref={expandedSheetRef}
                                     onScroll={handleSheetScroll}
                                     className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 pb-12 animate-in fade-in duration-300 bg-white shadow-xl isolate pointer-events-auto overscroll-contain rounded-t-[23px]"
+                                    style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
                                 >
                                     {/* Listings Stream */}
                                     <div className="flex flex-col gap-6 pb-32 mt-2 w-full max-w-lg mx-auto">
@@ -1760,7 +1886,7 @@ const ListingsPage = () => {
                                                 listing={property}
                                                 viewMode="grid"
                                                 onHover={setListHoveredListingId}
-                                                to={`${location.pathname}?${(function () {
+                                                to={window.innerWidth >= 1024 ? `/listings/${property.id}` : `${location.pathname}?${(function () {
                                                     const p = new URLSearchParams(searchParams);
                                                     p.set('detail', property.id);
                                                     return p.toString();
@@ -1780,6 +1906,11 @@ const ListingsPage = () => {
                                                 Load More Results
                                             </button>
                                         )}
+                                        {/* Ghost spacer — quarter card height */}
+                                        <div className="w-full flex-shrink-0 invisible pointer-events-none" aria-hidden>
+                                            <div className="w-full aspect-[4/0.95] rounded-[23px]" />
+                                            <div className="py-1.5 px-1.5 h-6" />
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -1796,27 +1927,24 @@ const ListingsPage = () => {
 
             <ListingDetailModal />
 
-            {/* Floating Map Button (Mobile only) */}
-            {
-                showMapButton && (
-                    <div
-                        className="fixed left-0 right-0 flex justify-center z-[220] md:hidden pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-                        style={{
-                            bottom: !setMobileBottomNavVisible || (isMapView && (sheetOffset < 40 || (sheetOffset > 75 || !isMapListExpanded))) ? 'max(2.25rem, calc(env(safe-area-inset-bottom, 16px) + 20px))' : 'max(7.25rem, calc(80px + env(safe-area-inset-bottom, 16px) + 20px))'
-                        }}
-                    >
-                        <div className="animate-fadeInUp pointer-events-auto">
-                            <button
-                                onClick={handleSwitchToMap}
-                                className="flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full shadow-lg font-bold text-sm tracking-wide active:scale-95 transition-transform"
-                            >
-                                Map <MapIcon className="w-5 h-5" />
-                            </button>
-                        </div>
+            {showMapButton && (
+                <div
+                    className={`fixed left-0 right-0 flex justify-center z-[220] md:hidden pointer-events-none transition-all ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'opacity-0 duration-0' : 'opacity-100 duration-500'}`}
+                    style={{
+                        bottom: !setMobileBottomNavVisible || (isMapView && (sheetOffset < 40 || (sheetOffset > 75 || !isMapListExpanded))) ? 'max(2.25rem, calc(env(safe-area-inset-bottom, 16px) + 20px))' : 'max(7.25rem, calc(80px + env(safe-area-inset-bottom, 16px) + 20px))'
+                    }}
+                >
+                    <div className="animate-fadeInUp pointer-events-auto">
+                        <button
+                            onClick={handleSwitchToMap}
+                            className="flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full shadow-lg font-bold text-sm tracking-wide active:scale-95 transition-transform"
+                        >
+                            Map <MapIcon className="w-5 h-5" />
+                        </button>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 };
 

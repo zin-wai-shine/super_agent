@@ -1,0 +1,2 @@
+1604:                        className="pointer-events-auto text-white hover:text-gray-100 bg-primary-600 hover:bg-primary-700 shadow-xl transition-all py-2.5 px-2.5 md:py-2 md:px-3 rounded-full active:scale-95 group flex items-center min-h-[44px] md:min-h-0"
+2510:                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-6 py-3.5 rounded-full min-h-[48px]"

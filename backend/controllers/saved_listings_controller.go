@@ -134,17 +134,24 @@ func (ctrl *SavedListingsController) GetSavedListings(c *gin.Context) {
 		return
 	}
 
-	// Extract listings from saved listings
-	listings := make([]models.Listing, 0, len(savedListings))
+	// Extract listings from saved listings, and include saved_at timestamp
+	type SavedListingItem struct {
+		models.Listing
+		SavedAt interface{} `json:"saved_at"`
+	}
+	items := make([]SavedListingItem, 0, len(savedListings))
 	for _, saved := range savedListings {
 		if saved.Listing != nil {
-			listings = append(listings, *saved.Listing)
+			items = append(items, SavedListingItem{
+				Listing: *saved.Listing,
+				SavedAt: saved.CreatedAt,
+			})
 		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data":  listings,
-		"count": len(listings),
+		"data":  items,
+		"count": len(items),
 	})
 }
 

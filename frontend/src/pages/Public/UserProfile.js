@@ -6,6 +6,7 @@ import {
     ArrowLeftOnRectangleIcon,
     ChevronRightIcon,
     Squares2X2Icon,
+    BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -71,6 +72,7 @@ const UserProfile = () => {
     // Desktop sidebar nav: About + Dashboard for agents (no View profile)
     const navItems = [
         { id: 'about', label: 'About', icon: <UserCircleIcon className="w-5 h-5" /> },
+        { id: 'properties', label: 'Properties', icon: <BuildingOfficeIcon className="w-5 h-5" /> },
         ...(isAgent ? [
             { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-5 h-5" /> },
         ] : []),
@@ -79,6 +81,8 @@ const UserProfile = () => {
     const handleNavClick = (id) => {
         if (id === 'dashboard') {
             navigate(user?.role === 'super_admin' ? '/admin' : '/agent');
+        } else if (id === 'properties') {
+            navigate('/list');
         } else {
             setActiveSection(id);
         }
@@ -93,7 +97,7 @@ const UserProfile = () => {
 
                 {/* ── Left sidebar — desktop only ── */}
                 <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
-                    <h1 className="text-[28px] font-bold text-slate-900 tracking-tight mb-8">Profile</h1>
+                    <h1 className="text-[24px] font-semibold text-slate-900 tracking-tight mb-8">Profile</h1>
 
                     <nav className="space-y-1">
                         {navItems.map(item => (
@@ -124,10 +128,10 @@ const UserProfile = () => {
                 <div className="flex-1 min-w-0">
                     {/* About heading — desktop only */}
                     <div className="hidden lg:flex items-center mb-8">
-                        <h2 className="text-2xl font-semibold text-slate-900">About</h2>
+                        <h2 className="text-[20px] font-semibold text-slate-900">About</h2>
                     </div>
                     {/* Profile title — mobile only */}
-                    <h1 className="text-[26px] font-bold text-slate-900 tracking-tight mb-8 lg:hidden">Profile</h1>
+                    <h1 className="text-[24px] font-semibold text-slate-900 tracking-tight mb-8 lg:hidden">Profile</h1>
 
                     {/* Profile card */}
                     <div
@@ -142,7 +146,7 @@ const UserProfile = () => {
                             )}
                         </div>
                         <div className="text-center sm:text-left">
-                            <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                            <h3 className="text-xl lg:text-[18px] font-bold text-gray-900 leading-tight">
                                 {user?.first_name} {user?.last_name}
                             </h3>
                             <span className="inline-block mt-2 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-semibold capitalize">

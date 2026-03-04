@@ -21,6 +21,8 @@ const Modal = ({
     rightTitle = false,
     fullScreenMobile = false,
     fullBleedDesktop = false,
+    noRadius = false,
+    contentClassName = '',
     overlayZIndex
 }) => {
 
@@ -107,33 +109,31 @@ const Modal = ({
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
-                    className={`bg-white text-left w-full flex flex-col h-full overflow-hidden ${fullBleedDesktop ? 'shadow-none sm:shadow-none rounded-none sm:rounded-none' : `shadow-2xl ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`}`}
-                    style={fullBleedDesktop ? undefined : { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
+                    className={`${contentClassName || 'bg-white'} text-left w-full flex flex-col h-full overflow-hidden ${fullBleedDesktop ? 'shadow-none sm:shadow-none rounded-none sm:rounded-none' : (noRadius ? 'shadow-none rounded-none' : `shadow-2xl ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`)}`}
+                    style={(fullBleedDesktop || noRadius) ? undefined : { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
                 >
                     {hasHeader && (
                         <div className={`border-b border-gray-100 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
-                            <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1600px] mx-auto min-h-[64px]">
+                            <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1440px] mx-auto min-h-[64px]">
                                 <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
                                     {headerLeading && (
                                         <div className="flex-shrink-0">
                                             {headerLeading}
                                         </div>
                                     )}
-                                    {/* On Desktop: always show title on left (if exists) */}
-                                    {/* On Mobile: only show here if NOT centered AND NOT right-aligned */}
                                     {title && (
-                                        <h3 className={`text-lg font-bold text-gray-900 truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden lg:block' : 'block'}`}>
+                                        <h3 className={`text-lg font-bold text-gray-900 truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden' : 'block'}`}>
                                             {title}
                                         </h3>
                                     )}
-                                    <div id="modal-header-extra" className={`flex items-center gap-2 min-w-0 ${(centerTitle || rightTitle) ? 'hidden lg:flex' : 'flex'}`}>
+                                    <div id="modal-header-extra" className={`flex items-center gap-2 min-w-0 ${(centerTitle || rightTitle) ? 'hidden' : 'flex'}`}>
                                         {headerExtra}
                                     </div>
                                 </div>
 
                                 {centerTitle && title && (
-                                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10 lg:hidden">
-                                        <h3 className="text-lg font-semibold text-gray-900 truncate text-center">
+                                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10">
+                                        <h3 className="text-lg font-bold text-gray-900 truncate text-center">
                                             {title}
                                         </h3>
                                     </div>

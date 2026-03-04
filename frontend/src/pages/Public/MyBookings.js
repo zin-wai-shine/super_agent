@@ -86,8 +86,12 @@ const MyBookings = () => {
                         activeFilterCount={0}
                         viewMode="grid"
                         onViewModeChange={() => { }}
-                        isGoogleMapOpen={false}
-                        onToggleMapView={() => navigate('/listings?view=map')}
+                        isGoogleMapOpen={localStorage.getItem('preferredView') === 'map'}
+                        onToggleMapView={() => {
+                            const newPreference = localStorage.getItem('preferredView') === 'map' ? 'list' : 'map';
+                            localStorage.setItem('preferredView', newPreference);
+                            navigate(`/listings?view=${newPreference}`);
+                        }}
                         navVisible={navVisible}
                         isScrolled={layoutScrolled}
                         onClearSearch={() => setBookingsSearchTerm('')}
@@ -96,11 +100,11 @@ const MyBookings = () => {
                 filterBarSlot
             )}
 
-            <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
                 {/* Header — same design/size as Favorites, left-aligned */}
                 <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20 px-0">
                     <div>
-                        <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
+                        <h1 className="text-[24px] font-semibold text-slate-900 tracking-tight leading-tight">
                             My Viewing Requests
                         </h1>
                         <p className="text-slate-500 mt-2 font-medium text-lg max-w-md">
@@ -181,7 +185,7 @@ const MyBookings = () => {
                             <div className="mb-6 relative z-10 transition-transform duration-500">
                                 <CalendarIcon className="w-14 h-14 text-slate-400" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-3 relative z-10">No bookings yet</h3>
+                            <h3 className="text-2xl font-semibold text-slate-900 mb-3 relative z-10">No bookings yet</h3>
                             <p className="text-slate-500 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10">
                                 {filter === 'all'
                                     ? "Excited to find your new home? Your scheduled viewings will appear right here."
@@ -236,7 +240,7 @@ const MyBookings = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-[15px] md:text-[17px] font-bold text-slate-800 leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
+                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
