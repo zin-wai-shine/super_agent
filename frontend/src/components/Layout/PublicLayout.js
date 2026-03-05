@@ -239,8 +239,7 @@ const PublicLayout = () => {
             if (tickingRef.current) return;
             tickingRef.current = true;
             requestAnimationFrame(() => {
-                const el = isListingsOrProjects ? scrollContainerRef.current : null;
-                const y = el ? el.scrollTop : (window.scrollY || document.documentElement.scrollTop);
+                const y = window.scrollY || document.documentElement.scrollTop;
                 const prev = lastScrollYRef.current;
                 setIsScrolled(y > SHADOW_SCROLL);
 
@@ -262,15 +261,12 @@ const PublicLayout = () => {
             });
         };
 
-        const el = isListingsOrProjects ? scrollContainerRef.current : null;
-        const target = el || window;
-
         // If we are on map and it's not explicitly expanded, we might want to hide it
         // But the scroll handler will still run. Let's make it smarter.
-        target.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
-        return () => target.removeEventListener('scroll', handleScroll);
-    }, [isListingsOrProjects, isMapView]); // Re-run when view changes
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isMapView]); // Re-run when view changes
 
     const [isNavLoading, setIsNavLoading] = useState(true);
     const [filterBarSlot, setFilterBarSlot] = useState(null);
@@ -307,7 +303,7 @@ const PublicLayout = () => {
         <div
             id="main-scroll-container"
             ref={scrollContainerRef}
-            className={`flex flex-col bg-white ${isListingsOrProjects ? 'h-screen overflow-y-auto overflow-x-hidden' : 'min-h-screen'}`}
+            className="flex flex-col bg-white min-h-[100dvh]"
             style={{ fontFamily: theme.fontFamily }}
         >
             {/* Navigation Drawer (Mobile + lg when burger is used) */}

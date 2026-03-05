@@ -12,8 +12,7 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build the app with more memory
-ENV NODE_OPTIONS=--max-old-space-size=6144
+ENV NODE_OPTIONS=--max-old-space-size=2048
 ARG REACT_APP_API_URL
 ARG REACT_APP_GOOGLE_MAPS_API_KEY
 ARG REACT_APP_MAIN_DOMAIN
