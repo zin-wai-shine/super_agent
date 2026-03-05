@@ -1788,8 +1788,8 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                style={{ bottom: (isGoogleMapOpen ? isNavVisible : navVisible) ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 32px)' }}
-                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[250] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                style={{ bottom: navVisible ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 16px)' }}
+                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[250] ${showScrollTop && !isSidebarOpen && !isGoogleMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
