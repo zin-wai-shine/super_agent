@@ -11,10 +11,9 @@ primary_region = "sin"
 
 [build]
   [build.args]
-    # Point to the backend app's public URL or internal name
-    # REACT_APP_API_URL = "https://super-agent-backend-zin.fly.dev/api"
-    # REACT_APP_GOOGLE_MAPS_API_KEY = "your_key"
-    # REACT_APP_MAIN_DOMAIN = "super-agent-frontend-zin.fly.dev"
+    REACT_APP_API_URL = "https://super-agent-backend-zin.fly.dev/api"
+    REACT_APP_GOOGLE_MAPS_API_KEY = "AIzaSyBSb1TFQULamkWBwd7aN2XWgg1nIIK3wh4"
+    REACT_APP_MAIN_DOMAIN = "haizo.it.com"
 
 [env]
   PORT = "3000"
