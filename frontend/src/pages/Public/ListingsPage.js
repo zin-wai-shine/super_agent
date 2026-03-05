@@ -113,8 +113,6 @@ const ListingsPage = () => {
     const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
     const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible, mobileBottomNavVisible } = outletContext;
-    const isGoogleMapOpen = searchParams.get('view') === 'map';
-    const isAnyNavVisible = isGoogleMapOpen ? isNavVisible : mobileBottomNavVisible;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
@@ -247,6 +245,7 @@ const ListingsPage = () => {
     const [showMapButton, setShowMapButton] = useState(false);
 
     const isMapView = searchParams.get('view') === 'map';
+    const isAnyNavVisible = isGoogleMapOpen ? isNavVisible : mobileBottomNavVisible;
 
     const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
         return localStorage.getItem('isMapListExpanded') === 'true';
