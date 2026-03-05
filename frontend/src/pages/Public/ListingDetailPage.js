@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 
@@ -157,6 +158,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const { id: routeId } = useParams();
     const id = propId || routeId;
     const { user, isAuthenticated } = useAuth();
+    const { theme } = useTheme();
     const [listing, setListing] = useState(null);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
@@ -1073,7 +1075,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         return (
             <div
-                className={`flex flex-col overflow-hidden bg-white ${isDesktopPage ? '' : 'h-full rounded-[32px] border border-gray-100'}`}
+                className={`flex flex-col overflow-hidden bg-white ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}
                 style={{ backgroundColor: 'var(--menu-bg-color, #fff)' }}
             >
                 {/* Header */}
@@ -1107,7 +1109,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {/* Centered Title */}
                                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
                                     <span
-                                        className="text-lg font-bold truncate pointer-events-auto"
+                                        className="text-lg font-semibold truncate pointer-events-auto"
                                         style={{ color: 'var(--menu-text-primary)' }}
                                     >
                                         Request a Viewing
@@ -1122,7 +1124,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                 {/* Content Area - mobile: full width; desktop: centered (max-w-[1400px]); z-[60] so scroll lock skips this container */}
                 <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <div className={`mx-auto w-full max-w-[1440px] px-4 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'} ${success ? 'h-full flex items-center justify-center' : ''}`}>
+                    <div className={`mx-auto w-full max-w-[1440px] px-6 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'} ${success ? 'h-full flex items-center justify-center' : ''}`}>
                         {success ? (
                             <div className="h-full w-full flex items-center justify-center p-6">
                                 <div
@@ -1184,13 +1186,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="space-y-10">
                                     {/* Purpose - show only the option matching listing type (rent → For Rent, sale → For Buy), auto-selected */}
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">I want to</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 pl-2">I want to</h3>
                                         {(() => {
                                             const purposeOptions = listing?.listing_type === 'sale'
                                                 ? [{ value: 'buy', label: 'For Buy' }]
                                                 : [{ value: 'rent', label: 'For Rent' }];
                                             return (
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-2 pl-10">
                                                     {purposeOptions.map((opt) => (
                                                         <button
                                                             key={opt.value}
@@ -1207,11 +1209,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Calendar - half width on lg/xl */}
                                     <div ref={bookingDateRef} className="w-full lg:max-w-[50%]">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-6">Select Date</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-6 pl-2">Select Date</h3>
                                         {bookingErrors.preferred_date && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
                                         )}
-                                        <div className="bg-white rounded-3xl p-6 border border-gray-100">
+                                        <div className="bg-white rounded-3xl p-6">
                                             <div className="flex items-center justify-between mb-6 px-2">
                                                 <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                                     <ChevronLeftIcon className="w-5 h-5 text-gray-400" />
@@ -1260,18 +1262,18 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Time Selection - button grid for all screen sizes */}
                                     <div ref={bookingTimeRef}>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-6">Select Time</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-6 pl-2">Select Time</h3>
                                         {bookingErrors.preferred_time && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_time}</p>
                                         )}
                                         <div className="space-y-6">
                                             <div>
-                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2">
+                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                                                     Morning
                                                     {fetchingSlots && <span className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin ml-1" />}
                                                 </h4>
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-2 pl-10">
                                                     {morningSlots.map((time) => {
                                                         const slotData = (availableSlots || []).find(s => s.time === time);
                                                         const isAvailable = slotData && slotData.status === 'available';
@@ -1299,11 +1301,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                             </div>
                                             <div>
-                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2">
+                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                                     Afternoon
                                                 </h4>
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-2 pl-10">
                                                     {afternoonSlots.map((time) => {
                                                         const slotData = (availableSlots || []).find(s => s.time === time);
                                                         const isAvailable = slotData && slotData.status === 'available';
@@ -1337,10 +1339,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {/* Column 2: Details & Message - half width on lg/xl */}
                                 <div className="space-y-10 w-full lg:max-w-[50%]">
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900">Your Details</h3>
-                                        <div className="space-y-4">
+                                        <h3 className="text-lg font-medium text-gray-900 pl-2">Your Details</h3>
+                                        <div className="space-y-4 pl-5">
                                             <div ref={bookingFullNameRef}>
-                                                <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Full Name</label>
+                                                <label className="block text-base font-normal text-gray-900 mb-1.5">Full Name</label>
                                                 <input
                                                     type="text"
                                                     value={bookingForm.full_name}
@@ -1349,11 +1351,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     style={{ borderRadius: 'var(--card-radius)' }}
                                                     placeholder="John Doe"
                                                 />
-                                                {bookingErrors.full_name && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.full_name}</p>}
+                                                {bookingErrors.full_name && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.full_name}</p>}
                                             </div>
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div ref={bookingPhoneRef}>
-                                                    <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Phone Number</label>
+                                                    <label className="block text-base font-normal text-gray-900 mb-1.5">Phone Number</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.phone}
@@ -1362,10 +1364,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="+66..."
                                                     />
-                                                    {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.phone}</p>}
+                                                    {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.phone}</p>}
                                                 </div>
                                                 <div ref={bookingEmailRef}>
-                                                    <label className="block text-base font-normal text-gray-900 mb-1.5 ml-1">Email Address</label>
+                                                    <label className="block text-base font-normal text-gray-900 mb-1.5">Email Address</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.email}
@@ -1374,22 +1376,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="john@example.com"
                                                     />
-                                                    {bookingErrors.email && <p className="text-sm text-red-600 font-medium mt-1.5 ml-1">{bookingErrors.email}</p>}
+                                                    {bookingErrors.email && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.email}</p>}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900">Additional Message</h3>
-                                        <textarea
-                                            value={bookingForm.message}
-                                            onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
-                                            rows={5}
-                                            className="w-full px-5 py-3 min-h-[120px] bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 text-base resize-none"
-                                            style={{ borderRadius: 'var(--card-radius)' }}
-                                            placeholder="I would like to know more about..."
-                                        />
+                                        <h3 className="text-lg font-medium text-gray-900 pl-2">Additional Message</h3>
+                                        <div className="pl-5">
+                                            <textarea
+                                                value={bookingForm.message}
+                                                onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
+                                                rows={5}
+                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 text-base resize-none"
+                                                style={{ borderRadius: 'var(--card-radius)' }}
+                                            />
+                                        </div>
                                     </div>
                                     {bookingErrors.submit && (
                                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-medium flex items-center" style={{ borderRadius: 'var(--card-radius)' }}>
@@ -1414,7 +1417,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 )}
                                             </h4>
                                             <div
-                                                className="space-y-8 px-4"
+                                                className="space-y-8 pl-5"
                                             >
                                                 <div
                                                     className="border-b pb-8"
@@ -1480,7 +1483,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {!success && (
                     <div
                         ref={bookingConfirmRef}
-                        className={`z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-[max(1.25rem,env(safe-area-inset-top,0px))] pr-[max(2.5rem,env(safe-area-inset-right,0px))] pb-[max(1.75rem,calc(env(safe-area-inset-bottom,0px)+1rem))] pl-[max(2.5rem,env(safe-area-inset-left,0px))]'}`}
+                        className={`z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-5 pb-5 px-6'}`}
                     >
                         <div className="max-w-[1440px] mx-auto w-full lg:px-20 flex flex-col items-center gap-4">
                             <label className="flex items-center gap-3 cursor-pointer group">
@@ -1548,15 +1551,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             {!isBookingOverlayOpen && (
                 <div className="lg:hidden w-full flex flex-col relative">
                     {/* Float Top Nav for Mobile - Buttons over image */}
-                    <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-2.5 pt-3 z-[60] bg-transparent pointer-events-none">
+                    <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 py-3 z-[60] bg-transparent pointer-events-none">
                         <button
                             onClick={() => onClose ? onClose() : navigate(-1)}
-                            className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 bg-white shadow-xl rounded-full text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
                             aria-label="Back"
                         >
-                            <ArrowLeftIcon className="w-6 h-6 md:w-5 md:h-5" />
+                            <ArrowLeftIcon className="w-7 h-7" />
                         </button>
-                        <div className="flex items-center gap-3 pr-1 pointer-events-auto">
+                        <div className="flex items-center gap-2 pointer-events-auto">
                             <PropertyShare
                                 property={{
                                     id,
@@ -1565,20 +1568,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                     url: window.location.href
                                 }}
-                                className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white shadow-xl rounded-full text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
                                 showLabel={false}
-                                iconClassName="w-6 h-6 md:w-5 md:h-5 text-gray-900"
+                                iconClassName="w-7 h-7 text-gray-900"
                             />
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="w-12 h-12 md:w-10 md:h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white shadow-xl rounded-full text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
                                 aria-label={isSaved ? 'Unsave' : 'Save'}
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-6 h-6 md:w-5 md:h-5 text-rose-500" />
+                                    <HeartSolidIcon className="w-7 h-7 text-rose-500" />
                                 ) : (
-                                    <HeartIcon className="w-6 h-6 md:w-5 md:h-5 text-gray-900" />
+                                    <HeartIcon className="w-7 h-7 text-gray-900" />
                                 )}
                             </button>
                         </div>
@@ -2334,6 +2337,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         </>
                                     )}
 
+                                    {/* Subdomain-style watermark logo — centered, low opacity */}
+                                    <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div
+                                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                            >
+                                                {!theme?.logoUrl && (
+                                                    <Logo className="w-56 h-56 text-primary-500" />
+                                                )}
+                                            </div>
+                                            {!theme?.logoUrl && (
+                                                <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
+                                            )}
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 {/* Sticky Header Portal */}
@@ -2638,10 +2658,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             <div
                 className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-[90] flex items-center justify-between pointer-events-auto min-h-[72px] rounded-t-[20px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
                 style={{
-                    paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
-                    paddingBottom: 'max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem))',
-                    paddingLeft: 'max(2.5rem, env(safe-area-inset-left, 0px))',
-                    paddingRight: 'max(2.5rem, env(safe-area-inset-right, 0px))',
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem',
+                    paddingLeft: 'max(1.5rem, env(safe-area-inset-left, 0px))',
+                    paddingRight: 'max(1.5rem, env(safe-area-inset-right, 0px))',
                 }}
             >
                 <div className="flex flex-col">

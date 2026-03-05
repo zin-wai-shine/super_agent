@@ -6,6 +6,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import NotificationBell from '../Common/NotificationBell';
 
 import Logo from '../Common/Logo';
+import { getMediaUrl } from '../../utils/media';
 import {
     HomeIcon,
     BuildingOfficeIcon,
@@ -89,7 +90,7 @@ const DashboardLayout = () => {
         <div className="h-screen bg-gray-50 dark:bg-dashboard-dark flex flex-col overflow-hidden transition-colors duration-200">
             {/* Top Navigation Bar */}
             <header className="h-16 flex-none bg-white dark:bg-dashboard-card border-b border-gray-200 dark:border-gray-700 z-30 flex items-center justify-between px-4 relative transition-colors duration-200">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-4">
                     {/* Mobile Sidebar Toggle */}
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -103,9 +104,29 @@ const DashboardLayout = () => {
                     </button>
 
                     {/* Logo (New Premium Design) */}
-                    <Link to="/" className="flex items-center space-x-3">
-                        <Logo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
+                    <Link to="/" className="flex items-center ml-0">
+                        {isMainDomain ? (
+                            <div className="flex items-center space-x-3">
+                                <Logo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center">
+                                {(agent?.theme?.logo_url || agent?.logo) ? (
+                                    <div
+                                        className="h-16 w-[300px] bg-contain bg-left bg-no-repeat transition-all duration-300 scale-[2.0] origin-left"
+                                        style={{
+                                            backgroundImage: `url(${getMediaUrl(agent.theme?.logo_url || agent.logo)})`
+                                        }}
+                                        aria-label={agent.agency_name || agent.name || 'Agent Logo'}
+                                    />
+                                ) : (
+                                    <span className="text-xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                                        {agent?.subdomain || 'Agent'}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </Link>
 
                     {/* Divider */}

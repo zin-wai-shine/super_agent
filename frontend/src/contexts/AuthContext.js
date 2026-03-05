@@ -71,6 +71,10 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const loginWithToken = useCallback((userData) => {
+        setUser(userData);
+    }, []);
+
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -105,6 +109,7 @@ export const AuthProvider = ({ children }) => {
         isAgent: user?.role === 'agent',
         isSubAgent: user?.role === 'sub_agent',
         login,
+        loginWithToken,
         register,
         logout,
         updateProfile,

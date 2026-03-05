@@ -279,22 +279,22 @@ const SavedListingsPage = () => {
                             {currentGroup && !isDesktop && (
                                 <div className="fixed inset-0 z-[200] bg-white flex flex-col h-[100dvh]">
                                     {/* App-style Mobile Header */}
-                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 z-20" style={{ paddingTop: 'env(safe-area-inset-top, 0.75rem)' }}>
-                                        <div className="px-5 h-14 flex items-center justify-between relative">
+                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 z-20">
+                                        <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 relative">
                                             <button
                                                 onClick={() => {
                                                     const newParams = new URLSearchParams(searchParams);
                                                     newParams.delete('group');
                                                     setSearchParams(newParams);
                                                 }}
-                                                className="w-10 h-10 -ml-2 flex items-center justify-center rounded-full active:bg-gray-100 transition-colors"
+                                                className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 rounded-full active:bg-gray-100 transition-colors"
                                             >
-                                                <ArrowLeftIcon className="w-6 h-6 text-gray-900" />
+                                                <ArrowLeftIcon className="w-7 h-7 text-gray-900" />
                                             </button>
                                             <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                                                <h2 className="text-base font-bold text-gray-900 truncate max-w-[50vw]">{currentGroup}</h2>
+                                                <h2 className="text-lg font-semibold text-gray-900 truncate max-w-[50vw]">{currentGroup}</h2>
                                             </div>
-                                            <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap">
+                                            <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap -mr-1">
                                                 {activeGroup?.items.length || 0} places
                                             </div>
                                         </div>

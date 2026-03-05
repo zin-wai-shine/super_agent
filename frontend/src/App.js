@@ -18,6 +18,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import BannerDetail from './pages/Public/BannerDetail';
 import UserProfile from './pages/Public/UserProfile';
+import GoogleCallback from './pages/Auth/GoogleCallback';
 import BookAppointment from './pages/Public/BookAppointment';
 import MyBookings from './pages/Public/MyBookings';
 import SavedListingsPage from './pages/Public/SavedListingsPage';
@@ -159,6 +160,7 @@ const AppRoutes = () => {
                         </GuestRoute>
                     }
                 />
+                <Route path="auth/google/callback" element={<GoogleCallback />} />
             </Route>
 
             {/* Agent Dashboard Routes */}

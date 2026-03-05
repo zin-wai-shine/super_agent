@@ -20,6 +20,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	uploadController := controllers.NewUploadController(db, cfg)
 	appointmentController := controllers.NewAppointmentController(db)
 	developerController := controllers.NewDeveloperController(db)
+	googleAuthController := controllers.NewGoogleAuthController(db, cfg)
 
 	// Apply tenant middleware globally
 	router.Use(middleware.TenantMiddleware(db, cfg))
@@ -38,6 +39,8 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			auth.POST("/register", authController.Register)
 			auth.POST("/login", authController.Login)
 			auth.POST("/refresh", authController.RefreshToken)
+			auth.GET("/google", googleAuthController.GoogleLogin)
+			auth.GET("/google/callback", googleAuthController.GoogleCallback)
 		}
 
 		// Public routes

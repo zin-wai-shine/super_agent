@@ -591,7 +591,10 @@ const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoun
         // Debounce: wait 250ms after user stops interacting so fetch starts sooner and markers appear faster
         boundsTimeoutRef.current = setTimeout(() => {
             const bounds = map.getBounds();
-            if (bounds) {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+
+            if (bounds && center) {
                 const ne = bounds.getNorthEast();
                 const sw = bounds.getSouthWest();
                 onBoundsChanged({
@@ -599,6 +602,11 @@ const GoogleMapComponent = ({ listings = [], center, zoom, onMarkerClick, onBoun
                     max_lat: ne.lat(),
                     min_lng: sw.lng(),
                     max_lng: ne.lng(),
+                    center: {
+                        lat: center.lat(),
+                        lng: center.lng()
+                    },
+                    zoom: zoom
                 });
             }
         }, 250);

@@ -62,10 +62,6 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         return sorted.map(m => getMediaUrl(m.url));
     }, [media, featuredImage]);
 
-    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-    const dragStartRef = React.useRef(null);
-    const didDragRef = React.useRef(false);
-    const cardImageSwipeRef = React.useRef(null);
     const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
     const [searchParams] = useSearchParams();
@@ -104,20 +100,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         return () => window.removeEventListener('listing:saved-status-changed', handleStatusChange);
     }, [id]);
 
-    // Non-passive touch listener so we can preventDefault on horizontal swipe (enables drag-to-switch on mobile)
-    React.useEffect(() => {
-        const el = cardImageSwipeRef.current;
-        if (!el || listingImages.length <= 1) return;
-        const onMove = (e) => {
-            const start = dragStartRef.current;
-            if (!start || e.touches.length === 0) return;
-            const deltaX = Math.abs(e.touches[0].clientX - start.x);
-            const deltaY = Math.abs(e.touches[0].clientY - start.y);
-            if (deltaX > 40 && deltaX > deltaY && e.cancelable) e.preventDefault();
-        };
-        el.addEventListener('touchmove', onMove, { passive: false });
-        return () => el.removeEventListener('touchmove', onMove);
-    }, [listingImages.length]);
+
 
     const handleToggleSave = async (e) => {
         e.preventDefault();
@@ -280,41 +263,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
             );
         }
 
-        const SWIPE_THRESHOLD = 40;
-        const handleCardImageDragStart = (clientX, clientY) => {
-            dragStartRef.current = { x: clientX, y: clientY };
-            didDragRef.current = false;
-        };
-        const handleCardImageDragMove = (e, clientX, clientY) => {
-            const start = dragStartRef.current;
-            if (!start) return;
-            const deltaX = Math.abs(clientX - start.x);
-            const deltaY = Math.abs(clientY - start.y);
-            if (deltaX > 15 && deltaX > deltaY) didDragRef.current = true;
-            if (deltaX > SWIPE_THRESHOLD && deltaX > deltaY && e?.cancelable) e.preventDefault();
-        };
-        const handleCardImageDragEnd = (e, clientX, clientY) => {
-            const start = dragStartRef.current;
-            if (!start || listingImages.length <= 1) {
-                dragStartRef.current = null;
-                return;
-            }
-            const deltaX = clientX - start.x;
-            const deltaY = clientY - start.y;
-            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-                didDragRef.current = true;
-                if (e && e.cancelable) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                if (deltaX > 0) {
-                    setCurrentImageIndex(i => (i - 1 + listingImages.length) % listingImages.length);
-                } else {
-                    setCurrentImageIndex(i => (i + 1) % listingImages.length);
-                }
-            }
-            dragStartRef.current = null;
-        };
+
 
         return (
             <div
@@ -324,37 +273,13 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 <div className="flex flex-col w-full bg-white rounded-none border-none">
                     <Link
                         to={cardLink}
-
                         className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block"
-                        onClick={(e) => { if (didDragRef.current) { e.preventDefault(); didDragRef.current = false; } }}
                     >
-                        <div
-                            ref={cardImageSwipeRef}
-                            className="flex h-full w-full"
-                            style={{
-                                width: `${listingImages.length * 100}%`,
-                                transform: `translateX(-${(currentImageIndex / listingImages.length) * 100}%)`,
-                                transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-                                touchAction: 'pan-y',
-                            }}
-                            onTouchStart={(e) => handleCardImageDragStart(e.touches[0].clientX, e.touches[0].clientY)}
-                            onTouchMove={(e) => { handleCardImageDragMove(e, e.touches[0].clientX, e.touches[0].clientY); }}
-                            onTouchEnd={(e) => handleCardImageDragEnd(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY)}
-                            onMouseDown={(e) => handleCardImageDragStart(e.clientX, e.clientY)}
-                            onMouseMove={(e) => { if (dragStartRef.current) handleCardImageDragMove(null, e.clientX, e.clientY); }}
-                            onMouseUp={(e) => handleCardImageDragEnd(e.clientX, e.clientY)}
-                            onMouseLeave={() => { dragStartRef.current = null; }}
-                        >
-                            {listingImages.map((src, i) => (
-                                <div key={i} className="flex-shrink-0 w-full h-full overflow-hidden" style={{ width: `${100 / listingImages.length}%` }}>
-                                    <img
-                                        src={src}
-                                        alt={title}
-                                        className="h-full w-full object-cover md:group-hover:scale-105 transition-transform duration-700 pointer-events-none select-none"
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        <img
+                            src={listingImages[0]}
+                            alt={title}
+                            className="h-full w-full object-cover md:group-hover:scale-105 transition-transform duration-700 select-none"
+                        />
 
                         {/* Status Badge */}
                         <div className="absolute top-3.5 left-3.5">
@@ -362,27 +287,6 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                             </span>
                         </div>
-
-                        {listingImages.length > 1 && (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); didDragRef.current = true; setCurrentImageIndex(i => (i - 1 + listingImages.length) % listingImages.length); }}
-                                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 md:hover:bg-white text-gray-800 shadow-md border border-gray-200/80 items-center justify-center active:scale-95 transition-all opacity-0 md:group-hover:opacity-100 duration-200"
-                                    aria-label="Previous image"
-                                >
-                                    <ChevronLeftIcon className="w-5 h-5" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); didDragRef.current = true; setCurrentImageIndex(i => (i + 1) % listingImages.length); }}
-                                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 md:hover:bg-white text-gray-800 shadow-md border border-gray-200/80 items-center justify-center active:scale-95 transition-all opacity-0 md:group-hover:opacity-100 duration-200"
-                                    aria-label="Next image"
-                                >
-                                    <ChevronRightIcon className="w-5 h-5" />
-                                </button>
-                            </>
-                        )}
 
                         {showSave && (
                             <button
@@ -398,23 +302,8 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             </button>
                         )}
 
-                        {listingImages.length > 1 && (
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-10">
-                                {[0, 1, 2, 3, 4].map((i) => {
-                                    const isCenter = i === 2;
-                                    const imageIndex = currentImageIndex - 2 + i;
-                                    const inRange = imageIndex >= 0 && imageIndex < listingImages.length;
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`w-1.5 h-1.5 rounded-full transition-all flex-shrink-0 ${isCenter ? 'bg-white scale-110' : inRange ? 'bg-white/60' : 'bg-white/30'
-                                                }`}
-                                            aria-hidden
-                                        />
-                                    );
-                                })}
-                            </div>
-                        )}
+
+
                     </Link>
 
                     <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">

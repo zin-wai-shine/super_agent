@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -182,8 +181,8 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			}
 		}
 
-		// Mobile / IP access: when Host is an IP (browser connected by IP), resolve tenant from X-Tenant header
-		if !foundTenant && net.ParseIP(domain) != nil {
+		// Final Fallback: Resolve tenant from X-Tenant header (e.g. for cross-domain requests on Fly.io)
+		if !foundTenant {
 			if subdomain := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomain != "" && subdomain != "www" && subdomain != "api" {
 				var agent models.Agent
 				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {

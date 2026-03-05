@@ -244,8 +244,7 @@ const PublicLayout = () => {
                 const prev = lastScrollYRef.current;
                 setIsScrolled(y > SHADOW_SCROLL);
 
-                // If we are on map view, don't let scroll logic interfere
-                // as the ListingsPage will manually manage visibility
+                // If on map view, let the ListingsPage handle its own nav visibility via its custom scroll handler
                 if (isMapView) {
                     tickingRef.current = false;
                     return;
@@ -596,7 +595,7 @@ const PublicLayout = () => {
                         style={{ backgroundColor: '#ffffff' }}
                         onMouseLeave={closeMenu}
                     >
-                        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
+                        <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20">
                             <div className="flex items-center justify-between h-20 md:h-28">
                                 {isNavLoading ? (
                                     <div className="flex items-center justify-between w-full animate-pulse">
@@ -758,7 +757,7 @@ const PublicLayout = () => {
                                                     >
                                                         Sign in
                                                     </Link>
-                                                    <Link to="/register" className="bg-gray-950 text-white px-5 py-2 text-[14px] font-medium shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 active:scale-95 transition-all" style={{ borderRadius: 'var(--btn-radius)' }}>
+                                                    <Link to="/register" className="bg-gray-950 text-white px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 active:scale-95 transition-all rounded-full">
                                                         Get Started
                                                     </Link>
                                                 </>
@@ -793,9 +792,9 @@ const PublicLayout = () => {
                     <div
                         className="md:hidden fixed left-0 right-0 z-[209] bg-white rounded-t-[36px] overflow-y-auto"
                         style={{
-                            bottom: '80px',
-                            maxHeight: 'calc(80vh - 80px)',
-                            transform: showViewPanel ? 'translateY(0)' : 'translateY(calc(100% + 80px))',
+                            bottom: '72px',
+                            maxHeight: 'calc(80vh - 72px)',
+                            transform: showViewPanel ? 'translateY(0)' : 'translateY(calc(100% + 72px))',
                             transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
                             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                         }}
@@ -809,7 +808,7 @@ const PublicLayout = () => {
                         </div>
 
                         {/* Pill segmented control */}
-                        <div className="px-6 pb-20 pt-4 mb-6">
+                        <div className="px-6 pb-6 pt-4 mb-6">
                             <div className="flex items-center bg-gray-100 rounded-full p-1 gap-1 max-w-[240px] mx-auto">
                                 {/* List View */}
                                 <button
@@ -860,13 +859,13 @@ const PublicLayout = () => {
                         <div
                             className="bg-white border-t border-gray-200"
                             style={{
-                                paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
-                                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+                                paddingTop: '0.5rem',
+                                paddingBottom: '0.5rem',
                                 paddingLeft: 'env(safe-area-inset-left, 0px)',
                                 paddingRight: 'env(safe-area-inset-right, 0px)',
                             }}
                         >
-                            <div className="flex items-center justify-between min-h-[72px]">
+                            <div className="flex items-center justify-between min-h-[56px]">
                                 <Link
                                     to={localStorage.getItem('preferredView') === 'map' ? '/listings?view=map' : '/listings'}
                                     className="flex-1 flex flex-col items-center justify-center py-2"
@@ -994,7 +993,7 @@ const PublicLayout = () => {
                                 backgroundRepeat: 'no-repeat'
                             }}
                         />
-                        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 relative z-10">
+                        <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
                             {/* Top Section: Slogan + Links */}
                             <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-8 md:mb-24">
                                 <div className="max-w-md">

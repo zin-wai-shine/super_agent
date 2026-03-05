@@ -11,9 +11,10 @@ const subdomainIpMatch = currentHostname.match(new RegExp(`^(.+)\\.${mainDomainB
 const apiHost = subdomainIpMatch ? subdomainIpMatch[2] : currentHostname;
 const tenantSubdomainForIp = subdomainIpMatch ? subdomainIpMatch[1] : null;
 
-const API_URL = (typeof window !== 'undefined' && window.location.port === '3000')
-    ? `${typeof window !== 'undefined' ? window.location.protocol : 'http:'}//${apiHost}:8080/api`
-    : '/api';
+const API_URL = process.env.REACT_APP_API_URL ||
+    ((typeof window !== 'undefined' && window.location.port === '3000')
+        ? `${typeof window !== 'undefined' ? window.location.protocol : 'http:'}//${apiHost}:8080/api`
+        : '/api');
 
 const api = axios.create({
     baseURL: API_URL,
@@ -23,15 +24,29 @@ const api = axios.create({
     },
 });
 
-// Request interceptor: auth token + X-Tenant when connecting by IP
+// Detect subdomain from custom domain (e.g. staynert.haizo.it.com → staynert)
+const getSubdomainFromCustomDomain = () => {
+    if (typeof window === 'undefined') return null;
+    const hostname = window.location.hostname;
+    const domain = mainDomain; // e.g. "haizo.it.com"
+    if (hostname.endsWith('.' + domain)) {
+        const sub = hostname.slice(0, -(domain.length + 1));
+        if (sub && sub !== 'www' && sub !== 'api') return sub;
+    }
+    return null;
+};
+
+const detectedSubdomain = tenantSubdomainForIp || getSubdomainFromCustomDomain();
+
+// Request interceptor: auth token + X-Tenant for subdomain/IP/custom-domain access
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        if (tenantSubdomainForIp) {
-            config.headers['X-Tenant'] = tenantSubdomainForIp;
+        if (detectedSubdomain) {
+            config.headers['X-Tenant'] = detectedSubdomain;
         } else if (typeof window !== 'undefined' && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(window.location.hostname)) {
             const tenant = new URLSearchParams(window.location.search).get('tenant');
             if (tenant) config.headers['X-Tenant'] = tenant;

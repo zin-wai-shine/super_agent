@@ -87,8 +87,8 @@ func (ac *AppointmentController) CreateAppointment(c *gin.Context) {
 	appointment.PreferredTime = input.PreferredTime
 	appointment.Purpose = input.Purpose
 	appointment.Message = input.Message
-	appointment.Status = models.AppointmentConfirmed // Final step confirms it
-	appointment.ExpiresAt = nil                      // Clear expiration
+	appointment.Status = models.AppointmentPending // Final step confirms it to pending, awaiting agent approval
+	appointment.ExpiresAt = nil                    // Clear expiration
 
 	if err := ac.db.Save(&appointment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to finalize booking"})

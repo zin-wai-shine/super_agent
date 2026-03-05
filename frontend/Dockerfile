@@ -13,7 +13,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Build the app with more memory
-ENV NODE_OPTIONS=--max-old-space-size=4096
+ENV NODE_OPTIONS=--max-old-space-size=6144
 ARG REACT_APP_API_URL
 ARG REACT_APP_GOOGLE_MAPS_API_KEY
 ARG REACT_APP_MAIN_DOMAIN
@@ -28,8 +28,8 @@ FROM nginx:alpine
 # Copy default nginx config (for local Docker)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy Railway-specific nginx config template
-COPY nginx.railway.conf /etc/nginx/templates/default.conf.template
+# Copy Fly-specific nginx config template
+COPY nginx.fly.conf /etc/nginx/templates/default.conf.template
 
 # Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html

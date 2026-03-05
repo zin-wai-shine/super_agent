@@ -211,10 +211,10 @@ const MobileBottomNav = () => {
             <div
                 className={`md:hidden fixed z-[60] bottom-0 left-0 right-0 backdrop-blur-xl bg-white/80 border-t border-gray-200 transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}
                 style={{
-                    paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
-                    paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
-                    paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
-                    paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+                    paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                 }}
             >
                 {/* Floating Map/List Toggle Button */}
@@ -244,7 +244,7 @@ const MobileBottomNav = () => {
                     </button>
                 </div>
 
-                <div className={`grid ${gridCols} h-[72px] items-center px-4 min-h-[72px] gap-2 relative`}>
+                <div className={`grid ${gridCols} h-[56px] items-center px-4 min-h-[56px] gap-2 relative`}>
                     {renderNavItems()}
                 </div>
             </div>

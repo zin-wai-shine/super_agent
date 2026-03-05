@@ -119,6 +119,7 @@ const MyBookings = () => {
                                 { value: 'all', label: 'All' },
                                 { value: 'pending', label: 'Pending' },
                                 { value: 'confirmed', label: 'Confirmed' },
+                                { value: 'completed', label: 'Completed' },
                                 { value: 'cancelled', label: 'Cancelled' }
                             ].map(({ value, label }) => (
                                 <button
@@ -213,8 +214,8 @@ const MyBookings = () => {
                                         className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300 overflow-hidden rounded-2xl animate-fadeInUp relative ${isPast ? 'opacity-85' : ''}`}
                                     >
                                         {/* Status accent bar — left edge */}
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
-                                            appointment.status === 'completed' ? 'bg-amber-500' :
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${appointment.status === 'confirmed' ? 'bg-blue-500' :
+                                            appointment.status === 'completed' ? 'bg-emerald-500' :
                                                 appointment.status === 'cancelled' ? 'bg-rose-400' :
                                                     'bg-amber-400'
                                             }`} aria-hidden />
@@ -222,13 +223,13 @@ const MyBookings = () => {
                                         <div className="flex-1 flex flex-col pl-5 pr-5 pt-5 md:pt-6 pb-4">
                                             {/* Status pill + ID */}
                                             <div className="flex items-center justify-between gap-3 mb-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${appointment.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700' :
-                                                    appointment.status === 'completed' ? 'bg-amber-50 text-amber-700' :
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${appointment.status === 'confirmed' ? 'bg-blue-50 text-blue-700' :
+                                                    appointment.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
                                                         appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
                                                             'bg-amber-50 text-amber-700'
                                                     }`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${appointment.status === 'confirmed' ? 'bg-emerald-500' :
-                                                        appointment.status === 'completed' ? 'bg-amber-500' :
+                                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${appointment.status === 'confirmed' ? 'bg-blue-500' :
+                                                        appointment.status === 'completed' ? 'bg-emerald-500' :
                                                             appointment.status === 'cancelled' ? 'bg-rose-500' :
                                                                 'bg-amber-500'
                                                         }`} />

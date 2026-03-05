@@ -12,26 +12,32 @@ import (
 var DB *gorm.DB
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	JWTSecret  string
-	UploadPath string
-	MainDomain string
+	DBHost             string
+	DBPort             string
+	DBUser             string
+	DBPassword         string
+	DBName             string
+	JWTSecret          string
+	UploadPath         string
+	MainDomain         string
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURL  string
 }
 
 func LoadConfig() *Config {
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "super_admin"),
-		DBPassword: getEnv("DB_PASSWORD", "super_secret_password"),
-		DBName:     getEnv("DB_NAME", "super_real_estate"),
-		JWTSecret:  getEnv("JWT_SECRET", "default_jwt_secret"),
-		UploadPath: getEnv("UPLOAD_PATH", "./uploads"),
-		MainDomain: getEnv("MAIN_DOMAIN", "superealestate.localhost"),
+		DBHost:             getEnv("DB_HOST", "localhost"),
+		DBPort:             getEnv("DB_PORT", "5432"),
+		DBUser:             getEnv("DB_USER", "super_admin"),
+		DBPassword:         getEnv("DB_PASSWORD", "super_secret_password"),
+		DBName:             getEnv("DB_NAME", "super_real_estate"),
+		JWTSecret:          getEnv("JWT_SECRET", "default_jwt_secret"),
+		UploadPath:         getEnv("UPLOAD_PATH", "./uploads"),
+		MainDomain:         getEnv("MAIN_DOMAIN", "superealestate.localhost"),
+		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://superealestate.localhost:8080/api/auth/google/callback"),
 	}
 }
 

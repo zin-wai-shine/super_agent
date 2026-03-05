@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { saveListing, unsaveListing } from '../../services/savedListingsApi';
 import { useTenant } from '../../contexts/TenantContext';
 import { publicApi } from '../../services/api';
+import { useTheme } from '../../contexts/ThemeContext';
 import ListingCard from '../../components/Listings/ListingCard';
 import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
@@ -109,6 +110,7 @@ const ListingsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price } = useTenant();
+    const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
     const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
@@ -127,6 +129,13 @@ const ListingsPage = () => {
     const scrollPositionRef = useRef(0);
     const hasRestoredScrollRef = useRef(false);
 
+    const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
+    const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
+    const [isNavVisible, setIsNavVisible] = useState(false);
+    const [mapOverlayOpacity, setMapOverlayOpacity] = useState(0);
+    const scrollContainerRef = useRef(null);
+    const lastMobileMapScrollRef = useRef(0);
+
     // Initial check to see if we should restore from cache
     const isCacheValid = useMemo(() => {
         if (!globalListCache) return false;
@@ -144,15 +153,31 @@ const ListingsPage = () => {
         }
     });
 
+    const [mapCenter, setMapCenter] = useState(() => {
+        if (isCacheValid && globalListCache?.mapCenter) return globalListCache.mapCenter;
+        return null;
+    });
+    const [mapZoom, setMapZoom] = useState(() => {
+        if (isCacheValid && globalListCache?.mapZoom) return globalListCache.mapZoom;
+        return undefined;
+    });
+    const [mapBounds, setMapBounds] = useState(() => {
+        if (isCacheValid && globalListCache?.mapBounds) return globalListCache.mapBounds;
+        return null; // Map bounds for geographic filtering
+    });
+
     // Track state for caching on unmount
     useEffect(() => {
         stateCacheRef.current = {
             listings,
             page,
             total,
-            searchParamsString: searchParams.toString()
+            searchParamsString: searchParams.toString(),
+            mapBounds,
+            mapCenter,
+            mapZoom
         };
-    }, [listings, page, total, searchParams]);
+    }, [listings, page, total, searchParams, mapBounds, mapCenter, mapZoom]);
 
     // Track scroll position continuously
     useEffect(() => {
@@ -263,37 +288,8 @@ const ListingsPage = () => {
         localStorage.setItem('isMapListExpanded', 'false');
     };
 
-    // Manage mobile navigation visibility and Map button visibility
-    useEffect(() => {
-        if (!setMobileBottomNavVisible) return;
+    // Outdated scroll logic removed - now handled by handleUnifiedScroll
 
-        if (isMapView) {
-            const isFullyExpanded = sheetOffset < 40;
-            const isMinimized = sheetOffset > 75 || !isMapListExpanded;
-
-            if (isFullyExpanded || isMinimized) {
-                setMobileBottomNavVisible(false);
-                setShowMapButton(isFullyExpanded); // Show Map button only when expanded to allow "Back to Map"
-            } else {
-                setMobileBottomNavVisible(true);
-                setShowMapButton(false);
-            }
-        } else {
-            // Regular List View logic
-            const handleScroll = () => {
-                const currentScrollY = window.scrollY;
-                if (currentScrollY > 100) {
-                    setShowMapButton(true);
-                } else {
-                    setShowMapButton(false);
-                }
-                setMobileBottomNavVisible(true);
-            };
-            window.addEventListener('scroll', handleScroll, { passive: true });
-            handleScroll(); // Initial check
-            return () => window.removeEventListener('scroll', handleScroll);
-        }
-    }, [sheetOffset, setMobileBottomNavVisible, isMapView, isMapListExpanded]);
 
     // Swipe/Drag logic
     const [mapTouchStartY, setMapTouchStartY] = useState(0);
@@ -463,7 +459,6 @@ const ListingsPage = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [developers, setDevelopers] = useState([]);
     const [projectsList, setProjectsList] = useState([]);
-    const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
@@ -471,17 +466,19 @@ const ListingsPage = () => {
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
     const lastFetchedParamsRef = useRef(null); // Ref to avoid redundant fetches on back-nav
 
-    const handleMapBoundsChanged = React.useCallback((bounds) => {
+    const handleMapBoundsChanged = React.useCallback((data) => {
         // Simple comparison to prevent identical bounds from triggering a reload
         const isSame = lastBoundsRef.current &&
-            lastBoundsRef.current.min_lat === bounds.min_lat &&
-            lastBoundsRef.current.max_lat === bounds.max_lat &&
-            lastBoundsRef.current.min_lng === bounds.min_lng &&
-            lastBoundsRef.current.max_lng === bounds.max_lng;
+            lastBoundsRef.current.min_lat === data.min_lat &&
+            lastBoundsRef.current.max_lat === data.max_lat &&
+            lastBoundsRef.current.min_lng === data.min_lng &&
+            lastBoundsRef.current.max_lng === data.max_lng;
 
         if (!isSame) {
-            lastBoundsRef.current = bounds;
-            setMapBounds(bounds);
+            lastBoundsRef.current = data;
+            setMapBounds(data);
+            if (data.center) setMapCenter(data.center);
+            if (data.zoom !== undefined) setMapZoom(data.zoom);
             setPage(1);
         }
     }, []);
@@ -524,8 +521,102 @@ const ListingsPage = () => {
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
         document.body.style.overflow = (isGoogleMapOpen || isSidebarOpen) ? 'hidden' : 'unset';
+
+        // Handle mobile nav visibility: hide on entry to map, but let scroll handle it thereafter
+        if (isGoogleMapOpen && window.innerWidth < 1024) {
+            const currentScroll = scrollContainerRef.current?.scrollTop || 0;
+            if (currentScroll <= 100) {
+                setMobileBottomNavVisible?.(false);
+                setIsNavVisible(false);
+            }
+        } else if (!isGoogleMapOpen) {
+            setMobileBottomNavVisible?.(true);
+            setIsNavVisible(true);
+        }
+
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isGoogleMapOpen, isSidebarOpen]);
+    }, [isGoogleMapOpen, isSidebarOpen, setMobileBottomNavVisible]);
+
+    const handleUnifiedScroll = (e) => {
+        if (!isGoogleMapOpen || window.innerWidth >= 1024) return;
+        const currentScroll = e.target.scrollTop;
+        const threshold = 180;
+        const navShowThreshold = 100;
+        const navHideThresholdDeep = 450;
+
+        // Use scroll position to track expansion state
+        setIsMobileSheetExpanded(currentScroll > navShowThreshold);
+
+        // If scrolling up or down significantly, clear the selected marker preview
+        if (selectedListingId && (currentScroll > 50 || currentScroll < -50)) {
+            setSelectedListingId(null);
+        }
+
+        // Calculate overlay opacity (max 0.6)
+        // Starts fading in after 20px, reaches max at threshold
+        const opacity = Math.min(0.6, Math.max(0, (currentScroll - 20) / threshold));
+        setMapOverlayOpacity(opacity);
+
+        // Manage isScrolledPastMap state
+        if (currentScroll > threshold && !isScrolledPastMap) {
+            setIsScrolledPastMap(true);
+        } else if (currentScroll <= threshold && isScrolledPastMap) {
+            setIsScrolledPastMap(false);
+        }
+
+        // Manage Mobile Bottom Nav visibility
+        const isScrollingUpContent = currentScroll > lastMobileMapScrollRef.current; // Swiping UP = seeing more content below
+        const scrollDelta = Math.abs(currentScroll - lastMobileMapScrollRef.current);
+
+        if (currentScroll > navShowThreshold) {
+            if (currentScroll < navHideThresholdDeep) {
+                // Header/Initial list zone - Always show nav bar
+                setMobileBottomNavVisible?.(true);
+                setIsNavVisible(true);
+            } else {
+                // Deeper in the list - Direction aware
+                if (isScrollingUpContent && scrollDelta > 10) {
+                    setMobileBottomNavVisible?.(false);
+                    setIsNavVisible(false);
+                } else if (!isScrollingUpContent && scrollDelta > 10) {
+                    setMobileBottomNavVisible?.(true);
+                    setIsNavVisible(true);
+                }
+            }
+        } else {
+            // Back to map view - Hide nav bar
+            setMobileBottomNavVisible?.(false);
+            setIsNavVisible(false);
+        }
+
+        // Essential: Update the ref for next scroll iteration
+        lastMobileMapScrollRef.current = currentScroll;
+    };
+
+    const toggleMobileSheet = () => {
+        if (!scrollContainerRef.current || window.innerWidth >= 1024) return;
+
+        const currentScroll = scrollContainerRef.current.scrollTop;
+        const isAtBase = currentScroll < 100;
+
+        // Always clear marker preview when interacting with the handle
+        setSelectedListingId(null);
+
+        if (isAtBase) {
+            // Click to expand slightly higher
+            const target = (window.innerHeight * 0.42);
+            scrollContainerRef.current.scrollTo({ top: target, behavior: 'smooth' });
+        } else {
+            // Click to scroll back to base position
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const scrollToMap = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const toggleMapView = (isOpen) => {
         if (isOpen === isGoogleMapOpen) return;
@@ -543,6 +634,13 @@ const ListingsPage = () => {
 
         setSearchParams(newParams);
         setIsGoogleMapOpen(isOpen);
+
+        // Hide bottom nav immediately when opening map
+        if (isOpen && window.innerWidth < 1024) {
+            setMobileBottomNavVisible?.(false);
+        } else {
+            setMobileBottomNavVisible?.(true);
+        }
     };
 
     const [stations, setStations] = useState([]);
@@ -1411,7 +1509,7 @@ const ListingsPage = () => {
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
+                            <h3 className="text-lg md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -1429,8 +1527,8 @@ const ListingsPage = () => {
                         <div
                             className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
                             style={{
-                                paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
-                                paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
+                                paddingTop: '0.75rem',
+                                paddingBottom: '0.75rem',
                                 paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
                                 paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                             }}
@@ -1459,11 +1557,11 @@ const ListingsPage = () => {
 
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className="w-full bg-white min-h-screen relative">
+            <div className={`w-full bg-white min-h-screen relative ${isGoogleMapOpen ? 'hidden lg:block' : ''}`}>
                 {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
                 <div className={`lg:hidden sticky top-0 z-[100] bg-white py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white border border-gray-200">
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[44px] pl-4 pr-4 py-1.5 rounded-full bg-white border border-gray-200">
                             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
                             <input
                                 type="search"
@@ -1623,6 +1721,8 @@ const ListingsPage = () => {
                                         <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
+                                                center={mapCenter}
+                                                zoom={mapZoom}
                                                 onMarkerClick={(property) => {
                                                     const newParams = new URLSearchParams(searchParams);
                                                     newParams.set('detail', property.id);
@@ -1691,230 +1791,234 @@ const ListingsPage = () => {
             {/* Google Maps Modal (Mobile Only) */}
             {
                 isGoogleMapOpen && (
-                    <div className="fixed inset-0 z-[200] bg-gray-100 flex flex-col items-center lg:!hidden pointer-events-auto overflow-hidden">
-                        {/* MAP EXPLORER Header */}
-                        {/* Mobile Header: Back button + Search Bar + Filter Icon */}
-                        <div className={`absolute top-0 w-full bg-white/95 backdrop-blur-md border-b px-4 py-5 flex items-center gap-2 shadow-sm z-[205] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]`}>
-                            <div className="flex-1 flex items-center gap-2 min-h-[48px] px-4 py-2 rounded-full bg-white border border-gray-200">
-                                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                <input
-                                    type="search"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search properties & filters"
-                                    className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                                    aria-label="Search properties"
+                    <div className="fixed inset-0 z-[200] bg-white lg:!hidden flex flex-col pointer-events-auto">
+                        {/* Dynamic Header Bar - Appears when sheet is expanded */}
+                        <div className={`fixed top-0 left-0 right-0 z-[220] bg-white lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+                            <div className="flex-shrink-0 w-full border-b px-4 py-3.5 flex items-center gap-2 shadow-sm">
+                                <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white border border-gray-200">
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <input
+                                        type="search"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Search properties & filters"
+                                        className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
+                                        aria-label="Search properties"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
+                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white' : 'bg-white'}`}
+                                    aria-label="Open filters"
+                                >
+                                    <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                                    {activeFiltersList.length > 0 && (
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-bold border border-white">
+                                            {activeFiltersList.length}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Middle Scrollable Area - unified scroll for map and list */}
+                        <div
+                            ref={scrollContainerRef}
+                            onScroll={handleUnifiedScroll}
+                            className="flex-1 overflow-y-auto overflow-x-hidden w-full overscroll-contain bg-white"
+                        >
+                            {/* Map Container - Sticky at the top, list slides over it */}
+                            <div className="sticky top-0 w-full h-[100svh] z-[201] flex-shrink-0">
+                                {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
+                                <button
+                                    onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white rounded-full flex items-center justify-center text-black shadow-[0_12px_45px_rgba(0,0,0,0.2)] active:scale-95 transition-all border border-black ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    aria-label="Open filters"
+                                >
+                                    <AdjustmentsHorizontalIcon className="w-7 h-7" />
+                                    {activeFiltersList.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 flex items-center justify-center rounded-full bg-black text-white text-[12px] font-bold border border-white shadow-lg">
+                                            {activeFiltersList.length}
+                                        </span>
+                                    )}
+                                </button>
+                                <GoogleMap
+                                    listings={listings}
+                                    center={mapCenter}
+                                    zoom={mapZoom}
+                                    onMarkerClick={(property) => {
+                                        if (property && property.id) {
+                                            setSelectedListingId(property.id);
+                                        }
+                                    }}
+                                    onBoundsChanged={handleMapBoundsChanged}
+                                    onOpenedMarkerChange={setSelectedListingId}
+                                    openedMarkerId={selectedListingId}
+                                    onClick={() => setSelectedListingId(null)}
+                                    onSaveClick={handleMapSaveClick}
+                                    savedListingIds={savedListingIds}
+                                    highlightedMarkerListingId={selectedListingId || listHoveredListingId}
+                                    isVisible={isGoogleMapOpen}
+                                    fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
+                                    showMapLoading={loading && fetchTriggeredByBoundsRef.current}
+                                    hideControls={true}
+                                    hideCustomControls={true}
+                                    disableMarkerExpansion={true}
+                                />
+                                {/* Soft Dark Overlay Layer - increases as you scroll up */}
+                                <div
+                                    className={`absolute inset-0 bg-black z-[202] transition-opacity duration-75 ${mapOverlayOpacity > 0 ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`}
+                                    style={{ opacity: mapOverlayOpacity }}
+                                    onClick={() => {
+                                        if (scrollContainerRef.current) {
+                                            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                    }}
                                 />
                             </div>
+
+                            {/* Property Stream Container - Hidden when a marker is selected on mobile */}
+                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
+                                {/* Sheet Header Area - Simple text count below the handle */}
+                                <div
+                                    className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 transition-colors rounded-t-[40px]"
+                                    onClick={toggleMobileSheet}
+                                >
+                                    {/* Handle at above */}
+                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 mb-3" />
+
+                                    {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
+                                    {!(isGoogleMapOpen && selectedListingId) && (
+                                        <span className="text-[14px] font-medium text-gray-400 tracking-tight animate-in fade-in duration-300 mb-2">
+                                            Found around {total} properties
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Listings List */}
+                                <div className="flex flex-col gap-6 max-w-lg mx-auto">
+                                    {listings.filter(p => p && p.id).map((property) => (
+                                        <ListingCard
+                                            key={property.id}
+                                            listing={property}
+                                            viewMode="grid"
+                                            onHover={setListHoveredListingId}
+                                            to={`${location.pathname}?${(function () {
+                                                const p = new URLSearchParams(searchParams);
+                                                p.set('detail', property.id);
+                                                return p.toString();
+                                            })()}`}
+                                        />
+                                    ))}
+
+                                    {loading && (
+                                        <div className="flex flex-col gap-6 w-full">
+                                            <ListingSkeleton />
+                                            <ListingSkeleton />
+                                        </div>
+                                    )}
+
+                                    {!loading && listings.length < total && (
+                                        <button
+                                            onClick={() => setPage(p => p + 1)}
+                                            className="w-full py-5 text-center font-bold text-primary-600 mt-4 rounded-2xl border border-primary-100 bg-primary-50 active:scale-[0.98] transition-all"
+                                        >
+                                            View More Results
+                                        </button>
+                                    )}
+
+                                    {/* Watermark Logo at the end of the scroll */}
+                                    <div className="flex flex-col items-center justify-center pt-20 pb-12 opacity-[0.08] select-none pointer-events-none grayscale">
+                                        <div
+                                            className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                            style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                        >
+                                            {!theme?.logoUrl && (
+                                                <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Floating "View Map" button when scrolled past map */}
+                        <div
+                            className={`fixed left-0 right-0 flex justify-center z-[220] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isScrolledPastMap ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-12 pointer-events-none'}`}
+                            style={{ bottom: isScrolledPastMap ? (isNavVisible ? '100px' : '32px') : '0px' }}
+                        >
                             <button
-                                onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white hover:border-gray-700' : 'bg-white'}`}
-                                aria-label="Open filters"
+                                onClick={scrollToMap}
+                                className="flex items-center gap-2.5 px-6 py-3.5 bg-gray-900 text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] font-bold text-sm tracking-wide active:scale-95 transition-all border border-white/10"
                             >
-                                <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
-                                {activeFiltersList.length > 0 && (
-                                    <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
-                                        {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
-                                    </span>
-                                )}
+                                <MapIcon className="w-5 h-5 text-white" />
+                                <span>View Map</span>
                             </button>
                         </div>
 
-                        {/* Map Container - fills behind header and sheet */}
-                        <div className="absolute inset-0 z-[201] pt-[88px]">
-                            <GoogleMap
-                                listings={listings}
-                                onMarkerClick={(property) => {
-                                    if (property && property.id) {
-                                        setSelectedListingId(property.id);
-                                    }
-                                }}
-                                onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
-                                onOpenedMarkerChange={setSelectedListingId}
-                                openedMarkerId={selectedListingId}
-                                onClick={() => setSelectedListingId(null)}
-                                onSaveClick={handleMapSaveClick}
-                                savedListingIds={savedListingIds}
-                                highlightedMarkerListingId={selectedListingId || listHoveredListingId}
-                                isVisible={isGoogleMapOpen}
-                                fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
-                                showMapLoading={loading && fetchTriggeredByBoundsRef.current}
-                                hideControls={true}
-                                hideCustomControls={true}
-                                disableMarkerExpansion={true}
-                            />
-
-                            {/* Mobile Legend Overlay - Move below header */}
-                            <div className="absolute top-4 left-0 right-0 z-[202] pointer-events-none">
-                                <div className="bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-lg border border-white/50 flex items-center justify-center gap-8 animate-slide-up pointer-events-auto max-w-max mx-auto">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Rent</span>
-                                    </div>
-                                    <div className="w-px h-4 bg-gray-200" />
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.4)]" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Sale</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Soft Dark Backdrop (appears when sheet is expanded) */}
-                        <div
-                            className={`absolute inset-0 bg-black/30 backdrop-blur-[1px] z-[202] transition-opacity duration-500 ${isMapListExpanded ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-                            onClick={() => setIsMapListExpanded(false)}
-                        />
-
-                        {/* Draggable Bottom Sheet */}
-                        <div
-                            className={`absolute left-0 right-0 bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.15)] rounded-t-[32px] flex flex-col z-[203] ${isDragging ? '' : 'transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]'} ${!isMapListExpanded && !selectedListingId ? 'pointer-events-none' : 'pointer-events-auto'}`}
-                            style={{
-                                bottom: 0,
-                                height: '100vh',
-                                transform: isMapListExpanded
-                                    ? `translateY(${sheetOffset}%)`
-                                    : `translateY(calc(100% - ${selectedListingId ? '180px' : '90px'}))`,
-                            }}
-                        >
-
+                        {/* Standalone Marker Preview Card (Floating at the very base on mobile) */}
+                        {isGoogleMapOpen && selectedListingId && (
                             <div
-                                className="flex flex-col items-center pt-4 pb-2 cursor-pointer touch-none select-none z-10 shrink-0 pointer-events-auto"
-                                onClick={() => {
-                                    if (!isMapListExpanded) {
-                                        setIsMapListExpanded(true);
-                                        setSheetOffset(48);
-                                    } else {
-                                        if (sheetOffset < 10) setSheetOffset(48);
-                                        else setIsMapListExpanded(false);
-                                    }
-                                }}
-                                onTouchStart={handleMapTouchStart}
-                                onTouchMove={handleMapTouchMove}
-                                onTouchEnd={handleMapTouchEnd}
+                                className="fixed inset-x-3 z-[300] md:hidden animate-in fade-in slide-in-from-bottom-6 duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                                style={{ bottom: isNavVisible ? 'calc(env(safe-area-inset-bottom) + 92px)' : 'calc(env(safe-area-inset-bottom) + 12px)' }}
                             >
-                                <div className="w-10 h-1.5 rounded-full bg-gray-300" />
-                            </div>
+                                {(() => {
+                                    const property = listings.find(l => l.id === selectedListingId);
+                                    if (!property) return null;
+                                    return (
+                                        <div className="relative">
+                                            <div
+                                                className="bg-white rounded-[28px] border border-gray-100 shadow-[0_12px_45px_rgba(0,0,0,0.15)] overflow-hidden flex items-center p-2.5 relative active:scale-[0.98] transition-all cursor-pointer"
+                                                onClick={() => navigate(`/listings/${property.id}${location.search}`)}
+                                            >
+                                                {/* Small Image at Left */}
+                                                <div className="w-28 h-28 rounded-[22px] overflow-hidden flex-shrink-0 bg-gray-100">
+                                                    <img
+                                                        src={getMediaUrl(property.images?.[0])}
+                                                        alt={property.title}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
 
-                            {/* Collapsed Content Base */}
-                            {!isMapListExpanded && (
-                                <div className="px-4 pb-6 pt-2 pb-safe animate-in fade-in slide-in-from-bottom-4 duration-300">
-                                    {!selectedListingId ? (
-                                        <div
-                                            key="homes-count"
-                                            className="text-center font-bold text-[15px] text-gray-900 cursor-pointer pt-1 pb-5 animate-in fade-in slide-in-from-top-2 duration-500 ease-out tracking-tight pointer-events-auto"
-                                            onClick={() => setIsMapListExpanded(true)}
-                                        >
-                                            Over {total > 1000 ? '1,000' : total} homes
-                                        </div>
-                                    ) : (
-                                        <div className="py-2">
-                                            {(() => {
-                                                const listing = listings.find(l => String(l.id) === String(selectedListingId));
-                                                if (!listing) return null;
-                                                const featuredImage = getMediaUrl(listing.media?.find((m) => m.type === 'image')?.url);
-                                                const formatListingPrice = (p) => p ? p.toLocaleString() : 'N/A';
-                                                const nearestStationName = (listing.station?.name_en || listing.station_name || '').split('(')[0].trim() || '';
-                                                const isSaved = savedListingIds.includes(listing.id);
-
-                                                return (
-                                                    <div
-                                                        key={`preview-${listing.id}`}
-                                                        className="flex gap-4 relative animate-in fade-in slide-in-from-bottom-2 duration-300 pointer-events-auto"
-                                                        onClick={() => {
-                                                            const newParams = new URLSearchParams(searchParams);
-                                                            newParams.set('detail', listing.id);
-                                                            setSearchParams(newParams);
-                                                        }}
-                                                    >
-                                                        {/* Image Container */}
-                                                        <div className="w-[100px] h-[100px] rounded-[16px] overflow-hidden flex-shrink-0 relative">
-                                                            <img src={featuredImage} alt={listing.title} className="w-full h-full object-cover" />
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); setSelectedListingId(null); }}
-                                                                className="absolute top-1.5 left-1.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-gray-900 active:scale-90 transition-all z-10"
-                                                            >
-                                                                <XMarkIcon className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-
-                                                        {/* Content */}
-                                                        <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
-                                                            <div className="flex justify-between items-start">
-                                                                <div className="flex-1 min-w-0 pr-2">
-                                                                    <h3 className="text-[15px] font-semibold text-gray-900 truncate tracking-tight mb-0.5">{listing.title}</h3>
-                                                                    <div className="text-[14px] text-gray-500 font-medium truncate mb-1">
-                                                                        {listing.district || 'Bangkok'}{nearestStationName ? ` · ${nearestStationName}` : ''}
-                                                                    </div>
-                                                                    <div className="text-[13px] font-medium text-gray-600 py-0.5 px-2 bg-gray-50 rounded-md max-w-fit">
-                                                                        {listing.bedrooms} Bed · {listing.bathrooms} Bath · {listing.area} Sqm
-                                                                    </div>
-                                                                </div>
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleMapSaveClick(listing.id, isSaved); }}
-                                                                    className={`flex-shrink-0 p-1.5 rounded-full transition-all active:scale-110 ${isSaved ? 'text-red-500' : 'text-gray-400'}`}
-                                                                >
-                                                                    {isSaved ? <HeartSolidIcon className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
-                                                                </button>
-                                                            </div>
-                                                            <div className="flex items-baseline gap-1 mt-1">
-                                                                <span className="text-[15px] font-bold text-gray-900 tracking-tight">฿{formatListingPrice(listing.price)}</span>
-                                                                {listing.listing_type === 'rent' && <span className="text-[14px] text-gray-500 font-medium">/ mo</span>}
-                                                            </div>
-                                                        </div>
+                                                {/* Information at Right */}
+                                                <div className="ml-4 flex-1 min-w-0 pr-6">
+                                                    <h3 className="text-[15px] font-normal text-gray-900 truncate mb-1">
+                                                        {property.title}
+                                                    </h3>
+                                                    <p className="text-[15px] font-normal text-gray-400 truncate mb-1.5">
+                                                        {property.bedrooms > 0 ? `${property.bedrooms} Bed` : ''}
+                                                        {property.bathrooms > 0 ? ` · ${property.bathrooms} Bath` : ''}
+                                                        {property.area > 0 ? ` · ${property.area} Sqm` : ''}
+                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[15px] font-normal text-gray-900">
+                                                            ฿{Number(property.price).toLocaleString()}
+                                                        </span>
+                                                        <span className="bg-gray-50 text-gray-500 text-[11px] px-2 py-1 rounded">
+                                                            {property.type === 'rent' ? 'For Rent' : 'For Sale'}
+                                                        </span>
                                                     </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Expanded Content */}
-                            {isMapListExpanded && (
-                                <div
-                                    ref={expandedSheetRef}
-                                    onScroll={handleSheetScroll}
-                                    className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 pb-12 animate-in fade-in duration-300 bg-white shadow-xl isolate pointer-events-auto overscroll-contain rounded-t-[23px]"
-                                    style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
-                                >
-                                    {/* Listings Stream */}
-                                    <div className="flex flex-col gap-6 pb-32 mt-2 w-full max-w-lg mx-auto">
-                                        {listings.filter(p => p && p.id).map((property) => (
-                                            <ListingCard
-                                                key={property.id}
-                                                listing={property}
-                                                viewMode="grid"
-                                                onHover={setListHoveredListingId}
-                                                to={window.innerWidth >= 1024 ? `/listings/${property.id}` : `${location.pathname}?${(function () {
-                                                    const p = new URLSearchParams(searchParams);
-                                                    p.set('detail', property.id);
-                                                    return p.toString();
-                                                })()}`}
-                                            />
-                                        ))}
-                                        {loading && (
-                                            <div className="flex flex-col gap-6 w-full">
-                                                <ListingSkeleton />
-                                                <ListingSkeleton />
-                                                <ListingSkeleton />
+                                                </div>
                                             </div>
-                                        )}
-                                        {/* Simple subtle load more if they reach end */}
-                                        {!loading && listings.length < total && (
-                                            <button onClick={() => setPage(p => p + 1)} className="w-full py-4 text-center font-bold text-primary-600 mt-4 rounded-xl border border-primary-100 bg-primary-50">
-                                                Load More Results
+
+                                            {/* Floating Close Button outside the overflow-hidden container */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedListingId(null);
+                                                }}
+                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-2xl border border-gray-100 active:bg-gray-50 z-[310]"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
                                             </button>
-                                        )}
-                                        {/* Ghost spacer — quarter card height */}
-                                        <div className="w-full flex-shrink-0 invisible pointer-events-none" aria-hidden>
-                                            <div className="w-full aspect-[4/0.95] rounded-[23px]" />
-                                            <div className="py-1.5 px-1.5 h-6" />
                                         </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
                     </div>
                 )
             }
@@ -1927,24 +2031,26 @@ const ListingsPage = () => {
 
             <ListingDetailModal />
 
-            {showMapButton && (
-                <div
-                    className={`fixed left-0 right-0 flex justify-center z-[220] md:hidden pointer-events-none transition-all ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'opacity-0 duration-0' : 'opacity-100 duration-500'}`}
-                    style={{
-                        bottom: !setMobileBottomNavVisible || (isMapView && (sheetOffset < 40 || (sheetOffset > 75 || !isMapListExpanded))) ? 'max(2.25rem, calc(env(safe-area-inset-bottom, 16px) + 20px))' : 'max(7.25rem, calc(80px + env(safe-area-inset-bottom, 16px) + 20px))'
-                    }}
-                >
-                    <div className="animate-fadeInUp pointer-events-auto">
-                        <button
-                            onClick={handleSwitchToMap}
-                            className="flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full shadow-lg font-bold text-sm tracking-wide active:scale-95 transition-transform"
-                        >
-                            Map <MapIcon className="w-5 h-5" />
-                        </button>
+            {
+                showMapButton && !isGoogleMapOpen && (
+                    <div
+                        className={`fixed left-0 right-0 flex justify-center z-[220] md:hidden pointer-events-none transition-all ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'opacity-0 duration-0' : 'opacity-100 duration-500'}`}
+                        style={{
+                            bottom: isNavVisible ? 'max(7.25rem, calc(80px + env(safe-area-inset-bottom, 16px) + 20px))' : 'max(2.25rem, calc(env(safe-area-inset-bottom, 16px) + 20px))'
+                        }}
+                    >
+                        <div className="animate-fadeInUp pointer-events-auto">
+                            <button
+                                onClick={handleSwitchToMap}
+                                className="flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full shadow-lg font-bold text-sm tracking-wide active:scale-95 transition-transform"
+                            >
+                                Map <MapIcon className="w-5 h-5 text-white" />
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 
