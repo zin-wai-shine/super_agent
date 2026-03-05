@@ -112,7 +112,7 @@ const ListingsPage = () => {
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible, mobileBottomNavVisible } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
@@ -131,7 +131,6 @@ const ListingsPage = () => {
 
     const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
     const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
-    const [isMapListCollapsed, setIsMapListCollapsed] = useState(false);
     const [isNavVisible, setIsNavVisible] = useState(false);
     const [mapOverlayOpacity, setMapOverlayOpacity] = useState(0);
     const scrollContainerRef = useRef(null);
@@ -246,7 +245,6 @@ const ListingsPage = () => {
     const [showMapButton, setShowMapButton] = useState(false);
 
     const isMapView = searchParams.get('view') === 'map';
-    const isAnyNavVisible = isGoogleMapOpen ? isNavVisible : mobileBottomNavVisible;
 
     const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
         return localStorage.getItem('isMapListExpanded') === 'true';
@@ -523,7 +521,6 @@ const ListingsPage = () => {
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
         document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
-        document.body.style.overscrollBehaviorY = isGoogleMapOpen ? 'none' : 'auto';
 
         // Handle mobile nav visibility: hide on entry to map, but let scroll handle it thereafter
         if (isGoogleMapOpen && window.innerWidth < 1024) {
@@ -537,20 +534,12 @@ const ListingsPage = () => {
             setIsNavVisible(true);
         }
 
-        return () => {
-            document.body.style.overflow = 'unset';
-            document.body.style.overscrollBehaviorY = 'auto';
-        };
+        return () => { document.body.style.overflow = 'unset'; };
     }, [isGoogleMapOpen, isSidebarOpen, setMobileBottomNavVisible]);
 
     const handleUnifiedScroll = useCallback(() => {
         if (!isGoogleMapOpen || window.innerWidth >= 1024) return;
         const currentScroll = window.scrollY;
-
-        if (currentScroll > 10 && isMapListCollapsed) {
-            setIsMapListCollapsed(false);
-        }
-
         const threshold = 180;
         const navShowThreshold = 100;
         const navHideThresholdDeep = 450;
@@ -573,13 +562,6 @@ const ListingsPage = () => {
             setIsScrolledPastMap(true);
         } else if (currentScroll <= threshold && isScrolledPastMap) {
             setIsScrolledPastMap(false);
-        }
-
-        // Manage scroll to top visibility for Map view
-        if (currentScroll > (window.innerHeight * 0.42) + 150) {
-            setShowScrollTop(true);
-        } else {
-            setShowScrollTop(false);
         }
 
         // Manage Mobile Bottom Nav visibility
@@ -609,16 +591,33 @@ const ListingsPage = () => {
 
         // Essential: Update the ref for next scroll iteration
         lastMobileMapScrollRef.current = currentScroll;
-    }, [isGoogleMapOpen, isScrolledPastMap, selectedListingId, setMobileBottomNavVisible, isMapListCollapsed]);
+    }, [isGoogleMapOpen, isScrolledPastMap, isMobileSheetExpanded, selectedListingId, mapOverlayOpacity, setMobileBottomNavVisible]);
 
     useEffect(() => {
         if (isGoogleMapOpen && window.innerWidth < 1024) {
-            window.scrollTo(0, 0); // Ensure native view initializes at the top
-            setIsMapListCollapsed(false); // Make sure it spawns in the default snap position
             window.addEventListener('scroll', handleUnifiedScroll, { passive: true });
             return () => window.removeEventListener('scroll', handleUnifiedScroll);
         }
     }, [isGoogleMapOpen, handleUnifiedScroll]);
+
+    const toggleMobileSheet = () => {
+        if (window.innerWidth >= 1024) return;
+
+        const currentScroll = window.scrollY;
+        const isAtBase = currentScroll < 100;
+
+        // Always clear marker preview when interacting with the handle
+        setSelectedListingId(null);
+
+        if (isAtBase) {
+            // Click to expand slightly higher
+            const target = (window.innerHeight * 0.42);
+            window.scrollTo({ top: target, behavior: 'smooth' });
+        } else {
+            // Click to scroll back to base position
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const scrollToMap = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -734,22 +733,14 @@ const ListingsPage = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
     useEffect(() => {
         const handleScroll = () => {
-            if (!isGoogleMapOpen) {
-                setShowScrollTop(window.scrollY > 300);
-            }
+            setShowScrollTop(window.scrollY > 300);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [isGoogleMapOpen]);
+    }, []);
 
     const scrollToTop = () => {
-        if (isGoogleMapOpen && scrollContainerRef.current) {
-            // Scroll to the "snap" / half-open point so the sheet doesn't completely collapse to 0
-            const target = (window.innerHeight * 0.42);
-            scrollContainerRef.current.scrollTo({ top: target, behavior: 'smooth' });
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Filter states: filters = applied (triggers API); pendingFilters = sidebar draft (apply on button click)
@@ -1797,10 +1788,8 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                className={`fixed right-6 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 z-[100] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-50'}`}
-                style={{
-                    bottom: isAnyNavVisible ? 'calc(env(safe-area-inset-bottom) + 104px)' : 'calc(env(safe-area-inset-bottom) + 24px)',
-                }}
+                style={{ bottom: (isGoogleMapOpen ? isNavVisible : navVisible) ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 32px)' }}
+                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[250] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
@@ -1808,7 +1797,7 @@ const ListingsPage = () => {
             {/* Google Maps Modal (Mobile Only) */}
             {
                 isGoogleMapOpen && (
-                    <div className="absolute top-0 left-0 right-0 z-[200] min-h-[100dvh] bg-white lg:!hidden flex flex-col pointer-events-auto">
+                    <div className="absolute top-0 left-0 w-full min-h-[100svh] z-[200] bg-[#f7f7f7] lg:!hidden flex flex-col pointer-events-auto">
                         {/* Dynamic Header Bar - Appears when sheet is expanded */}
                         <div className={`fixed top-0 left-0 right-0 z-[220] bg-white lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
                             <div className="flex-shrink-0 w-full border-b px-4 py-3.5 flex items-center gap-2 shadow-sm">
@@ -1838,19 +1827,22 @@ const ListingsPage = () => {
                             </div>
                         </div>
 
-                        {/* Middle Area - native window scroll */}
-                        <div className="w-full bg-white">
+                        {/* Middle Scrollable Area - unified scroll for map and list */}
+                        <div
+                            ref={scrollContainerRef}
+                            className="w-full bg-transparent"
+                        >
                             {/* Map Container - Sticky at the top, list slides over it */}
                             <div className="sticky top-0 w-full h-[100svh] z-[201] flex-shrink-0">
-                                {/* Floating Filter Button - Dark soft background */}
+                                {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-[#222222]/95 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-[0_12px_45px_rgba(0,0,0,0.3)] active:scale-95 transition-all border border-white/10 ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.4)] active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className="w-7 h-7" />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 flex items-center justify-center rounded-full bg-white text-black text-[12px] font-bold border border-[#222222] shadow-lg">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-white text-gray-900 text-[10px] font-bold border border-gray-900 shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -1867,12 +1859,7 @@ const ListingsPage = () => {
                                     onBoundsChanged={handleMapBoundsChanged}
                                     onOpenedMarkerChange={setSelectedListingId}
                                     openedMarkerId={selectedListingId}
-                                    onClick={() => {
-                                        setSelectedListingId(null);
-                                        if (window.innerWidth < 1024) {
-                                            setIsMapListCollapsed(true);
-                                        }
-                                    }}
+                                    onClick={() => setSelectedListingId(null)}
                                     onSaveClick={handleMapSaveClick}
                                     savedListingIds={savedListingIds}
                                     highlightedMarkerListingId={selectedListingId || listHoveredListingId}
@@ -1888,26 +1875,17 @@ const ListingsPage = () => {
                                     className={`absolute inset-0 bg-black z-[202] transition-opacity duration-75 ${mapOverlayOpacity > 0 ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`}
                                     style={{ opacity: mapOverlayOpacity }}
                                     onClick={() => {
-                                        if (scrollContainerRef.current) {
-                                            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
                                 />
                             </div>
 
                             {/* Property Stream Container - Hidden when a marker is selected on mobile */}
-                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : (isMapListCollapsed ? 'translate-y-[calc(55svh-110px)] opacity-100' : 'translate-y-0 opacity-100')} -mt-[55svh] min-h-[55svh]`}>
+                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
                                     className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 transition-colors rounded-t-[40px]"
-                                    onClick={() => {
-                                        setSelectedListingId(null);
-                                        if (isMapListCollapsed) {
-                                            setIsMapListCollapsed(false);
-                                        } else {
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }
-                                    }}
+                                    onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
                                     <div className="w-10 h-1.5 rounded-full bg-gray-200/80 mb-3" />

@@ -773,7 +773,7 @@ const PublicLayout = () => {
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
             <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible ? 'pb-20' : 'pb-0'} md:pb-0`}>
-                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, setMobileBottomNavVisible, mobileBottomNavVisible }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, setMobileBottomNavVisible }} />
             </main>
 
             {/* Map/List bottom sheet panel — slides up above the nav on /listings */}
