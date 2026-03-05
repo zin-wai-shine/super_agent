@@ -112,7 +112,9 @@ const ListingsPage = () => {
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible, mobileBottomNavVisible } = outletContext;
+    const isGoogleMapOpen = searchParams.get('view') === 'map';
+    const isAnyNavVisible = isGoogleMapOpen ? isNavVisible : mobileBottomNavVisible;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
@@ -564,6 +566,13 @@ const ListingsPage = () => {
             setIsScrolledPastMap(false);
         }
 
+        // Manage scroll to top visibility for Map view
+        if (currentScroll > (window.innerHeight * 0.42) + 150) {
+            setShowScrollTop(true);
+        } else {
+            setShowScrollTop(false);
+        }
+
         // Manage Mobile Bottom Nav visibility
         const isScrollingUpContent = currentScroll > lastMobileMapScrollRef.current; // Swiping UP = seeing more content below
         const scrollDelta = Math.abs(currentScroll - lastMobileMapScrollRef.current);
@@ -728,14 +737,22 @@ const ListingsPage = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
     useEffect(() => {
         const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
+            if (!isGoogleMapOpen) {
+                setShowScrollTop(window.scrollY > 300);
+            }
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isGoogleMapOpen]);
 
     const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (isGoogleMapOpen && scrollContainerRef.current) {
+            // Scroll to the "snap" / half-open point so the sheet doesn't completely collapse to 0
+            const target = (window.innerHeight * 0.42);
+            scrollContainerRef.current.scrollTo({ top: target, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     // Filter states: filters = applied (triggers API); pendingFilters = sidebar draft (apply on button click)
@@ -1783,7 +1800,10 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-28 right-6 md:bottom-8 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[100] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed right-6 md:right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 z-[100] ${showScrollTop && !isSidebarOpen ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-50'}`}
+                style={{
+                    bottom: isAnyNavVisible ? 'calc(env(safe-area-inset-bottom) + 104px)' : 'calc(env(safe-area-inset-bottom) + 24px)',
+                }}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
