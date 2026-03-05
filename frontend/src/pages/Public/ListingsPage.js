@@ -131,6 +131,7 @@ const ListingsPage = () => {
 
     const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
     const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
+    const [isMapListCollapsed, setIsMapListCollapsed] = useState(false);
     const [isNavVisible, setIsNavVisible] = useState(false);
     const [mapOverlayOpacity, setMapOverlayOpacity] = useState(0);
     const scrollContainerRef = useRef(null);
@@ -545,6 +546,11 @@ const ListingsPage = () => {
     const handleUnifiedScroll = useCallback(() => {
         if (!isGoogleMapOpen || window.innerWidth >= 1024) return;
         const currentScroll = window.scrollY;
+
+        if (currentScroll > 10 && isMapListCollapsed) {
+            setIsMapListCollapsed(false);
+        }
+
         const threshold = 180;
         const navShowThreshold = 100;
         const navHideThresholdDeep = 450;
@@ -603,34 +609,16 @@ const ListingsPage = () => {
 
         // Essential: Update the ref for next scroll iteration
         lastMobileMapScrollRef.current = currentScroll;
-    }, [isGoogleMapOpen, isScrolledPastMap, selectedListingId, setMobileBottomNavVisible]);
+    }, [isGoogleMapOpen, isScrolledPastMap, selectedListingId, setMobileBottomNavVisible, isMapListCollapsed]);
 
     useEffect(() => {
         if (isGoogleMapOpen && window.innerWidth < 1024) {
             window.scrollTo(0, 0); // Ensure native view initializes at the top
+            setIsMapListCollapsed(false); // Make sure it spawns in the default snap position
             window.addEventListener('scroll', handleUnifiedScroll, { passive: true });
             return () => window.removeEventListener('scroll', handleUnifiedScroll);
         }
     }, [isGoogleMapOpen, handleUnifiedScroll]);
-
-    const toggleMobileSheet = () => {
-        if (window.innerWidth >= 1024) return;
-
-        const currentScroll = window.scrollY;
-        const isAtBase = currentScroll < 100;
-
-        // Always clear marker preview when interacting with the handle
-        setSelectedListingId(null);
-
-        if (isAtBase) {
-            // Click to expand slightly higher
-            const target = (window.innerHeight * 0.42);
-            window.scrollTo({ top: target, behavior: 'smooth' });
-        } else {
-            // Click to scroll back to base position
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
 
     const scrollToMap = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1879,7 +1867,12 @@ const ListingsPage = () => {
                                     onBoundsChanged={handleMapBoundsChanged}
                                     onOpenedMarkerChange={setSelectedListingId}
                                     openedMarkerId={selectedListingId}
-                                    onClick={() => setSelectedListingId(null)}
+                                    onClick={() => {
+                                        setSelectedListingId(null);
+                                        if (window.innerWidth < 1024) {
+                                            setIsMapListCollapsed(true);
+                                        }
+                                    }}
                                     onSaveClick={handleMapSaveClick}
                                     savedListingIds={savedListingIds}
                                     highlightedMarkerListingId={selectedListingId || listHoveredListingId}
@@ -1903,11 +1896,18 @@ const ListingsPage = () => {
                             </div>
 
                             {/* Property Stream Container - Hidden when a marker is selected on mobile */}
-                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
+                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : (isMapListCollapsed ? 'translate-y-[calc(55svh-110px)] opacity-100' : 'translate-y-0 opacity-100')} -mt-[55svh] min-h-[55svh]`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
                                     className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 transition-colors rounded-t-[40px]"
-                                    onClick={toggleMobileSheet}
+                                    onClick={() => {
+                                        setSelectedListingId(null);
+                                        if (isMapListCollapsed) {
+                                            setIsMapListCollapsed(false);
+                                        } else {
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                    }}
                                 >
                                     {/* Handle at above */}
                                     <div className="w-10 h-1.5 rounded-full bg-gray-200/80 mb-3" />
