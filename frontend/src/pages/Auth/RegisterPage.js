@@ -226,7 +226,7 @@ const RegisterPage = () => {
                             </div>
                         </div>
                         <a
-                            href={api.defaults.baseURL.startsWith('http') ? `${api.defaults.baseURL}/auth/google` : `${window.location.origin}${api.defaults.baseURL}/auth/google`}
+                            href={`${api.defaults.baseURL.startsWith('http') ? api.defaults.baseURL : window.location.origin + api.defaults.baseURL}/auth/google?state=${window.location.host}`}
                             className="flex items-center justify-center gap-3 w-full min-h-[52px] md:min-h-[44px] py-3 px-4 text-base md:text-sm rounded-full border border-gray-300 bg-white text-gray-900 font-medium hover:bg-gray-50 transition-colors shadow-none"
                         >
                             <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden>

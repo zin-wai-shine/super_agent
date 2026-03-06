@@ -295,17 +295,17 @@ const FilterBar = ({
                                                 onClick={onOpenFilters}
                                                 className="h-[38px] min-w-[90px] lg:min-w-0 lg:w-[26px] lg:justify-center xl:min-w-[90px] xl:px-1 xl:gap-2 flex items-center gap-1.5 pl-1 pr-1 rounded-full flex-shrink-0
                                   transition-all duration-200 ease-out
-                                  border border-gray-200 bg-gray-50/80
-                                  hover:border-gray-400 hover:bg-gray-100/90
+                                  bg-white shadow-sm border-none
+                                  hover:bg-gray-50
                                   active:scale-[0.98] active:shadow-sm
                                   focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2
                                   relative group"
                                                 aria-label="Filters"
                                             >
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 relative ${activeFilterCount > 0 ? 'border-2 border-gray-800 bg-white group-hover:scale-105 group-hover:border-gray-700' : 'bg-transparent'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 relative ${activeFilterCount > 0 ? 'bg-transparent' : 'bg-transparent'}`}>
                                                     <AdjustmentsHorizontalIcon className={`text-gray-800 ${activeFilterCount > 0 ? 'w-4 h-4' : 'w-5 h-5'}`} />
                                                     {activeFilterCount > 0 && (
-                                                        <span className="absolute -top-[3px] -right-[3px] min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[9px] font-normal border border-white leading-none">
+                                                        <span className="absolute -top-[3px] -right-[3px] min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-primary-600 text-white text-[9px] font-semibold border-2 border-white shadow-md leading-none">
                                                             {activeFilterCount > 99 ? '99+' : activeFilterCount}
                                                         </span>
                                                     )}

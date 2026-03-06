@@ -273,10 +273,14 @@ const TransitMapFilter = ({
                                 {showResults && searchTerm && (
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
                                         {stations
-                                            .filter(s =>
-                                                s.name_en?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                s.id?.toLowerCase().includes(searchTerm.toLowerCase())
-                                            )
+                                            .filter(s => {
+                                                const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '') || '';
+                                                const normalizedTerm = normalize(searchTerm);
+                                                return (
+                                                    normalize(s.name_en).includes(normalizedTerm) ||
+                                                    normalize(s.id).includes(normalizedTerm)
+                                                );
+                                            })
                                             .map(station => (
                                                 <button
                                                     key={station.id}
@@ -349,9 +353,20 @@ const TransitMapFilter = ({
                     <div className="flex flex-col bg-white/95 backdrop-blur-xl rounded-full shadow-xl border border-gray-200 p-1">
                         <button
                             onClick={() => {
+                                if (!mapWrapperRef.current) return;
                                 const newZoom = Math.min(zoom + 0.1, 2.0);
+                                if (newZoom === zoom) return;
+
+                                const { width, height } = mapWrapperRef.current.getBoundingClientRect();
+                                const centerX = width / 2;
+                                const centerY = height / 2;
+
+                                const scaleChange = newZoom / zoom;
+                                const newPanX = centerX - (centerX - pan.x) * scaleChange;
+                                const newPanY = centerY - (centerY - pan.y) * scaleChange;
+
                                 setZoom(newZoom);
-                                setPan(p => constrainPan(p, newZoom));
+                                setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
                             className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
                             title="Zoom In"
@@ -361,10 +376,21 @@ const TransitMapFilter = ({
                         <div className="h-px bg-gray-200/50 mx-2 my-1" />
                         <button
                             onClick={() => {
+                                if (!mapWrapperRef.current) return;
                                 const minZoom = getMinZoom();
                                 const newZoom = Math.max(zoom - 0.1, minZoom);
+                                if (newZoom === zoom) return;
+
+                                const { width, height } = mapWrapperRef.current.getBoundingClientRect();
+                                const centerX = width / 2;
+                                const centerY = height / 2;
+
+                                const scaleChange = newZoom / zoom;
+                                const newPanX = centerX - (centerX - pan.x) * scaleChange;
+                                const newPanY = centerY - (centerY - pan.y) * scaleChange;
+
                                 setZoom(newZoom);
-                                setPan(p => constrainPan(p, newZoom));
+                                setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
                             className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
                             title="Zoom Out"
@@ -425,6 +451,7 @@ const TransitMapFilter = ({
                                 startY: e.touches[0].clientY
                             };
                         } else if (e.touches.length === 2) {
+                            const rect = mapWrapperRef.current.getBoundingClientRect();
                             const a = e.touches[0], b = e.touches[1];
                             const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
                             touchStateRef.current = {
@@ -432,8 +459,8 @@ const TransitMapFilter = ({
                                 startZoom: panZoomRef.current.zoom,
                                 startDist: dist,
                                 startPan: { ...panZoomRef.current.pan },
-                                centerX: (a.clientX + b.clientX) / 2,
-                                centerY: (a.clientY + b.clientY) / 2
+                                centerX: (a.clientX + b.clientX) / 2 - rect.left,
+                                centerY: (a.clientY + b.clientY) / 2 - rect.top
                             };
                         }
                     }}
@@ -457,8 +484,15 @@ const TransitMapFilter = ({
                             const ratio = dist / state.startDist;
                             const minZoom = getMinZoom();
                             const newZoom = Math.max(minZoom, Math.min(2.0, state.startZoom * ratio));
-                            setZoom(newZoom);
-                            setPan(p => constrainPan(p, newZoom));
+
+                            if (newZoom !== zoom) {
+                                const scaleChange = newZoom / state.startZoom;
+                                const newPanX = state.centerX - (state.centerX - state.startPan.x) * scaleChange;
+                                const newPanY = state.centerY - (state.centerY - state.startPan.y) * scaleChange;
+
+                                setZoom(newZoom);
+                                setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
+                            }
                         }
                     }}
                     onTouchEnd={(e) => {
@@ -473,6 +507,7 @@ const TransitMapFilter = ({
                                 startY: e.touches[0].clientY
                             };
                         } else if (e.touches.length === 2) {
+                            const rect = mapWrapperRef.current.getBoundingClientRect();
                             const a = e.touches[0], b = e.touches[1];
                             const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
                             touchStateRef.current = {
@@ -480,18 +515,29 @@ const TransitMapFilter = ({
                                 startZoom: panZoomRef.current.zoom,
                                 startDist: dist,
                                 startPan: { ...panZoomRef.current.pan },
-                                centerX: (a.clientX + b.clientX) / 2,
-                                centerY: (a.clientY + b.clientY) / 2
+                                centerX: (a.clientX + b.clientX) / 2 - rect.left,
+                                centerY: (a.clientY + b.clientY) / 2 - rect.top
                             };
                         }
                     }}
                     onWheel={(e) => {
                         e.preventDefault();
-                        const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                        const rect = mapWrapperRef.current.getBoundingClientRect();
+                        const mouseX = e.clientX - rect.left;
+                        const mouseY = e.clientY - rect.top;
+
+                        const delta = e.deltaY > 0 ? -0.1 : 0.1;
                         const minZoom = getMinZoom();
                         const newZoom = Math.max(minZoom, Math.min(2.0, zoom + delta));
-                        setZoom(newZoom);
-                        setPan(p => constrainPan(p, newZoom));
+
+                        if (newZoom !== zoom) {
+                            const scaleChange = newZoom / zoom;
+                            const newPanX = mouseX - (mouseX - pan.x) * scaleChange;
+                            const newPanY = mouseY - (mouseY - pan.y) * scaleChange;
+
+                            setZoom(newZoom);
+                            setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
+                        }
                     }}
                 >
                     <div

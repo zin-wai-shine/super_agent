@@ -112,7 +112,7 @@ const ListingsPage = () => {
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
-    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, setMobileBottomNavVisible } = outletContext;
+    const { navVisible, filterBarSlot, isScrolled: layoutScrolled, mobileBottomNavVisible, setMobileBottomNavVisible } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
@@ -244,7 +244,7 @@ const ListingsPage = () => {
     const [sheetOffset, setSheetOffset] = useState(48); // Percentage from top (48% = 52vh visible)
     const [showMapButton, setShowMapButton] = useState(false);
 
-    const isMapView = searchParams.get('view') === 'map';
+    const isMapView = searchParams.get('view') === 'map' || (!searchParams.get('view') && localStorage.getItem('preferredView') === 'map');
 
     const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
         return localStorage.getItem('isMapListExpanded') === 'true';
@@ -391,16 +391,28 @@ const ListingsPage = () => {
         const urlView = searchParams.get('view');
         if (urlView) {
             const toMap = urlView === 'map';
-            setIsGoogleMapOpen(toMap);
-            localStorage.setItem('preferredView', toMap ? 'map' : 'list');
+            if (toMap !== isGoogleMapOpen) {
+                // Ensure we start at the top of the map design when switching to map
+                if (toMap) {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                }
+                setIsGoogleMapOpen(toMap);
+                localStorage.setItem('preferredView', toMap ? 'map' : 'list');
+            }
         } else {
             // If URL doesn't have view param, use localStorage or default to false
             const stored = localStorage.getItem('preferredView');
             if (stored) {
-                setIsGoogleMapOpen(stored === 'map');
+                const toMap = stored === 'map';
+                if (toMap !== isGoogleMapOpen) {
+                    setIsGoogleMapOpen(toMap);
+                }
+            } else if (isGoogleMapOpen) {
+                // Default to list
+                setIsGoogleMapOpen(false);
             }
         }
-    }, [searchParams]);
+    }, [searchParams, isGoogleMapOpen]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar state for Map View
     const [isSidebarClosing, setIsSidebarClosing] = useState(false); // For close animation
@@ -625,6 +637,9 @@ const ListingsPage = () => {
 
     const toggleMapView = (isOpen) => {
         if (isOpen === isGoogleMapOpen) return;
+
+        // Reset scroll position to top when switching views
+        window.scrollTo({ top: 0, behavior: 'instant' });
 
         // Persist the user's explicit choice
         localStorage.setItem('preferredView', isOpen ? 'map' : 'list');
@@ -1581,12 +1596,12 @@ const ListingsPage = () => {
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white hover:border-gray-700' : 'bg-white'}`}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all bg-white shadow-sm border-none`}
                             aria-label="Open filters"
                         >
                             <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
                             {activeFiltersList.length > 0 && (
-                                <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-semibold border border-white leading-none">
+                                <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-semibold border-2 border-white shadow-md leading-none">
                                     {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
                                 </span>
                             )}
@@ -1788,8 +1803,8 @@ const ListingsPage = () => {
             {/* Scroll to top */}
             <button
                 onClick={scrollToTop}
-                style={{ bottom: navVisible ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 16px)' }}
-                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[250] ${showScrollTop && !isSidebarOpen && !isGoogleMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                style={{ bottom: mobileBottomNavVisible ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
+                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[190] ${showScrollTop && !isSidebarOpen && !isGoogleMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <ArrowUpIcon className="w-6 h-6" />
             </button>
@@ -1814,12 +1829,12 @@ const ListingsPage = () => {
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'border-2 border-gray-800 bg-white' : 'bg-white'}`}
+                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all bg-white shadow-sm`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-gray-800 text-white text-[10px] font-bold border border-white">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -1837,12 +1852,12 @@ const ListingsPage = () => {
                                 {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.4)] active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white rounded-full flex items-center justify-center text-gray-900 shadow-[0_8px_30px_rgba(0,0,0,0.15)] active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className="w-7 h-7" />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-white text-gray-900 text-[10px] font-bold border border-gray-900 shadow-md">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}

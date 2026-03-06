@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"super_real_estate/config"
 	"super_real_estate/models"
@@ -22,6 +23,7 @@ type GoogleAuthController struct {
 }
 
 func NewGoogleAuthController(db *gorm.DB, cfg *config.Config) *GoogleAuthController {
+	log.Printf("Initializing Google Auth with ClientID: %s... (len: %d), SecretLen: %d, RedirectURL: %s", cfg.GoogleClientID[:10], len(cfg.GoogleClientID), len(cfg.GoogleClientSecret), cfg.GoogleRedirectURL)
 	conf := &oauth2.Config{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -60,7 +62,15 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 
 	token, err := gc.oauth2.Exchange(context.Background(), code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange token"})
+		log.Printf("Google OAuth Exchange Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to exchange token: " + err.Error(),
+			"debug": gin.H{
+				"client_id_prefix": gc.oauth2.ClientID[:10],
+				"secret_len":       len(gc.oauth2.ClientSecret),
+				"redirect_url":     gc.oauth2.RedirectURL,
+			},
+		})
 		return
 	}
 

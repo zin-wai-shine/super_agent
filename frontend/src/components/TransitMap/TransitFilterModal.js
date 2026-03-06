@@ -52,18 +52,40 @@ const TransitFilterModal = ({
             }
             groups[line].stations.push(station);
         });
-        return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name));
+
+        // Define sorting priority
+        const priority = {
+            'BTS Sukhumvit': 1,
+            'Yellow Line': 2,
+            'BTS Silom': 3,
+            'MRT Blue': 4,
+            'MRT Purple': 5,
+            'Pink Line': 6,
+            'Gold Line': 7,
+            'CEN Siam': 8,
+            'Others': 99
+        };
+
+        return Object.values(groups).sort((a, b) => {
+            const pA = priority[a.name] || 90;
+            const pB = priority[b.name] || 90;
+            if (pA !== pB) return pA - pB;
+            return a.name.localeCompare(b.name);
+        });
     }, [stations]);
 
     const filteredGroups = useMemo(() => {
         if (!searchTerm) return groupedStations;
-        const term = searchTerm.toLowerCase();
+
+        const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '') || '';
+        const normalizedTerm = normalize(searchTerm);
+
         return groupedStations.map(group => ({
             ...group,
             stations: group.stations.filter(s =>
-                s.name_en?.toLowerCase().includes(term) ||
-                s.id?.toLowerCase().includes(term) ||
-                s.name_th?.toLowerCase().includes(term)
+                normalize(s.name_en).includes(normalizedTerm) ||
+                normalize(s.id).includes(normalizedTerm) ||
+                normalize(s.name_th).includes(normalizedTerm)
             )
         })).filter(group => group.stations.length > 0);
     }, [groupedStations, searchTerm]);
@@ -124,7 +146,7 @@ const TransitFilterModal = ({
                     {/* Left Column: List — hidden on mobile when map is shown */}
                     <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[35%] sm:flex-none sm:min-w-0 flex-col bg-white min-h-0 border-r border-gray-100 flex-1 min-w-0`}>
                         {/* Header: Fixed — mobile: match filter base (px-4 py-4); desktop: p-6 */}
-                        <div className="px-4 pt-3 pb-0 sm:pb-4 md:px-8 lg:px-20 border-b border-gray-200 sm:border-gray-50 flex-shrink-0 bg-white">
+                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-8 lg:px-20 border-b border-gray-200 sm:border-gray-50 flex-shrink-0 bg-white">
                             <div className="hidden sm:flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
                                     <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600" />
@@ -132,7 +154,7 @@ const TransitFilterModal = ({
                                 <h2 className="text-lg font-semibold text-gray-900 tracking-tight">Select Stations</h2>
                             </div>
 
-                            <div className="flex items-center gap-3 mb-0 sm:mb-4">
+                            <div className="flex items-center gap-3 mb-4">
                                 <div className="relative flex-1 min-w-0">
                                     <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -156,7 +178,7 @@ const TransitFilterModal = ({
 
                             {/* Selected Pills — mobile: same horizontal padding as filter; desktop: full width scroll */}
                             {selectedIds.length > 0 && (
-                                <div className="overflow-y-hidden overflow-x-auto scrollbar-hide py-3 px-4 md:-mx-8 lg:-mx-12 sm:w-[calc(100%+3rem)] sm:px-0" style={{ maxHeight: '6rem' }}>
+                                <div className="overflow-y-hidden overflow-x-auto scrollbar-hide pt-2 pb-6 px-4 md:-mx-8 lg:-mx-12 sm:w-[calc(100%+3rem)] sm:px-0" style={{ maxHeight: '7rem' }}>
                                     <div className="inline-grid grid-flow-col grid-rows-2 auto-cols-max gap-x-3 gap-y-2 pb-0.5 md:pl-8 lg:pl-12">
                                         {selectedIds.map(id => {
                                             const station = stations.find(s => s.id === id);

@@ -74,12 +74,26 @@ const PublicLayout = () => {
     const { isAuthenticated, user, logout } = useAuth();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    const isMapView = searchParams.get('view') === 'map';
+    const isMapView = searchParams.get('view') === 'map' || (!searchParams.get('view') && localStorage.getItem('preferredView') === 'map');
     const isListingsPath = (pathname) =>
         pathname === '/listings' || (!isMainDomain && pathname === '/');
     const isOnListings = isListingsPath(location.pathname);
     const [navButtonVisible, setNavButtonVisible] = React.useState(isListingsPath(location.pathname));
     const [showViewPanel, setShowViewPanel] = React.useState(false);
+
+    // Scroll locking for mobile view panel
+    React.useEffect(() => {
+        if (showViewPanel && window.innerWidth < 1024) {
+            document.body.style.overflow = 'hidden';
+            // Also prevent touchmove to be extra sure on iOS
+            const preventDefault = (e) => e.preventDefault();
+            document.addEventListener('touchmove', preventDefault, { passive: false });
+            return () => {
+                document.body.style.overflow = '';
+                document.removeEventListener('touchmove', preventDefault);
+            };
+        }
+    }, [showViewPanel]);
 
     const initialHeight = React.useRef(window.visualViewport ? window.visualViewport.height : window.innerHeight);
     const [isKeyboardOpen, setIsKeyboardOpen] = React.useState(false);
@@ -117,6 +131,9 @@ const PublicLayout = () => {
     }, [location.pathname, isMainDomain]);
 
     const switchView = (toMap) => {
+        // Reset scroll position to top when switching views
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
         const next = new URLSearchParams(location.search);
         if (toMap) {
             next.set('view', 'map');
@@ -773,7 +790,7 @@ const PublicLayout = () => {
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
             <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible ? 'pb-20' : 'pb-0'} md:pb-0`}>
-                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, setMobileBottomNavVisible }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, mobileBottomNavVisible, setMobileBottomNavVisible }} />
             </main>
 
             {/* Map/List bottom sheet panel — slides up above the nav on /listings */}
