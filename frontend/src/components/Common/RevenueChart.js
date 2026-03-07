@@ -57,16 +57,16 @@ const RevenueChart = ({ data }) => {
                             fontSize: '12px',
                             padding: '8px 12px'
                         }}
-                        itemStyle={{ color: '#3b82f6' }}
+                        itemStyle={{ color: 'var(--primary-color)' }}
                         formatter={(value) => [`฿${value}`, 'Revenue']}
                     />
                     <Line
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#3b82f6"
+                        stroke="var(--primary-color)"
                         strokeWidth={2}
-                        dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: '#3b82f6', strokeWidth: 0 }}
+                        dot={{ r: 3, fill: 'var(--primary-color)', strokeWidth: 0 }}
+                        activeDot={{ r: 5, fill: 'var(--primary-color)', strokeWidth: 0 }}
                     />
                 </LineChart>
             </ResponsiveContainer>

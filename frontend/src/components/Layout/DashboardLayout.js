@@ -114,7 +114,7 @@ const DashboardLayout = () => {
                             <div className="flex items-center">
                                 {(agent?.theme?.logo_url || agent?.logo) ? (
                                     <div
-                                        className="h-16 w-[300px] bg-contain bg-left bg-no-repeat transition-all duration-300 scale-[2.0] origin-left"
+                                        className="h-14 w-[300px] bg-contain bg-left bg-no-repeat transition-all duration-300 scale-[1.15] origin-left"
                                         style={{
                                             backgroundImage: `url(${getMediaUrl(agent.theme?.logo_url || agent.logo)})`
                                         }}

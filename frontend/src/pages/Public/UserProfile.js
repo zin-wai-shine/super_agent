@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
 
 /* ─── Skeleton ─────────────────────────────────────────────── */
@@ -54,6 +55,7 @@ const ProfileSkeleton = () => (
 const UserProfile = () => {
     const { user, logout } = useAuth();
     const { theme } = useTheme();
+    const { isMainDomain } = useTenant();
     const navigate = useNavigate();
     const isAgent = user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin';
     const [loading, setLoading] = useState(true);
@@ -194,21 +196,23 @@ const UserProfile = () => {
                     </div>
 
                     {/* Mobile-only logo — below logout, centered, larger */}
-                    <div className="lg:hidden flex flex-col items-center justify-center pt-16 pb-2 opacity-10">
-                        <Link to="/" className="flex flex-col items-center gap-3">
-                            <div
-                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                            >
+                    {isMainDomain && (
+                        <div className="lg:hidden flex flex-col items-center justify-center pt-16 pb-2 opacity-10">
+                            <Link to="/" className="flex flex-col items-center gap-3">
+                                <div
+                                    className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                    style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                >
+                                    {!theme?.logoUrl && (
+                                        <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                    )}
+                                </div>
                                 {!theme?.logoUrl && (
-                                    <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                    <span className="text-lg font-bold text-gray-700 tracking-tight">StayNest</span>
                                 )}
-                            </div>
-                            {!theme?.logoUrl && (
-                                <span className="text-lg font-bold text-gray-700 tracking-tight">StayNest</span>
-                            )}
-                        </Link>
-                    </div>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
 

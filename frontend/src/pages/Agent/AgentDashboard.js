@@ -51,7 +51,7 @@ const AgentDashboard = () => {
             name: 'Total Listings',
             value: stats?.total_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+            iconBg: 'bg-primary-500/10 text-primary-600 dark:text-primary-400',
             trend: '+2 this week'
         },
         {

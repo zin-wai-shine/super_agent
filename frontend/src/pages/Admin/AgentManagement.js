@@ -293,7 +293,7 @@ const AgentManagement = () => {
                 header: 'Domain',
                 cell: ({ row }) => {
                     const agent = row.original;
-                    const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.superealestate.localhost` : '');
+                    const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.haizo.it.com` : '');
                     const url = domain ? `http://${domain}:${window.location.port || '3000'}` : '#'; // Use current port
 
                     return (
@@ -501,6 +501,16 @@ const AgentManagement = () => {
                             }}
                         />
                     </div>
+                    {/* Reset Status */}
+                    {statusFilter !== 'all' && (
+                        <button
+                            onClick={() => setStatusFilter('all')}
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors -ml-1"
+                            title="Reset Status"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                        </button>
+                    )}
 
                     {/* Plan Filter */}
                     <div className="w-full sm:w-32">
@@ -528,6 +538,16 @@ const AgentManagement = () => {
                             }}
                         />
                     </div>
+                    {/* Reset Plan */}
+                    {planFilter !== 'all' && (
+                        <button
+                            onClick={() => setPlanFilter('all')}
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors -ml-1"
+                            title="Reset Plan"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                        </button>
+                    )}
 
                     {/* Date Filters */}
                     <div className="relative flex items-center gap-2" ref={datePickerRef}>

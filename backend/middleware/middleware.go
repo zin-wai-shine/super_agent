@@ -114,30 +114,44 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		hostPort := strings.Split(host, ":")
 		domain := hostPort[0]
 
-		isMainDomain := domain == cfg.MainDomain || domain == "localhost" || domain == "127.0.0.1"
+		// Main domain detection logic (support haizo.it.com and configured domain)
+		isMainDomain := domain == cfg.MainDomain ||
+			domain == "haizo.it.com" ||
+			domain == "www.haizo.it.com" ||
+			domain == "www."+cfg.MainDomain ||
+			domain == "localhost" ||
+			domain == "127.0.0.1"
 
+		c.Set("is_main_domain", isMainDomain)
+
+		// Tenant resolution from subdomain (e.g. staynert.haizo.it.com)
 		var tenantID uuid.UUID
 		var tenant *models.Agent
 		foundTenant := false
 
-		// Explicitly set is_main_domain based on calculation
-		c.Set("is_main_domain", isMainDomain)
-
 		if !isMainDomain {
-			// 1. Try to resolve as a subdomain of main domain (e.g. domono.superealestate.localhost)
+			// Try extracting from subdomain if it matches production pattern
+			subdomain := ""
 			mainDomainWithDot := "." + cfg.MainDomain
 			if strings.HasSuffix(domain, mainDomainWithDot) {
-				subdomain := strings.TrimSuffix(domain, mainDomainWithDot)
-				if subdomain != "" && subdomain != "www" && subdomain != "api" {
-					var agent models.Agent
-					if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
-						tenantID = agent.ID
-						tenant = &agent
-						foundTenant = true
-					}
+				subdomain = strings.TrimSuffix(domain, mainDomainWithDot)
+			} else if strings.HasSuffix(domain, ".haizo.it.com") {
+				subdomain = strings.TrimSuffix(domain, ".haizo.it.com")
+			} else if strings.HasSuffix(domain, ".localhost") {
+				subdomain = strings.TrimSuffix(domain, ".localhost")
+			}
+
+			if subdomain != "" && subdomain != "www" && subdomain != "api" {
+				var agent models.Agent
+				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+					tenantID = agent.ID
+					tenant = &agent
+					foundTenant = true
 				}
 			}
-			// 1b. Mobile / same network: subdomain.superealestate.<IP> (e.g. domono.superealestate.192.168.1.5)
+
+			// 1b. Mobile / same network: subdomain.haizo.<IP> (e.g. staynert.haizo.192.168.1.5)
+			// This logic is now partially covered by the .haizo.it.com check, but the IP part is still unique.
 			if !foundTenant {
 				mainDomainBase := cfg.MainDomain
 				if idx := strings.Index(cfg.MainDomain, "."); idx > 0 {

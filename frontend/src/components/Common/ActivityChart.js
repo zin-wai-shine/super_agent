@@ -60,7 +60,7 @@ const ActivityChart = ({ data }) => {
                     />
                     <Bar
                         dataKey="value"
-                        fill="#3b82f6"
+                        fill="var(--primary-color)"
                         radius={[4, 4, 0, 0]}
                         barSize={20}
                     />

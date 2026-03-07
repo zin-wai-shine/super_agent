@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { ArrowLeftIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import Logo from '../Common/Logo';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTenant } from '../../contexts/TenantContext';
 import Modal from '../ui/Modal';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
@@ -69,6 +70,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const sectionRefs = useRef({});
     const [activeSectionTitle, setActiveSectionTitle] = useState('');
     const { theme } = useTheme();
+    const { isMainDomain } = useTenant();
     const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
     const swipeStartX = useRef(0);
@@ -538,21 +540,23 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         </div>
 
                         {/* Subdomain-style watermark logo — centered, low opacity */}
-                        <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
-                            <div className="flex flex-col items-center gap-2">
-                                <div
-                                    className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                    style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                >
+                        {isMainDomain && (
+                            <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
+                                <div className="flex flex-col items-center gap-2">
+                                    <div
+                                        className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                        style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                    >
+                                        {!theme?.logoUrl && (
+                                            <Logo className="w-56 h-56 text-primary-500" />
+                                        )}
+                                    </div>
                                     {!theme?.logoUrl && (
-                                        <Logo className="w-56 h-56 text-primary-500" />
+                                        <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
                                     )}
                                 </div>
-                                {!theme?.logoUrl && (
-                                    <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
-                                )}
                             </div>
-                        </div>
+                        )}
 
                     </div>
                 </div>

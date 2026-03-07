@@ -15,6 +15,7 @@ import {
     StarIcon as StarSolidIcon
 } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 
@@ -45,6 +46,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         media = [],
         is_featured,
         created_at,
+        agent,
     } = listing;
 
     // Get first image or placeholder
@@ -68,6 +70,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated, user } = useAuth();
+    const { isMainDomain } = useTenant();
 
     // Check if listing is saved on mount
     React.useEffect(() => {
@@ -245,6 +248,30 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 )}
                             </button>
                         )}
+
+                        {/* Agent Profile Overlay - Floating Card Design */}
+                        {isMainDomain && listing.agent && (
+                            <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto">
+                                <div
+                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden"
+                                    style={
+                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                            backgroundSize: '78%',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            padding: '0px'
+                                        } : {}
+                                    }
+                                >
+                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                        <span className="text-primary-600 font-bold text-[11px] md:text-xs whitespace-nowrap px-2 truncate w-full text-center">
+                                            {listing.agent.name || 'Agent'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="px-1.5 py-2">
@@ -300,6 +327,30 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                     <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
                                 )}
                             </button>
+                        )}
+
+                        {/* Agent Profile Overlay - Floating Card Design */}
+                        {isMainDomain && listing.agent && (
+                            <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto">
+                                <div
+                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[98px] md:w-[122px] h-auto aspect-[3/1] overflow-hidden"
+                                    style={
+                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                            backgroundSize: '78%',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            padding: '0px'
+                                        } : {}
+                                    }
+                                >
+                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                        <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
+                                            {listing.agent.name || 'Agent'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         )}
 
 
@@ -374,6 +425,30 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                     <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
                                 )}
                             </button>
+                        )}
+
+                        {/* Agent Profile Overlay - Floating Card Design */}
+                        {isMainDomain && listing.agent && (
+                            <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto">
+                                <div
+                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden"
+                                    style={
+                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                            backgroundSize: '78%',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            padding: '0px'
+                                        } : {}
+                                    }
+                                >
+                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                        <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
+                                            {listing.agent.name || 'Agent'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </Link>
                     <div className="flex-1 py-1 flex flex-col justify-between">

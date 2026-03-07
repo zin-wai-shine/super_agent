@@ -6,7 +6,7 @@ import {
     SwatchIcon,
     ArrowPathIcon,
     PhotoIcon,
-    TypeIcon,
+    DocumentTextIcon,
     GlobeAltIcon,
     CloudArrowUpIcon,
     CheckCircleIcon,
@@ -84,6 +84,7 @@ const ThemeSettings = () => {
         button_shadow_spread: 0,
         button_shadow_color: '#000000',
         button_shadow_opacity: 25,
+        navbar_logo_height: 100,
     };
 
     // Derived state for live preview (always reflects form state)
@@ -120,6 +121,7 @@ const ThemeSettings = () => {
         register('button_shadow_spread');
         register('button_shadow_color');
         register('button_shadow_opacity');
+        register('navbar_logo_height');
     }, [register]);
 
     const fetchTheme = async () => {
@@ -155,6 +157,7 @@ const ThemeSettings = () => {
                 button_shadow_spread: theme.button_shadow_spread ?? DEFAULT_THEME.button_shadow_spread,
                 button_shadow_color: theme.button_shadow_color || DEFAULT_THEME.button_shadow_color,
                 button_shadow_opacity: theme.button_shadow_opacity ?? DEFAULT_THEME.button_shadow_opacity,
+                navbar_logo_height: theme.navbar_logo_height ?? DEFAULT_THEME.navbar_logo_height,
             };
             reset(initialData);
 
@@ -165,6 +168,11 @@ const ThemeSettings = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetField = (fieldName) => {
+        setValue(fieldName, DEFAULT_THEME[fieldName]);
+        toast.success(`${fieldName.replace('_', ' ')} reset to default`);
     };
 
     const onSubmit = async (data) => {
@@ -255,9 +263,6 @@ const ThemeSettings = () => {
     const tabs = [
         { id: 'brand', label: 'Identity', icon: GlobeAltIcon },
         { id: 'colors', label: 'Colors & Type', icon: SwatchIcon },
-        { id: 'buttons', label: 'Buttons', icon: SparklesIcon },
-        { id: 'cards', label: 'Cards', icon: PhotoIcon },
-        { id: 'menus', label: 'Menus & Dropdowns', icon: Bars3Icon },
     ];
 
     return (
@@ -296,381 +301,251 @@ const ThemeSettings = () => {
                 </div>
             </div>
 
-            <div className="flex justify-center h-[calc(100vh-200px)] min-h-[600px]">
-                {/* SETTINGS PANEL - CENTERED - FULL WIDTH */}
-                <div className="w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex relative">
-                    {/* Content Area - Left Side */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-white dark:bg-transparent rounded-l-xl">
-                        {/* Section Title */}
-                        <div className="mb-6 pb-4 border-b border-gray-50 dark:border-white/5">
-                            <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                                {React.createElement(tabs.find(t => t.id === activeTab).icon, { className: "w-4 h-4 text-primary-500" })}
-                                {tabs.find(t => t.id === activeTab).label}
-                            </h2>
-                        </div>
-                        {activeTab === 'brand' && (
-                            <div className="space-y-6 animate-fadeIn">
-                                {/* Logo Upload */}
-                                <div>
-                                    <label className="input-label">Site Logo</label>
-                                    <div
-                                        onClick={() => logoInputRef.current?.click()}
-                                        className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-colors cursor-pointer group bg-gray-50/30 dark:bg-gray-900/10"
-                                    >
-                                        <div className="space-y-1 text-center">
-                                            {watchAll.logo_url ? (
-                                                <div className="relative inline-block group-hover:scale-105 transition-transform duration-300">
-                                                    <img src={getMediaUrl(watchAll.logo_url)} alt="Preview" className="h-16 w-auto mx-auto object-contain rounded" />
-                                                    <div className="mt-2 text-[10px] text-primary-600 dark:text-primary-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">Change Logo</div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    {uploadingLogo ? (
-                                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto"></div>
-                                                    ) : (
-                                                        <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-300 group-hover:text-primary-500 transition-colors duration-300" />
-                                                    )}
-                                                    <div className="flex text-sm text-gray-600 dark:text-gray-400 justify-center mt-2">
-                                                        <span className="relative cursor-pointer rounded-md font-medium text-primary-600 dark:text-primary-400">Upload file</span>
-                                                    </div>
-                                                    <p className="text-[10px] text-gray-400 mt-1">PNG, JPG, WebP up to 2MB</p>
-                                                </>
-                                            )}
-                                        </div>
+            <div className="h-[calc(100vh-200px)] min-h-[600px] w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col overflow-hidden">
+                {/* Header Tabs Navigation */}
+                <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm z-20">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`px-8 py-5 flex items-center gap-2 transition-all relative group h-full ${activeTab === tab.id
+                                ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-white/5'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5'
+                                }`}
+                        >
+                            <span className={`text-[10px] font-extrabold uppercase tracking-widest transition-colors ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`}>
+                                {tab.label}
+                            </span>
+
+                            {activeTab === tab.id && (
+                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-500 shadow-[0_-2px_10px_rgba(38,99,235,0.3)]" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar bg-white dark:bg-transparent">
+                    {/* Section Label Header */}
+                    <div className="mb-6 pb-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
+                        <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
+                            <div className="p-2 bg-primary-500/10 rounded-lg">
+                                {React.createElement(tabs.find(t => t.id === activeTab).icon, { className: "w-5 h-5 text-primary-500" })}
+                            </div>
+                            {tabs.find(t => t.id === activeTab).label}
+                        </h2>
+                    </div>
+
+                    {activeTab === 'brand' && (
+                        <div className="space-y-8 animate-fadeIn">
+                            {/* Navbar Preview Section */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-1">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Website Navbar Preview</label>
+                                        <p className="text-[11px] text-gray-400">Preview of your public header.</p>
                                     </div>
-                                    <input
-                                        type="file"
-                                        ref={logoInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={handleLogoUpload}
-                                    />
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => logoInputRef.current?.click()}
+                                            className="text-[10px] font-bold text-primary-500 uppercase tracking-widest hover:text-primary-600 transition-colors"
+                                        >
+                                            {watchAll.logo_url ? 'Change Logo' : 'Upload Logo'}
+                                        </button>
+                                        {watchAll.logo_url && (
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('logo_url')}
+                                                className="p-1 text-gray-400 hover:text-primary-500 transition-colors"
+                                                title="Reset Logo"
+                                            >
+                                                <ArrowPathIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Share Preview Upload */}
-                                <div>
-                                    <label className="input-label">Social Share Preview Image</label>
-                                    <div
-                                        onClick={() => sharePreviewInputRef.current?.click()}
-                                        className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-colors cursor-pointer group bg-gray-50/30 dark:bg-gray-900/10"
-                                    >
-                                        <div className="space-y-1 text-center">
-                                            {watchAll.share_preview_image ? (
-                                                <div className="relative inline-block group-hover:scale-105 transition-transform duration-300">
-                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="h-16 w-auto mx-auto object-contain rounded" />
-                                                    <div className="mt-2 text-[10px] text-primary-600 dark:text-primary-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">Change Preview Image</div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    {uploadingSharePreview ? (
-                                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto"></div>
-                                                    ) : (
-                                                        <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-300 group-hover:text-primary-500 transition-colors duration-300" />
-                                                    )}
-                                                    <div className="flex text-sm text-gray-600 dark:text-gray-400 justify-center mt-2">
-                                                        <span className="relative cursor-pointer rounded-md font-medium text-primary-600 dark:text-primary-400">Upload share preview</span>
-                                                    </div>
-                                                    <p className="text-[10px] text-gray-400 mt-1">1200x630 (aspect 1.91:1) recommended</p>
-                                                </>
-                                            )}
+                                <div className="relative bg-white dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden">
+                                    <div className="h-20 md:h-28 flex items-center px-6 md:px-12 justify-between">
+                                        <div className="flex items-center">
+                                            <div
+                                                className="w-[55px] h-[51px] md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
+                                                style={{
+                                                    backgroundImage: `url(${getMediaUrl(watchAll.logo_url || '/default_logo.png')})`,
+                                                    transformOrigin: 'left',
+                                                    transform: `scale(${preview.navbar_logo_height / 100})`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="hidden md:flex items-center gap-6 opacity-30 pointer-events-none">
+                                            <div className="h-2 w-16 bg-gray-300 rounded-full" />
+                                            <div className="h-2 w-16 bg-gray-200 rounded-full" />
+                                            <div className="h-2 w-16 bg-gray-200 rounded-full" />
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shadow-sm">
+                                                <Bars3Icon className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+                                            </div>
                                         </div>
                                     </div>
-                                    <input
-                                        type="file"
-                                        ref={sharePreviewInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={handleSharePreviewUpload}
-                                    />
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="input-label">Header Title</label>
+                                {/* Logo Scale Adjustment - Positioned directly under nav bar, no container */}
+                                <div className="px-1 pt-2 max-w-2xl">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex-1">
+                                            <ModernSlider
+                                                label="Logo Display Scale"
+                                                value={preview.navbar_logo_height}
+                                                min={50}
+                                                max={200}
+                                                step={1}
+                                                unit="%"
+                                                onChange={(val) => setValue('navbar_logo_height', val)}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => resetField('navbar_logo_height')}
+                                            className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                            title="Reset Scale"
+                                        >
+                                            <ArrowPathIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the public website header.</p>
+                                </div>
+                            </div>
+
+                            {/* Main Branding Grid: Site Info + Social Share (Col 6) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-8 border-t border-gray-100 dark:border-white/5">
+                                {/* Left Col: Site Attributes */}
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Header Site Title</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('header_text')}
+                                                className="text-gray-400 hover:text-primary-500 transition-colors"
+                                                title="Reset Title"
+                                            >
+                                                <ArrowPathIcon className="w-3 h-3" />
+                                            </button>
+                                        </div>
                                         <input
                                             type="text"
-                                            className="input-field"
+                                            className="input-field bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl h-12 text-sm"
                                             placeholder="Super Real Estate"
                                             {...register('header_text')}
                                         />
                                     </div>
-                                    <div>
-                                        <label className="input-label">Footer Text</label>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Footer Attribution</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('footer_text')}
+                                                className="text-gray-400 hover:text-primary-500 transition-colors"
+                                                title="Reset Footer"
+                                            >
+                                                <ArrowPathIcon className="w-3 h-3" />
+                                            </button>
+                                        </div>
                                         <input
                                             type="text"
-                                            className="input-field"
+                                            className="input-field bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl h-12 text-sm"
                                             placeholder="© 2024 Your Name"
                                             {...register('footer_text')}
                                         />
                                     </div>
                                 </div>
-                            </div>
-                        )}
 
-                        {activeTab === 'colors' && (
-                            <div className="space-y-6 animate-fadeIn">
-                                <div>
-                                    <label className="input-label">Typography</label>
-                                    <Controller
-                                        name="font_family"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <StyledSelect
-                                                {...field}
-                                                options={fontOptions}
-                                                placeholder="Select a font..."
-                                                isSearchable={false}
-                                            />
+                                {/* Right Col: Social Share Preview (Col 6) */}
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Social Share Preview</label>
+                                        {watchAll.share_preview_image && (
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('share_preview_image')}
+                                                className="text-gray-400 hover:text-primary-500 transition-colors"
+                                                title="Reset Share Image"
+                                            >
+                                                <ArrowPathIcon className="w-3 h-3" />
+                                            </button>
                                         )}
-                                    />
-                                </div>
-
-                                <div className="space-y-4 pt-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Palette</label>
-                                    <ModernColorPicker
-                                        label="Primary Color"
-                                        value={preview.primary_color}
-                                        onChange={(val) => setValue('primary_color', val)}
-                                    />
-                                    <ModernColorPicker
-                                        label="Secondary Color"
-                                        value={preview.secondary_color}
-                                        onChange={(val) => setValue('secondary_color', val)}
-                                    />
-                                    <ModernColorPicker
-                                        label="Background Color"
-                                        value={preview.background_color}
-                                        onChange={(val) => setValue('background_color', val)}
-                                    />
-                                    <ModernColorPicker
-                                        label="Text Color"
-                                        value={preview.text_color}
-                                        onChange={(val) => setValue('text_color', val)}
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'buttons' && (
-                            <div className="space-y-8 animate-fadeIn pt-2">
-                                {/* Inline Button Preview */}
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center gap-4 justify-center relative group">
-                                    <span className="absolute top-2 left-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Button Preview</span>
-                                    <div className="flex gap-4">
-                                        <button
-                                            className="px-6 py-2.5 text-white font-medium text-sm transition-all shadow-lg shadow-primary-500/20 whitespace-nowrap"
-                                            style={{
-                                                backgroundColor: preview.primary_color,
-                                                borderRadius: preview.button_radius,
-                                                backgroundImage: preview.button_gradient ? `linear-gradient(135deg, ${preview.primary_color}, ${preview.button_gradient_color2})` : 'none',
-                                                boxShadow: `${preview.button_shadow_x}px ${preview.button_shadow_y}px ${preview.button_shadow_blur}px ${preview.button_shadow_spread}px ${hexToRgba(preview.button_shadow_color, preview.button_shadow_opacity)}`
-                                            }}
-                                        >
-                                            Primary Button
-                                        </button>
-                                        <button
-                                            className="px-6 py-2.5 font-medium text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 whitespace-nowrap"
-                                            style={{
-                                                borderRadius: preview.button_radius,
-                                            }}
-                                        >
-                                            Secondary
-                                        </button>
                                     </div>
-                                </div>
-
-                                <ModernCornerRadiusInput
-                                    label="Button Corner Radius"
-                                    value={preview.button_radius}
-                                    onChange={(val) => setValue('button_radius', val)}
-                                />
-                                <ModernSwitch
-                                    label="Enable Gradient"
-                                    description="Use gradient background for primary buttons"
-                                    checked={!!preview.button_gradient}
-                                    onChange={(checked) => setValue('button_gradient', checked)}
-                                />
-
-                                {!!preview.button_gradient && (
-                                    <ModernColorPicker
-                                        label="Gradient End Color"
-                                        value={preview.button_gradient_color2}
-                                        onChange={(val) => setValue('button_gradient_color2', val)}
-                                    />
-                                )}
-                                <ModernShadowPicker
-                                    label="Button Shadow"
-                                    x={preview.button_shadow_x}
-                                    y={preview.button_shadow_y}
-                                    blur={preview.button_shadow_blur}
-                                    spread={preview.button_shadow_spread}
-                                    color={preview.button_shadow_color}
-                                    opacity={preview.button_shadow_opacity}
-                                    onChange={(vals) => Object.entries(vals).forEach(([k, v]) => setValue(`button_shadow_${k}`, v))}
-                                />
-                            </div>
-                        )}
-
-                        {activeTab === 'cards' && (
-                            <div className="space-y-6 animate-fadeIn">
-                                {/* Inline Card Preview */}
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex justify-center relative">
-                                    <span className="absolute top-2 left-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Card Preview</span>
                                     <div
-                                        className="w-full max-w-[200px] bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 overflow-hidden"
-                                        style={{
-                                            borderRadius: preview.card_radius,
-                                            boxShadow: `${preview.shadow_x}px ${preview.shadow_y}px ${preview.shadow_blur}px ${preview.shadow_spread}px ${hexToRgba(preview.shadow_color, preview.shadow_opacity)}`
-                                        }}
+                                        onClick={() => sharePreviewInputRef.current?.click()}
+                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[220px] flex-col items-center overflow-hidden"
                                     >
-                                        <div className="h-24 bg-gray-200 dark:bg-gray-700 relative">
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-secondary-500/20" />
-                                        </div>
-                                        <div className="p-4 space-y-3">
-                                            <div className="h-4 w-3/4 bg-gray-100 dark:bg-gray-700 rounded-md" />
-                                            <div className="h-3 w-1/2 bg-gray-50 dark:bg-gray-800 rounded-md" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <ModernCornerRadiusInput
-                                    label="Card Corner Radius"
-                                    value={preview.card_radius}
-                                    onChange={(val) => setValue('card_radius', val)}
-                                />
-                                <ModernShadowPicker
-                                    label="Card Shadow"
-                                    x={preview.shadow_x}
-                                    y={preview.shadow_y}
-                                    blur={preview.shadow_blur}
-                                    spread={preview.shadow_spread}
-                                    color={preview.shadow_color}
-                                    opacity={preview.shadow_opacity}
-                                    onChange={(vals) => Object.entries(vals).forEach(([k, v]) => setValue(`shadow_${k}`, v))}
-                                />
-                            </div>
-                        )}
-
-                        {activeTab === 'menus' && (
-                            <div className="space-y-6 animate-fadeIn">
-                                {/* Mega Menu Preview */}
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-8 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex justify-center relative overflow-hidden">
-                                    <span className="absolute top-2 left-2 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Mega Menu Layout Preview</span>
-                                    <div
-                                        className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 p-8 shadow-2xl transition-all duration-300 border border-gray-100 dark:border-white/10"
-                                        style={{
-                                            borderRadius: preview.menu_radius,
-                                            backgroundColor: preview.menu_background_color,
-                                            color: preview.text_color
-                                        }}
-                                    >
-                                        {/* Column 1: Browse Properties Skeletons */}
-                                        <div className="space-y-6">
-                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-50" />
-                                            <div className="space-y-6">
-                                                <div className="space-y-2">
-                                                    <div className="h-3 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
-                                                    <div className="h-2 w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                                        <div className="w-full text-center">
+                                            {watchAll.share_preview_image ? (
+                                                <div className="relative w-full group-hover:scale-[1.01] transition-transform duration-300">
+                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="w-full h-auto object-cover rounded-lg shadow-sm" />
+                                                    <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Image</div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <div className="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
-                                                    <div className="h-2 w-28 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="h-3 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
-                                                    <div className="h-2 w-36 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Column 2: Quick Filters Skeletons */}
-                                        <div className="space-y-6">
-                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-50" />
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <div className="h-2 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse opacity-60" />
-                                                    <div className="h-10 w-full bg-gray-50/50 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 rounded-xl animate-pulse" />
-                                                </div>
-                                                <div className="p-4 bg-gray-50/50 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 rounded-2xl flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
-                                                        <div className="space-y-2">
-                                                            <div className="h-2 w-20 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
-                                                            <div className="h-1.5 w-24 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
-                                                        </div>
+                                            ) : (
+                                                <div className="py-8">
+                                                    <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                                                        <PhotoIcon className="h-6 w-6 text-primary-400" />
                                                     </div>
-                                                    <div className="w-10 h-5 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="text-[11px] font-bold text-primary-600 uppercase tracking-widest">Add Share Image</div>
+                                                    <p className="text-[10px] text-gray-400 mt-2">1200x630px recommended</p>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Column 3: Featured Section Skeletons */}
-                                        <div className="space-y-4">
-                                            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-white/5 border border-gray-100/50 dark:border-white/10 animate-pulse">
-                                                <div className="absolute inset-0 bg-gradient-to-t from-gray-200/50 dark:from-white/10 to-transparent" />
-                                                <div className="absolute top-4 left-4 h-4 w-16 bg-primary-500/20 rounded-full" />
-                                                <div className="absolute bottom-4 left-4 right-4 space-y-2">
-                                                    <div className="h-3 w-3/4 bg-gray-300 dark:bg-white/20 rounded-full" />
-                                                    <div className="h-2 w-full bg-gray-200 dark:bg-white/10 rounded-full" />
-                                                </div>
-                                            </div>
-                                            <div className="h-11 w-full bg-primary-500/20 rounded-xl animate-pulse flex items-center justify-center">
-                                                <div className="h-2 w-24 bg-primary-500/40 rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                        <ModernCornerRadiusInput
-                                            label="Menu Corner Radius"
-                                            value={preview.menu_radius}
-                                            onChange={(val) => setValue('menu_radius', val)}
-                                        />
-                                        <ModernColorPicker
-                                            label="Menu Background Color"
-                                            value={preview.menu_background_color}
-                                            onChange={(val) => setValue('menu_background_color', val)}
-                                        />
-                                    </div>
-                                    <div className="p-4 bg-blue-50/50 dark:bg-primary-900/10 rounded-xl border border-blue-100/50 dark:border-primary-500/10">
-                                        <div className="flex gap-3">
-                                            <SparklesIcon className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                                            <div className="space-y-1">
-                                                <h4 className="text-xs font-bold text-primary-900 dark:text-primary-100">Mega Menu Preview</h4>
-                                                <p className="text-[10px] text-primary-800/60 dark:text-primary-200/40 leading-relaxed">
-                                                    This preview shows how your site's navigation dropdowns will look. Adjust the radius and background color to match your brand's aesthetic.
-                                                </p>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        )}
-                    </div>
 
-                    {/* Sidebar Tabs - Right Side - Text Version */}
-                    <div className="w-56 border-l border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm flex flex-col py-4 z-20">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`w-full px-6 py-4 flex flex-row items-center justify-start transition-all relative group ${activeTab === tab.id
-                                    ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-white/5'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5'
-                                    }`}
-                            >
-                                <span className={`text-[10px] font-extrabold uppercase tracking-widest transition-colors ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`}>
-                                    {tab.label}
-                                </span>
+                            <input
+                                type="file"
+                                ref={logoInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleLogoUpload}
+                            />
+                            <input
+                                type="file"
+                                ref={sharePreviewInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleSharePreviewUpload}
+                            />
+                        </div>
+                    )}
 
-                                {activeTab === tab.id && (
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary-500 rounded-r-full shadow-[0_0_10px_rgba(38,99,235,0.5)]" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                    {activeTab === 'colors' && (
+                        <div className="space-y-8 animate-fadeIn max-w-2xl">
+                            <div className="space-y-4">
+                                <label className="input-label uppercase tracking-widest text-[10px] font-bold text-gray-400">Typography</label>
+                                <Controller
+                                    name="font_family"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <StyledSelect
+                                            {...field}
+                                            options={fontOptions}
+                                            placeholder="Select a font..."
+                                            isSearchable={false}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-6 pt-4 border-t border-gray-100 dark:border-white/5">
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Color Palette</label>
+                                <ModernColorPicker
+                                    label="Primary Theme Color"
+                                    value={preview.primary_color}
+                                    onChange={(val) => setValue('primary_color', val)}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 
@@ -45,6 +46,7 @@ import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
 import PropertyShare from '../../components/Listings/PropertyShare';
 import Button from '../../components/ui/Button';
+import Logo from '../../components/Common/Logo';
 
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
@@ -159,6 +161,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const id = propId || routeId;
     const { user, isAuthenticated } = useAuth();
     const { theme } = useTheme();
+    const { isMainDomain } = useTenant();
     const [listing, setListing] = useState(null);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
@@ -2338,21 +2341,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     )}
 
                                     {/* Subdomain-style watermark logo — centered, low opacity */}
-                                    <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div
-                                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                            >
+                                    {isMainDomain && (
+                                        <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div
+                                                    className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                                    style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                                >
+                                                    {!theme?.logoUrl && (
+                                                        <Logo className="w-56 h-56 text-primary-500" />
+                                                    )}
+                                                </div>
                                                 {!theme?.logoUrl && (
-                                                    <Logo className="w-56 h-56 text-primary-500" />
+                                                    <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
                                                 )}
                                             </div>
-                                            {!theme?.logoUrl && (
-                                                <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
-                                            )}
                                         </div>
-                                    </div>
+                                    )}
 
                                 </div>
 

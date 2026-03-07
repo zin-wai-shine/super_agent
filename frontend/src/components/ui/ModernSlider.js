@@ -34,13 +34,19 @@ const ModernSlider = ({
                 />
                 <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-yellow-400 dark:bg-yellow-500 transition-all duration-75"
-                        style={{ width: `${percentage}%` }}
+                        className="h-full transition-all duration-75"
+                        style={{
+                            width: `${percentage}%`,
+                            backgroundColor: 'var(--primary-color, #2663EB)'
+                        }}
                     />
                 </div>
                 <div
-                    className="absolute h-4 w-4 bg-yellow-400 dark:bg-yellow-500 rounded-full shadow-md border-2 border-white dark:border-gray-800 pointer-events-none transition-all duration-75"
-                    style={{ left: `calc(${percentage}% - 8px)` }}
+                    className="absolute h-4 w-4 rounded-full shadow-md border-2 border-white dark:border-gray-800 pointer-events-none transition-all duration-75"
+                    style={{
+                        left: `calc(${percentage}% - 8px)`,
+                        backgroundColor: 'var(--primary-color, #2663EB)'
+                    }}
                 />
             </div>
         </div>

@@ -28,7 +28,7 @@ export const WebSocketProvider = ({ children }) => {
         // Or hits Nginx at port 80 (frontend container) which proxies /api to backend:8080.
         // Let's try relative path first if browser supports it for WS? No, constructor needs absolute.
 
-        const host = window.location.host; // e.g., bkkprime.superealestate.localhost:3000
+        const host = window.location.host; // e.g., staynert.haizo.it.com:3000
         const wsUrl = `${protocol}//${host}/api/ws?token=${token}`;
 
         // NOTE: Standard AuthMiddleware might look at headers, but WS initial request from browser 

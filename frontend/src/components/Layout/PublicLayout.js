@@ -533,12 +533,13 @@ const PublicLayout = () => {
                                         </div>
                                         <Link
                                             to={(() => {
-                                                if (user?.role === 'super_admin') return '/admin';
-                                                if (user?.role === 'agent' || user?.role === 'sub_agent') {
+                                                const role = user?.role?.toLowerCase().trim();
+                                                if (role === 'super_admin') return '/admin';
+                                                if (role === 'agent' || role === 'sub_agent') {
                                                     const agent = user.agent;
                                                     if (agent && agent.subdomain) {
                                                         const currentHost = window.location.hostname;
-                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
+                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
                                                         const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
                                                         if (currentHost !== agentHost) {
                                                             const protocol = window.location.protocol;
@@ -638,9 +639,11 @@ const PublicLayout = () => {
                                             <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center group pr-4 md:pr-8">
                                                 <div
                                                     className="w-[55px] h-[51px] md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
-                                                    style={theme.logoUrl ? {
-                                                        backgroundImage: `url(${getMediaUrl(theme.logoUrl)})`
-                                                    } : {}}
+                                                    style={{
+                                                        ...(theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}),
+                                                        transformOrigin: 'left',
+                                                        transform: `scale(var(--navbar-logo-scale, 1))`
+                                                    }}
                                                 >
                                                     {!theme.logoUrl && (
                                                         <Logo className="w-full h-full" style={{ color: 'var(--primary-color)' }} />
@@ -720,12 +723,13 @@ const PublicLayout = () => {
                                                                     {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
                                                                         <Link
                                                                             to={(() => {
-                                                                                if (user?.role === 'super_admin') return '/admin';
-                                                                                if (user?.role === 'agent' || user?.role === 'sub_agent') {
+                                                                                const role = user?.role?.toLowerCase().trim();
+                                                                                if (role === 'super_admin') return '/admin';
+                                                                                if (role === 'agent' || role === 'sub_agent') {
                                                                                     const agent = user.agent;
                                                                                     if (agent && agent.subdomain) {
                                                                                         const currentHost = window.location.hostname;
-                                                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
+                                                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
                                                                                         const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
                                                                                         if (currentHost !== agentHost) {
                                                                                             const protocol = window.location.protocol;

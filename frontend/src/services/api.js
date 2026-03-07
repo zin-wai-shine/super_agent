@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
+const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
 const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
 const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1' && !currentHostname.endsWith('.localhost');
 

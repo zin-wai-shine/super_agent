@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"super_real_estate/config"
 	"super_real_estate/middleware"
@@ -153,7 +154,7 @@ func seedInitialData(db *gorm.DB) {
 	// Create super admin user
 	hashedPassword, _ := utils.HashPassword("superadmin123")
 	superAdmin := models.User{
-		Email:        "admin@super-realestate.com",
+		Email:        "admin@haizo.it.com",
 		PasswordHash: hashedPassword,
 		FirstName:    "Super",
 		LastName:     "Admin",
@@ -161,6 +162,48 @@ func seedInitialData(db *gorm.DB) {
 		IsActive:     true,
 	}
 	db.FirstOrCreate(&superAdmin, models.User{Email: superAdmin.Email})
+
+	// Seed specific agents: staynert and bolthaven
+	specificAgents := []struct {
+		Name      string
+		Subdomain string
+		Email     string
+	}{
+		{Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.haizo.it.com"},
+		{Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.haizo.it.com"},
+	}
+
+	for _, sa := range specificAgents {
+		var agent models.Agent
+		if err := db.Where("subdomain = ?", sa.Subdomain).First(&agent).Error; err != nil {
+			// Get professional plan for custom branding
+			var plan models.Subscription
+			db.Where("plan_name = ?", "Professional").First(&plan)
+
+			agent = models.Agent{
+				Name:           sa.Name,
+				Subdomain:      sa.Subdomain,
+				DomainType:     models.DomainTypeSubdomain,
+				Email:          sa.Email,
+				IsActive:       true,
+				SubscriptionID: &plan.ID,
+			}
+			db.Create(&agent)
+
+			// Create user for this agent
+			agentPassword, _ := utils.HashPassword("password123")
+			agentUser := models.User{
+				Email:        sa.Email,
+				PasswordHash: agentPassword,
+				FirstName:    strings.Split(sa.Name, " ")[0],
+				LastName:     "Agent",
+				Role:         models.RoleAgent,
+				AgentID:      &agent.ID,
+				IsActive:     true,
+			}
+			db.Create(&agentUser)
+		}
+	}
 
 	// Seed transit stations from the SVG map
 	seedTransitStations(db)

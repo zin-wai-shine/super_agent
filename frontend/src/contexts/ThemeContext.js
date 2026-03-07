@@ -31,6 +31,7 @@ const defaultTheme = {
     buttonShadowSpread: 0,
     buttonShadowColor: '#000000',
     buttonShadowOpacity: 25,
+    navbarLogoHeight: 100,
 };
 
 export const useTheme = () => {
@@ -77,6 +78,7 @@ export const ThemeProvider = ({ children }) => {
                     buttonShadowSpread: t.button_shadow_spread ?? defaultTheme.buttonShadowSpread,
                     buttonShadowColor: t.button_shadow_color || defaultTheme.buttonShadowColor,
                     buttonShadowOpacity: t.button_shadow_opacity ?? defaultTheme.buttonShadowOpacity,
+                    navbarLogoHeight: t.navbar_logo_height ?? defaultTheme.navbarLogoHeight,
                 });
             } else {
                 setTheme(defaultTheme);
@@ -159,6 +161,10 @@ export const ThemeProvider = ({ children }) => {
 
         // Button Gradient Logic
         document.documentElement.style.setProperty('--btn-gradient', theme.buttonGradient ? `linear-gradient(135deg, ${theme.primaryColor}, ${theme.buttonGradientColor2})` : 'none');
+
+        // Logo Scale factor (transform scale)
+        const logoScale = (theme.navbarLogoHeight || 100) / 100;
+        document.documentElement.style.setProperty('--navbar-logo-scale', logoScale.toString());
 
         // Update document title
         if (!isMainDomain && agent) {

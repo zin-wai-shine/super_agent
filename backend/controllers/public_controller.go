@@ -25,7 +25,7 @@ func NewPublicController(db *gorm.DB) *PublicController {
 func (pc *PublicController) GetListings(c *gin.Context) {
 	var listings []models.Listing
 	query := pc.db.Model(&models.Listing{}).
-		Preload("Media").Preload("Agent").Preload("Station").
+		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
 		Where("is_published = ?", true)
 
 	// Tenant filtering (if accessed via agent subdomain)

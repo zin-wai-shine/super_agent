@@ -62,12 +62,17 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     }
 
     // Role-based access
-    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    const userRole = user?.role?.toLowerCase().trim();
+    const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase().trim());
+
+    if (allowedRoles.length > 0 && !normalizedAllowedRoles.includes(userRole)) {
+        console.warn('Access denied: Role mismatch', { expected: allowedRoles, got: userRole, path: location.pathname });
         return <Navigate to="/" replace />;
     }
 
-    // Domain-based access (only if we're sure)
-    if (location.pathname.startsWith('/admin') && !isMainDomain && isMainDomain !== undefined) {
+    // Domain-based access (only if we're sure and NOT a super admin)
+    if (location.pathname.startsWith('/admin') && !isMainDomain && isMainDomain !== undefined && userRole !== 'super_admin') {
+        console.warn('Access denied: Admin path on tenant domain', { isMainDomain, userRole });
         return <Navigate to="/" replace />;
     }
 

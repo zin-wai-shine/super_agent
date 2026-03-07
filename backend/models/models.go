@@ -99,6 +99,7 @@ type Theme struct {
 	ButtonShadowSpread   int       `gorm:"default:0" json:"button_shadow_spread"`
 	ButtonShadowColor    string    `gorm:"size:20;default:'#000000'" json:"button_shadow_color"`
 	ButtonShadowOpacity  int       `gorm:"default:25" json:"button_shadow_opacity"`
+	NavbarLogoHeight     int       `gorm:"default:100" json:"navbar_logo_height"`
 	CustomCSS            string    `gorm:"type:text" json:"custom_css,omitempty"`
 	CreatedAt            time.Time `json:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at"`

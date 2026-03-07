@@ -90,14 +90,16 @@ const HomePage = () => {
 
                 <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
                     {/* Badge */}
-                    <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
-                        <div className="inline-flex items-center gap-3 bg-gray-50/50 border border-gray-100 px-4 py-1.5 rounded-full text-[13px] font-medium text-gray-600 mb-12 backdrop-blur-sm">
-                            <Logo className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
-                            <span className="tracking-tight">
-                                {isMainDomain ? 'Google Antigravity' : `Partnered with ${agent?.name || 'Super Real Estate'}`}
-                            </span>
+                    {isMainDomain && (
+                        <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="inline-flex items-center gap-3 bg-gray-50/50 border border-gray-100 px-4 py-1.5 rounded-full text-[13px] font-medium text-gray-600 mb-12 backdrop-blur-sm">
+                                <Logo className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
+                                <span className="tracking-tight">
+                                    Google Antigravity
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <h1 className="text-4xl md:text-6xl font-normal text-gray-950 mb-6 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
                         {isMainDomain ? (

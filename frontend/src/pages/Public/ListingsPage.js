@@ -109,7 +109,7 @@ const getSelectedOption = (options, value) => {
 const ListingsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { agent, actual_min_price, actual_max_price } = useTenant();
+    const { agent, actual_min_price, actual_max_price, isMainDomain } = useTenant();
     const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
     const { navVisible, filterBarSlot, isScrolled: layoutScrolled, mobileBottomNavVisible, setMobileBottomNavVisible } = outletContext;
@@ -1946,16 +1946,21 @@ const ListingsPage = () => {
                                     )}
 
                                     {/* Watermark Logo at the end of the scroll */}
-                                    <div className="flex flex-col items-center justify-center pt-20 pb-12 opacity-[0.08] select-none pointer-events-none grayscale">
-                                        <div
-                                            className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                            style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                        >
+                                    {isMainDomain && (
+                                        <div className="flex flex-col items-center justify-center pt-8 pb-16 opacity-[0.08] pointer-events-none">
+                                            <div
+                                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
+                                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                            >
+                                                {!theme?.logoUrl && (
+                                                    <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                                )}
+                                            </div>
                                             {!theme?.logoUrl && (
-                                                <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
+                                                <span className="text-xl font-bold text-gray-900 tracking-tight">StayNest</span>
                                             )}
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
 

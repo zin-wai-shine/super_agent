@@ -31,13 +31,15 @@ export const TenantProvider = ({ children }) => {
 
                 // Smart fallback: guess if main domain based on hostname
                 const hostname = window.location.hostname;
-                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
+                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
 
                 // It's the main domain if it matches exactly, or is a plain localhost/127.0.0.1
                 const isProbablyMain = hostname === mainDomain ||
+                    hostname === 'www.' + mainDomain ||
                     hostname === 'localhost' ||
                     hostname === '127.0.0.1' ||
-                    hostname === 'superealestate.localhost';
+                    hostname === 'haizo.it.com' ||
+                    hostname === 'www.haizo.it.com';
 
                 console.log('API failed, guessing tenant config from hostname:', { hostname, isProbablyMain });
                 setTenantConfig({ is_main_domain: isProbablyMain, agent: null });
@@ -53,8 +55,10 @@ export const TenantProvider = ({ children }) => {
         isMainDomain: tenantConfig?.is_main_domain ?? (
             window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
-            window.location.hostname === 'superealestate.localhost' ||
-            window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost')
+            window.location.hostname === 'haizo.it.com' ||
+            window.location.hostname === 'www.haizo.it.com' ||
+            window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com') ||
+            window.location.hostname === 'www.' + (process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com')
         ),
         agent: tenantConfig?.agent ?? null,
         actual_min_price: tenantConfig?.actual_min_price ?? 0,

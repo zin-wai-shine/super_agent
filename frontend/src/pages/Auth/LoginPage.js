@@ -31,15 +31,16 @@ const LoginPage = () => {
 
         if (result.success) {
             // Redirect based on role
+            const role = result.user.role?.toLowerCase().trim();
             if (from) {
                 navigate(from, { replace: true });
-            } else if (result.user.role === 'super_admin') {
+            } else if (role === 'super_admin') {
                 navigate('/admin');
-            } else if (result.user.role === 'agent' || result.user.role === 'sub_agent') {
+            } else if (role === 'agent' || role === 'sub_agent') {
                 const agent = result.user.agent;
                 if (agent && agent.subdomain) {
                     const currentHost = window.location.hostname;
-                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost';
+                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
                     const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
 
                     if (currentHost !== agentHost) {
