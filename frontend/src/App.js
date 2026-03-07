@@ -115,6 +115,27 @@ const AppRoutes = () => {
     const { isMainDomain, agent } = useTenant();
     console.log('AppRoutes State:', { isMainDomain, agent });
 
+    // Handle invalid subdomain access
+    if (!isMainDomain && !agent) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-sm w-full">
+                    <div className="text-4xl mb-4">🔍</div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Site Not Found</h1>
+                    <p className="text-gray-500 mb-6 text-sm">
+                        The agent subdomain you are trying to visit does not exist or has been deactivated.
+                    </p>
+                    <a
+                        href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
+                        className="inline-flex items-center justify-center w-full px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+                    >
+                        Back to Platform
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Routes>
             {/* Public Routes */}

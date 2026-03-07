@@ -231,15 +231,22 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 
 		// Final Fallback: Resolve tenant from X-Tenant header (e.g. for cross-domain requests on Fly.io)
 		if !foundTenant {
-			if subdomain := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomain != "" && subdomain != "www" && subdomain != "api" {
+			if subdomainHeader := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomainHeader != "" && subdomainHeader != "www" && subdomainHeader != "api" {
 				var agent models.Agent
-				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomainHeader, true, false).First(&agent).Error; err == nil {
 					c.Set("tenant_id", agent.ID)
 					c.Set("tenant", &agent)
 					c.Set("is_main_domain", false)
 					foundTenant = true
 				}
 			}
+		}
+
+		// Final check: If not on the main domain and no valid tenant found, prevent access
+		if !isMainDomain && !foundTenant {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found or inactive"})
+			c.Abort()
+			return
 		}
 
 		c.Next()
