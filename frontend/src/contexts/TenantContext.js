@@ -33,11 +33,11 @@ export const TenantProvider = ({ children }) => {
                 const hostname = window.location.hostname;
                 const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
 
-                // It's the main domain if it matches exactly, or is a plain localhost/127.0.0.1
+                // It's the main domain if it matches exactly, or is one of our dev main domains
+                const devMainDomains = ['localhost', '127.0.0.1', 'superealestate.localhost', 'superealestate.test', 'superealestate.local'];
                 const isProbablyMain = hostname === mainDomain ||
                     hostname === 'www.' + mainDomain ||
-                    hostname === 'localhost' ||
-                    hostname === '127.0.0.1' ||
+                    devMainDomains.includes(hostname) ||
                     hostname === 'haizo.it.com' ||
                     hostname === 'www.haizo.it.com';
 
@@ -55,6 +55,9 @@ export const TenantProvider = ({ children }) => {
         isMainDomain: tenantConfig?.is_main_domain ?? (
             window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === 'superealestate.localhost' ||
+            window.location.hostname === 'superealestate.test' ||
+            window.location.hostname === 'superealestate.local' ||
             window.location.hostname === 'haizo.it.com' ||
             window.location.hostname === 'www.haizo.it.com' ||
             window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com') ||

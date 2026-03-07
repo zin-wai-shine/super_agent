@@ -115,12 +115,20 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		domain := hostPort[0]
 
 		// Main domain detection logic (support haizo.it.com and configured domain)
-		isMainDomain := domain == cfg.MainDomain ||
+		mainDomain := cfg.MainDomain
+		if mainDomain == "" {
+			mainDomain = "haizo.it.com"
+		}
+
+		isMainDomain := domain == mainDomain ||
+			domain == "www."+mainDomain ||
 			domain == "haizo.it.com" ||
 			domain == "www.haizo.it.com" ||
-			domain == "www."+cfg.MainDomain ||
 			domain == "localhost" ||
-			domain == "127.0.0.1"
+			domain == "127.0.0.1" ||
+			domain == "superealestate.localhost" ||
+			domain == "superealestate.test" ||
+			domain == "superealestate.local"
 
 		c.Set("is_main_domain", isMainDomain)
 
@@ -132,13 +140,17 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		if !isMainDomain {
 			// Try extracting from subdomain if it matches production pattern
 			subdomain := ""
-			mainDomainWithDot := "." + cfg.MainDomain
+			mainDomainWithDot := "." + mainDomain
 			if strings.HasSuffix(domain, mainDomainWithDot) {
 				subdomain = strings.TrimSuffix(domain, mainDomainWithDot)
 			} else if strings.HasSuffix(domain, ".haizo.it.com") {
 				subdomain = strings.TrimSuffix(domain, ".haizo.it.com")
 			} else if strings.HasSuffix(domain, ".localhost") {
 				subdomain = strings.TrimSuffix(domain, ".localhost")
+			} else if strings.HasSuffix(domain, ".test") {
+				subdomain = strings.TrimSuffix(domain, ".test")
+			} else if strings.HasSuffix(domain, ".local") {
+				subdomain = strings.TrimSuffix(domain, ".local")
 			}
 
 			if subdomain != "" && subdomain != "www" && subdomain != "api" {
