@@ -1067,7 +1067,7 @@ const PublicLayout = () => {
                                     <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
                                 </div>
                                 <div className="text-sm font-medium text-gray-400">
-                                    {theme.footerText || `© ${new Date().getFullYear()} Super Real Estate. All rights reserved.`}
+                                    {theme.footerText || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`}
                                 </div>
                             </div>
                         </div>
