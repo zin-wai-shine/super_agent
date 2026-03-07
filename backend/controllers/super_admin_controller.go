@@ -348,7 +348,10 @@ func (sac *SuperAdminController) DeleteAgent(c *gin.Context) {
 func (sac *SuperAdminController) SuspendAgent(c *gin.Context) {
 	id := c.Param("id")
 
-	if err := sac.db.Model(&models.Agent{}).Where("id = ?", id).Update("is_suspended", true).Error; err != nil {
+	if err := sac.db.Model(&models.Agent{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"is_suspended": true,
+		"is_active":    false,
+	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to suspend agent"})
 		return
 	}

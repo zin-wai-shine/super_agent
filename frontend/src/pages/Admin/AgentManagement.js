@@ -338,7 +338,9 @@ const AgentManagement = () => {
                 accessorKey: 'is_active',
                 header: 'Status',
                 cell: ({ row }) => {
-                    const isActive = row.original.is_active ?? row.original.IsActive ?? true;
+                    const agent = row.original;
+                    // An agent is only truly active if is_active is true AND is_suspended is false
+                    const isActive = (agent.is_active ?? agent.IsActive ?? true) && !(agent.is_suspended ?? agent.IsSuspended ?? false);
                     return (
                         <span className={`badge ${isActive ? 'badge-success' : 'badge-error'}`}>
                             {isActive ? 'Active' : 'Suspended'}
@@ -363,7 +365,7 @@ const AgentManagement = () => {
                 header: () => <div className="text-right">Actions</div>,
                 cell: ({ row }) => {
                     const agent = row.original;
-                    const isActive = agent.is_active ?? agent.IsActive ?? true;
+                    const isActive = (agent.is_active ?? agent.IsActive ?? true) && !(agent.is_suspended ?? agent.IsSuspended ?? false);
                     return (
                         <div className="flex items-center justify-end gap-2">
                             <button
