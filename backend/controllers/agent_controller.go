@@ -514,6 +514,7 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 		LinkedIn      string  `json:"linkedin"`
 		Line          string  `json:"line"`
 		Phone         string  `json:"phone"`
+		SocialLinks   string  `json:"social_links"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -544,6 +545,7 @@ func (ac *AgentController) UpdateSettings(c *gin.Context) {
 	updates["linkedin"] = req.LinkedIn
 	updates["line"] = req.Line
 	updates["phone"] = req.Phone
+	updates["social_links"] = req.SocialLinks
 
 	if err := ac.db.Model(&models.Agent{}).Where("id = ?", agentID).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
@@ -579,5 +581,6 @@ func (ac *AgentController) GetSettings(c *gin.Context) {
 		"linkedin":        agent.LinkedIn,
 		"line":            agent.Line,
 		"phone":           agent.Phone,
+		"social_links":    agent.SocialLinks,
 	})
 }

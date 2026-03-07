@@ -61,7 +61,19 @@ import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine } from "react-icons/ri";
 import { LuSofa, LuWind } from "react-icons/lu";
 import { LuCalendarCheck2 } from "react-icons/lu";
-import { FiHeart } from "react-icons/fi";
+import {
+    FiHeart,
+    FiFacebook,
+    FiInstagram,
+    FiLinkedin,
+    FiYoutube,
+    FiGlobe,
+    FiPhone,
+    FiMessageCircle,
+    FiExternalLink,
+    FiTwitter
+} from "react-icons/fi";
+import { FaLine, FaWhatsapp, FaViber, FaTiktok } from "react-icons/fa";
 import {
     HiOutlineTv,
 } from "react-icons/hi2";
@@ -91,6 +103,20 @@ import {
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
 import StyledSelect from '../../components/Form/StyledSelect';
+
+const SOCIAL_PLATFORM_CONFIG = {
+    'Facebook': { icon: FiFacebook, color: '#1877F2', bgColor: 'rgba(24, 119, 242, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://facebook.com/${v}` },
+    'Instagram': { icon: FiInstagram, color: '#E4405F', bgColor: 'rgba(228, 64, 95, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://instagram.com/${v}` },
+    'Line': { icon: FaLine, color: '#06C755', bgColor: 'rgba(6, 199, 85, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://line.me/ti/p/~${v}` },
+    'WhatsApp': { icon: FaWhatsapp, color: '#25D366', bgColor: 'rgba(37, 211, 102, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://wa.me/${v.replace(/\+/g, '')}` },
+    'LinkedIn': { icon: FiLinkedin, color: '#0A66C2', bgColor: 'rgba(10, 102, 194, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://linkedin.com/in/${v}` },
+    'Viber': { icon: FaViber, color: '#7360f2', bgColor: 'rgba(115, 96, 242, 0.1)', getLink: (v) => v.startsWith('http') ? v : `viber://chat?number=%2B${v.replace(/\+/g, '')}` },
+    'TikTok': { icon: FaTiktok, color: '#000000', bgColor: 'rgba(0, 0, 0, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://tiktok.com/@${v}` },
+    'YouTube': { icon: FiYoutube, color: '#FF0000', bgColor: 'rgba(255, 0, 0, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://youtube.com/${v}` },
+    'Twitter': { icon: FiTwitter, color: '#1DA1F2', bgColor: 'rgba(29, 161, 242, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://twitter.com/${v}` },
+    'Website': { icon: FiGlobe, color: '#6366f1', bgColor: 'rgba(99, 102, 241, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://${v}` },
+    'Other': { icon: FiExternalLink, color: '#64748b', bgColor: 'rgba(100, 116, 139, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://${v}` }
+};
 
 // Custom Icons for "cool" look
 const BedIcon = (props) => (
@@ -2439,53 +2465,65 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </p>
 
                                                     <div className="grid grid-cols-1 gap-3">
-                                                        {/* Line */}
-                                                        <a
-                                                            href="https://line.me/ti/p/~kiki33467"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                        >
-                                                            <div className="bg-[#06C755] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
-                                                                <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="font-semibold text-gray-700">Contact via Line</span>
-                                                        </a>
+                                                        {(() => {
+                                                            let links = [];
+                                                            if (agent?.social_links) {
+                                                                try {
+                                                                    links = JSON.parse(agent.social_links);
+                                                                } catch (e) { }
+                                                            }
 
-                                                        {/* Call */}
-                                                        <a
-                                                            href="tel:0951953607"
-                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                        >
-                                                            <div className="bg-[#111827] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
-                                                                <PhoneIcon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="font-semibold text-gray-700">Call Now</span>
-                                                        </a>
+                                                            // Fallback to individual fields if JSON is empty
+                                                            if (links.length === 0) {
+                                                                if (agent?.phone) links.push({ platform: 'Call', value: agent.phone });
+                                                                if (agent?.facebook) links.push({ platform: 'Facebook', value: agent.facebook });
+                                                                if (agent?.line) links.push({ platform: 'Line', value: agent.line });
+                                                            }
 
-                                                        {/* Viber */}
-                                                        <a
-                                                            href="viber://chat?number=%2B66951953607"
-                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                        >
-                                                            <div className="bg-[#7360f2] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
-                                                                <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="font-semibold text-gray-700">Contact via Viber</span>
-                                                        </a>
+                                                            // If still empty, show a default call button if we have a phone
+                                                            if (links.length === 0 && agent?.phone) {
+                                                                links.push({ platform: 'Call', value: agent.phone });
+                                                            }
 
-                                                        {/* WhatsApp */}
-                                                        <a
-                                                            href="https://wa.me/66951953607"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                        >
-                                                            <div className="bg-[#25D366] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
-                                                                <DevicePhoneMobileIcon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="font-semibold text-gray-700">Contact via WhatsApp</span>
-                                                        </a>
+                                                            return links.map((link, idx) => {
+                                                                if (link.platform === 'Call') {
+                                                                    return (
+                                                                        <a
+                                                                            key={idx}
+                                                                            href={`tel:${link.value}`}
+                                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
+                                                                        >
+                                                                            <div className="bg-[#111827] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
+                                                                                <PhoneIcon className="w-5 h-5" />
+                                                                            </div>
+                                                                            <span className="font-semibold text-gray-700">Call Now</span>
+                                                                        </a>
+                                                                    );
+                                                                }
+
+                                                                const config = SOCIAL_PLATFORM_CONFIG[link.platform] || SOCIAL_PLATFORM_CONFIG['Other'];
+                                                                const Icon = config.icon;
+                                                                const href = config.getLink(link.value);
+
+                                                                return (
+                                                                    <a
+                                                                        key={idx}
+                                                                        href={href}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
+                                                                    >
+                                                                        <div
+                                                                            className="text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110"
+                                                                            style={{ backgroundColor: config.color }}
+                                                                        >
+                                                                            <Icon className="w-5 h-5" />
+                                                                        </div>
+                                                                        <span className="font-semibold text-gray-700">Contact via {link.platform}</span>
+                                                                    </a>
+                                                                );
+                                                            });
+                                                        })()}
                                                     </div>
                                                 </div>
                                             </Modal>
@@ -2510,141 +2548,73 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                         {/* Contact Options Grid */}
                                                         <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl">
-                                                            {/* Line */}
-                                                            <a
-                                                                href="https://line.me/ti/p/~kiki33467"
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
-                                                                style={{
-                                                                    background: '#FFFFFF',
-                                                                    border: '1.5px solid rgba(6, 199, 85, 0.08)',
-                                                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(6, 199, 85, 0.15)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(6, 199, 85, 0.3)';
-                                                                    e.currentTarget.style.background = '#f9fafb';
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(6, 199, 85, 0.08)';
-                                                                    e.currentTarget.style.background = '#FFFFFF';
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
-                                                                    style={{
-                                                                        backgroundColor: '#06C755',
-                                                                        boxShadow: '0 8px 20px rgba(6, 199, 85, 0.3)'
-                                                                    }}
-                                                                >
-                                                                    <ChatBubbleOvalLeftEllipsisIcon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                                                                </div>
-                                                                <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">Line</span>
-                                                                <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">Chat Now</span>
-                                                            </a>
+                                                            {(() => {
+                                                                let links = [];
+                                                                if (agent?.social_links) {
+                                                                    try {
+                                                                        links = JSON.parse(agent.social_links);
+                                                                    } catch (e) { }
+                                                                }
+                                                                if (links.length === 0) {
+                                                                    if (agent?.phone) links.push({ platform: 'Call', value: agent.phone });
+                                                                    if (agent?.facebook) links.push({ platform: 'Facebook', value: agent.facebook });
+                                                                    if (agent?.line) links.push({ platform: 'Line', value: agent.line });
+                                                                }
+                                                                if (links.length === 0 && agent?.phone) {
+                                                                    links.push({ platform: 'Call', value: agent.phone });
+                                                                }
 
-                                                            {/* Call */}
-                                                            <a
-                                                                href="tel:0951953607"
-                                                                className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
-                                                                style={{
-                                                                    background: '#FFFFFF',
-                                                                    border: '1.5px solid rgba(17, 24, 39, 0.08)',
-                                                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(17, 24, 39, 0.15)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(17, 24, 39, 0.3)';
-                                                                    e.currentTarget.style.background = '#f9fafb';
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(17, 24, 39, 0.08)';
-                                                                    e.currentTarget.style.background = '#FFFFFF';
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-3 shadow-lg"
-                                                                    style={{
-                                                                        backgroundColor: '#111827',
-                                                                        boxShadow: '0 8px 20px rgba(17, 24, 39, 0.3)'
-                                                                    }}
-                                                                >
-                                                                    <PhoneIcon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                                                                </div>
-                                                                <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">Call</span>
-                                                                <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">Voice Call</span>
-                                                            </a>
+                                                                return links.map((link, idx) => {
+                                                                    const isCall = link.platform === 'Call';
+                                                                    const config = isCall ? {
+                                                                        icon: PhoneIcon,
+                                                                        color: '#111827',
+                                                                        getLink: (v) => `tel:${v}`
+                                                                    } : (SOCIAL_PLATFORM_CONFIG[link.platform] || SOCIAL_PLATFORM_CONFIG['Other']);
 
-                                                            {/* Viber */}
-                                                            <a
-                                                                href="viber://chat?number=%2B66951953607"
-                                                                className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
-                                                                style={{
-                                                                    background: '#FFFFFF',
-                                                                    border: '1.5px solid rgba(115, 96, 242, 0.08)',
-                                                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(115, 96, 242, 0.15)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(115, 96, 242, 0.3)';
-                                                                    e.currentTarget.style.background = '#f9fafb';
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(115, 96, 242, 0.08)';
-                                                                    e.currentTarget.style.background = '#FFFFFF';
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
-                                                                    style={{
-                                                                        backgroundColor: '#7360f2',
-                                                                        boxShadow: '0 8px 20px rgba(115, 96, 242, 0.3)'
-                                                                    }}
-                                                                >
-                                                                    <ChatBubbleLeftRightIcon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                                                                </div>
-                                                                <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">Viber</span>
-                                                                <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">Message</span>
-                                                            </a>
+                                                                    const Icon = config.icon;
+                                                                    const href = config.getLink(link.value);
 
-                                                            {/* WhatsApp */}
-                                                            <a
-                                                                href="https://wa.me/66951953607"
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
-                                                                style={{
-                                                                    background: '#FFFFFF',
-                                                                    border: '1.5px solid rgba(37, 211, 102, 0.08)',
-                                                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(37, 211, 102, 0.15)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(37, 211, 102, 0.3)';
-                                                                    e.currentTarget.style.background = '#f9fafb';
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
-                                                                    e.currentTarget.style.border = '1.5px solid rgba(37, 211, 102, 0.08)';
-                                                                    e.currentTarget.style.background = '#FFFFFF';
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-3 shadow-lg"
-                                                                    style={{
-                                                                        backgroundColor: '#25D366',
-                                                                        boxShadow: '0 8px 20px rgba(37, 211, 102, 0.3)'
-                                                                    }}
-                                                                >
-                                                                    <DevicePhoneMobileIcon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                                                                </div>
-                                                                <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">WhatsApp</span>
-                                                                <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">WhatsApp Chat</span>
-                                                            </a>
+                                                                    return (
+                                                                        <a
+                                                                            key={idx}
+                                                                            href={href}
+                                                                            target={isCall ? undefined : "_blank"}
+                                                                            rel={isCall ? undefined : "noopener noreferrer"}
+                                                                            className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
+                                                                            style={{
+                                                                                background: '#FFFFFF',
+                                                                                border: `1.5px solid ${config.color}15`,
+                                                                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
+                                                                            }}
+                                                                            onMouseEnter={(e) => {
+                                                                                e.currentTarget.style.boxShadow = `0 20px 40px ${config.color}25`;
+                                                                                e.currentTarget.style.border = `1.5px solid ${config.color}45`;
+                                                                                e.currentTarget.style.background = '#f9fafb';
+                                                                            }}
+                                                                            onMouseLeave={(e) => {
+                                                                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
+                                                                                e.currentTarget.style.border = `1.5px solid ${config.color}15`;
+                                                                                e.currentTarget.style.background = '#FFFFFF';
+                                                                            }}
+                                                                        >
+                                                                            <div
+                                                                                className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
+                                                                                style={{
+                                                                                    backgroundColor: config.color,
+                                                                                    boxShadow: `0 8px 20px ${config.color}45`
+                                                                                }}
+                                                                            >
+                                                                                <Icon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
+                                                                            </div>
+                                                                            <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">{link.platform}</span>
+                                                                            <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                {isCall ? 'Call Now' : 'Connect Now'}
+                                                                            </span>
+                                                                        </a>
+                                                                    );
+                                                                });
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </div>

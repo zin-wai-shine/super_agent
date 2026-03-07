@@ -426,6 +426,7 @@ func (pc *PublicController) GetAgentInfo(c *gin.Context) {
 		"instagram":       agent.Instagram,
 		"linkedin":        agent.LinkedIn,
 		"line":            agent.Line,
+		"social_links":    agent.SocialLinks,
 	})
 }
 
@@ -485,6 +486,7 @@ func (pc *PublicController) GetTenantConfig(c *gin.Context) {
 				"instagram":        agent.Instagram,
 				"linkedin":         agent.LinkedIn,
 				"line":             agent.Line,
+				"social_links":     agent.SocialLinks,
 			}
 			// Sync root values
 			response["actual_min_price"] = actualMin

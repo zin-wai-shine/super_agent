@@ -51,6 +51,7 @@ type Agent struct {
 	Instagram      string         `gorm:"size:255;column:instagram" json:"instagram,omitempty"`
 	LinkedIn       string         `gorm:"size:255;column:linkedin" json:"linkedin,omitempty"`
 	Line           string         `gorm:"size:255;column:line" json:"line,omitempty"`
+	SocialLinks    string         `gorm:"type:text" json:"social_links,omitempty"` // JSON string: [{"platform": "Facebook", "value": "url"}, ...]
 	MinPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"min_price_limit"`
 	MaxPriceLimit  float64        `gorm:"type:decimal(15,2);default:0" json:"max_price_limit"`
 	PriceFormat    string         `gorm:"size:20;default:'full'" json:"price_format"` // full (e.g. 3,000) or short (e.g. 3K)
