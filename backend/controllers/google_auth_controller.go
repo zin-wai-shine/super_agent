@@ -11,6 +11,7 @@ import (
 	"super_real_estate/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"gorm.io/gorm"
@@ -99,15 +100,25 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 
 	// Find or create user
 	var user models.User
+	isMainDomain, _ := c.Get("is_main_domain")
+	tenantID, tenantExists := c.Get("tenant_id")
+
 	result := gc.db.Where("email = ?", googleUser.Email).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			// Create new user
+			// Create new user associated with current tenant if on an agent site
+			var agentIDPtr *uuid.UUID
+			if isMain, ok := isMainDomain.(bool); ok && !isMain && tenantExists {
+				id := tenantID.(uuid.UUID)
+				agentIDPtr = &id
+			}
+
 			user = models.User{
 				Email:     googleUser.Email,
 				FirstName: googleUser.GivenName,
 				LastName:  googleUser.FamilyName,
 				Role:      models.RolePublic,
+				AgentID:   agentIDPtr,
 				IsActive:  true,
 			}
 			if err := gc.db.Create(&user).Error; err != nil {
@@ -117,6 +128,15 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			return
+		}
+	} else {
+		// Existing user: check tenant isolation on agent subdomains
+		if isMain, ok := isMainDomain.(bool); ok && !isMain && tenantExists {
+			tID := tenantID.(uuid.UUID)
+			if user.Role != models.RoleSuperAdmin && (user.AgentID == nil || *user.AgentID != tID) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "This account belongs to another site and cannot be used here."})
+				return
+			}
 		}
 	}
 

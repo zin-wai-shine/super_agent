@@ -11,7 +11,7 @@ import api from '../../services/api';
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, error: authError } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { isMainDomain, agent } = useTenant();
@@ -98,6 +98,13 @@ const LoginPage = () => {
                         <h1 className="text-[28px] md:text-2xl font-bold text-gray-900 mb-2">Welcome back</h1>
                         <p className="text-base md:text-sm text-gray-500">Sign in to your account</p>
                     </div>
+
+                    {authError && (
+                        <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3 animate-fade-in text-left">
+                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                            <p className="text-[15px] md:text-sm font-medium text-red-600">{authError}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 md:space-y-6">
                         {/* Email */}

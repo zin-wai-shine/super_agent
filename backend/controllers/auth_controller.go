@@ -129,6 +129,19 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
+	// Dynamic Tenant Enforcement: Only allow users belonging to this agent to log in via their subdomain
+	isMainDomain, _ := c.Get("is_main_domain")
+	if isMain, ok := isMainDomain.(bool); ok && !isMain {
+		if tenantID, exists := c.Get("tenant_id"); exists {
+			tID := tenantID.(uuid.UUID)
+			// Strictly enforce: User must belong to this agent OR be a platform super_admin
+			if user.Role != models.RoleSuperAdmin && (user.AgentID == nil || *user.AgentID != tID) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+				return
+			}
+		}
+	}
+
 	// Check if agent is suspended
 	if user.Agent != nil && user.Agent.IsSuspended {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Your agent account has been suspended"})
