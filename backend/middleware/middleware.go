@@ -107,6 +107,9 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		host := c.Request.Host
+		if forwardedHost := c.GetHeader("X-Forwarded-Host"); forwardedHost != "" {
+			host = forwardedHost
+		}
 		// Remove port if present (e.g. localhost:8080)
 		hostPort := strings.Split(host, ":")
 		domain := hostPort[0]

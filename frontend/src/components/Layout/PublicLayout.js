@@ -339,7 +339,7 @@ const PublicLayout = () => {
                             <div className="h-16 flex items-center justify-between px-4 border-b" style={{ borderColor: 'var(--menu-border)' }}>
                                 <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                                     <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
-                                    <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>Super</span>
+                                    <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>{brandName}</span>
                                 </Link>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
@@ -1057,11 +1057,11 @@ const PublicLayout = () => {
                                         </div>
                                     </div>
                                     <span className="hidden md:block text-xl font-bold text-gray-900 tracking-tight">
-                                        Super
+                                        {brandName}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-8">
-                                    <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About Super</Link>
+                                    <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About {brandName}</Link>
                                     <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Products</Link>
                                     <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
                                     <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>

@@ -42,7 +42,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-    const { agent, loading: tenantLoading } = useTenant();
+    const { agent, isMainDomain, loading: tenantLoading } = useTenant();
     const [theme, setTheme] = useState(defaultTheme);
 
     useEffect(() => {
@@ -160,8 +160,15 @@ export const ThemeProvider = ({ children }) => {
         // Button Gradient Logic
         document.documentElement.style.setProperty('--btn-gradient', theme.buttonGradient ? `linear-gradient(135deg, ${theme.primaryColor}, ${theme.buttonGradientColor2})` : 'none');
 
+        // Update document title
+        if (!isMainDomain && agent) {
+            document.title = theme.headerText || agent.agency_name || agent.name || 'Super Real Estate';
+        } else {
+            document.title = 'Super Real Estate';
+        }
+
         document.body.style.backgroundColor = theme.backgroundColor;
-    }, [theme]);
+    }, [theme, isMainDomain, agent]);
 
     const updateTheme = (newTheme) => {
         setTheme({ ...theme, ...newTheme });

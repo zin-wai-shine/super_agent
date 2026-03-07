@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -527,4 +528,176 @@ func (pc *PublicController) GetDevelopers(c *gin.Context) {
 		"developers": developers,
 		"total":      len(developers),
 	})
+}
+
+// ServeListingMeta returns a minimal HTML with meta tags for social media crawlers
+func (pc *PublicController) ServeListingMeta(c *gin.Context) {
+	id := c.Param("id")
+
+	var listing models.Listing
+	if err := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Where("id = ?", id).First(&listing).Error; err != nil {
+		c.String(http.StatusNotFound, "Listing not found")
+		return
+	}
+
+	title := listing.Title
+	// Format price nicely
+	priceStr := fmt.Sprintf("%.0f", listing.Price)
+	if listing.Price >= 1000000 {
+		priceStr = fmt.Sprintf("%.1fM", listing.Price/1000000)
+	} else if listing.Price >= 1000 {
+		priceStr = fmt.Sprintf("%.0fK", listing.Price/1000)
+	}
+
+	description := fmt.Sprintf("฿%s | %d Bed | %d Bath | %.0f sqm", priceStr, listing.Bedrooms, listing.Bathrooms, listing.Area)
+	if listing.Description != "" {
+		cleanDesc := strings.ReplaceAll(listing.Description, "\n", " ")
+		if len(cleanDesc) > 150 {
+			cleanDesc = cleanDesc[:147] + "..."
+		}
+		description = description + " - " + cleanDesc
+	}
+
+	image := ""
+	if len(listing.Media) > 0 {
+		image = listing.Media[0].URL
+	} else if listing.Agent.Theme != nil && listing.Agent.Theme.SharePreviewImage != "" {
+		image = listing.Agent.Theme.SharePreviewImage
+	} else if listing.Agent.Logo != "" {
+		image = listing.Agent.Logo
+	}
+
+	// Form absolute URL
+	scheme := "https"
+	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
+		scheme = proto
+	}
+	host := c.GetHeader("X-Forwarded-Host")
+	if host == "" {
+		host = c.Request.Host
+	}
+
+	if strings.HasPrefix(image, "/") {
+		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
+	}
+
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>%s</title>
+    <!-- Social Preview Tags (Backend Rendered) -->
+    <meta property="og:title" content="%s" />
+    <meta property="og:description" content="%s" />
+    <meta property="og:image" content="%s" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%s" />
+    <meta name="twitter:description" content="%s" />
+    <meta name="twitter:image" content="%s" />
+</head>
+<body>
+    <h1>%s</h1>
+    <p>%s</p>
+    <img src="%s" />
+    <script>
+        // Redirect actual users to the frontend listing page
+        window.location.href = "/listings/%s";
+    </script>
+</body>
+</html>`, title, title, description, image, title, description, image, title, description, image, id)
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+}
+
+// ServeAgentMeta handles social previews for the agent's homepage
+func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
+	tenantID, exists := c.Get("tenant_id")
+	if !exists {
+		c.String(http.StatusNotFound, "Agent not found")
+		return
+	}
+
+	var agent models.Agent
+	if err := pc.db.Preload("Theme").First(&agent, "id = ?", tenantID).Error; err != nil {
+		c.String(http.StatusNotFound, "Agent not found")
+		return
+	}
+
+	// Use Theme HeaderTitle if set, otherwise Agent Name
+	title := agent.Theme.HeaderText
+	if title == "" {
+		title = agent.Name
+	}
+
+	description := agent.Description
+	if description == "" {
+		description = "Find your dream property near Bangkok's transit lines. High-quality listings, easy search, and professional service."
+	}
+
+	// Clean description (remove newlines)
+	description = strings.ReplaceAll(description, "\n", " ")
+	if len(description) > 300 {
+		description = description[:297] + "..."
+	}
+
+	image := ""
+	if agent.Theme != nil && agent.Theme.SharePreviewImage != "" {
+		image = agent.Theme.SharePreviewImage
+	} else if agent.Logo != "" {
+		image = agent.Logo
+	} else {
+		// Use a high-quality default if no logo or preview image
+		image = "/logo-super.png"
+	}
+
+	// Form absolute URL
+	scheme := "https"
+	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
+		scheme = proto
+	}
+	host := c.GetHeader("X-Forwarded-Host")
+	if host == "" {
+		host = c.Request.Host
+	}
+
+	if strings.HasPrefix(image, "/") {
+		if strings.HasPrefix(image, "/uploads") {
+			// Ensure it points to the full domain
+			image = fmt.Sprintf("%s://%s%s", scheme, host, image)
+		} else {
+			// Static assets should also be absolute
+			image = fmt.Sprintf("%s://%s%s", scheme, host, image)
+		}
+	}
+
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>%s</title>
+    <!-- Social Preview Tags (Backend Rendered) -->
+    <meta property="og:title" content="%s" />
+    <meta property="og:description" content="%s" />
+    <meta property="og:image" content="%s" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%s://%s/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%s" />
+    <meta name="twitter:description" content="%s" />
+    <meta name="twitter:image" content="%s" />
+    <link rel="icon" href="%s://%s/favicon.ico" />
+</head>
+<body>
+    <h1>%s</h1>
+    <p>%s</p>
+    <img src="%s" />
+    <script>
+        // Redirect actual users to the frontend
+        window.location.href = "/";
+    </script>
+</body>
+</html>`, title, title, description, image, scheme, host, title, description, image, scheme, host, title, description, image)
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }

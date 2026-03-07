@@ -35,8 +35,10 @@ const ThemeSettings = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [uploadingSharePreview, setUploadingSharePreview] = useState(false);
     const [activeTab, setActiveTab] = useState('brand');
     const logoInputRef = useRef(null);
+    const sharePreviewInputRef = useRef(null);
 
     const { register, control, handleSubmit, reset, setValue } = useForm({
         mode: 'onChange'
@@ -59,6 +61,7 @@ const ThemeSettings = () => {
         secondary_color: '#34a853',
         text_color: '#202124',
         logo_url: '',
+        share_preview_image: '',
         header_text: 'Super Real Estate',
         footer_text: '© 2024 Super Real Estate',
         font_family: 'Inter, sans-serif',
@@ -97,6 +100,7 @@ const ThemeSettings = () => {
         register('secondary_color');
         register('background_color');
         register('text_color');
+        register('share_preview_image');
         register('button_radius');
         register('card_radius');
         register('menu_radius');
@@ -128,6 +132,7 @@ const ThemeSettings = () => {
                 secondary_color: theme.secondary_color || DEFAULT_THEME.secondary_color,
                 text_color: theme.text_color || DEFAULT_THEME.text_color,
                 logo_url: theme.logo_url || '',
+                share_preview_image: theme.share_preview_image || '',
                 header_text: theme.header_text || '',
                 footer_text: theme.footer_text || '',
                 font_family: theme.font_family || DEFAULT_THEME.font_family,
@@ -196,6 +201,27 @@ const ThemeSettings = () => {
             toast.error('Failed to upload logo');
         } finally {
             setUploadingLogo(false);
+        }
+    };
+
+    const handleSharePreviewUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Preview image must be smaller than 2MB');
+            return;
+        }
+
+        setUploadingSharePreview(true);
+        try {
+            const response = await agentApi.uploadLogo(file);
+            setValue('share_preview_image', response.data.url);
+            toast.success('Share preview image uploaded!');
+        } catch (error) {
+            toast.error('Failed to upload share preview image');
+        } finally {
+            setUploadingSharePreview(false);
         }
     };
 
@@ -318,6 +344,43 @@ const ThemeSettings = () => {
                                         className="hidden"
                                         accept="image/*"
                                         onChange={handleLogoUpload}
+                                    />
+                                </div>
+
+                                {/* Share Preview Upload */}
+                                <div>
+                                    <label className="input-label">Social Share Preview Image</label>
+                                    <div
+                                        onClick={() => sharePreviewInputRef.current?.click()}
+                                        className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-colors cursor-pointer group bg-gray-50/30 dark:bg-gray-900/10"
+                                    >
+                                        <div className="space-y-1 text-center">
+                                            {watchAll.share_preview_image ? (
+                                                <div className="relative inline-block group-hover:scale-105 transition-transform duration-300">
+                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="h-16 w-auto mx-auto object-contain rounded" />
+                                                    <div className="mt-2 text-[10px] text-primary-600 dark:text-primary-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">Change Preview Image</div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {uploadingSharePreview ? (
+                                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto"></div>
+                                                    ) : (
+                                                        <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-300 group-hover:text-primary-500 transition-colors duration-300" />
+                                                    )}
+                                                    <div className="flex text-sm text-gray-600 dark:text-gray-400 justify-center mt-2">
+                                                        <span className="relative cursor-pointer rounded-md font-medium text-primary-600 dark:text-primary-400">Upload share preview</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-gray-400 mt-1">1200x630 (aspect 1.91:1) recommended</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        ref={sharePreviewInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleSharePreviewUpload}
                                     />
                                 </div>
 

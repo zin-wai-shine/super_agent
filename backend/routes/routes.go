@@ -58,6 +58,13 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/appointments/slots", appointmentController.GetAvailableSlots)
 			public.POST("/appointments/lock", appointmentController.SoftLockSlot)
 			public.POST("/appointments", appointmentController.CreateAppointment)
+
+			// Share routes (for social media crawlers)
+			share := public.Group("/share")
+			{
+				share.GET("/listing/:id", publicController.ServeListingMeta)
+				share.GET("/agent", publicController.ServeAgentMeta)
+			}
 		}
 
 		// Protected routes

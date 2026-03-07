@@ -100,14 +100,40 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
         }
     };
 
+    // Determine which slider should be on top based on proximity to the cursor/touch
+    const [zIndexMin, setZIndexMin] = useState(30);
+    const [zIndexMax, setZIndexMax] = useState(40);
+
+    const handleInteraction = useCallback((clientX) => {
+        if (!range.current) return;
+        const rect = range.current.parentElement.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const percent = ((x / rect.width) * (max - min)) + min;
+
+        const distMin = Math.abs(percent - minVal);
+        const distMax = Math.abs(percent - maxVal);
+
+        if (distMin < distMax) {
+            setZIndexMin(45);
+            setZIndexMax(40);
+        } else {
+            setZIndexMin(30);
+            setZIndexMax(45);
+        }
+    }, [minVal, maxVal, min, max]);
+
     const minPercent = getPercent(minVal);
     const maxPercent = getPercent(maxVal);
     const rangeWidthPercent = maxPercent - minPercent;
 
     return (
-        <div className="w-full flex flex-col gap-6 select-none relative pt-4 px-4">
-            {/* Visual Slider Container — extra height for wave */}
-            <div className="relative w-full h-14 flex items-end">
+        <div
+            className="w-full flex flex-col gap-6 select-none relative pt-4 px-4"
+            onMouseDown={(e) => handleInteraction(e.clientX)}
+            onTouchStart={(e) => handleInteraction(e.touches[0].clientX)}
+        >
+            {/* Visual Slider Container — fixed height for consistent centering */}
+            <div className="relative w-full h-12 flex items-center">
                 {/* Invisible native range inputs for interaction */}
                 <input
                     type="range"
@@ -116,8 +142,11 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                     step={step}
                     value={minVal}
                     onChange={handleMinChange}
-                    className="absolute z-30 opacity-0 w-full h-8 cursor-pointer pointer-events-none appearance-none bottom-0"
-                    style={{ pointerEvents: minVal > max - 100 ? 'none' : 'auto' }}
+                    className="absolute opacity-0 w-full h-full cursor-pointer appearance-none z-10"
+                    style={{
+                        zIndex: zIndexMin,
+                        pointerEvents: 'auto'
+                    }}
                 />
                 <input
                     type="range"
@@ -126,33 +155,36 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                     step={step}
                     value={maxVal}
                     onChange={handleMaxChange}
-                    className="absolute z-40 opacity-0 w-full h-8 cursor-pointer pointer-events-none appearance-none bottom-0"
-                    style={{ pointerEvents: 'auto' }}
+                    className="absolute opacity-0 w-full h-full cursor-pointer appearance-none z-10"
+                    style={{
+                        zIndex: zIndexMax,
+                        pointerEvents: 'auto'
+                    }}
                 />
 
-                {/* Wave — 6 curves (low, high, higher, low, high, low); resizes with price range */}
+                {/* Wave Visual — sitting on top of the track */}
                 {rangeWidthPercent > 0 && (
                     <div
-                        className="absolute left-0 z-0 pointer-events-none transition-all duration-200 ease-out"
+                        className="absolute z-0 pointer-events-none transition-all duration-300 ease-out"
                         style={{
                             left: `${minPercent}%`,
                             width: `${rangeWidthPercent}%`,
-                            height: 38,
-                            bottom: 5,
-                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 14%, white)',
+                            height: 42,
+                            bottom: '50%',
+                            marginBottom: '2px', // Slight gap from track
+                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 15%, white)',
                         }}
                     >
                         <svg viewBox="0 0 100 28" className="w-full h-full block" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="price-wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                     <stop offset="0%" stopColor="var(--wave-glass)" stopOpacity="0" />
-                                    <stop offset="10%" stopColor="var(--wave-glass)" stopOpacity="0.75" />
-                                    <stop offset="50%" stopColor="var(--wave-glass)" stopOpacity="0.9" />
-                                    <stop offset="90%" stopColor="var(--wave-glass)" stopOpacity="0.75" />
+                                    <stop offset="10%" stopColor="var(--wave-glass)" stopOpacity="0.8" />
+                                    <stop offset="50%" stopColor="var(--wave-glass)" stopOpacity="0.95" />
+                                    <stop offset="90%" stopColor="var(--wave-glass)" stopOpacity="0.8" />
                                     <stop offset="100%" stopColor="var(--wave-glass)" stopOpacity="0" />
                                 </linearGradient>
                             </defs>
-                            {/* 6 curves: low → high → higher → low → high → low */}
                             <path
                                 d="M 0 28 C 5 28 11 14 17 14 C 23 14 27 5 33 5 C 39 5 44 22 50 22 C 56 22 61 12 67 12 C 73 12 77 22 83 22 C 89 22 95 26 100 28 Z"
                                 fill="url(#price-wave-gradient)"
@@ -162,25 +194,29 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                 )}
 
                 {/* Custom Visual Track */}
-                <div className="absolute w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full z-10 bottom-0" />
+                <div className="absolute w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full z-10 top-1/2 -translate-y-1/2" />
 
                 {/* Active Range Highlight */}
                 <div
                     ref={range}
-                    className="absolute h-1.5 bg-primary-500 rounded-full z-20 pointer-events-none bottom-0"
+                    className="absolute h-1.5 bg-primary-500 rounded-full z-20 pointer-events-none top-1/2 -translate-y-1/2"
                 />
 
                 {/* Left Thumb Visual */}
                 <div
-                    className="absolute w-[16px] h-[16px] bg-white rounded-full border-[3px] border-primary-500 shadow-md z-30 pointer-events-none -ml-[8px] bottom-0 translate-y-1/2"
+                    className="absolute w-[22px] h-[22px] bg-white rounded-full border-[5px] border-primary-500 shadow-xl z-30 pointer-events-none -ml-[11px] flex items-center justify-center"
                     style={{ left: `${minPercent}%` }}
-                />
+                >
+                    <div className="w-full h-full rounded-full ring-4 ring-transparent group-hover:ring-primary-500/10 transition-all" />
+                </div>
 
                 {/* Right Thumb Visual */}
                 <div
-                    className="absolute w-[16px] h-[16px] bg-white rounded-full border-[3px] border-primary-500 shadow-md z-40 pointer-events-none -ml-[8px] bottom-0 translate-y-1/2"
+                    className="absolute w-[22px] h-[22px] bg-white rounded-full border-[5px] border-primary-500 shadow-xl z-40 pointer-events-none -ml-[11px] flex items-center justify-center"
                     style={{ left: `${maxPercent}%` }}
-                />
+                >
+                    <div className="w-full h-full rounded-full ring-4 ring-transparent group-hover:ring-primary-500/10 transition-all" />
+                </div>
             </div>
 
             {/* Value Inputs */}
