@@ -28,32 +28,36 @@ const CookieConsent = () => {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="w-full max-w-4xl backdrop-blur-2xl bg-[#0a0a0b]/80 border border-white/10 rounded-[4px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-5 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-12 overflow-hidden relative group">
-                {/* Subtle gradient glow */}
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-500 bg-black/5 backdrop-blur-[2px]">
+            <div className="w-full max-w-4xl bg-white/95 backdrop-blur-2xl border border-gray-100 rounded-[24px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12 overflow-hidden relative group">
+                {/* Accent glow line at top */}
+                <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: 'linear-gradient(90deg, transparent, var(--primary-color, #3b82f6), transparent)' }} />
 
-                <div className="flex-shrink-0 w-12 h-12 md:w-12 md:h-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                    <HiOutlineShieldCheck className="w-7 h-7 md:w-6 md:h-6 text-blue-400" />
+                <div className="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110" style={{ backgroundColor: 'canvas', background: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)', border: '1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.2)' }}>
+                    <HiOutlineShieldCheck className="w-8 h-8 md:w-9 md:h-9" style={{ color: 'var(--primary-color, #3b82f6)' }} />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium text-xl md:text-lg mb-2">Cookie Preferences</h3>
-                    <p className="text-gray-400 text-base md:text-sm leading-relaxed max-w-2xl">
-                        We use cookies to improve your browsing experience, analyze website traffic, and support our marketing efforts. By clicking "Allow All," you consent to the use of all cookies. You can also adjust your preferences through "Cookie Settings."
+                    <h3 className="text-gray-900 font-bold text-2xl md:text-xl mb-2 tracking-tight">Cookie Preferences</h3>
+                    <p className="text-gray-500 text-base md:text-[15px] leading-relaxed max-w-2xl font-medium">
+                        We use cookies to improve your browsing experience, analyze website traffic, and support our marketing efforts. By clicking "Allow All," you consent to the use of all cookies.
                     </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={handleDecline}
-                        className="px-6 py-3 md:py-2.5 rounded-[4px] text-base md:text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300 border border-white/10"
+                        className="px-6 py-3.5 md:py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all duration-300 border border-gray-200"
                     >
                         Cookie Settings
                     </button>
                     <button
                         onClick={handleAccept}
-                        className="px-8 py-3 md:py-2.5 rounded-[4px] text-base md:text-sm font-medium bg-blue-600 hover:bg-blue-50 transition-all duration-300 transform hover:scale-[1.02] shadow-[0_0_20px_rgba(59,130,246,0.3)] shadow-blue-600/20"
+                        className="px-10 py-3.5 md:py-3 rounded-xl text-sm font-bold text-white transition-all duration-300 transform hover:scale-[1.03] active:scale-[0.98] shadow-lg"
+                        style={{
+                            backgroundColor: 'var(--primary-color, #3b82f6)',
+                            boxShadow: '0 10px 20px -5px rgba(var(--primary-rgb, 59, 130, 246), 0.3)'
+                        }}
                     >
                         Allow All
                     </button>
@@ -61,10 +65,10 @@ const CookieConsent = () => {
 
                 <button
                     onClick={() => setIsVisible(false)}
-                    className="absolute top-3 right-3 md:top-4 md:right-4 text-gray-500 hover:text-white transition-colors p-2 md:p-1"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors p-2 bg-gray-50 rounded-full hover:bg-gray-100"
                     aria-label="Close"
                 >
-                    <IoCloseOutline className="w-6 h-6 md:w-5 md:h-5" />
+                    <IoCloseOutline className="w-6 h-6" />
                 </button>
             </div>
         </div>
