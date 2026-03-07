@@ -179,6 +179,41 @@
     animation: gradient 3s ease infinite;
   }
 
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%) skewX(-15deg);
+    }
+
+    50%,
+    100% {
+      transform: translateX(100%) skewX(-15deg);
+    }
+  }
+
+  .shimmer-sweep {
+    position: relative;
+    overflow: hidden !important;
+  }
+
+  .shimmer-sweep::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(to right,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent);
+    transform: translateX(-100%) skewX(-15deg);
+    pointer-events: none;
+  }
+
+  .shimmer-sweep:hover::after {
+    animation: shimmer 1s ease-in-out infinite;
+  }
+
   @keyframes gradient {
     0% {
       background-position: 0% 50%;

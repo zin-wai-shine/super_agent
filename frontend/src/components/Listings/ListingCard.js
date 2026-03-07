@@ -12,8 +12,14 @@ import {
 import {
     BookmarkIcon as BookmarkSolidIcon,
     HeartIcon as HeartSolidIcon,
-    StarIcon as StarSolidIcon
+    StarIcon as StarSolidIcon,
+    PhoneIcon,
+    EnvelopeIcon,
+    MapPinIcon as MapPinSolidIcon,
+    GlobeAltIcon
 } from '@heroicons/react/24/solid';
+import { SiLine, SiFacebook, SiInstagram, SiLinkedin } from 'react-icons/si';
+import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
@@ -66,6 +72,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
     const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
+    const [isAgentModalOpen, setIsAgentModalOpen] = React.useState(false);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -108,9 +115,10 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     const handleToggleSave = async (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (savingListing) return;
 
         if (!isAuthenticated) {
-            navigate('/login', { state: { from: { pathname: location.pathname } } });
+            navigate('/login', { state: { from: location } });
             return;
         }
 
@@ -119,27 +127,30 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
             if (isSaved) {
                 await unsaveListing(id);
                 setIsSaved(false);
-                if (onSaveToggle) onSaveToggle(id, false);
-
-                // Dispatch global event for real-time synchronization
+                // Dispatch event to sync other cards
                 window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
                     detail: { listingId: id, saved: false }
                 }));
             } else {
                 await saveListing(id);
                 setIsSaved(true);
-                if (onSaveToggle) onSaveToggle(id, true);
-
-                // Dispatch global event for real-time synchronization
+                // Dispatch event to sync other cards
                 window.dispatchEvent(new CustomEvent('listing:saved-status-changed', {
                     detail: { listingId: id, saved: true }
                 }));
             }
+            if (onSaveToggle) onSaveToggle(!isSaved);
         } catch (error) {
-            console.error('Save listing error:', error);
+            console.error('Error toggling save:', error);
         } finally {
             setSavingListing(false);
         }
+    };
+
+    const handleAgentClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsAgentModalOpen(true);
     };
 
     const handleBookClick = (e) => {
@@ -251,9 +262,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Agent Profile Overlay - Floating Card Design */}
                         {isMainDomain && listing.agent && (
-                            <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto">
+                            <button
+                                onClick={handleAgentClick}
+                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-transform duration-200"
+                            >
                                 <div
-                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden"
+                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white/95 transition-colors"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
@@ -270,7 +284,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                         </span>
                                     )}
                                 </div>
-                            </div>
+                            </button>
                         )}
                     </div>
 
@@ -429,9 +443,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Agent Profile Overlay - Floating Card Design */}
                         {isMainDomain && listing.agent && (
-                            <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto">
+                            <button
+                                onClick={handleAgentClick}
+                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-transform duration-200"
+                            >
                                 <div
-                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden"
+                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white/95 transition-colors"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
@@ -448,7 +465,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                         </span>
                                     )}
                                 </div>
-                            </div>
+                            </button>
                         )}
                     </Link>
                     <div className="flex-1 py-1 flex flex-col justify-between">
@@ -487,7 +504,140 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     }
 
     // Map view and grid: same card design as list page (image on top, details below)
-    return renderUnifiedCard(linkTo);
+    return (
+        <>
+            {renderUnifiedCard(linkTo)}
+            {isAgentModalOpen && listing.agent && (
+                <AgentProfileModal
+                    isOpen={isAgentModalOpen}
+                    onClose={() => setIsAgentModalOpen(false)}
+                    agent={listing.agent}
+                />
+            )}
+        </>
+    );
+};
+
+const AgentProfileModal = ({ isOpen, onClose, agent }) => {
+    const logoUrl = getMediaUrl(agent.logo || agent.theme?.logo_url);
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size="sm"
+            title="Agent Profile"
+            centerTitle
+        >
+            <div className="flex flex-col">
+                {/* Header Background */}
+                <div className="h-24 bg-gradient-to-r from-primary-600/10 to-primary-600/5 relative" />
+
+                <div className="px-6 pb-8 -mt-12 relative z-10 flex flex-col items-center">
+                    {/* Logo Ring */}
+                    <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center p-2 border border-gray-50 mb-4">
+                        {logoUrl ? (
+                            <img src={logoUrl} alt={agent.name} className="w-full h-full object-contain" />
+                        ) : (
+                            <div className="w-full h-full bg-primary-100 rounded-xl flex items-center justify-center">
+                                <span className="text-primary-600 font-bold text-2xl">
+                                    {agent.name?.charAt(0) || 'A'}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    <h2 className="text-xl font-bold text-gray-900 text-center mb-1">{agent.name}</h2>
+                    {agent.subdomain && (
+                        <p className="text-sm text-primary-600 font-medium mb-4">{agent.subdomain}.haizo.it.com</p>
+                    )}
+
+                    {agent.description && (
+                        <p className="text-sm text-gray-600 text-center line-clamp-3 mb-6 px-2">
+                            {agent.description}
+                        </p>
+                    )}
+
+                    {/* Contact Grid */}
+                    <div className="w-full grid grid-cols-1 gap-3 mb-8">
+                        {agent.phone && (
+                            <a href={`tel:${agent.phone}`} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
+                                <div className="p-2 bg-white rounded-lg shadow-sm group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                    <PhoneIcon className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Phone</span>
+                                    <span className="text-sm font-semibold text-gray-700">{agent.phone}</span>
+                                </div>
+                            </a>
+                        )}
+                        {agent.email && (
+                            <a href={`mailto:${agent.email}`} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
+                                <div className="p-2 bg-white rounded-lg shadow-sm group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                    <EnvelopeIcon className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</span>
+                                    <span className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{agent.email}</span>
+                                </div>
+                            </a>
+                        )}
+                        {agent.address && (
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 group">
+                                <div className="p-2 bg-white rounded-lg shadow-sm">
+                                    <MapPinSolidIcon className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Address</span>
+                                    <span className="text-sm font-semibold text-gray-700 line-clamp-1">{agent.address}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="w-full border-t border-gray-100 pt-6">
+                        <div className="flex justify-center gap-4">
+                            {agent.line && (
+                                <a href={`https://line.me/ti/p/~${agent.line}`} target="_blank" rel="noreferrer" className="p-3 bg-[#06C755]/10 text-[#06C755] rounded-full hover:scale-110 transition-transform">
+                                    <SiLine className="w-6 h-6" />
+                                </a>
+                            )}
+                            {agent.facebook && (
+                                <a href={agent.facebook} target="_blank" rel="noreferrer" className="p-3 bg-[#1877F2]/10 text-[#1877F2] rounded-full hover:scale-110 transition-transform">
+                                    <SiFacebook className="w-6 h-6" />
+                                </a>
+                            )}
+                            {agent.instagram && (
+                                <a href={agent.instagram} target="_blank" rel="noreferrer" className="p-3 bg-[#E4405F]/10 text-[#E4405F] rounded-full hover:scale-110 transition-transform">
+                                    <SiInstagram className="w-6 h-6" />
+                                </a>
+                            )}
+                            {agent.linkedin && (
+                                <a href={agent.linkedin} target="_blank" rel="noreferrer" className="p-3 bg-[#0A66C2]/10 text-[#0A66C2] rounded-full hover:scale-110 transition-transform">
+                                    <SiLinkedin className="w-6 h-6" />
+                                </a>
+                            )}
+                            {agent.custom_domain && (
+                                <a href={`https://${agent.custom_domain}`} target="_blank" rel="noreferrer" className="p-3 bg-gray-100 text-gray-600 rounded-full hover:scale-110 transition-transform">
+                                    <GlobeAltIcon className="w-6 h-6" />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Quote or Mission */}
+                {(agent.mission || agent.vision) && (
+                    <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 italic text-center">
+                        <p className="text-gray-500 text-sm">
+                            "{agent.mission || agent.vision}"
+                        </p>
+                    </div>
+                )}
+            </div>
+        </Modal>
+    );
 };
 
 export default ListingCard;
