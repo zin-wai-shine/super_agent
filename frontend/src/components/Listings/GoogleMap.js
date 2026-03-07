@@ -183,10 +183,12 @@ const PropertyMarker = React.memo(({ map, property, onClick, onSaveClick, savedL
                 }
                 .marker-group.opened .resting-nub,
                 .marker-group.list-highlighted .resting-nub,
-                .marker-group:hover .resting-nub,
+                .marker-group:hover .resting-nub {
+                    fill: #ffffff;
+                    transform: scale(1.05);
+                }
                 .marker-group.opened .home-marker,
                 .marker-group:hover .home-marker { 
-                    fill: #ffffff; 
                     background: #ffffff;
                     color: #1a1a1a;
                     transform: scale(1.05);
