@@ -24,15 +24,33 @@ const api = axios.create({
     },
 });
 
-// Detect subdomain from custom domain (e.g. staynert.haizo.it.com → staynert)
+// Detect subdomain from hostname (e.g. staynert.haizo.it.com → staynert)
 const getSubdomainFromCustomDomain = () => {
     if (typeof window === 'undefined') return null;
     const hostname = window.location.hostname;
-    const domain = mainDomain; // e.g. "haizo.it.com"
+    const domain = mainDomain;
+    let sub = null;
+
     if (hostname.endsWith('.' + domain)) {
-        const sub = hostname.slice(0, -(domain.length + 1));
-        if (sub && sub !== 'www' && sub !== 'api') return sub;
+        sub = hostname.slice(0, -(domain.length + 1));
+    } else if (hostname.endsWith('.haizo.it.com')) {
+        sub = hostname.slice(0, -13);
+    } else if (hostname.endsWith('.superealestate.localhost')) {
+        sub = hostname.slice(0, -25);
+    } else if (hostname.endsWith('.superealestate.test')) {
+        sub = hostname.slice(0, -20);
+    } else if (hostname.endsWith('.superealestate.local')) {
+        sub = hostname.slice(0, -21);
+    } else if (hostname.endsWith('.localhost') && hostname !== 'localhost') {
+        sub = hostname.slice(0, -10);
     }
+
+    // Handle nested subdomains (e.g., staynert.project.localhost -> staynert)
+    if (sub && sub.includes('.')) {
+        sub = sub.split('.')[0];
+    }
+
+    if (sub && sub !== 'www' && sub !== 'api') return sub;
     return null;
 };
 

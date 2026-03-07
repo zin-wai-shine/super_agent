@@ -33,8 +33,10 @@ export const TenantProvider = ({ children }) => {
                 const hostname = window.location.hostname;
                 const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
 
-                // It's the main domain if it matches exactly, or is one of our dev main domains
+                // Dev main domains (the entry points)
                 const devMainDomains = ['localhost', '127.0.0.1', 'superealestate.localhost', 'superealestate.test', 'superealestate.local'];
+
+                // It's the main domain ONLY if it's one of the base entry points
                 const isProbablyMain = hostname === mainDomain ||
                     hostname === 'www.' + mainDomain ||
                     devMainDomains.includes(hostname) ||

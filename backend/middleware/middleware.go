@@ -139,19 +139,32 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		foundTenant := false
 
 		if !isMainDomain {
-			// Try extracting from subdomain if it matches production pattern
+			// Try extracting from subdomain if it matches patterns
 			subdomain := ""
 			mainDomainWithDot := "." + mainDomain
+
 			if strings.HasSuffix(domain, mainDomainWithDot) {
 				subdomain = strings.TrimSuffix(domain, mainDomainWithDot)
 			} else if strings.HasSuffix(domain, ".haizo.it.com") {
 				subdomain = strings.TrimSuffix(domain, ".haizo.it.com")
+			} else if strings.HasSuffix(domain, ".superealestate.localhost") {
+				subdomain = strings.TrimSuffix(domain, ".superealestate.localhost")
+			} else if strings.HasSuffix(domain, ".superealestate.test") {
+				subdomain = strings.TrimSuffix(domain, ".superealestate.test")
+			} else if strings.HasSuffix(domain, ".superealestate.local") {
+				subdomain = strings.TrimSuffix(domain, ".superealestate.local")
 			} else if strings.HasSuffix(domain, ".localhost") {
 				subdomain = strings.TrimSuffix(domain, ".localhost")
 			} else if strings.HasSuffix(domain, ".test") {
 				subdomain = strings.TrimSuffix(domain, ".test")
 			} else if strings.HasSuffix(domain, ".local") {
 				subdomain = strings.TrimSuffix(domain, ".local")
+			}
+
+			// Handle nested subdomains (e.g., staynert.haizo.it.com -> staynert)
+			// If subdomain still contains dots, take only the first part
+			if idx := strings.Index(subdomain, "."); idx > 0 {
+				subdomain = subdomain[:idx]
 			}
 
 			if subdomain != "" && subdomain != "www" && subdomain != "api" {

@@ -552,7 +552,9 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
 
                     <h2 className="text-xl font-bold text-gray-900 text-center mb-1">{agent.name}</h2>
                     {agent.subdomain && (
-                        <p className="text-sm text-primary-600 font-medium mb-4">{agent.subdomain}.haizo.it.com</p>
+                        <p className="text-sm text-primary-600 font-medium mb-4">
+                            {agent.subdomain}.{process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}
+                        </p>
                     )}
 
                     {agent.description && (
@@ -598,7 +600,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                         )}
                         {(agent.custom_domain || agent.subdomain) && (
                             <a
-                                href={agent.custom_domain ? `https://${agent.custom_domain}` : `https://${agent.subdomain}.haizo.it.com`}
+                                href={agent.custom_domain ? `https://${agent.custom_domain}` : `https://${agent.subdomain}.${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex items-center gap-3 p-3 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors group"
@@ -609,7 +611,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Website</span>
                                     <span className="text-sm font-semibold text-primary-700 truncate max-w-[200px]">
-                                        {agent.custom_domain || `${agent.subdomain}.haizo.it.com`}
+                                        {agent.custom_domain || `${agent.subdomain}.${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
                                     </span>
                                 </div>
                             </a>

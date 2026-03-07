@@ -48,17 +48,17 @@ export const ThemeProvider = ({ children }) => {
 
     useEffect(() => {
         if (!tenantLoading) {
-            if (agent?.theme) {
-                const t = agent.theme;
+            if (agent) {
+                const t = agent.theme || {};
                 setTheme({
                     backgroundColor: t.background_color || defaultTheme.backgroundColor,
                     primaryColor: t.primary_color || defaultTheme.primaryColor,
                     secondaryColor: t.secondary_color || defaultTheme.secondaryColor,
                     textColor: t.text_color || defaultTheme.textColor,
                     fontFamily: t.font_family || defaultTheme.fontFamily,
-                    logoUrl: t.logo_url || '',
-                    headerText: t.header_text ?? '',
-                    footerText: t.footer_text ?? defaultTheme.footerText,
+                    logoUrl: t.logo_url || agent.logo || '',
+                    headerText: t.header_text || agent.name || '',
+                    footerText: t.footer_text || `© ${new Date().getFullYear()} ${agent.name || 'Super Real Estate'}`,
                     buttonRadius: t.button_radius || defaultTheme.buttonRadius,
                     cardRadius: t.card_radius || defaultTheme.cardRadius,
                     menuRadius: t.menu_radius || defaultTheme.menuRadius,
