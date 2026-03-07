@@ -118,20 +118,68 @@ const AppRoutes = () => {
     // Handle invalid subdomain access
     if (!isMainDomain && !agent) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-sm w-full">
-                    <div className="text-4xl mb-4">🔍</div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Site Not Found</h1>
-                    <p className="text-gray-500 mb-6 text-sm">
-                        The agent subdomain you are trying to visit does not exist or has been deactivated.
-                    </p>
-                    <a
-                        href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
-                        className="inline-flex items-center justify-center w-full px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
-                    >
-                        Back to Platform
-                    </a>
+            <div className="relative min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50 overflow-hidden">
+                {/* Modern Background Decorations */}
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-500/10 rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+                <div className="relative z-10 w-full max-w-md animate-fade-up">
+                    {/* Branded Logo Header */}
+                    <div className="flex justify-center mb-8">
+                        <div className="flex items-center space-x-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white shadow-sm">
+                            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
+                                <span className="text-white font-bold text-xl">S</span>
+                            </div>
+                            <span className="font-bold text-gray-900 tracking-tight">Super <span className="text-primary-600">Real Estate</span></span>
+                        </div>
+                    </div>
+
+                    {/* Main Error Card */}
+                    <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] text-center">
+                        <div className="relative inline-flex items-center justify-center w-20 h-20 mb-8">
+                            <div className="absolute inset-0 bg-primary-100 rounded-3xl rotate-6 opacity-50"></div>
+                            <div className="absolute inset-0 bg-primary-500/10 rounded-3xl -rotate-6"></div>
+                            <div className="relative bg-white rounded-2xl shadow-sm w-full h-full flex items-center justify-center text-3xl">
+                                <svg className="w-10 h-10 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <h1 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Site Not Found</h1>
+                        <p className="text-gray-600 mb-10 leading-relaxed text-sm">
+                            The agent portal you requested doesn't exist or might have moved.
+                            If you're an agent, check your subdomain settings in the master portal.
+                        </p>
+
+                        <div className="space-y-4">
+                            <a
+                                href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
+                                className="group relative flex items-center justify-center w-full px-8 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition-all duration-300 shadow-xl shadow-gray-200 hover:shadow-gray-300 transform hover:-translate-y-1 overflow-hidden"
+                            >
+                                <span className="relative z-10">Back to Platform</span>
+                                <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white/10 opacity-40 group-hover:animate-shimmer" style={{ animation: 'shimmer 1.5s infinite' }}></div>
+                            </a>
+
+                            <div className="pt-4">
+                                <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Powered by Haizo Enterprise</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer decorative text */}
+                    <div className="mt-8 text-center">
+                        <p className="text-gray-400 text-xs">Error Code: 404_AGENT_TENANT_NOT_FOUND</p>
+                    </div>
                 </div>
+
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    @keyframes shimmer {
+                        0% { transform: translateX(-150%) skewX(-12deg); }
+                        100% { transform: translateX(250%) skewX(-12deg); }
+                    }
+                `}} />
             </div>
         );
     }
