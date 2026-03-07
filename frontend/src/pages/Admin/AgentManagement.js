@@ -236,7 +236,7 @@ const AgentManagement = () => {
                 await adminApi.suspendAgent(id);
                 toast.success('Agent suspended');
             } else {
-                await adminApi.reactivateAgent(id);
+                await adminApi.activateAgent(id);
                 toast.success('Agent reactivated');
             }
             fetchAgents();
