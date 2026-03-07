@@ -264,10 +264,10 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         {isMainDomain && listing.agent && (
                             <button
                                 onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-transform duration-200"
+                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
                             >
                                 <div
-                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white/95 transition-colors"
+                                    className="bg-white/85 backdrop-blur-xl rounded-[10px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
@@ -445,10 +445,10 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         {isMainDomain && listing.agent && (
                             <button
                                 onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-transform duration-200"
+                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
                             >
                                 <div
-                                    className="bg-white/80 backdrop-blur-xl rounded-[16px] shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] flex items-center justify-center border border-white/40 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white/95 transition-colors"
+                                    className="bg-white/85 backdrop-blur-xl rounded-[10px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,

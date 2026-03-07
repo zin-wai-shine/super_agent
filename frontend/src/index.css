@@ -210,8 +210,9 @@
     pointer-events: none;
   }
 
-  .shimmer-sweep:hover::after {
-    animation: shimmer 1s ease-in-out infinite;
+  .shimmer-sweep:hover::after,
+  .group:hover .shimmer-sweep::after {
+    animation: shimmer 1.2s ease-in-out infinite;
   }
 
   @keyframes gradient {
