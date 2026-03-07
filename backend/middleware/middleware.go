@@ -124,6 +124,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			domain == "www."+mainDomain ||
 			domain == "haizo.it.com" ||
 			domain == "www.haizo.it.com" ||
+			domain == "super-agent-backend-zin.fly.dev" ||
 			domain == "localhost" ||
 			domain == "127.0.0.1" ||
 			domain == "superealestate.localhost" ||
