@@ -69,9 +69,9 @@ const HeroFilter = () => {
 
     return (
         <div className="w-full max-w-6xl mx-auto">
-            {/* Search bar — same definite design as FilterBar: pill shape, primary border, 24px radius */}
+            {/* Search bar — Liquid Glass design */}
             <div
-                className="relative w-full h-[46px] bg-white border border-primary-500/30 rounded-t-[24px] rounded-b-none border-b-transparent"
+                className="relative w-full h-[46px] bg-white/75 backdrop-blur-2xl border border-white/60 rounded-t-[24px] rounded-b-none border-b-white/20"
                 style={{ transition: 'border-color 0.2s ease' }}
             >
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
@@ -87,25 +87,26 @@ const HeroFilter = () => {
                         }
                     }}
                     placeholder="Search location, name, neighborhood..."
-                    className="absolute inset-0 w-full h-full bg-transparent border-none outline-none pl-12 pr-24 text-[14px] font-medium text-gray-700 placeholder-gray-400 rounded-t-[24px]"
+                    className="absolute inset-0 w-full h-full bg-transparent border-none outline-none pl-12 pr-24 text-[14px] font-medium text-slate-700 placeholder-slate-400 rounded-t-[24px]"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px]">
                     <button
                         type="button"
                         onClick={handleSearchSubmit}
-                        className="w-9 h-9 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-sm transition-all duration-200 active:scale-95"
+                        className="w-9 h-9 flex items-center justify-center bg-primary-600/90 hover:bg-primary-600 text-white rounded-full shadow-lg shadow-primary-500/20 transition-all duration-300 active:scale-95 group/btn overflow-hidden relative"
                     >
-                        <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5]" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
+                        <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5] relative z-10" />
                     </button>
                 </div>
             </div>
 
-            {/* Panel — same definite design as FilterBar: one card, rounded bottom, shared shadows */}
-            <div className="w-full flex flex-row h-[420px] overflow-hidden rounded-b-[24px] border-l border-r border-b border-gray-200 bg-white shadow-[(-24px)_0_56px_-12px_rgba(0,0,0,0.2),24px_0_56px_-12px_rgba(0,0,0,0.2),0_32px_64px_-16px_rgba(0,0,0,0.25)]">
-                {/* Left: Quick Searches — same as FilterBar */}
-                <div className="w-[320px] flex-shrink-0 flex flex-col bg-white shadow-[(-8px)_0_24px_-6px_rgba(0,0,0,0.1),0_8px_24px_-6px_rgba(0,0,0,0.12)]">
+            {/* Panel — Liquid Glass Design: shared shadows & translucency */}
+            <div className="w-full flex flex-row h-[420px] overflow-hidden rounded-b-[24px] border border-white/40 bg-white/70 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)]">
+                {/* Left: Quick Searches — Glass Sidebar */}
+                <div className="w-[320px] flex-shrink-0 flex flex-col bg-white/30 backdrop-blur-md border-r border-white/20">
                     <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Quick Searches</p>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400/80 mb-4">Quick Searches</p>
                         <div className="space-y-1">
                             {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                 <button
@@ -115,28 +116,28 @@ const HeroFilter = () => {
                                     className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-primary-50/40 text-left transition-all group"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Icon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                                        <span className="text-[13px] text-gray-600 font-medium group-hover:text-gray-900 transition-colors">{label}</span>
+                                        <Icon className="w-5 h-5 text-slate-400/70 group-hover:text-primary-600 transition-colors" />
+                                        <span className="text-[13px] text-slate-600/90 font-medium group-hover:text-slate-900 transition-colors">{label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
+                                    <ChevronRightIcon className="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
                                 </button>
                             ))}
                         </div>
                     </div>
-                    <div className="px-6 py-4 bg-gray-50/80 border-t border-gray-100 flex items-center gap-1.5 mt-auto">
-                        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-                        <p className="text-[11px] text-gray-400 font-bold tracking-tight">Press Enter to search all results</p>
+                    <div className="px-6 py-4 bg-white/20 border-t border-white/10 flex items-center gap-1.5 mt-auto">
+                        <MagnifyingGlassIcon className="w-4 h-4 text-slate-400/60" />
+                        <p className="text-[11px] text-slate-400/80 font-bold tracking-tight">Press Enter to search all results</p>
                     </div>
                 </div>
 
-                {/* Right: Transit Explorer — same radius design as filter (rounded corners, cool map radius) */}
-                <div className="flex-1 min-w-0 bg-slate-50 relative flex flex-col overflow-hidden rounded-tl-[24px] rounded-br-[24px] border-l border-t border-gray-200 shadow-[8px_0_20px_-4px_rgba(0,0,0,0.12),0_8px_20px_-4px_rgba(0,0,0,0.12)]">
+                {/* Right: Transit Explorer — Glass Map Container */}
+                <div className="flex-1 min-w-0 bg-slate-50 relative flex flex-col overflow-hidden rounded-tl-[24px] rounded-br-[24px] border-l border-t border-white/30">
                     <div className="absolute top-6 left-6 z-[100] pointer-events-none">
-                        <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-gray-200 flex items-center gap-2">
-                            <div className="bg-primary-600 p-1 rounded-full">
+                        <div className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 flex items-center gap-3">
+                            <div className="bg-primary-600 p-1.5 rounded-full shadow-lg shadow-primary-500/20">
                                 <MapIcon className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Transit Explorer</span>
+                            <span className="text-[11px] font-black text-slate-900/90 uppercase tracking-[0.15em]">Transit Explorer</span>
                         </div>
                     </div>
                     <TransitMapFilter

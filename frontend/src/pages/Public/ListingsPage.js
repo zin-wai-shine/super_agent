@@ -124,6 +124,7 @@ const ListingsPage = () => {
     const [total, setTotal] = useState(0);
     const [pendingTotal, setPendingTotal] = useState(null); // Count for current sidebar draft (background fetch, no loading UI)
     const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const observerTarget = useRef(null);
     const stateCacheRef = useRef({ listings: [], page: 1, total: 0, searchParamsString: '' });
     const scrollPositionRef = useRef(0);
@@ -946,16 +947,25 @@ const ListingsPage = () => {
                     ]))[0];
 
                 const data = response.data;
+                const newItems = data.listings || [];
+
+                // Stop loading more if the current response returned fewer items than the limit
+                // indicating we've reached the end of the data.
+                if (newItems.length < 12) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(true);
+                }
 
                 if (page === 1 && initialLoading) {
                     // Trigger exit animation for skeletons to fade out before revealing cards
                     setIsExiting(true);
                     await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
-                    setListings(data.listings);
+                    setListings(newItems);
                     setIsExiting(false);
                     setInitialLoading(false);
                 } else {
-                    setListings(prev => page === 1 ? data.listings : [...prev, ...data.listings]);
+                    setListings(prev => page === 1 ? newItems : [...prev, ...newItems]);
                     if (page === 1) setInitialLoading(false);
                 }
 
@@ -980,7 +990,7 @@ const ListingsPage = () => {
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
-                if (entries[0].isIntersecting && !loading && listings.length < total) {
+                if (entries[0].isIntersecting && !loading && hasMore && (listings.length > 0 && listings.length < total)) {
                     setPage(prev => prev + 1);
                 }
             },
@@ -988,7 +998,7 @@ const ListingsPage = () => {
         );
         if (observerTarget.current) observer.observe(observerTarget.current);
         return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-    }, [loading, listings.length, total]);
+    }, [loading, listings.length, total, hasMore]);
 
     const handleFilterChange = (key, value, shouldScroll = true) => {
         const safeValue = value != null && typeof value !== 'string' ? String(value) : (value ?? '');
@@ -1672,10 +1682,10 @@ const ListingsPage = () => {
                         </div>
 
                         {/* Listings Grid or Map — full width at lg; at xl sidebar visible so 9 cols */}
-                        <div className="lg:col-span-12 transition-all duration-500 relative">
-                            <div className={`flex flex-col lg:flex-row gap-6 lg:gap-8 relative ${isGoogleMapOpen ? 'min-h-[85vh] pt-0.5' : 'min-h-[70vh]'}`}>
+                        <div className="lg:col-span-12 transition-all duration-700 relative">
+                            <div className={`flex flex-col lg:flex-row lg:justify-end transition-all duration-700 ease-in-out relative ${isMapExpanded ? 'gap-0' : 'gap-6 lg:gap-8'} ${isGoogleMapOpen ? 'min-h-[85vh] pt-0.5' : 'min-h-[70vh]'}`}>
                                 {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
-                                <div className={`w-full flex flex-col ${isGoogleMapOpen ? (isMapExpanded ? 'hidden' : 'hidden lg:block lg:w-[42%] xl:w-[52%] h-full p-0') : ''}`}>
+                                <div className={`flex flex-col transition-all duration-700 ease-in-out overflow-hidden ${isGoogleMapOpen ? (isMapExpanded ? 'lg:w-0 opacity-0 pointer-events-none' : 'w-full lg:w-[42%] xl:w-[52%] opacity-100') : 'w-full'} h-full p-0`}>
                                     {/* Header: Results Count */}
                                     <div className="mb-4 mt-1 flex justify-end">
                                         {initialLoading ? (
@@ -1737,16 +1747,20 @@ const ListingsPage = () => {
 
                                 {/* Right Side: Map — sticky below filter bar: moves up with initial scroll then stops under filter bar */}
                                 {isGoogleMapOpen && (
-                                    <div className={`hidden lg:block transition-all duration-300 ${isMapExpanded ? 'w-full flex-1 relative h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh] ${navVisible ? 'lg:top-[112px]' : 'lg:top-[80px]'}`}`}>
+                                    <div className={`hidden lg:block transition-all duration-700 ease-in-out relative lg:ml-auto ${isMapExpanded ? 'w-full h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh] ${navVisible ? 'lg:top-[112px]' : 'lg:top-[80px]'}`}`}>
                                         <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
                                                 listings={listings}
                                                 center={mapCenter}
                                                 zoom={mapZoom}
                                                 onMarkerClick={(property) => {
-                                                    const newParams = new URLSearchParams(searchParams);
-                                                    newParams.set('detail', property.id);
-                                                    setSearchParams(newParams);
+                                                    if (window.innerWidth >= 1024) {
+                                                        navigate(`/listings/${property.id}`);
+                                                    } else {
+                                                        const newParams = new URLSearchParams(searchParams);
+                                                        newParams.set('detail', property.id);
+                                                        setSearchParams(newParams);
+                                                    }
                                                 }}
                                                 onBoundsChanged={handleMapBoundsChanged}
                                                 onExpandClick={() => setIsMapExpanded(true)}
@@ -1772,9 +1786,9 @@ const ListingsPage = () => {
                                             {/* Map Overlays (hide when expanded so X is visible) */}
                                             {!isMapExpanded && (
                                                 <div className="absolute top-4 right-4 z-10 pointer-events-none">
-                                                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/50 flex items-center gap-3">
-                                                        <div className="bg-primary-50 p-2 rounded-full">
-                                                            <GlobeAltIcon className="w-5 h-5 text-primary-600" />
+                                                    <div className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 flex items-center gap-3">
+                                                        <div className="bg-slate-100/50 p-2 rounded-full border border-white/40">
+                                                            <GlobeAltIcon className="w-5 h-5 text-slate-600" />
                                                         </div>
                                                         <div>
                                                             <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>

@@ -15,7 +15,8 @@ const AgentSettings = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+    const priceFormat = watch('price_format');
 
     const SOCIAL_PLATFORMS = [
         'Facebook', 'Instagram', 'Line', 'WhatsApp', 'LinkedIn',
@@ -329,10 +330,10 @@ const AgentSettings = () => {
                                             </span>
                                         </span>
                                     </span>
-                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : 'border-gray-300'}`}>
-                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${register('price_format').value === 'full' ? 'block' : 'hidden'}`} />
+                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : priceFormat === 'full' ? 'border-primary-600' : 'border-gray-300'}`}>
+                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${priceFormat === 'full' ? 'block' : 'hidden'}`} />
                                     </span>
-                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${"full" === (document.querySelector('input[name="price_format"]:checked')?.value) ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${priceFormat === 'full' ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
                                 </label>
 
                                 <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-gray-800 dark:border-gray-700">
@@ -350,10 +351,10 @@ const AgentSettings = () => {
                                             </span>
                                         </span>
                                     </span>
-                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : 'border-gray-300'}`}>
-                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${register('price_format').value === 'short' ? 'block' : 'hidden'}`} />
+                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : priceFormat === 'short' ? 'border-primary-600' : 'border-gray-300'}`}>
+                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${priceFormat === 'short' ? 'block' : 'hidden'}`} />
                                     </span>
-                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${"short" === (document.querySelector('input[name="price_format"]:checked')?.value) ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${priceFormat === 'short' ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
                                 </label>
                             </div>
                         </div>

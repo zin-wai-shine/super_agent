@@ -73,22 +73,35 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const { isMainDomain } = useTenant();
     const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
-    const swipeStartX = useRef(0);
-    const swipeEndX = useRef(0); // for two-finger: last touch center X when fingers move
-    const focusedMouseStart = useRef({ x: 0, down: false });
-    const focusedContainerRef = useRef(null);
+    const focusedScrollRef = useRef(null);
+    const isManualScrolling = useRef(false);
     const lastTapTimeRef = useRef(0);
     const lastTapXRef = useRef(0);
-    const SWIPE_THRESHOLD = 40;
     const DOUBLE_TAP_MS = 350;
 
+    const scrollToImage = useCallback((index, smooth = true) => {
+        if (!focusedScrollRef.current) return;
+        isManualScrolling.current = true;
+        const width = focusedScrollRef.current.offsetWidth;
+        focusedScrollRef.current.scrollTo({
+            left: index * width,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
+        setFocusedImageIndex(index);
+        setTimeout(() => { isManualScrolling.current = false; }, 500);
+    }, []);
+
     const goPrevImage = useCallback(() => {
-        setFocusedImageIndex((i) => (i == null ? 0 : (i - 1 + flatImages.length) % flatImages.length));
-    }, [flatImages.length]);
+        if (focusedImageIndex === null) return;
+        const prevIdx = (focusedImageIndex - 1 + flatImages.length) % flatImages.length;
+        scrollToImage(prevIdx);
+    }, [focusedImageIndex, flatImages.length, scrollToImage]);
 
     const goNextImage = useCallback(() => {
-        setFocusedImageIndex((i) => (i == null ? 0 : (i + 1) % flatImages.length));
-    }, [flatImages.length]);
+        if (focusedImageIndex === null) return;
+        const nextIdx = (focusedImageIndex + 1) % flatImages.length;
+        scrollToImage(nextIdx);
+    }, [focusedImageIndex, flatImages.length, scrollToImage]);
 
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
     useEffect(() => {
@@ -113,6 +126,27 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [focusedImageIndex, flatImages.length, goPrevImage, goNextImage]);
+
+    // When entering focused view: scroll to initial index
+    useEffect(() => {
+        if (focusedImageIndex !== null && focusedScrollRef.current) {
+            // Delay slightly to ensure layout is ready
+            const timeout = setTimeout(() => {
+                scrollToImage(focusedImageIndex, false);
+            }, 50);
+            return () => clearTimeout(timeout);
+        }
+    }, [focusedImageIndex === null]); // Only run when opening focused view
+
+    const handleFocusedScroll = () => {
+        if (!focusedScrollRef.current || isManualScrolling.current) return;
+        const scrollLeft = focusedScrollRef.current.scrollLeft;
+        const width = focusedScrollRef.current.offsetWidth;
+        const newIndex = Math.round(scrollLeft / width);
+        if (newIndex !== focusedImageIndex && newIndex >= 0 && newIndex < flatImages.length) {
+            setFocusedImageIndex(newIndex);
+        }
+    };
 
     // Show section title in nav bar center based on scroll position (list view only)
     useEffect(() => {
@@ -170,65 +204,24 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const focusedImage = flatImages[focusedImageIndex ?? 0];
     const focusedSectionTitle = focusedImage ? getSectionTitleForImage(focusedImage) : '';
 
-    // Single full-screen image view: count, drag left/right to change image (title updates with section)
     if (isFocusedView && focusedImage) {
         const currentIdx = focusedImageIndex ?? 0;
         const total = flatImages.length;
-        const getTouchCenterX = (touchList) => {
-            if (!touchList?.length) return 0;
-            let sum = 0;
-            for (let i = 0; i < touchList.length; i++) sum += touchList[i].clientX;
-            return sum / touchList.length;
-        };
-        const handleTouchStart = (e) => {
-            swipeStartX.current = getTouchCenterX(e.touches);
-            swipeEndX.current = swipeStartX.current;
-        };
-        const handleTouchMove = (e) => {
-            if (e.touches.length > 0) swipeEndX.current = getTouchCenterX(e.touches);
-        };
-        const tryDoubleTap = (clientX) => {
-            const el = focusedContainerRef.current;
-            if (!el || total <= 1) return;
-            const rect = el.getBoundingClientRect();
-            const mid = rect.left + rect.width / 2;
+
+        const handleDoubleClick = (e) => {
+            if (total <= 1) return;
+            const width = window.innerWidth;
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            if (!x) return;
+
             const now = Date.now();
-            const sameSide = (clientX < mid && lastTapXRef.current < mid) || (clientX >= mid && lastTapXRef.current >= mid);
-            if (now - lastTapTimeRef.current < DOUBLE_TAP_MS && sameSide) {
-                if (clientX < mid) goPrevImage();
+            if (now - lastTapTimeRef.current < DOUBLE_TAP_MS) {
+                if (x < width / 2) goPrevImage();
                 else goNextImage();
                 lastTapTimeRef.current = 0;
             } else {
                 lastTapTimeRef.current = now;
-                lastTapXRef.current = clientX;
             }
-        };
-        const handleTouchEnd = (e) => {
-            const touch = e.changedTouches[0];
-            // Use center of all touches (supports two-finger swipe); fallback to lifted finger position
-            const endX = e.touches.length > 0 ? getTouchCenterX(e.touches) : swipeEndX.current;
-            const dx = endX - swipeStartX.current;
-            if (dx > SWIPE_THRESHOLD && total > 1) goPrevImage();
-            else if (dx < -SWIPE_THRESHOLD && total > 1) goNextImage();
-            else if (Math.abs(dx) <= SWIPE_THRESHOLD) tryDoubleTap(touch?.clientX ?? endX);
-        };
-        const handleMouseDown = (e) => {
-            focusedMouseStart.current = { x: e.clientX, down: true };
-        };
-        const handleMouseMove = (e) => {
-            if (!focusedMouseStart.current.down || total <= 1) return;
-            const dx = e.clientX - focusedMouseStart.current.x;
-            if (dx > SWIPE_THRESHOLD) {
-                goPrevImage();
-                focusedMouseStart.current.down = false;
-            } else if (dx < -SWIPE_THRESHOLD) {
-                goNextImage();
-                focusedMouseStart.current.down = false;
-            }
-        };
-        const handleMouseUp = (e) => {
-            if (focusedMouseStart.current.down && total > 1) tryDoubleTap(e.clientX);
-            focusedMouseStart.current.down = false;
         };
 
         const focusedViewContent = (
@@ -280,30 +273,37 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         )}
                     </div>
                 </header>
-                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0 overflow-hidden">
-                    <div className="w-full max-w-[1440px] h-full mx-auto relative flex items-center justify-center px-4 md:px-8 lg:px-20">
+                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0">
+                    <div className="w-full h-full mx-auto relative overflow-hidden">
                         <div
-                            ref={focusedContainerRef}
-                            className="absolute inset-0 flex items-center justify-center select-none cursor-grab active:cursor-grabbing overflow-hidden"
-                            onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            onMouseDown={handleMouseDown}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                            onMouseLeave={handleMouseUp}
+                            ref={focusedScrollRef}
+                            onScroll={handleFocusedScroll}
+                            className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none no-scrollbar"
+                            style={{
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none',
+                                WebkitOverflowScrolling: 'touch'
+                            }}
                         >
-                            <div className="flex items-center justify-center w-full h-full min-w-0 min-h-0 p-4">
-                                <div key={currentIdx} className="flex items-center justify-center w-full h-full animate-fade-in">
+                            <style dangerouslySetInnerHTML={{
+                                __html: `
+                                .no-scrollbar::-webkit-scrollbar { display: none; }
+                            `}} />
+                            {flatImages.map((img, i) => (
+                                <div
+                                    key={i}
+                                    className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4"
+                                    onClick={handleDoubleClick}
+                                >
                                     <img
-                                        src={getMediaUrl(flatImages[currentIdx].url)}
+                                        src={getMediaUrl(img.url)}
                                         alt=""
                                         className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none"
                                         style={{ maxHeight: '100%' }}
                                         draggable={false}
                                     />
                                 </div>
-                            </div>
+                            ))}
                         </div>
                         {total > 1 && (
                             <>
@@ -329,15 +329,16 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 </div>
                 {total > 1 && (
                     <div className="flex-none min-h-[72px] pt-2 pb-4 flex flex-col justify-center items-center pointer-events-none bg-black">
-                        <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="flex items-center justify-center gap-2 mb-4 px-4 overflow-x-auto max-w-full no-scrollbar">
                             {Array.from({ length: total }, (_, i) => {
                                 const isActive = i === currentIdx;
                                 return (
-                                    <div
+                                    <button
                                         key={i}
-                                        className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out ${isActive ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
+                                        onClick={(e) => scrollToImage(i, e)}
+                                        className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out pointer-events-auto ${isActive ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
                                             }`}
-                                        aria-hidden
+                                        aria-label={`Go to image ${i + 1}`}
                                     />
                                 );
                             })}

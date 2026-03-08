@@ -28,6 +28,145 @@ import { TbTrain } from "react-icons/tb";
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
+export const ListingImageSlider = ({ images, title, cardLink }) => {
+    const [currentIndex, setCurrentIndex] = React.useState(0);
+    const scrollRef = React.useRef(null);
+    const isManualScrolling = React.useRef(false);
+
+    const handleScroll = () => {
+        if (!scrollRef.current || isManualScrolling.current) return;
+        const scrollLeft = scrollRef.current.scrollLeft;
+        const width = scrollRef.current.offsetWidth;
+        const newIndex = Math.round(scrollLeft / width);
+        if (newIndex !== currentIndex) {
+            setCurrentIndex(newIndex);
+        }
+    };
+
+    const scrollToImage = (index, e) => {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        if (!scrollRef.current) return;
+
+        isManualScrolling.current = true;
+        const width = scrollRef.current.offsetWidth;
+        scrollRef.current.scrollTo({
+            left: index * width,
+            behavior: 'smooth'
+        });
+        setCurrentIndex(index);
+
+        // Reset manual scroll flag after transition
+        setTimeout(() => {
+            isManualScrolling.current = false;
+        }, 500);
+    };
+
+    const nextImage = (e) => {
+        const nextIdx = (currentIndex + 1) % images.length;
+        scrollToImage(nextIdx, e);
+    };
+
+    const prevImage = (e) => {
+        const prevIdx = (currentIndex - 1 + images.length) % images.length;
+        scrollToImage(prevIdx, e);
+    };
+
+    if (!images || images.length === 0) return null;
+
+    return (
+        <div className="w-full h-full group/slider relative overflow-hidden">
+            {/* Scroll Container */}
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain"
+                style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                }}
+            >
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    .group\\/slider .flex::-webkit-scrollbar { display: none; }
+                `}} />
+                {images.map((img, i) => (
+                    <div
+                        key={i}
+                        className="w-full h-full flex-shrink-0 snap-center relative"
+                    >
+                        <Link
+                            to={cardLink}
+                            className="block w-full h-full"
+                        >
+                            <img
+                                src={img}
+                                alt={`${title} - image ${i + 1}`}
+                                className="w-full h-full object-cover select-none"
+                            />
+                        </Link>
+                    </div>
+                ))}
+            </div>
+
+            {/* Dots */}
+            {images.length > 1 && (() => {
+                const total = images.length;
+                const maxDots = 5;
+                let start = 0;
+                let end = total;
+
+                if (total > maxDots) {
+                    if (currentIndex <= 2) {
+                        start = 0;
+                        end = maxDots;
+                    } else if (currentIndex >= total - 3) {
+                        start = total - maxDots;
+                        end = total;
+                    } else {
+                        start = currentIndex - 2;
+                        end = currentIndex + 3;
+                    }
+                }
+
+                return (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20">
+                        {images.map((_, i) => {
+                            if (i < start || i >= end) return null;
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={(e) => scrollToImage(i, e)}
+                                    className={`h-1.5 rounded-full transition-all duration-300 pointer-events-auto ${i === currentIndex ? 'bg-white w-4 shadow-sm' : 'bg-white/40 w-1.5'}`}
+                                    aria-label={`Go to image ${i + 1}`}
+                                />
+                            );
+                        })}
+                    </div>
+                );
+            })()}
+
+            {/* Arrows */}
+            {images.length > 1 && (
+                <>
+                    <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity z-30 hover:bg-white/30 pointer-events-auto"
+                    >
+                        <ChevronLeftIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity z-30 hover:bg-white/30 pointer-events-auto"
+                    >
+                        <ChevronRightIcon className="w-4 h-4" />
+                    </button>
+                </>
+            )}
+        </div>
+    );
+};
+
 const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
     if (!listing || Object.keys(listing).length === 0 || !listing.id) return null; // Defensive check for undefined listings
     console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
@@ -230,14 +369,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                     style={animationStyle}
                 >
                     <div className="relative aspect-[5/4.2] md:aspect-[5/4.7] rounded-[23px] overflow-hidden mb-2">
-                        <Link to={cardLink}>
-
-                            <img
-                                src={listingImages[0]}
-                                alt={title}
-                                className="h-full w-full object-cover md:group-hover:scale-105 transition-transform duration-700"
-                            />
-                        </Link>
+                        <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
                         <div className="absolute top-3.5 left-3.5">
@@ -264,17 +396,16 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         {isMainDomain && listing.agent && (
                             <button
                                 onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
+                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto active:scale-95 transition-all duration-300"
                             >
                                 <div
-                                    className="bg-white/85 backdrop-blur-xl rounded-[4px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
+                                    className="bg-white/90 backdrop-blur-xl rounded-lg shadow-lg flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] aspect-[2.8/1] overflow-hidden hover:bg-white transition-all duration-300"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
-                                            backgroundSize: '78%',
+                                            backgroundSize: '75%',
                                             backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center',
-                                            padding: '0px'
+                                            backgroundPosition: 'center'
                                         } : {}
                                     }
                                 >
@@ -312,15 +443,8 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
                 <div className="flex flex-col w-full bg-white rounded-none border-none">
-                    <Link
-                        to={cardLink}
-                        className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block"
-                    >
-                        <img
-                            src={listingImages[0]}
-                            alt={title}
-                            className="h-full w-full object-cover md:group-hover:scale-105 transition-transform duration-700 select-none"
-                        />
+                    <div className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block">
+                        <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge */}
                         <div className="absolute top-3.5 left-3.5">
@@ -371,8 +495,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         )}
 
 
-
-                    </Link>
+                    </div>
 
                     <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
                         <div className="flex justify-between items-start">
@@ -418,13 +541,8 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
                 <div className="p-4 flex gap-5">
-                    <Link to={linkTo} className="relative aspect-[4/3.5] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
-
-                        <img
-                            src={listingImages[0]}
-                            alt={title}
-                            className="h-full w-full object-cover md:group-hover:scale-110 transition-transform duration-700"
-                        />
+                    <div className="relative aspect-[4/3.5] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
+                        <ListingImageSlider images={listingImages} title={title} cardLink={linkTo} />
                         <div className="absolute top-3.5 left-3.5 z-10">
                             <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
                                 <span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
@@ -470,7 +588,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 </div>
                             </button>
                         )}
-                    </Link>
+                    </div>
                     <div className="flex-1 py-1 flex flex-col justify-between">
                         <div>
                             <div className="flex justify-between items-start mb-1">
@@ -523,141 +641,181 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
 const AgentProfileModal = ({ isOpen, onClose, agent }) => {
     const logoUrl = getMediaUrl(agent.logo || agent.theme?.logo_url);
+    const websiteUrl = agent.custom_domain
+        ? `https://${agent.custom_domain}`
+        : `http://${agent.subdomain}.${process.env.REACT_APP_MAIN_DOMAIN || 'superealestate.localhost'}`;
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            size="sm"
-            title="Agent Profile"
-            centerTitle
+            size="xl"
+            title=""
+            hideHeader={true}
+            contentClassName="bg-white/80 backdrop-blur-2xl border border-white/60"
         >
-            <div className="flex flex-col">
-                {/* Header Background */}
-                <div className="h-24 bg-gradient-to-r from-primary-600/10 to-primary-600/5 relative" />
+            {/* Custom Close button */}
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-50 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
+            >
+                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
 
-                <div className="px-6 pb-8 -mt-12 relative z-10 flex flex-col items-center">
-                    {/* Logo Ring */}
-                    <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center p-2 border border-gray-50 mb-4">
-                        {logoUrl ? (
-                            <img src={logoUrl} alt={agent.name} className="w-full h-full object-contain" />
-                        ) : (
-                            <div className="w-full h-full bg-primary-100 rounded-xl flex items-center justify-center">
-                                <span className="text-primary-600 font-bold text-2xl">
-                                    {agent.name?.charAt(0) || 'A'}
-                                </span>
-                            </div>
-                        )}
+            <div className="flex flex-col md:flex-row min-h-[560px] overflow-hidden rounded-2xl relative">
+                {/* ── LEFT COLUMN ── Logo Panel with background image & liquid glass buttons */}
+                <div
+                    className="md:w-[360px] flex-shrink-0 flex flex-col items-center justify-start px-10 pt-14 pb-10 relative overflow-hidden border-r border-gray-100 bg-white"
+                    style={{
+                        backgroundImage: logoUrl ? `url('${logoUrl}')` : 'none',
+                        backgroundSize: '180px',
+                        backgroundPosition: 'center 60px',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                >
+                    {/* Floating decorative elements for a softer feel */}
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gray-50/50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+
+                    {/* Spacer to push content below the background logo */}
+                    <div className="h-[180px] w-full" />
+
+                    {/* Name */}
+                    <div className="text-center z-10 mb-10">
+                        <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em] mb-2 block">Official Agent</span>
+                        <h2 className="text-2xl font-black text-slate-900/90 leading-tight">{agent.name}</h2>
                     </div>
 
-                    <h2 className="text-xl font-bold text-gray-900 text-center mb-1">{agent.name}</h2>
-                    {agent.subdomain && (
-                        <p className="text-sm text-primary-600 font-medium mb-4">
-                            {agent.subdomain}.{process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}
-                        </p>
-                    )}
-
-                    {agent.description && (
-                        <p className="text-sm text-gray-600 text-center line-clamp-3 mb-6 px-2">
-                            {agent.description}
-                        </p>
-                    )}
-
-                    {/* Contact Grid */}
-                    <div className="w-full grid grid-cols-1 gap-3 mb-8">
-                        {agent.phone && (
-                            <a href={`tel:${agent.phone}`} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
-                                <div className="p-2 bg-white rounded-lg shadow-sm group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                                    <PhoneIcon className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Phone</span>
-                                    <span className="text-sm font-semibold text-gray-700">{agent.phone}</span>
-                                </div>
-                            </a>
-                        )}
+                    {/* Contact info rows with softer design */}
+                    <div className="w-full space-y-4 z-10">
                         {agent.email && (
-                            <a href={`mailto:${agent.email}`} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
-                                <div className="p-2 bg-white rounded-lg shadow-sm group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                                    <EnvelopeIcon className="w-5 h-5" />
+                            <a href={`mailto:${agent.email}`} className="flex items-center gap-4 group/item">
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 transition-all duration-300 border border-slate-100 shadow-sm">
+                                    <EnvelopeIcon className="w-5 h-5 text-gray-400 group-hover/item:text-primary-600 transition-colors" />
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</span>
-                                    <span className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{agent.email}</span>
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Email</span>
+                                    <span className="text-[14px] text-slate-700/80 truncate font-medium group-hover/item:text-primary-600 transition-colors">{agent.email}</span>
                                 </div>
                             </a>
                         )}
-                        {agent.address && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 group">
-                                <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <MapPinSolidIcon className="w-5 h-5 text-gray-400" />
+                        {agent.phone && (
+                            <a href={`tel:${agent.phone}`} className="flex items-center gap-4 group/item">
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 transition-all duration-300 border border-slate-100 shadow-sm">
+                                    <PhoneIcon className="w-5 h-5 text-gray-400 group-hover/item:text-primary-600 transition-colors" />
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Address</span>
-                                    <span className="text-sm font-semibold text-gray-700 line-clamp-1">{agent.address}</span>
-                                </div>
-                            </div>
-                        )}
-                        {(agent.custom_domain || agent.subdomain) && (
-                            <a
-                                href={agent.custom_domain ? `https://${agent.custom_domain}` : `https://${agent.subdomain}.${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-3 p-3 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors group"
-                            >
-                                <div className="p-2 bg-white rounded-lg shadow-sm group-hover:text-primary-600 transition-colors">
-                                    <GlobeAltIcon className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Website</span>
-                                    <span className="text-sm font-semibold text-primary-700 truncate max-w-[200px]">
-                                        {agent.custom_domain || `${agent.subdomain}.${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
-                                    </span>
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Phone</span>
+                                    <span className="text-[14px] text-slate-700/80 truncate font-medium group-hover/item:text-primary-600 transition-colors">{agent.phone}</span>
                                 </div>
                             </a>
                         )}
                     </div>
 
-                    {/* Social Links */}
-                    <div className="w-full border-t border-gray-100 pt-6">
-                        <div className="flex justify-center gap-4">
+                    {/* Bottom Section: Socials + CTA at base */}
+                    <div className="mt-auto w-full z-10 flex flex-col pt-10">
+                        {/* Social icons row */}
+                        <div className="flex items-center gap-4 mb-10">
                             {agent.line && (
-                                <a href={`https://line.me/ti/p/~${agent.line}`} target="_blank" rel="noreferrer" className="p-3 bg-[#06C755]/10 text-[#06C755] rounded-full hover:scale-110 transition-transform">
-                                    <SiLine className="w-6 h-6" />
+                                <a href={`https://line.me/ti/p/~${agent.line}`} target="_blank" rel="noreferrer"
+                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#06C755] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    <SiLine className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.facebook && (
-                                <a href={agent.facebook} target="_blank" rel="noreferrer" className="p-3 bg-[#1877F2]/10 text-[#1877F2] rounded-full hover:scale-110 transition-transform">
-                                    <SiFacebook className="w-6 h-6" />
+                                <a href={agent.facebook} target="_blank" rel="noreferrer"
+                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#1877F2] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    <SiFacebook className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.instagram && (
-                                <a href={agent.instagram} target="_blank" rel="noreferrer" className="p-3 bg-[#E4405F]/10 text-[#E4405F] rounded-full hover:scale-110 transition-transform">
-                                    <SiInstagram className="w-6 h-6" />
+                                <a href={agent.instagram} target="_blank" rel="noreferrer"
+                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#E4405F] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    <SiInstagram className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.linkedin && (
-                                <a href={agent.linkedin} target="_blank" rel="noreferrer" className="p-3 bg-[#0A66C2]/10 text-[#0A66C2] rounded-full hover:scale-110 transition-transform">
-                                    <SiLinkedin className="w-6 h-6" />
-                                </a>
-                            )}
-                            {agent.custom_domain && (
-                                <a href={`https://${agent.custom_domain}`} target="_blank" rel="noreferrer" className="p-3 bg-gray-100 text-gray-600 rounded-full hover:scale-110 transition-transform">
-                                    <GlobeAltIcon className="w-6 h-6" />
+                                <a href={agent.linkedin} target="_blank" rel="noreferrer"
+                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#0A66C2] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    <SiLinkedin className="w-5 h-5" />
                                 </a>
                             )}
                         </div>
+
+                        {/* Visit Website CTA - Moved to base */}
+                        {(agent.subdomain || agent.custom_domain) && (
+                            <a
+                                href={websiteUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full group relative h-12 overflow-hidden rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center gap-2.5 text-white active:scale-95 transition-all duration-500 shadow-xl hover:bg-slate-800"
+                            >
+                                {/* Light sweep sweep effect */}
+                                <div className="absolute inset-0 w-full h-full -translate-x-[110%] group-hover:translate-x-[110%] transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-0" />
+
+                                <div className="relative z-10 flex items-center gap-2.5 whitespace-nowrap">
+                                    <GlobeAltIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
+                                    <span className="text-[13px] font-black uppercase tracking-wider">Visit Website</span>
+                                </div>
+                            </a>
+                        )}
                     </div>
                 </div>
 
-                {/* Footer Quote or Mission */}
-                {(agent.mission || agent.vision) && (
-                    <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 italic text-center">
-                        <p className="text-gray-500 text-sm">
-                            "{agent.mission || agent.vision}"
-                        </p>
+                {/* ── RIGHT COLUMN ── White content panel with liquid glass button */}
+                <div className="flex-1 flex flex-col px-12 py-14 overflow-y-auto">
+                    <div className="mb-6">
+                        <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em]">About our Vision</span>
+                        <h3 className="text-3xl font-black text-slate-900/95 mt-1 leading-tight">{agent.name}</h3>
                     </div>
-                )}
+
+                    {/* Description / Bio with decorative quote */}
+                    {agent.description ? (
+                        <div className="relative mb-10">
+                            <div className="absolute -top-3 -left-2 text-8xl text-primary-100/40 font-serif leading-none select-none pointer-events-none" style={{ fontFamily: 'Georgia, serif' }}>"</div>
+                            <p className="text-[16px] text-slate-600/90 leading-relaxed pt-8 pl-5 relative z-10 italic">
+                                {agent.description}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="mb-10 flex items-center justify-center h-28 bg-white/20 backdrop-blur-xl rounded-3xl border border-dashed border-white/40">
+                            <p className="text-gray-500 text-[15px] italic font-medium">No description provided for this agency.</p>
+                        </div>
+                    )}
+
+                    {/* Mission / Vision cards */}
+                    {(agent.mission || agent.vision) && (
+                        <div className="grid grid-cols-1 gap-4 mb-10">
+                            {agent.vision && (
+                                <div className="bg-gradient-to-br from-primary-50/50 to-white border border-primary-100/50 rounded-[2rem] p-6 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-2 h-6 bg-primary-500 rounded-full" />
+                                        <span className="text-[11px] font-black text-primary-600 uppercase tracking-widest">Our Vision</span>
+                                    </div>
+                                    <p className="text-[14px] text-gray-600 leading-relaxed">{agent.vision}</p>
+                                </div>
+                            )}
+                            {agent.mission && (
+                                <div className="bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100/50 rounded-[2rem] p-6 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-2 h-6 bg-indigo-500 rounded-full" />
+                                        <span className="text-[11px] font-black text-indigo-600 uppercase tracking-widest">Our Mission</span>
+                                    </div>
+                                    <p className="text-[14px] text-gray-600 leading-relaxed">{agent.mission}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Footer CTA - Minimal Design */}
+                    <div className="mt-auto pt-8 border-t border-white/20 flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-900/80">Premium Partner</span>
+                            <span className="text-[11px] text-slate-400 font-medium tracking-wide">✓ Verified by Super Real Estate</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </Modal>
     );

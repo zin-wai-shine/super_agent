@@ -33,6 +33,7 @@ import {
     ArrowRightIcon,
     CheckCircleIcon, // Added CheckCircleIcon to outline
     ClockIcon, // Moved ClockIcon to outline
+    DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import {
     HeartIcon as HeartSolidIcon,
@@ -187,7 +188,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const id = propId || routeId;
     const { user, isAuthenticated } = useAuth();
     const { theme } = useTheme();
-    const { isMainDomain } = useTenant();
+    const { isMainDomain, agent } = useTenant();
+    const [copiedPhone, setCopiedPhone] = useState(false);
     const [listing, setListing] = useState(null);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
@@ -381,8 +383,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     }, [isBookingOverlayOpen, onBookingOpenChange]);
 
     // Lock background scroll when modals or overlays are open
+    // Only lock when in modal mode or for the contact overlay (which is always fullscreen)
+    // On desktop non-modal view, booking is rendered inline — don't lock scroll
     useEffect(() => {
-        if (isContactOverlayOpen || isBookingOverlayOpen) {
+        const isDesktopInlineBooking = isBookingOverlayOpen && !isModal;
+        const shouldLock = isContactOverlayOpen || (isBookingOverlayOpen && !isDesktopInlineBooking);
+
+        if (shouldLock) {
             document.body.style.overflow = 'hidden';
 
             // Also lock the inner modal scrollable if we're in modal mode
@@ -2464,6 +2471,32 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         Choose your preferred way to reach out to our team of experts.
                                                     </p>
 
+                                                    {agent?.phone && (
+                                                        <div className="mb-6 pb-6 border-b border-gray-100">
+                                                            <div className="flex items-center gap-2 mb-4">
+                                                                <div className="w-1.5 h-5 bg-primary-500 rounded-full"></div>
+                                                                <h4 className="text-[17px] font-bold text-gray-900">Contact Information</h4>
+                                                            </div>
+                                                            <label className="block text-[13px] font-bold text-gray-700 mb-2">Phone Number</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="flex-1 bg-primary-50/50 text-gray-900 text-[14px] px-3 py-2.5 rounded-lg border border-primary-100 flex items-center justify-between">
+                                                                    <span>{agent.phone}</span>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(agent.phone);
+                                                                            setCopiedPhone(true);
+                                                                            setTimeout(() => setCopiedPhone(false), 2000);
+                                                                        }}
+                                                                        className="ml-2 text-primary-500 hover:text-primary-700 transition-colors p-1"
+                                                                        title="Copy phone number"
+                                                                    >
+                                                                        {copiedPhone ? <CheckCircleIcon className="w-5 h-5 text-emerald-500" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     <div className="grid grid-cols-1 gap-3">
                                                         {(() => {
                                                             let links = [];
@@ -2545,6 +2578,34 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             <h3 className="text-4xl lg:text-6xl font-black text-gray-900 tracking-tighter mb-6">Let's Connect</h3>
                                                             <p className="text-gray-600 text-lg lg:text-xl font-medium max-w-2xl mx-auto leading-relaxed">Choose your preferred way to reach out to our team of experts.</p>
                                                         </div>
+
+                                                        {agent?.phone && (
+                                                            <div className="w-full max-w-6xl mb-12 flex flex-col items-center pb-12 border-b border-gray-100">
+                                                                <div className="w-full max-w-sm">
+                                                                    <div className="flex items-center justify-center gap-2 mb-4">
+                                                                        <div className="w-1.5 h-6 bg-primary-500 rounded-full"></div>
+                                                                        <h4 className="text-[19px] font-bold text-gray-900">Contact Information</h4>
+                                                                    </div>
+                                                                    <label className="block text-sm font-bold text-gray-700 mb-2 text-center">Phone Number</label>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="flex-1 bg-primary-50/50 text-gray-900 text-[15px] px-4 py-3 rounded-xl border border-primary-100 flex items-center justify-between">
+                                                                            <span>{agent.phone}</span>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    navigator.clipboard.writeText(agent.phone);
+                                                                                    setCopiedPhone(true);
+                                                                                    setTimeout(() => setCopiedPhone(false), 2000);
+                                                                                }}
+                                                                                className="ml-2 text-primary-500 hover:text-primary-700 transition-colors p-1"
+                                                                                title="Copy phone number"
+                                                                            >
+                                                                                {copiedPhone ? <CheckCircleIcon className="w-5 h-5 text-emerald-500" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
 
                                                         {/* Contact Options Grid */}
                                                         <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl">
