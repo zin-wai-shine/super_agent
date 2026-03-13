@@ -18,20 +18,33 @@ export const TenantProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchTenantConfig = async () => {
+            const hostname = window.location.hostname;
+            const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+            const cacheKey = `tenantConfig_${hostname}`;
+
             try {
                 // Use api instance so base URL and X-Tenant (for subdomain.superealestate.IP) are correct
                 const apiUrl = api.defaults.baseURL;
                 console.log('Fetching tenant config from:', apiUrl);
-                const response = await api.get('/public/tenant/config', { timeout: 5000 });
+                const response = await api.get('/public/tenant/config', { timeout: 8000 }); // increased timeout to 8s
                 console.log('Tenant config received:', response.data);
+                
+                // Cache the config to prevent 404s on aggressive reloading
+                sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
                 setTenantConfig(response.data);
             } catch (err) {
                 console.error('Failed to fetch tenant configuration:', err);
-                setError(err);
 
-                // Smart fallback: guess if main domain based on hostname
-                const hostname = window.location.hostname;
-                const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+                // Try to recover from cache
+                const cached = sessionStorage.getItem(cacheKey);
+                if (cached) {
+                    console.log('Recovered tenant config from cache after API failure');
+                    setTenantConfig(JSON.parse(cached));
+                    setLoading(false);
+                    return; // Avoid triggering the fallback
+                }
+
+                setError(err);
 
                 // Dev main domains (the entry points)
                 const devMainDomains = ['localhost', '127.0.0.1', 'superealestate.localhost', 'superealestate.test', 'superealestate.local'];
@@ -43,7 +56,7 @@ export const TenantProvider = ({ children }) => {
                     hostname === 'haizo.it.com' ||
                     hostname === 'www.haizo.it.com';
 
-                console.log('API failed, guessing tenant config from hostname:', { hostname, isProbablyMain });
+                console.log('API failed and no cache, guessing tenant config from hostname:', { hostname, isProbablyMain });
                 setTenantConfig({ is_main_domain: isProbablyMain, agent: null });
             } finally {
                 setLoading(false);
