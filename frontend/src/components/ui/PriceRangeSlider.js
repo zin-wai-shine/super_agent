@@ -172,7 +172,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                             height: 42,
                             bottom: '50%',
                             marginBottom: '2px', // Slight gap from track
-                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 15%, white)',
+                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 25%, transparent)',
                         }}
                     >
                         <svg viewBox="0 0 100 28" className="w-full h-full block" preserveAspectRatio="none">

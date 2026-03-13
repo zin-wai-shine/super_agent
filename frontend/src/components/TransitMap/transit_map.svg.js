@@ -1,10 +1,18 @@
-export const TransitMapSVG = () => (
-  <svg id="train-map" width="1368" height="1340" viewBox="0 0 1368 1340" version="1.1" class="css-1qmhtch"><g id="metro" class="locale-en"><svg xmlns="http://www.w3.org/2000/svg" width="1362.22" height="1306.51" fill="none" viewBox="0 0 1362.22 1306.51">
+export const TransitMapSVG = ({ isDarkMode }) => (
+  <svg id="train-map" width="1368" height="1340" viewBox="0 0 1368 1340" version="1.1" className={`css-1qmhtch ${isDarkMode ? 'dark-map' : ''}`}><g id="metro" className="locale-en"><svg xmlns="http://www.w3.org/2000/svg" width="1362.22" height="1306.51" fill="none" viewBox="0 0 1362.22 1306.51">
     <defs>
       <style>{`
  #river path {
    opacity: 0.6;
-   stroke: #B8E5FA;
+   stroke: ${isDarkMode ? '#1e3a4a' : '#B8E5FA'};
+ }
+ 
+ .dark-map text, .dark-map g[fill="#424143"], .dark-map path[fill="#424143"] {
+   fill: #A6ADBB !important;
+ }
+ 
+ .dark-map circle[fill="#fff"], .dark-map path[fill="#fff"] {
+   fill: #1a1c1e !important;
  }
 
  :root {

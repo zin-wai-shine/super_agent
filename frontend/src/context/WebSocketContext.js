@@ -7,9 +7,10 @@ export const WebSocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [lastNotification, setLastNotification] = useState(null);
+    const [lastMessage, setLastMessage] = useState(null);
     const reconnectTimeoutRef = useRef(null);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
 
     const connect = () => {
         if (!token) return;
@@ -73,6 +74,7 @@ export const WebSocketProvider = ({ children }) => {
                         { duration: 4000, position: 'top-right', icon: '🔔' }
                     );
                 }
+                setLastMessage(data);
             } catch (err) {
                 console.error('WS Message Parse Error:', err);
             }
@@ -103,7 +105,7 @@ export const WebSocketProvider = ({ children }) => {
     }, [token]);
 
     return (
-        <WebSocketContext.Provider value={{ isConnected, lastNotification }}>
+        <WebSocketContext.Provider value={{ isConnected, lastNotification, lastMessage }}>
             {children}
         </WebSocketContext.Provider>
     );

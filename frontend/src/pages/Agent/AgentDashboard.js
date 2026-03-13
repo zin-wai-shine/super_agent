@@ -16,27 +16,38 @@ import { format } from 'date-fns';
 import { getMediaUrl } from '../../utils/media';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useWebSocket } from '../../context/WebSocketContext';
 
 const AgentDashboard = () => {
     const { user } = useAuth();
+    const { lastMessage } = useWebSocket();
     const [stats, setStats] = useState(null);
     const [recentListings, setRecentListings] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const fetchDashboard = async () => {
+        try {
+            const response = await agentApi.getDashboard();
+            setStats(response.data.stats);
+            setRecentListings(response.data.recent_listings || []);
+        } catch (error) {
+            console.error('Failed to fetch dashboard:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchDashboard = async () => {
-            try {
-                const response = await agentApi.getDashboard();
-                setStats(response.data.stats);
-                setRecentListings(response.data.recent_listings || []);
-            } catch (error) {
-                console.error('Failed to fetch dashboard:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDashboard();
     }, []);
+
+    // WebSocket real-time updates
+    useEffect(() => {
+        if (lastMessage) {
+            // Re-fetch dashboard data for various updates
+            fetchDashboard();
+        }
+    }, [lastMessage]);
 
     if (loading || !user) {
         return (

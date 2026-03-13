@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { publicApi } from '../../services/api';
 import { TransitMapSVG } from './transit_map.svg.js';
 import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon, MapIcon, PlusIcon, MinusIcon, ArrowPathIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline';
+import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 
 const TransitMapFilter = ({
     onStationClick,
@@ -13,6 +14,7 @@ const TransitMapFilter = ({
     externalStations = null,
     hideHeader = false
 }) => {
+    const { isDarkMode } = usePublicDarkTheme();
     const [internalStations, setInternalStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const stations = externalStations || internalStations;
@@ -242,7 +244,7 @@ const TransitMapFilter = ({
         <div className="relative h-full min-h-0 flex flex-col flex-1">
             {/* Conditional Header with Integrated Search */}
             {!hideHeader && (showTitle || searchable) && (
-                <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 shadow-md flex-shrink-0 z-[110] relative">
+                <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 dark:bg-dashboard-card shadow-md flex-shrink-0 z-[110] relative">
                     {showTitle && (
                         <div className="flex items-center gap-3 flex-shrink-0">
                             <div className="bg-white/20 p-2 rounded-full backdrop-blur-md">
@@ -271,10 +273,10 @@ const TransitMapFilter = ({
                                 />
 
                                 {showResults && searchTerm && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 dark:border-white/5 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
                                         {stations
                                             .filter(s => {
-                                                const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '') || '';
+                                                const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
                                                 const normalizedTerm = normalize(searchTerm);
                                                 return (
                                                     normalize(s.name_en).includes(normalizedTerm) ||
@@ -291,14 +293,14 @@ const TransitMapFilter = ({
                                                         setSearchTerm('');
                                                         setShowResults(false);
                                                     }}
-                                                    className="w-full text-left px-5 py-3.5 hover:bg-primary-50/50 flex items-center justify-between group/item transition-all border-b border-gray-100/50 last:border-0"
+                                                    className="w-full text-left px-5 py-3.5 hover:bg-primary-50/50 dark:hover:bg-white/5 flex items-center justify-between group/item transition-all border-b border-gray-100/50 dark:border-white/5 last:border-0"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-[1px] bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover/item:bg-primary-100 group-hover/item:text-primary-600 transition-colors">
+                                                        <div className="w-8 h-8 rounded-[1px] bg-gray-100 dark:bg-white/5 flex items-center justify-center text-[10px] font-black text-gray-400 group-hover/item:bg-primary-100 group-hover/item:text-primary-600 transition-colors">
                                                             {station.id.substring(0, 2)}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-gray-900 leading-tight">{station.name_en}</div>
+                                                            <div className="font-bold text-gray-900 dark:text-white leading-tight">{station.name_en}</div>
                                                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{station.id}</div>
                                                         </div>
                                                     </div>
@@ -318,7 +320,7 @@ const TransitMapFilter = ({
 
             {/* Legend */}
             {!hideHeader && (
-                <div className="px-6 py-4 relative z-[100] bg-white border-b border-gray-100/80 w-full max-w-full overflow-hidden flex-shrink-0">
+                <div className="px-6 py-4 relative z-[100] bg-white dark:bg-dashboard-card border-b border-gray-100/80 dark:border-white/5 w-full max-w-full overflow-hidden flex-shrink-0">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full min-w-0 flex-1">
                         {[
                             { name: 'BTS Sukhumvit', color: '#7FBA00' },
@@ -329,17 +331,17 @@ const TransitMapFilter = ({
                             { name: 'Yellow Line', color: '#FFD700' },
                             { name: 'Pink Line', color: '#FF69B4' },
                             { name: 'Gold Line', color: '#D4AF37' },
-                            { name: 'River', color: '#B8E5FA' },
+                            { name: 'River', color: isDarkMode ? '#1e3a4a' : '#B8E5FA' },
                         ].map((line) => (
                             <div
                                 key={line.name}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-shadow cursor-default"
                             >
                                 <div
                                     className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"
                                     style={{ backgroundColor: line.color }}
                                 />
-                                <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap">{line.name}</span>
+                                <span className="text-[11px] text-gray-600 dark:text-gray-400 font-bold whitespace-nowrap">{line.name}</span>
                             </div>
                         ))}
                     </div>
@@ -347,11 +349,11 @@ const TransitMapFilter = ({
             )}
 
             {/* Interactive Map Container */}
-            <div className="relative bg-white overflow-hidden group flex-1">
+            <div className="relative bg-white dark:bg-dashboard-card overflow-hidden group flex-1">
                 {/* Zoom & Reset Controls - Bottom Right Vertical */}
                 <div className="absolute bottom-6 right-6 z-[90] flex flex-col items-center gap-3">
                     {/* Zoom Pill */}
-                    <div className="bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex flex-col p-1 overflow-hidden">
+                    <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex flex-col p-1 overflow-hidden">
                         <button
                             onClick={() => {
                                 if (!mapWrapperRef.current) return;
@@ -369,7 +371,7 @@ const TransitMapFilter = ({
                                 setZoom(newZoom);
                                 setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
-                            className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
+                            className="w-10 h-10 flex items-center justify-center text-slate-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-90"
                             title="Zoom In"
                         >
                             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
@@ -393,7 +395,7 @@ const TransitMapFilter = ({
                                 setZoom(newZoom);
                                 setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
-                            className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
+                            className="w-10 h-10 flex items-center justify-center text-slate-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-90"
                             title="Zoom Out"
                         >
                             <MinusIcon className="w-5 h-5 stroke-[2.5]" />
@@ -410,7 +412,7 @@ const TransitMapFilter = ({
                             setZoom(defaultZoom);
                             setPan(constrainPan({ x: initialPanX, y: initialPanY }, defaultZoom));
                         }}
-                        className="w-12 h-12 bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-95 group"
+                        className="w-12 h-12 bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-95 group"
                         title="Reset View"
                     >
                         <ArrowPathIcon className="w-6 h-6 group-active:rotate-180 transition-transform duration-500" />
@@ -419,7 +421,7 @@ const TransitMapFilter = ({
 
                 <div
                     ref={mapWrapperRef}
-                    className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50 z-10"
+                    className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50 dark:bg-dashboard-card z-10"
                     style={{ overflow: 'hidden', touchAction: 'none' }}
                     onMouseDown={(e) => {
                         setIsInteracting(true);
@@ -554,7 +556,7 @@ const TransitMapFilter = ({
                             ref={svgContainerRef}
                             className="w-full h-full transit-map-svg"
                         >
-                            <TransitMapSVG />
+                            <TransitMapSVG isDarkMode={isDarkMode} />
                         </div>
 
                         {/* Selected Station Markers: 3D Location Pin Design (reduced size) */}

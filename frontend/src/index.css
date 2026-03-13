@@ -263,6 +263,19 @@
     }
   }
 
+  .animate-fillIn {
+    animation: fillIn 0.4s ease-out forwards;
+  }
+
+  @keyframes fillIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   .animate-fade-in-scale {
     animation: fade-in-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
@@ -617,4 +630,21 @@
 .dark .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
 .dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
   @apply stroke-primary-500 !important;
+}
+
+.animate-fill-fast {
+  animation: fillIn 0.3s ease-out forwards;
+}
+
+.animate-fill-med {
+  animation: fillIn 0.6s ease-out forwards;
+}
+
+.animate-fill-slow {
+  animation: fillIn 0.9s ease-out forwards;
+}
+
+@keyframes fillIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

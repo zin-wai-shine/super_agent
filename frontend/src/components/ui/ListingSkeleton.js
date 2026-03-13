@@ -7,44 +7,49 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     const delay = isExiting ? `${(index % 12) * 60}ms` : `${(index % 12) * 100}ms`;
 
     const skeletonStyle = {
-        animation: isExiting ? 'fadeOutDown 0.6s ease-in forwards' : 'fadeInUp 0.6s ease-out forwards',
-        animationDelay: delay,
-        opacity: isExiting ? 1 : 0,
+        opacity: 1,
     };
+
+    const isMapView = viewMode === 'map-list';
 
     const bar = 'bg-gray-100 dark:bg-white/5 animate-pulse';
     const barLight = 'bg-gray-50 dark:bg-white/10 animate-pulse';
 
-    // Grid card: same structure as ListingCard (aspect-[4/3] image, then title, location, bed/bath, ID, price)
+    // Grid card / Map card: identical structure to ListingCard
     const renderGridSkeleton = () => (
-        <div className="flex flex-col w-full bg-white dark:bg-dashboard-dark rounded-none border-none" style={skeletonStyle}>
-            {/* Image — same aspect and radius as ListingCard */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[23px] mb-0">
+        <div className="flex flex-col w-full bg-transparent" style={skeletonStyle}>
+            {/* Image — matching ListingCard's specific adaptive aspect ratio */}
+            <div className={`relative ${isMapView ? 'aspect-[4/3.8] md:aspect-[4/3.5]' : 'aspect-[4/3]'} w-full overflow-hidden rounded-[23px] mb-0`}>
                 <div className={`h-full w-full ${bar}`} />
                 <div className="absolute top-3.5 left-3.5">
                     <div className={`h-6 w-16 ${barLight} rounded-full`} />
                 </div>
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/20 animate-pulse" />
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${barLight}`} />
-                    ))}
-                </div>
+                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/10" />
             </div>
 
-            {/* Content — same padding and layout as ListingCard (py-3 px-1.5, gap-1) */}
+            {/* Content — py-3 px-1.5 gap-1 (EXACT MATCH to ListingCard) */}
             <div className="py-3 px-1.5 flex flex-col gap-1">
                 <div className="flex justify-between items-start">
                     <div className={`h-4 w-3/4 ${bar} rounded`} />
                 </div>
+                
+                {/* Location Row */}
                 <div className="flex items-center gap-1.5 mb-0.5">
-                    <div className={`h-3.5 w-3.5 ${barLight} rounded`} />
+                    <div className={`h-3.5 w-3.5 ${barLight} rounded-full`} />
                     <div className={`h-3.5 w-1/2 ${barLight} rounded`} />
+                    <div className="flex-1" />
+                    <div className={`h-3.5 w-12 ${barLight} rounded`} />
                 </div>
-                <div className={`h-3.5 w-2/5 ${barLight} rounded`} />
-                <div className={`h-3.5 w-1/3 ${barLight} rounded mt-0.5`} />
+                
+                {/* Details Row (Bed/Bath/Area) */}
+                <div className={`h-3.5 w-2/3 ${barLight} rounded`} />
+                
+                {/* Date Row */}
+                <div className={`h-3.5 w-1/4 ${barLight} rounded mt-0.5`} />
+                
+                {/* Price Row */}
                 <div className="mt-2 flex items-baseline gap-1">
-                    <div className={`h-4 w-20 ${bar} rounded`} />
+                    <div className={`h-[18px] w-24 ${bar} rounded`} />
                     <div className={`h-3 w-8 ${barLight} rounded`} />
                 </div>
             </div>

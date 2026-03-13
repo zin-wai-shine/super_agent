@@ -47,6 +47,7 @@ const FilterBar = ({
     onQuickSearchClick = null,
     onClearSearch = null,
     onSearchSubmit = null,
+    stations = [],
 }) => {
     const isModalVariant = variant === 'modal';
     const [inputValue, setInputValue] = useState(searchTerm);
@@ -98,9 +99,26 @@ const FilterBar = ({
         };
     }, [isFocused, isClosing]);
 
+    const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
+
     const handleSearch = useCallback(() => {
+        let finalStationIds = [...pendingStationIds];
+
+        // Auto-match station if not already selected from the map/modal
+        if (finalStationIds.length === 0 && inputValue.trim()) {
+            const normalizedInput = normalize(inputValue);
+            const match = (stations || []).find(s => 
+                normalize(s.name_en) === normalizedInput || 
+                normalize(s.name_th) === normalizedInput ||
+                normalize(s.id) === normalizedInput
+            );
+            if (match) {
+                finalStationIds = [match.id];
+            }
+        }
+
         onSearchChange && onSearchChange(inputValue);
-        onFilterChange('station_id', pendingStationIds.join(','));
+        onFilterChange && onFilterChange('station_id', finalStationIds.join(','));
         onSearchSubmit && onSearchSubmit(inputValue);
         if (isFocused && !isClosing) {
             setIsClosing(true);

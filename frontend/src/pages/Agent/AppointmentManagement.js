@@ -31,6 +31,8 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+import { useWebSocket } from '../../context/WebSocketContext';
+import { toast } from 'react-hot-toast';
 
 const STATUS_CONFIG = {
     pending: { label: 'Pending', bg: 'bg-amber-100 dark:bg-amber-400/10', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
@@ -49,6 +51,7 @@ const statusOptions = [
 
 const AppointmentManagement = () => {
     const { isDarkMode } = useDashboardTheme();
+    const { lastMessage } = useWebSocket();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
@@ -129,6 +132,18 @@ const AppointmentManagement = () => {
         fetchAppointments();
     }, [fetchAppointments]);
 
+    // WebSocket real-time updates
+    useEffect(() => {
+        if (lastMessage) {
+            // Re-fetch only if it's an appointment related event
+            if (lastMessage.type === 'appointment_created' || 
+                lastMessage.type === 'appointment_updated' || 
+                lastMessage.type === 'notification') {
+                fetchAppointments();
+            }
+        }
+    }, [lastMessage, fetchAppointments]);
+
     // Close datepicker when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
@@ -205,14 +220,22 @@ const AppointmentManagement = () => {
 
     const handleStatusChange = async (appointment, newStatus) => {
         setUpdating(true);
+        const loadingToast = toast.loading(`Updating status to ${newStatus}...`);
         try {
-            await appointmentApi.updateAppointment(appointment.id, { status: newStatus });
-            fetchAppointments();
+            const response = await appointmentApi.updateAppointment(appointment.id, { status: newStatus });
+            
+            // Manual state update to avoid full refresh if possible, but fetchAppointments is safer for stats
+            await fetchAppointments();
+            
             if (showDetailModal && selectedAppointment?.id === appointment.id) {
                 setSelectedAppointment(prev => ({ ...prev, status: newStatus }));
             }
+            
+            toast.success(`Booking successfully ${newStatus}`, { id: loadingToast });
         } catch (error) {
             console.error('Failed to update status:', error);
+            const errorMsg = error.response?.data?.error || 'Failed to update status';
+            toast.error(errorMsg, { id: loadingToast });
         } finally {
             setUpdating(false);
         }

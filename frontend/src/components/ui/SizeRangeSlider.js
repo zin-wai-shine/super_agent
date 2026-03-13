@@ -171,7 +171,7 @@ const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5
                             height: 42,
                             bottom: '50%',
                             marginBottom: '2px', // Slight gap from track
-                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 15%, white)',
+                            ['--wave-glass']: 'color-mix(in srgb, var(--primary-color) 25%, transparent)',
                         }}
                     >
                         <svg viewBox="0 0 100 28" className="w-full h-full block" preserveAspectRatio="none">

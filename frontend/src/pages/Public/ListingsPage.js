@@ -250,6 +250,7 @@ const ListingsPage = () => {
     const [isMapListExpanded, setIsMapListExpanded] = useState(() => {
         return localStorage.getItem('isMapListExpanded') === 'true';
     });
+    const [isMapRefetching, setIsMapRefetching] = useState(false);
 
     const initialHeight = React.useRef(window.visualViewport ? window.visualViewport.height : window.innerHeight);
     const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -466,7 +467,7 @@ const ListingsPage = () => {
     }, [isSidebarClosing]);
 
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
-    const [priceLimits, setPriceLimits] = useState({ min: 0, max: 0 });
+    const [priceLimits, setPriceLimits] = useState({ min: 0, max: 100000000 });
     const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -928,7 +929,8 @@ const ListingsPage = () => {
                     setInitialLoading(true);
                     setListings([]); // Clear listings for fresh fetch on page 1
                 } else if (isBoundsTriggeredFetch) {
-                    setInitialLoading(true);
+                    setIsMapRefetching(true);
+                    setInitialLoading(false);
                 }
             }
             setLoading(true);
@@ -977,6 +979,7 @@ const ListingsPage = () => {
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
+                    setIsMapRefetching(false);
                     // Do not reset fetchTriggeredByBoundsRef here — keeps map from zooming/fitting when pan-load completes
                     // Only set initialLoading false here if it wasn't handled by the animation block
                     if (page !== 1) setInitialLoading(false);
@@ -1323,7 +1326,7 @@ const ListingsPage = () => {
                 </div>
 
                 {/* Filter Sections */}
-                <div className="space-y-10">
+                <div className="space-y-7">
 
 
                     {/* LISTING TYPE (Buy/Rent) — draft only */}
@@ -1441,11 +1444,11 @@ const ListingsPage = () => {
                         icon={FilterIcons.price}
                     >
                         <PriceRangeSlider
-                            min={0}
-                            max={100000000}
-                            step={100000}
-                            initialMin={pendingFilters.min_price ? parseInt(pendingFilters.min_price) : 0}
-                            initialMax={pendingFilters.max_price ? parseInt(pendingFilters.max_price) : 100000000}
+                            min={priceLimits.min}
+                            max={priceLimits.max}
+                            step={priceLimits.max - priceLimits.min > 1000000 ? 100000 : 500}
+                            initialMin={pendingFilters.min_price ? parseInt(pendingFilters.min_price) : priceLimits.min}
+                            initialMax={pendingFilters.max_price ? parseInt(pendingFilters.max_price) : priceLimits.max}
                             onChange={({ min, max }) => {
                                 updatePendingFilters({
                                     min_price: min?.toString() || '',
@@ -1606,7 +1609,7 @@ const ListingsPage = () => {
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card shadow-sm border border-transparent dark:border-white/10`}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border-none`}
                             aria-label="Open filters"
                         >
                             <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'} text-gray-800 dark:text-white`} />
@@ -1644,6 +1647,7 @@ const ListingsPage = () => {
                         filters={filters}
                         onFilterChange={handleFilterChange}
                         onQuickSearchClick={handleQuickSearchFilters}
+                        stations={stations}
                     />,
                     filterBarSlot
                 )}
@@ -1688,28 +1692,31 @@ const ListingsPage = () => {
                                 <div className={`flex flex-col transition-all duration-700 ease-in-out overflow-hidden ${isGoogleMapOpen ? (isMapExpanded ? 'lg:w-0 opacity-0 pointer-events-none' : 'w-full lg:w-[42%] xl:w-[52%] opacity-100') : 'w-full'} h-full p-0`}>
                                     {/* Header: Results Count */}
                                     <div className="mb-4 mt-1 flex justify-end">
-                                        {initialLoading ? (
-                                            <div className={`h-7 w-32 bg-gray-100 rounded animate-pulse ${isExiting ? 'animate-fadeOutDown' : ''}`} />
+                                        {(initialLoading || isMapRefetching) ? (
+                                            <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
                                         ) : (listings || []).length > 0 ? (
-                                            <h2 className="text-[15px] font-bold text-gray-900 animate-fadeInUp">
-                                                {total} {total === 1 ? 'property' : 'properties'}
-                                            </h2>
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="text-[15px] font-bold text-gray-900 dark:text-gray-100">
+                                                    {total} {total === 1 ? 'property' : 'properties'}
+                                                </h2>
+                                            </div>
                                         ) : null}
                                     </div>
 
-                                    {initialLoading ? (
+                                    {(initialLoading || isMapRefetching) ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
-
                                     ) : (listings || []).length > 0 ? (
-                                        <>
-                                            <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
+                                        <div className="relative">
+                                            <div className={`grid gap-4 transition-all duration-500 opacity-100 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                                 {(listings || []).map((l, i) => (
                                                     <div
                                                         key={l.id}
                                                         onMouseEnter={() => isGoogleMapOpen && setListHoveredListingId(l.id)}
                                                         onMouseLeave={() => setListHoveredListingId(null)}
+                                                        className="animate-fillIn"
+                                                        style={{ animationDelay: `${i * 120}ms` }}
                                                     >
                                                         <ListingCard
                                                             index={i}
@@ -1731,7 +1738,7 @@ const ListingsPage = () => {
                                                 )}
                                             </div>
                                             <div ref={observerTarget} className="h-20" />
-                                        </>
+                                        </div>
                                     ) : (
                                         <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fadeInUp flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
                                             <div className="w-16 h-16 bg-white dark:bg-dashboard-card shadow-sm border border-gray-100 dark:border-white/10 rounded-full flex items-center justify-center mb-5">
@@ -1843,7 +1850,7 @@ const ListingsPage = () => {
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card shadow-sm border dark:border-white/10`}
+                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border-none`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -1866,7 +1873,7 @@ const ListingsPage = () => {
                                 {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-[0_8px_30px_rgba(0,0,0,0.15)] active:scale-95 transition-all outline-none border dark:border-white/10 ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-900 dark:text-white border-none active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className="w-7 h-7" />

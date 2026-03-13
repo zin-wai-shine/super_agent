@@ -6,6 +6,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
+import { useWebSocket } from '../../context/WebSocketContext';
+import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 
 import {
     MapPinIcon,
@@ -190,6 +192,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const id = propId || routeId;
     const { user, isAuthenticated } = useAuth();
     const { theme } = useTheme();
+    const { isDarkMode } = usePublicDarkTheme();
     const { isMainDomain, agent } = useTenant();
     const [copiedPhone, setCopiedPhone] = useState(false);
     const [listing, setListing] = useState(null);
@@ -227,6 +230,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     }), []);
 
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
+    const { lastMessage } = useWebSocket();
     const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [savingListing, setSavingListing] = useState(false);
@@ -635,7 +639,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         const userBookings = bookingsRes.data.appointments || [];
                         const active = userBookings.find(
                             app => String(app.listing_id) === String(id) &&
-                                (app.status === 'pending' || app.status === 'confirmed')
+                                (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed' || app.status === 'cancelled')
                         );
                         setActiveBooking(active || null);
 
@@ -691,6 +695,38 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         fetchListingAndStatus();
     }, [id, isAuthenticated, user]);
+
+    // Re-fetch booking status when a WebSocket notification arrives
+    useEffect(() => {
+        if (lastMessage && isAuthenticated) {
+            const reFetchBooking = async () => {
+                try {
+                    // Optimized: If payload has the update for this listing, use it immediately
+                    if (lastMessage.type === 'appointment_updated' && lastMessage.payload) {
+                        const appt = lastMessage.payload;
+                        if (String(appt.listing_id) === String(id)) {
+                            setActiveBooking(appt);
+                            return;
+                        }
+                    }
+
+                    // Fallback to full fetch for notifications or if payload mismatch
+                    const bookingsRes = await appointmentApi.getMyAppointments();
+                    const userBookings = bookingsRes.data.appointments || [];
+                    const active = userBookings.find(
+                        app => String(app.listing_id) === String(id) &&
+                            (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed' || app.status === 'cancelled')
+                    );
+                    if (active) setActiveBooking(active);
+                    else setActiveBooking(null);
+                } catch (err) {
+                    console.error('Failed to update appointments on notification:', err);
+                }
+            };
+            reFetchBooking();
+        }
+    }, [lastMessage, id, isAuthenticated]);
+
 
     // Pre-fill form for logged-in users
     useEffect(() => {
@@ -888,6 +924,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 ...bookingForm,
             });
             setBookedAppointment(response.data.appointment);
+            setActiveBooking(response.data.appointment); // Set activeBooking immediately upon success
             setSuccess(true);
         } catch (error) {
             setBookingErrors({ submit: error.response?.data?.error || 'Failed to book' });
@@ -986,7 +1023,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed transition-all duration-300 whitespace-nowrap"
                         >
                             <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600 flex-shrink-0" />
-                            <span className="text-[13px] font-semibold text-emerald-700 dark:text-emerald-400">Viewing requested</span>
+                            <span className="text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 capitalize">{activeBooking.status || 'Requested'}</span>
                         </button>
                     ) : (
                         <button
@@ -1157,7 +1194,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <button
                                                             key={opt.value}
                                                             type="button"
-                                                            className="py-2.5 px-5 rounded-full text-sm font-normal transition-all bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none"
+                                                            className="py-2.5 px-5 rounded-full text-sm font-semibold transition-all border-2 border-primary-500 bg-transparent text-primary-500 shadow-none"
                                                         >
                                                             {opt.label}
                                                         </button>
@@ -1173,7 +1210,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         {bookingErrors.preferred_date && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
                                         )}
-                                        <div className="bg-white dark:bg-dashboard-card rounded-3xl p-6">
+                                        <div className="bg-white dark:bg-transparent rounded-3xl p-6 border-none shadow-none">
                                             <div className="flex items-center justify-between mb-6 px-2">
                                                 <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
                                                     <ChevronLeftIcon className="w-5 h-5 text-gray-400 dark:text-gray-300" />
@@ -1210,7 +1247,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             key={i}
                                                             disabled={isDisabled}
                                                             onClick={() => handleDateSelect(day)}
-                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-normal flex items-center justify-center transition-all ${isSelected ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none' : isDisabled ? 'text-gray-200 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
                                                         >
                                                             {day}
                                                         </button>
@@ -1248,7 +1285,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none'
+                                                                    ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none'
                                                                     : disabled
                                                                         ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                                                                         : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
@@ -1280,7 +1317,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none'
+                                                                    ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none'
                                                                     : disabled
                                                                         ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                                                                         : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
@@ -1307,7 +1344,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     type="text"
                                                     value={bookingForm.full_name}
                                                     onChange={e => { setBookingForm({ ...bookingForm, full_name: e.target.value }); if (bookingErrors.full_name) setBookingErrors(prev => ({ ...prev, full_name: null })); }}
-                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
+                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                     style={{ borderRadius: 'var(--card-radius)' }}
                                                     placeholder="John Doe"
                                                 />
@@ -1320,7 +1357,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         type="text"
                                                         value={bookingForm.phone}
                                                         onChange={e => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (bookingErrors.phone) setBookingErrors(prev => ({ ...prev, phone: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="+66..."
                                                     />
@@ -1332,7 +1369,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         type="text"
                                                         value={bookingForm.email}
                                                         onChange={e => { setBookingForm({ ...bookingForm, email: e.target.value }); if (bookingErrors.email) setBookingErrors(prev => ({ ...prev, email: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="john@example.com"
                                                     />
@@ -1349,7 +1386,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 value={bookingForm.message}
                                                 onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
                                                 rows={5}
-                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 focus:bg-white dark:focus:bg-white/10 focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 dark:text-white text-base resize-none"
+                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 dark:bg-transparent border border-gray-100 dark:border-white/10 focus:bg-white dark:focus:bg-white/5 focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 dark:text-white text-base resize-none"
                                                 style={{ borderRadius: 'var(--card-radius)' }}
                                             />
                                         </div>
@@ -1440,7 +1477,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {!success && (
                     <div
                         ref={bookingConfirmRef}
-                        className={`z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 dark:border-white/10 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-5 pb-5 px-6'}`}
+                        className={`z-[70] flex flex-col gap-4 shrink-0 bg-transparent ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-5 pb-5 px-6'}`}
                     >
                         <div className="max-w-[1440px] mx-auto w-full lg:px-20 flex flex-col items-center gap-4">
                             <label className="flex items-center gap-3 cursor-pointer group">
@@ -1672,7 +1709,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         {/* Image counter */}
                         {hasImages && images.length > 1 && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-[12px] font-bold tracking-widest z-[40] pointer-events-none">
+                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black/70 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest z-[50] pointer-events-none flex items-center justify-center min-w-[60px]">
                                 {currentImageIndex + 1} / {images.length}
                             </div>
                         )}
@@ -1691,7 +1728,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-transparent overflow-hidden px-0 pt-5 pb-0 relative z-10 ${!isBookingOverlayOpen ? '-mt-8 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-0 relative z-10 rounded-t-[40px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
@@ -1735,7 +1772,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     {activeBooking ? (
                                                         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 transition-all whitespace-nowrap">
                                                             <LuCalendarCheck2 className="w-5 h-5" />
-                                                            <span className="text-[13px] font-normal">Viewing requested</span>
+                                                            <span className="text-[13px] font-normal capitalize">{activeBooking.status || 'Requested'}</span>
                                                         </div>
                                                     ) : (
                                                         <button
@@ -1836,7 +1873,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">/month</span>
                                         )}
                                     </div>
-                                </div>
+
 
                                 {/* Image Gallery - Desktop Bento Grid */}
                                 <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white dark:bg-dashboard-card mt-6">
@@ -2209,7 +2246,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <div className="relative w-full h-full bg-slate-50 flex flex-col animate-in fade-in duration-700">
+                                                        <div className="relative w-full h-full bg-slate-50 dark:bg-dashboard-card flex flex-col animate-in fade-in duration-700">
                                                             <div className="absolute top-4 left-4 z-40 hidden md:flex flex-wrap gap-1.5 max-w-[300px]">
                                                                 {[
                                                                     { name: 'BTS Sukhumvit', color: '#7FBA00' },
@@ -2297,7 +2334,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     }}
                                                                 >
                                                                     <div ref={transitMapRef} className="w-full h-full">
-                                                                        <TransitMapSVG />
+                                                                        <TransitMapSVG isDarkMode={isDarkMode} />
                                                                     </div>
                                                                     {mapState.markerPos && (
                                                                         <div
@@ -2384,6 +2421,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     )}
 
                                 </div>
+                            </div>
+
 
                                 {/* Sticky Header Portal */}
                                 {isModal && bookingId && showStickyHeader && createPortal(
@@ -2535,9 +2574,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </button>
 
                     {activeBooking ? (
-                        <div className="flex items-center gap-1.5 text-primary-600 font-bold text-[14px] whitespace-nowrap px-1">
+                        <div className={`flex items-center gap-1.5 font-bold text-[14px] whitespace-nowrap px-1 ${
+                            activeBooking.status === 'completed' ? 'text-emerald-600' : 
+                            activeBooking.status === 'confirmed' ? 'text-blue-600' : 
+                            activeBooking.status === 'cancelled' ? 'text-rose-600' : 
+                            'text-amber-600'
+                        }`}>
                             <LuCalendarCheck2 className="w-5 h-5" />
-                            <span>Requested</span>
+                            <span className="capitalize">{activeBooking.status || 'Requested'}</span>
                         </div>
                     ) : (
                         <button

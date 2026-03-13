@@ -29,7 +29,7 @@ const options = {
     gestureHandling: 'greedy',
 };
 
-const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard, markerType = 'price' }) => {
+const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard, markerType = 'price', isZoomedIn }) => {
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
     const isOpened = String(property.id) === String(openedMarkerId);
     const isHighlighted = String(property.id) === String(highlightedMarkerListingId);
@@ -58,64 +58,71 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
 
     const cardLink = `/listings/${property.id}`;
 
+    const position = useMemo(() => ({ 
+        lat: parseFloat(property.latitude), 
+        lng: parseFloat(property.longitude) 
+    }), [property.latitude, property.longitude]);
+
     return (
         <OverlayView
-            position={{ lat: parseFloat(property.latitude), lng: parseFloat(property.longitude) }}
+            position={position}
             mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
         >
             <div
                 className={`marker-group ${isHighlighted ? 'list-highlighted' : ''} ${isOpened ? 'opened' : ''} relative flex flex-col items-center`}
                 style={{ transform: 'translate(-50%, -100%)' }}
             >
-                <style>{`
-                    .marker-group .resting-pill {
-                        background: #1a1a1a; color: white; padding: 7px 12px; display: flex; align-items: center; gap: 6px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); transition: all 0.2s ease; min-width: 65px; justify-content: center; cursor: pointer;
-                    }
-                    .marker-group .home-marker {
-                        background: #1a1a1a; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid white; color: white; transition: all 0.2s ease; cursor: pointer;
-                    }
-                    .marker-group .resting-pill .price-text { font-size: 13px; font-weight: 500; white-space: nowrap; }
-                    .marker-group .resting-nub { fill: #1a1a1a; margin-top: -1px; }
+                {/* Marker Styles are now moved to the top-level map container */}
 
-                    .marker-group.opened, .marker-group:hover { z-index: 1000; }
-                    
-                    .marker-group.opened .resting-pill, .marker-group.list-highlighted .resting-pill, .marker-group:hover .resting-pill {
-                        background: #ffffff; color: #1a1a1a; transform: scale(1.05);
-                    }
-                    .marker-group.opened .resting-nub, .marker-group.list-highlighted .resting-nub, .marker-group:hover .resting-nub {
-                        fill: #ffffff;
-                    }
-                    .marker-group.opened .home-marker, .marker-group:hover .home-marker { 
-                        background: #ffffff; color: #1a1a1a;
-                    }
-
-                    .marker-group.opened .expanded-card { width: 320px; opacity: 1; pointer-events: auto; }
-                    .expanded-card { pointer-events: none; }
-                `}</style>
-
-                {markerType === 'home' ? (
-                    <div className="home-marker z-10" 
-                        onClick={(e) => { e.stopPropagation(); onCardToggle(property.id); }}
-                        onPointerDown={(e) => e.stopPropagation()}
+                <div className="relative flex flex-col items-center">
+                    {/* DOT MARKER */}
+                    <div 
+                        className={`absolute inset-0 flex items-center justify-center transition-opacity transition-transform duration-300 ease-out ${
+                            (!isZoomedIn && !isFeatured && !isOpened && !isHighlighted) 
+                            ? 'scale-100 opacity-100' 
+                            : 'scale-0 opacity-0 pointer-events-none'
+                        }`}
                     >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
-                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                            <polyline points="9 22 9 12 15 12 15 22" />
+                        <div 
+                            className="group relative flex items-center justify-center cursor-pointer"
+                            onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
+                        >
+                            <div className="absolute inset-x-[-8px] inset-y-[-8px] bg-black/5 dark:bg-white/10 rounded-full blur-[4px]" />
+                            <div className="w-[16px] h-[16px] rounded-full border-[2.5px] shadow-sm z-10 bg-white border-slate-900 transition-transform duration-300 group-hover:scale-125" />
+                        </div>
+                    </div>
+
+                    {/* PILL/HOME MARKER */}
+                    <div className={`transition-opacity transition-transform duration-300 ease-out flex flex-col items-center ${
+                        (isZoomedIn || isFeatured || isOpened || isHighlighted)
+                        ? 'scale-100 opacity-100 pointer-events-auto'
+                        : 'scale-0 opacity-0 pointer-events-none'
+                    }`}>
+                        {markerType === 'home' ? (
+                            <div className="home-marker z-10" 
+                                onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
+                                onPointerDown={(e) => e.stopPropagation()}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                </svg>
+                            </div>
+                        ) : (
+                            <div className={`resting-pill z-10 ${isFeatured ? 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-slate-900' : ''}`} 
+                                onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
+                                onPointerDown={(e) => e.stopPropagation()}
+                            >
+                                <span className="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
+                                <span className="price-text font-bold">{priceNumber}</span>
+                            </div>
+                        )}
+
+                        <svg className={`resting-nub flex-none transition-transform duration-300 pointer-events-none ${isFeatured ? 'fill-primary-500 scale-125' : 'fill-[#1a1a1a]'}`} width="12" height="6" viewBox="0 0 16 8">
+                            <polygon points="0,0 16,0 8,8" />
                         </svg>
                     </div>
-                ) : (
-                    <div className="resting-pill z-10" 
-                        onClick={(e) => { e.stopPropagation(); onCardToggle(property.id); }}
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        <span className="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
-                        <span className="price-text">{priceNumber}</span>
-                    </div>
-                )}
-
-                <svg className="resting-nub flex-none transition-all duration-200 pointer-events-none" width="12" height="6" viewBox="0 0 16 8">
-                    <polygon points="0,0 16,0 8,8" />
-                </svg>
+                </div>
 
                 {/* EXPANDED CARD */}
                 <div
@@ -219,19 +226,12 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
     return (
         p.id === n.id &&
         p.price === n.price &&
-        p.latitude === n.latitude &&
-        p.longitude === n.longitude &&
-        p.listing_type === n.listing_type &&
-        p.title === n.title &&
-        p.district === n.district &&
-        p.station_name === n.station_name &&
-        p.station?.name_en === n.station?.name_en &&
-        p.property_type === n.property_type &&
-        p.area === n.area &&
-        p.bathrooms === n.bathrooms &&
+        prevProps.savedListingIds?.length === nextProps.savedListingIds?.length &&
         prevProps.openedMarkerId === nextProps.openedMarkerId &&
         prevProps.highlightedMarkerListingId === nextProps.highlightedMarkerListingId &&
-        prevProps.savedListingIds?.length === nextProps.savedListingIds?.length
+        prevProps.isZoomedIn === nextProps.isZoomedIn &&
+        Math.abs(parseFloat(p.latitude) - parseFloat(n.latitude)) < 0.0001 &&
+        Math.abs(parseFloat(p.longitude) - parseFloat(n.longitude)) < 0.0001
     );
 });
 
@@ -268,28 +268,65 @@ const GoogleMapComponent = ({
     const isMobile = window.innerWidth < 768;
     const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
     const effectivePadding = isMobile ? MOBILE_PADDING : PADDING;
+    const [isZoomedIn, setIsZoomedIn] = useState(() => effectiveZoom >= 13);
+    const [isStyleChanging, setIsStyleChanging] = useState(false);
     const [internalOpenedMarkerId, setInternalOpenedMarkerId] = useState(null);
     const openedMarkerId = disableMarkerExpansion ? null : (externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId);
 
     const [displayLoading, setDisplayLoading] = useState(showMapLoading);
+    const [localLoading, setLocalLoading] = useState(false);
+    const [map, setMap] = useState(null);
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+        libraries: LIBRARIES,
+        version: 'weekly'
+    });
 
     useEffect(() => {
         if (showMapLoading) {
             setDisplayLoading(true);
         } else {
+            setLocalLoading(false); // Clear local loading when parent loading is finished
             const timer = setTimeout(() => setDisplayLoading(false), 800);
             return () => clearTimeout(timer);
         }
     }, [showMapLoading]);
 
-    const handleCardToggle = useCallback((propertyId) => {
+    // Handle initial/direct loading state changes
+    useEffect(() => {
+        if (localLoading) setDisplayLoading(true);
+    }, [localLoading]);
+
+    const cancelPendingFetch = useCallback(() => {
+        if (boundsTimeoutRef.current) {
+            clearTimeout(boundsTimeoutRef.current);
+            boundsTimeoutRef.current = null;
+        }
+        setLocalLoading(false);
+        setDisplayLoading(false);
+    }, []);
+
+    const handleCardToggle = useCallback((property) => {
+        const propertyId = property.id;
         const newValue = String(openedMarkerId) === String(propertyId) ? null : propertyId;
+        
+        // If selecting a property from a zoomed-out state (dots), pan and zoom in
+        if (newValue && map) {
+            const currentZoom = map.getZoom();
+            if (currentZoom < 14) {
+                map.panTo({ lat: parseFloat(property.latitude), lng: parseFloat(property.longitude) });
+                map.setZoom(15);
+            }
+        }
+
         if (onOpenedMarkerChange) {
             onOpenedMarkerChange(newValue);
         } else {
             setInternalOpenedMarkerId(newValue);
         }
-    }, [openedMarkerId, onOpenedMarkerChange]);
+    }, [openedMarkerId, onOpenedMarkerChange, map]);
 
     const handleCloseCard = useCallback(() => {
         if (onOpenedMarkerChange) {
@@ -299,15 +336,41 @@ const GoogleMapComponent = ({
         }
     }, [onOpenedMarkerChange]);
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
-        libraries: LIBRARIES,
-        version: 'weekly'
-    });
-
-    const [map, setMap] = useState(null);
     const boundsTimeoutRef = useRef(null);
+    const lastReportedBoundsRef = useRef(null);
+    const internalMoveRef = useRef(false);
+
+    // Sync external center changes to the map instance
+    useEffect(() => {
+        if (!map || !center) return;
+        
+        // Block updates if we are the ones who just moved the map (internal move)
+        if (internalMoveRef.current) {
+            internalMoveRef.current = false;
+            return;
+        }
+
+        const currentMapCenter = map.getCenter();
+        if (!currentMapCenter || !center || center.lat === undefined || center.lng === undefined) return;
+
+        const latDiff = Math.abs(currentMapCenter.lat() - parseFloat(center.lat));
+        const lngDiff = Math.abs(currentMapCenter.lng() - parseFloat(center.lng));
+
+        // Only pan if the difference is substantial (prevents micro-jitter/snap-back)
+        if (latDiff > 0.0001 || lngDiff > 0.0001) {
+            map.panTo({ lat: parseFloat(center.lat), lng: parseFloat(center.lng) });
+        }
+    }, [center, map]);
+
+    // Sync external zoom changes
+    useEffect(() => {
+        if (!map || zoom === undefined) return;
+        if (internalMoveRef.current) return;
+
+        if (map.getZoom() !== zoom) {
+            map.setZoom(zoom);
+        }
+    }, [zoom, map]);
 
     const listingsWithCoords = useMemo(() => listings.filter(l => l.latitude != null && l.longitude != null), [listings]);
     const listingsBoundsKey = useMemo(() => listingsWithCoords.map(l => `${l.id}-${l.latitude}-${l.longitude}`).join(','), [listingsWithCoords]);
@@ -320,11 +383,56 @@ const GoogleMapComponent = ({
         withCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
         map.fitBounds(bounds, effectivePadding);
     }, [map, listingsBoundsKey, fitBoundsOnListingsChange, effectivePadding, listingsWithCoords]);
+    const { isDarkMode: themeDarkMode } = useTheme();
+    const isDarkMode = themeDarkMode || document.documentElement.classList.contains('dark');
+
+    const darkStyle = useMemo(() => [
+        { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }, { visibility: "off" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
+        { featureType: "administrative", elementType: "geometry", stylers: [{ color: "#333333" }] },
+        { featureType: "administrative.country", elementType: "labels.text.fill", stylers: [{ color: "#9e9e9e" }] },
+        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#bdbdbd" }] },
+        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#181818" }] },
+        { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#616161" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2c" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212121" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#3c3c3c" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#212121" }] },
+        { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f5f5f5" }] },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2c2c2c" }] },
+        { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#bdbdbd" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#000000" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3d3d3d" }] }
+    ], []);
+
+    const minimalLightStyle = useMemo(() => [
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9e4f2" }] },
+        { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#edf5e1" }] },
+        { featureType: "landscape.man_made", elementType: "geometry", stylers: [{ color: "#f7f7f7" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#d9ebb5" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e6e6e6" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#dadada" }] },
+        { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        { featureType: "administrative", elementType: "labels.text.fill", stylers: [{ color: "#484848" }] },
+        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#717171" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
+        { elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+    ], []);
 
     const mapOptions = useMemo(() => {
         return {
             ...options,
             ...customOptions,
+            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+            styles: isDarkMode 
+                ? darkStyle 
+                : (customOptions?.styles && customOptions.styles.length > 0 ? customOptions.styles : minimalLightStyle),
             ...(hideControls ? {
                 zoomControl: false,
                 mapTypeControl: false,
@@ -332,29 +440,66 @@ const GoogleMapComponent = ({
                 fullscreenControl: false,
             } : {})
         };
-    }, [customOptions, hideControls]);
+    }, [customOptions, hideControls, isDarkMode, darkStyle, minimalLightStyle]);
+
+    // Force style update when theme changes
+    useEffect(() => {
+        if (map) {
+            setIsStyleChanging(true);
+            map.setOptions({
+                styles: isDarkMode ? darkStyle : (customOptions?.styles && customOptions.styles.length > 0 ? customOptions.styles : minimalLightStyle),
+                backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff'
+            });
+            // Smooth transition delay to allow tiles and styles to re-calculate
+            const timer = setTimeout(() => setIsStyleChanging(false), 800);
+            return () => clearTimeout(timer);
+        }
+    }, [map, isDarkMode, darkStyle, minimalLightStyle, customOptions]);
 
     const handleBoundsChanged = useCallback(() => {
         if (!map || !onBoundsChanged) return;
+        
+        const bounds = map.getBounds();
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        
+        if (!bounds || !center) return;
+
+        const data = {
+            min_lat: bounds.getSouthWest().lat(),
+            max_lat: bounds.getNorthEast().lat(),
+            min_lng: bounds.getSouthWest().lng(),
+            max_lng: bounds.getNorthEast().lng(),
+            center: { lat: center.lat(), lng: center.lng() },
+            zoom: zoom
+        };
+
+        // Check if bounds have actually changed from the last time we reported them
+        // This prevents the loading pill from getting stuck when 'onIdle' fires but no movement occurred
+        const isSame = lastReportedBoundsRef.current &&
+            Math.abs(lastReportedBoundsRef.current.min_lat - data.min_lat) < 0.000001 &&
+            Math.abs(lastReportedBoundsRef.current.max_lat - data.max_lat) < 0.000001 &&
+            Math.abs(lastReportedBoundsRef.current.min_lng - data.min_lng) < 0.000001 &&
+            Math.abs(lastReportedBoundsRef.current.max_lat - data.max_lat) < 0.000001;
+
+        if (isSame) return;
+
         if (boundsTimeoutRef.current) clearTimeout(boundsTimeoutRef.current);
+        
         boundsTimeoutRef.current = setTimeout(() => {
-            const bounds = map.getBounds();
-            const center = map.getCenter();
-            const zoom = map.getZoom();
-            if (bounds && center) {
-                const ne = bounds.getNorthEast();
-                const sw = bounds.getSouthWest();
-                onBoundsChanged({
-                    min_lat: sw.lat(),
-                    max_lat: ne.lat(),
-                    min_lng: sw.lng(),
-                    max_lng: ne.lng(),
-                    center: { lat: center.lat(), lng: center.lng() },
-                    zoom: zoom
-                });
-            }
-        }, 250);
-    }, [map, onBoundsChanged]);
+            internalMoveRef.current = true; // Mark this as an "internal" move to prevent sync loop
+            setLocalLoading(true); 
+            lastReportedBoundsRef.current = data;
+            
+            // Stable zoom check: only update isZoomedIn if threshold is actually crossed
+            setIsZoomedIn(zoom >= 13);
+            
+            onBoundsChanged(data);
+            
+            // Allow external syncs again after a short cooling period
+            setTimeout(() => { internalMoveRef.current = false; }, 500);
+        }, 400);
+    }, [map, onBoundsChanged, cancelPendingFetch]);
 
     const mapCenter = useMemo(() => {
         const hasValidCenter = center && (typeof center.lat === 'number' || !isNaN(parseFloat(center.lat))) && (typeof center.lng === 'number' || !isNaN(parseFloat(center.lng)));
@@ -373,13 +518,71 @@ const GoogleMapComponent = ({
                 };
             }
         }
-        return { lat: 13.7563, lng: 100.5018 }; // Bangkok
     }, [center, listings]);
+
+    const memoizedMarkers = useMemo(() => listings.filter(l => l.latitude && l.longitude).map((property) => (
+        <PropertyMarker
+            key={property.id}
+            property={property}
+            onClick={onMarkerClick}
+            onSaveClick={onSaveClick}
+            savedListingIds={savedListingIds}
+            highlightedMarkerListingId={highlightedMarkerListingId}
+            openedMarkerId={openedMarkerId}
+            onOpenedMarkerChange={onOpenedMarkerChange}
+            onCardToggle={handleCardToggle}
+            onCloseCard={handleCloseCard}
+            markerType={markerType}
+            isZoomedIn={isZoomedIn}
+        />
+    )), [listings, onMarkerClick, onSaveClick, savedListingIds, highlightedMarkerListingId, openedMarkerId, onOpenedMarkerChange, handleCardToggle, handleCloseCard, markerType, isZoomedIn]);
 
     if (!isLoaded) return <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">Loading Maps...</div>;
 
     return (
         <div className="relative w-full h-full">
+            <style>{`
+                .marker-group .resting-pill {
+                    background: #1a1a1a; color: white; padding: 7px 12px; display: flex; align-items: center; gap: 6px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); transition: all 0.3s ease; min-width: 65px; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+                }
+                .dark .marker-group .resting-pill {
+                    background: #ffffff; color: #1a1a1a; border: none;
+                }
+                .marker-group .home-marker {
+                    background: #1a1a1a; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid white; color: white; transition: all 0.3s ease; cursor: pointer;
+                }
+                .dark .marker-group .home-marker {
+                    background: #ffffff; color: #1a1a1a; border: 2px solid #1a1a1a;
+                }
+                .marker-group .resting-pill .price-text { font-size: 13px; font-weight: 500; white-space: nowrap; }
+                .marker-group .resting-nub { fill: #1a1a1a; margin-top: -1px; }
+                .dark .marker-group .resting-nub { fill: #ffffff; }
+
+                .marker-group.opened, .marker-group:hover { z-index: 1000; }
+                
+                .marker-group.opened .resting-pill, .marker-group.list-highlighted .resting-pill, .marker-group:hover .resting-pill {
+                    background: #ffffff !important; color: #1a1a1a !important; transform: scale(1.05); border: none !important;
+                }
+                .dark .marker-group.opened .resting-pill, .dark .marker-group.list-highlighted .resting-pill, .dark .marker-group:hover .resting-pill {
+                    background: #1a1a1a !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important;
+                }
+                .marker-group.opened .resting-nub, .marker-group.list-highlighted .resting-nub, .marker-group:hover .resting-nub {
+                    fill: #ffffff !important;
+                }
+                .dark .marker-group.opened .resting-nub, .dark .marker-group.list-highlighted .resting-nub, .dark .marker-group:hover .resting-nub {
+                    fill: #1a1a1a !important;
+                }
+                .marker-group.opened .home-marker, .marker-group:hover .home-marker { 
+                    background: #ffffff !important; color: #1a1a1a !important; border-color: #1a1a1a !important;
+                }
+                .dark .marker-group.opened .home-marker, .dark .marker-group:hover .home-marker { 
+                    background: #1a1a1a !important; color: #ffffff !important; border-color: #ffffff !important;
+                }
+
+                .marker-group.opened .expanded-card { width: 320px; opacity: 1; pointer-events: auto; }
+                .expanded-card { pointer-events: none; }
+            `}</style>
+
             {displayLoading && (
                 <div className="absolute top-0 left-0 right-0 z-[15] flex justify-center pt-3 pointer-events-none">
                     <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-md border border-gray-200 flex items-center gap-1">
@@ -394,28 +597,39 @@ const GoogleMapComponent = ({
             )}
             <GoogleMap
                 mapContainerStyle={mapStyle}
-                center={mapCenter}
-                zoom={effectiveZoom}
+                defaultCenter={mapCenter}
+                defaultZoom={effectiveZoom}
                 onLoad={setMap}
                 options={mapOptions}
                 onIdle={handleBoundsChanged}
+                onDragStart={() => {
+                    internalMoveRef.current = true;
+                    cancelPendingFetch();
+                }}
+                onZoomChanged={() => {
+                    internalMoveRef.current = true;
+                    cancelPendingFetch();
+                }}
                 onClick={onClick}
             >
-                {listings.filter(l => l.latitude && l.longitude).map((property) => (
-                    <PropertyMarker
-                        key={property.id}
-                        property={property}
-                        onClick={onMarkerClick}
-                        onSaveClick={onSaveClick}
-                        savedListingIds={savedListingIds}
-                        highlightedMarkerListingId={highlightedMarkerListingId}
-                        openedMarkerId={openedMarkerId}
-                        onCardToggle={handleCardToggle}
-                        onCloseCard={handleCloseCard}
-                        markerType={markerType}
-                    />
-                ))}
+                {/* Hide markers during style transition for a cleaner look */}
+                {!isStyleChanging && memoizedMarkers}
             </GoogleMap>
+
+            {/* Premium Theme Transition Overlay */}
+            {isStyleChanging && (
+                <div className="absolute inset-0 z-[25] bg-white/20 dark:bg-black/20 backdrop-blur-md flex flex-col items-center justify-center animate-fadeIn">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <ArrowPathIcon className="w-6 h-6 text-primary-600 animate-pulse" />
+                        </div>
+                    </div>
+                    <span className="mt-4 text-[13px] font-bold tracking-[0.2em] uppercase text-slate-800 dark:text-white/90 drop-shadow-sm">
+                        Switching Theme
+                    </span>
+                </div>
+            )}
 
             {/* CUSTOM CONTROLS — Liquid Glass Design restorative fix */}
             {!hideCustomControls && map && (

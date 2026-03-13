@@ -365,8 +365,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         if (isSavedMode || isListView) {
             return (
                 <div
-                    className={`bg-transparent rounded-none overflow-hidden group ${animationClass}`}
-                    style={animationStyle}
+                    className={`bg-transparent rounded-none overflow-hidden group`}
                 >
                     <div className="relative aspect-[5/4.2] md:aspect-[5/4.7] rounded-[23px] overflow-hidden mb-2">
                         <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
@@ -439,15 +438,14 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
         return (
             <div
-                className={`group relative flex flex-col transition-all duration-300 ${cardClassName} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+                className={`group relative flex flex-col transition-all duration-300 ${cardClassName}`}
             >
                 <div className="flex flex-col w-full bg-transparent rounded-none border-none">
-                    <div className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block">
+                    <div className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
                         <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge */}
-                        <div className="absolute top-3.5 left-3.5">
+                        <div className="absolute top-3.5 left-3.5 animate-fill-med">
                             <span className="bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm px-3 py-1 rounded-full text-[15px] md:text-[12px] font-semibold text-gray-900 dark:text-white shadow-sm">
                                 {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                             </span>
@@ -498,11 +496,11 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                     </div>
 
                     <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start animate-fill-med">
                             <h3 className="text-[15px] md:text-[16px] font-semibold text-slate-900 dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
                         </div>
 
-                        <div className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <div className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5 animate-fill-med">
                             <MapPinIcon className="w-4 h-4 md:w-3.5 md:h-3.5" />
                             <span className="truncate">{district || 'Bangkok'}</span>
                             {nearestStationName && (
@@ -513,17 +511,11 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             )}
                         </div>
 
-                        <p className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-300">
+                        <p className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-300 animate-fill-slow">
                             {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
                         </p>
 
-                        {created_at && (
-                            <p className="text-[15px] md:text-[14px] text-gray-400 dark:text-gray-500 mt-0.5">
-                                {new Date(created_at).toLocaleDateString('en-GB')}
-                            </p>
-                        )}
-
-                        <div className="mt-2 flex items-baseline gap-1">
+                        <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
                             <span className="text-[15px] md:text-[14.5px] font-semibold text-gray-900 dark:text-white">฿{formatPrice(price)}</span>
                             <span className="text-[15px] md:text-[13px] text-gray-500 dark:text-gray-400">{listing_type === 'rent' ? '/ mo' : ''}</span>
                         </div>

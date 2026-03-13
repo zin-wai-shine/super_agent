@@ -77,7 +77,7 @@ const TransitFilterModal = ({
     const filteredGroups = useMemo(() => {
         if (!searchTerm) return groupedStations;
 
-        const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '') || '';
+        const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
         const normalizedTerm = normalize(searchTerm);
 
         return groupedStations.map(group => ({
@@ -144,14 +144,14 @@ const TransitFilterModal = ({
                 {/* Content: list or map — footer stays below */}
                 <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
                     {/* Left Column: List — hidden on mobile when map is shown */}
-                    <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[35%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0`}>
+                    <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[28%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0 border-r border-gray-100 dark:border-white/5`}>
                         {/* Header: Fixed — mobile: match filter base (px-4 py-4); desktop: p-6 */}
-                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-8 lg:px-20 flex-shrink-0 bg-white dark:bg-dashboard-dark">
+                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-6 lg:px-8 flex-shrink-0 bg-white dark:bg-dashboard-dark">
                             <div className="hidden sm:flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
-                                    <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600" />
+                                <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                                    <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <h2 className="text-lg font-semibold text-gray-900 tracking-tight">Select Stations</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
                             </div>
 
                             <div className="flex items-center gap-3 mb-4">
@@ -162,18 +162,18 @@ const TransitFilterModal = ({
                                         placeholder="Search BTS/MRT station..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 min-h-[44px] rounded-full border border-gray-200 bg-white text-gray-900 text-[15px] sm:text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-500 transition-all"
+                                        className="w-full pl-11 pr-4 py-3 min-h-[44px] rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] sm:text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 focus:border-gray-500 dark:focus:border-primary-500 transition-all"
                                     />
                                 </div>
                                 {/* Transit map — tap whole container to show map instead of list (mobile); no border, larger */}
                                 <button
                                     type="button"
                                     onClick={() => setShowMapOnMobile(prev => !prev)}
-                                    className="flex-shrink-0 sm:hidden flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full active:scale-95 transition-all shadow-lg"
+                                    className="flex-shrink-0 sm:hidden flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
                                     aria-label={showMapOnMobile ? 'Show station list' : 'Show transit map'}
                                 >
                                     <span className="font-bold text-sm tracking-wide">Map</span>
-                                    <MapIcon className="w-5 h-5 text-white" />
+                                    <MapIcon className="w-5 h-5" />
                                 </button>
                             </div>
 
@@ -187,10 +187,10 @@ const TransitFilterModal = ({
                                             return (
                                                 <div
                                                     key={id}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 rounded-full border border-primary-100 group transition-all w-max"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/10 rounded-full border border-primary-100 dark:border-primary-500/20 group transition-all w-max"
                                                 >
                                                     <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: station.line_color || '#ccc' }} />
-                                                    <span className="text-[14px] sm:text-[12px] font-bold text-primary-700 whitespace-nowrap">
+                                                    <span className="text-[14px] sm:text-[12px] font-bold text-primary-700 dark:text-primary-400 whitespace-nowrap">
                                                         {station.name_en}
                                                     </span>
                                                     <button
@@ -198,7 +198,7 @@ const TransitFilterModal = ({
                                                             e.stopPropagation();
                                                             handleToggleStation(id);
                                                         }}
-                                                        className="p-0.5 rounded-full hover:bg-primary-100 text-primary-400 hover:text-primary-600 transition-colors flex-shrink-0"
+                                                        className="p-0.5 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 transition-colors flex-shrink-0"
                                                     >
                                                         <XMarkIcon className="w-3.5 h-3.5" />
                                                     </button>
@@ -211,7 +211,7 @@ const TransitFilterModal = ({
                         </div>
 
                         {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
-                        <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-8 lg:px-20 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white dark:bg-dashboard-dark">
+                        <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 lg:px-8 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white dark:bg-dashboard-dark">
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                                     <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
@@ -231,14 +231,14 @@ const TransitFilterModal = ({
 
                                     return (
                                         <div key={group.name} className="mt-4 first:mt-0 mb-10 last:mb-20">
-                                            <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-4 sm:pb-3 md:-mx-8 lg:-mx-20 md:px-8 lg:px-20">
+                                            <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-4 sm:pb-3 md:-mx-6 lg:-mx-8 md:px-6 lg:px-8">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[15px] sm:text-[13px] font-normal text-gray-900">
+                                                        <span className="text-[15px] sm:text-[13px] font-normal text-gray-900 dark:text-white">
                                                             {group.name}
                                                         </span>
-                                                        <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+                                                        <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">
                                                             {group.stations.length} stations
                                                         </span>
                                                     </div>
@@ -247,10 +247,10 @@ const TransitFilterModal = ({
                                                     onClick={() => handleSelectLine(group.stations, allSelected)}
                                                     className="flex items-center gap-1.5 transition-colors group"
                                                 >
-                                                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 bg-white group-hover:border-primary-400'}`}>
+                                                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-400'}`}>
                                                         <CheckIcon className={`w-3 h-3 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
                                                     </div>
-                                                    <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'}`}>
+                                                    <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500'}`}>
                                                         Select all
                                                     </span>
                                                 </button>
@@ -277,7 +277,7 @@ const TransitFilterModal = ({
                                                             <CheckIcon className={`w-3.5 h-3.5 text-white transition-opacity ${selectedIds.includes(station.id) ? 'opacity-100' : 'opacity-0'}`} />
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <div className={`text-[15px] sm:text-[14px] font-normal leading-tight break-words transition-colors ${selectedIds.includes(station.id) ? 'text-primary-700' : 'text-gray-700'}`}>
+                                                            <div className={`text-[15px] sm:text-[14px] font-normal leading-tight break-words transition-colors ${selectedIds.includes(station.id) ? 'text-primary-700 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
                                                                 {station.name_en}
                                                             </div>
                                                             <div className="text-[10px] sm:text-[9px] text-gray-400 font-extrabold uppercase tracking-[0.15em] mt-0.5">
@@ -295,7 +295,7 @@ const TransitFilterModal = ({
                     </div>
 
                     {/* Right Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
-                    <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[65%] sm:min-w-0 relative bg-gray-50 overflow-hidden min-w-0`}>
+                    <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[72%] sm:min-w-0 relative bg-gray-50 dark:bg-dashboard-dark overflow-hidden min-w-0`}>
                         <TransitMapFilter
                             hideHeader={true}
                             externalStations={stations}
@@ -306,36 +306,26 @@ const TransitFilterModal = ({
                 </div>
 
                 {/* Footer: mobile — match filter base padding and safe area; desktop: px-8 lg:px-12 py-6 */}
-                <div className="transit-modal-footer-safe px-4 md:px-8 lg:px-20 py-4 md:py-6 flex-shrink-0 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6">
+                <div className="transit-modal-footer-safe px-6 md:px-8 lg:px-12 py-2.5 md:py-3.5 flex-shrink-0 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 border-t border-gray-100 dark:border-white/5">
                     <div className="flex items-center gap-4">
-                        <div className="bg-white/95 dark:bg-white/5 backdrop-blur-sm px-4 py-2.5 rounded-2xl flex items-center gap-3">
-                            <MdOutlineDirectionsTransit className="w-5 h-5 text-gray-400" />
-                            <div className="flex flex-col">
-                                <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Stations</span>
-                                <span className="text-[15px] text-gray-900 dark:text-white font-bold leading-none">{selectedIds.length} Selected</span>
-                            </div>
-                        </div>
-                        {selectedIds.length > 0 && (
+                        {selectedIds.length > 0 ? (
                             <button
                                 onClick={handleClearAll}
-                                className="sm:hidden text-[14px] font-black text-red-500 hover:text-red-600 transition-colors border-l border-gray-100 pl-4 py-1"
-                            >
-                                Clear
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        {selectedIds.length > 0 && (
-                            <button
-                                onClick={handleClearAll}
-                                className="hidden sm:block text-[11px] sm:text-[14px] font-black text-red-500 hover:text-red-600 transition-colors"
+                                className="text-[14px] md:text-[15px] font-semibold text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
                             >
                                 Clear all
                             </button>
+                        ) : (
+                            <div className="flex flex-col">
+                                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Stations</span>
+                                <span className="text-[14px] text-gray-900 dark:text-white font-bold leading-none">{selectedIds.length} Selected</span>
+                            </div>
                         )}
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <button
                             onClick={handleApply}
-                            className="flex-1 min-w-[160px] sm:min-w-[60px] sm:w-[180px] sm:flex-none max-w-[340px] py-3.5 bg-gray-900 border border-gray-900 text-white text-[15px] sm:text-[13px] font-normal rounded-full hover:bg-gray-800 hover:border-gray-800 transition-all hover:shadow-xl hover:shadow-black/20 active:scale-95"
+                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-2 sm:py-2.5 bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[15px] sm:text-[14px] font-bold rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95"
                         >
                             Done
                         </button>

@@ -959,9 +959,9 @@ const PublicLayout = () => {
                                             className={`flex flex-col items-center justify-center py-2 relative transition-[width,flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${navButtonVisible ? 'flex-1 pointer-events-auto' : 'w-0 flex-none overflow-hidden pointer-events-none'}`}
                                         >
                                             {/* Circle + icons scale together in sync with wrapper */}
-                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
-                                                <LuTextSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'}`} strokeWidth={2.5} />
-                                                <TbMapSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'}`} strokeWidth={2.5} />
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900 dark:bg-white'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
+                                                <LuTextSearch className={`absolute w-6 h-6 shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'} ${showViewPanel ? 'text-white' : 'text-white dark:text-gray-900'}`} strokeWidth={2.5} />
+                                                <TbMapSearch className={`absolute w-6 h-6 shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'} ${showViewPanel ? 'text-white' : 'text-white dark:text-gray-900'}`} strokeWidth={2.5} />
                                             </div>
                                         </button>
 
@@ -1007,9 +1007,9 @@ const PublicLayout = () => {
                                             onClick={() => setShowViewPanel(p => !p)}
                                             className={`flex flex-col items-center justify-center py-2 relative transition-[width,flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${navButtonVisible ? 'flex-1 pointer-events-auto' : 'w-0 flex-none overflow-hidden pointer-events-none'}`}
                                         >
-                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
-                                                <LuTextSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'}`} strokeWidth={2.5} />
-                                                <TbMapSearch className={`absolute w-6 h-6 text-white shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'}`} strokeWidth={2.5} />
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${showViewPanel ? 'bg-primary-600' : 'bg-gray-900 dark:bg-white'} ${navButtonVisible ? 'scale-100 translate-y-0 shadow-lg' : 'scale-0 translate-y-8 shadow-none'}`}>
+                                                <LuTextSearch className={`absolute w-6 h-6 shrink-0 transition-all duration-300 ${isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 -translate-y-4'} ${showViewPanel ? 'text-white' : 'text-white dark:text-gray-900'}`} strokeWidth={2.5} />
+                                                <TbMapSearch className={`absolute w-6 h-6 shrink-0 transition-all duration-300 ${!isMapView ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-50 translate-y-4'} ${showViewPanel ? 'text-white' : 'text-white dark:text-gray-900'}`} strokeWidth={2.5} />
                                             </div>
                                         </button>
 

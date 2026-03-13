@@ -10,6 +10,7 @@ import (
 	"super_real_estate/middleware"
 	"super_real_estate/models"
 
+	"super_real_estate/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,10 +18,11 @@ import (
 
 type AppointmentController struct {
 	db *gorm.DB
+	ws *utils.WebSocketManager
 }
 
-func NewAppointmentController(db *gorm.DB) *AppointmentController {
-	return &AppointmentController{db: db}
+func NewAppointmentController(db *gorm.DB, ws *utils.WebSocketManager) *AppointmentController {
+	return &AppointmentController{db: db, ws: ws}
 }
 
 const (
@@ -94,6 +96,26 @@ func (ac *AppointmentController) CreateAppointment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to finalize booking"})
 		return
 	}
+
+	// Trigger real-time notification to the agent
+	notification := models.Notification{
+		Title:         "New Viewing Request",
+		Message:       fmt.Sprintf("%s requested a viewing for %s on %s at %s", appointment.FullName, listing.Title, appointment.PreferredDate.Format("2006-01-02"), appointment.PreferredTime),
+		SenderID:      uuid.Nil, // System notification
+		ReceiverID:    &listing.AgentID,
+		TargetAgentID: &listing.AgentID,
+		Type:          "info",
+	}
+	ac.db.Create(&notification)
+	ac.ws.BroadcastToUser(listing.AgentID, gin.H{
+		"type":    "notification",
+		"payload": notification,
+	})
+	// Broadcast a specific event to refresh the appointments table
+	ac.ws.BroadcastToUser(listing.AgentID, gin.H{
+		"type":    "appointment_created",
+		"payload": appointment,
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Appointment confirmed successfully",
@@ -471,7 +493,7 @@ func (ac *AppointmentController) UpdateAppointmentStatus(c *gin.Context) {
 
 	id := c.Param("id")
 	var appointment models.Appointment
-	if err := ac.db.Where("id = ? AND agent_id = ?", id, agentID).First(&appointment).Error; err != nil {
+	if err := ac.db.Preload("Listing").Where("id = ? AND agent_id = ?", id, agentID).First(&appointment).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Appointment not found"})
 		return
 	}
@@ -518,6 +540,35 @@ func (ac *AppointmentController) UpdateAppointmentStatus(c *gin.Context) {
 	if err := ac.db.Save(&appointment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update appointment"})
 		return
+	}
+
+	// Notify the agent's other sessions/tabs
+	ac.ws.BroadcastToUser(agentID, gin.H{
+		"type":    "appointment_updated",
+		"payload": appointment,
+	})
+
+	// Notify the user about the status update
+	// We need to find the user ID associated with the email
+	var receiver models.User
+	if err := ac.db.Where("TRIM(LOWER(email)) = ?", strings.TrimSpace(strings.ToLower(appointment.Email))).First(&receiver).Error; err == nil {
+		notification := models.Notification{
+			Title:      "Viewing Status Updated",
+			Message:    fmt.Sprintf("Your viewing for %s has been %s", appointment.Listing.Title, appointment.Status),
+			SenderID:   agentID,
+			ReceiverID: &receiver.ID,
+			Type:       "info",
+		}
+		ac.db.Create(&notification)
+		ac.ws.BroadcastToUser(receiver.ID, gin.H{
+			"type":    "notification",
+			"payload": notification,
+		})
+		// Specifically for the ListingDetailPage status update
+		ac.ws.BroadcastToUser(receiver.ID, gin.H{
+			"type":    "appointment_updated",
+			"payload": appointment,
+		})
 	}
 
 	// Reload with listing
