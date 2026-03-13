@@ -17,6 +17,7 @@ import {
     EyeIcon,
     EyeSlashIcon,
     BuildingOfficeIcon,
+    BuildingOffice2Icon,
     MagnifyingGlassIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -37,31 +38,45 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
+import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+
 const AgentListings = () => {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [sorting, setSorting] = useState([]);
+    const [globalFilter, setGlobalFilter] = useSessionState('listings_globalFilter', '');
+    const [statusFilter, setStatusFilter] = useSessionState('listings_statusFilter', 'all');
+    const [sorting, setSorting] = useSessionState('listings_sorting', []);
 
+    // Use scroll restoration
+    useScrollRestoration('AgentListings', !loading && listings.length > 0);
 
     const datePickerRef = useRef(null);
 
     // Date Filter State
-    const [dateRange, setDateRange] = useState([
+    const [dateRange, setDateRange] = useSessionState('listings_dateRange', [
         {
-            startDate: startOfDay(new Date()),
-            endDate: endOfDay(new Date()),
+            startDate: startOfDay(new Date()).toISOString(),
+            endDate: endOfDay(new Date()).toISOString(),
             key: 'selection'
         }
     ]);
-    const [datePreset, setDatePreset] = useState('today');
-    const [isDateFiltered, setIsDateFiltered] = useState(true); // Default: Filter by Today
+
+    // Helper to get Date objects from possibly stringified state
+    const parsedDateRange = useMemo(() => {
+        return dateRange.map(range => ({
+            ...range,
+            startDate: range.startDate instanceof Date ? range.startDate : new Date(range.startDate),
+            endDate: range.endDate instanceof Date ? range.endDate : new Date(range.endDate)
+        }));
+    }, [dateRange]);
+
+    const [datePreset, setDatePreset] = useSessionState('listings_datePreset', 'today');
+    const [isDateFiltered, setIsDateFiltered] = useSessionState('listings_isDateFiltered', true); // Default: Filter by Today
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [shownDate, setShownDate] = useState(new Date());
 
     // Page Size State (default 10)
-    const [pagination, setPagination] = useState({
+    const [pagination, setPagination] = useSessionState('listings_pagination', {
         pageIndex: 0,
         pageSize: 10,
     });
@@ -132,8 +147,8 @@ const AgentListings = () => {
         switch (preset) {
             case 'today':
                 setDateRange([{
-                    startDate: startOfDay(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -142,8 +157,8 @@ const AgentListings = () => {
             case 'yesterday':
                 const yesterday = subDays(today, 1);
                 setDateRange([{
-                    startDate: startOfDay(yesterday),
-                    endDate: endOfDay(yesterday),
+                    startDate: startOfDay(yesterday).toISOString(),
+                    endDate: endOfDay(yesterday).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -151,8 +166,8 @@ const AgentListings = () => {
                 break;
             case 'last7days':
                 setDateRange([{
-                    startDate: startOfDay(subDays(today, 6)),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(subDays(today, 6)).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -160,8 +175,8 @@ const AgentListings = () => {
                 break;
             case 'thismonth':
                 setDateRange([{
-                    startDate: startOfMonth(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfMonth(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -196,7 +211,7 @@ const AgentListings = () => {
 
             // Date Filter
             let matchesDate = true;
-            if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
+            if (isDateFiltered && parsedDateRange[0].startDate && parsedDateRange[0].endDate) {
                 if (!listing.created_at) {
                     matchesDate = false;
                 } else {
@@ -205,8 +220,8 @@ const AgentListings = () => {
                         matchesDate = false;
                     } else {
                         matchesDate = isWithinInterval(listingDate, {
-                            start: startOfDay(dateRange[0].startDate),
-                            end: endOfDay(dateRange[0].endDate)
+                            start: startOfDay(parsedDateRange[0].startDate),
+                            end: endOfDay(parsedDateRange[0].endDate)
                         });
                     }
                 }
@@ -214,7 +229,7 @@ const AgentListings = () => {
 
             return matchesStatus && matchesSearch && matchesDate;
         });
-    }, [listings, statusFilter, globalFilter, isDateFiltered, dateRange]);
+    }, [listings, statusFilter, globalFilter, isDateFiltered, parsedDateRange]);
 
     // Columns
     const columns = useMemo(() => [
@@ -296,8 +311,8 @@ const AgentListings = () => {
                         <button
                             onClick={() => handlePublish(listing.id, listing.is_published)}
                             className={`p-1.5 rounded-lg transition-all duration-200 ${listing.is_published
-                                ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
-                                : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
+                                ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-400/10 dark:text-amber-400 dark:hover:bg-amber-400/20'
+                                : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-400 dark:hover:bg-emerald-400/20'
                                 }`}
                             title={listing.is_published ? 'Unpublish' : 'Publish'}
                         >
@@ -309,14 +324,14 @@ const AgentListings = () => {
                         </button>
                         <Link
                             to={`/dashboard/listings/${listing.id}/edit`}
-                            className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all duration-200"
+                            className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-600/10 dark:text-primary-400 dark:hover:bg-primary-600/20 rounded-lg transition-all duration-200"
                             title="Edit"
                         >
                             <PencilIcon className="w-5 h-5" />
                         </Link>
                         <button
                             onClick={() => handleDelete(listing.id)}
-                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-400/10 dark:text-red-400 dark:hover:bg-red-400/20 rounded-lg transition-all duration-200"
                             title="Delete"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -339,16 +354,30 @@ const AgentListings = () => {
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
     });
 
     return (
         <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                            <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        Listings
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {listings.length} listing{listings.length !== 1 ? 's' : ''} registered
+                    </p>
+                </div>
+            </div>
+
             {/* Toolbar: Actions & Filters */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
 
                 {/* LEFT: Page Size */}
-                <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
+                <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
                     <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
                     <div className="w-16">
                         <StyledSelect
@@ -358,8 +387,8 @@ const AgentListings = () => {
                                 { value: 20, label: '20' },
                                 { value: 50, label: '50' },
                             ]}
-                            value={table.getState().pagination.pageSize}
-                            onChange={(val) => table.setPageSize(val)}
+                            value={pagination.pageSize}
+                            onChange={(val) => table.setPageSize(Number(val))}
                             isSearchable={false}
                             components={{
                                 DropdownIndicator: () => null,
@@ -368,11 +397,12 @@ const AgentListings = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    minHeight: '34px',
+                                    borderRadius: '3px',
                                     height: '34px',
+                                    minHeight: '34px',
+                                    fontSize: '11px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    fontSize: '12px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -393,7 +423,7 @@ const AgentListings = () => {
                 {/* CENTER: Core Filters (Status, Date) */}
                 <div className="flex flex-wrap items-center lg:justify-center gap-3 flex-1 w-full">
                     {/* Status Filter */}
-                    <div className="w-full sm:w-32">
+                    <div className="w-full sm:w-44">
                         <StyledSelect
                             options={[
                                 { value: 'all', label: 'All Status' },
@@ -409,6 +439,8 @@ const AgentListings = () => {
                                     ...base,
                                     minHeight: '34px',
                                     height: '34px',
+                                    borderRadius: '3px',
+                                    fontSize: '11px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -435,10 +467,10 @@ const AgentListings = () => {
                                 isSearchable={false}
                                 placeholder="Date Range"
                                 formatOptionLabel={(option) => {
-                                    if (option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate) {
+                                    if (option.value === 'custom' && datePreset === 'custom' && parsedDateRange?.[0]?.startDate && parsedDateRange?.[0]?.endDate) {
                                         try {
-                                            const start = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
-                                            const end = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                                            const start = parsedDateRange[0].startDate;
+                                            const end = parsedDateRange[0].endDate;
                                             if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
                                                 return (
                                                     <div className="flex items-center justify-between w-full">
@@ -461,7 +493,7 @@ const AgentListings = () => {
                                         ...base,
                                         minHeight: '34px',
                                         height: '34px',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
@@ -555,12 +587,16 @@ const AgentListings = () => {
                                     locale={enUS}
                                     editableDateInputs={true}
                                     onChange={item => {
-                                        setDateRange([item.selection]);
+                                        setDateRange([{
+                                            ...item.selection,
+                                            startDate: item.selection.startDate.toISOString(),
+                                            endDate: item.selection.endDate.toISOString()
+                                        }]);
                                         setIsDateFiltered(true);
                                         setDatePreset('custom');
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
+                                    ranges={parsedDateRange}
                                     shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']} // primary-500
@@ -571,21 +607,20 @@ const AgentListings = () => {
                 </div>
 
                 {/* RIGHT: Search & Actions */}
-                <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <div className="relative w-full sm:w-56 h-[34px]">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div className="relative w-full lg:w-64">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            value={globalFilter}
+                            value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search listings..."
-                            className="input-field pl-9 h-[38px] text-[12px] flex items-center"
+                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
-
                     <Link
                         to="/dashboard/listings/new"
-                        className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-3 h-[34px] text-[12px] shadow-sm"
+                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Listing</span>

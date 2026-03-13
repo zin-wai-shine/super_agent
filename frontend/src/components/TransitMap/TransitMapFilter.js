@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { publicApi } from '../../services/api';
 import { TransitMapSVG } from './transit_map.svg.js';
-import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon, MapIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MapPinIcon, SparklesIcon, MagnifyingGlassIcon, MapIcon, PlusIcon, MinusIcon, ArrowPathIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline';
 
 const TransitMapFilter = ({
     onStationClick,
@@ -350,7 +350,8 @@ const TransitMapFilter = ({
             <div className="relative bg-white overflow-hidden group flex-1">
                 {/* Zoom & Reset Controls - Bottom Right Vertical */}
                 <div className="absolute bottom-6 right-6 z-[90] flex flex-col items-center gap-3">
-                    <div className="flex flex-col bg-white/95 backdrop-blur-xl rounded-full shadow-xl border border-gray-200 p-1">
+                    {/* Zoom Pill */}
+                    <div className="bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex flex-col p-1 overflow-hidden">
                         <button
                             onClick={() => {
                                 if (!mapWrapperRef.current) return;
@@ -368,12 +369,12 @@ const TransitMapFilter = ({
                                 setZoom(newZoom);
                                 setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
-                            className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
+                            className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
                             title="Zoom In"
                         >
-                            <span className="text-xl font-bold">+</span>
+                            <PlusIcon className="w-5 h-5 stroke-[2.5]" />
                         </button>
-                        <div className="h-px bg-gray-200/50 mx-2 my-1" />
+                        <div className="h-px bg-white/40 mx-2" />
                         <button
                             onClick={() => {
                                 if (!mapWrapperRef.current) return;
@@ -392,10 +393,10 @@ const TransitMapFilter = ({
                                 setZoom(newZoom);
                                 setPan(constrainPan({ x: newPanX, y: newPanY }, newZoom));
                             }}
-                            className="w-10 h-10 flex items-center justify-center text-primary-600 hover:bg-primary-50 rounded-full transition-all group/btn"
+                            className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
                             title="Zoom Out"
                         >
-                            <span className="text-xl font-bold">−</span>
+                            <MinusIcon className="w-5 h-5 stroke-[2.5]" />
                         </button>
                     </div>
 
@@ -409,12 +410,10 @@ const TransitMapFilter = ({
                             setZoom(defaultZoom);
                             setPan(constrainPan({ x: initialPanX, y: initialPanY }, defaultZoom));
                         }}
-                        className="w-10 h-10 bg-primary-600 shadow-xl border border-primary-500 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-all duration-300 group/reset active:scale-95"
+                        className="w-12 h-12 bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-95 group"
                         title="Reset View"
                     >
-                        <svg className="w-5 h-5 transition-transform duration-500 group-hover/reset:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
+                        <ArrowPathIcon className="w-6 h-6 group-active:rotate-180 transition-transform duration-500" />
                     </button>
                 </div>
 

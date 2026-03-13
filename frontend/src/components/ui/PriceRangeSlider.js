@@ -194,7 +194,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                 )}
 
                 {/* Custom Visual Track */}
-                <div className="absolute w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full z-10 top-1/2 -translate-y-1/2" />
+                <div className="absolute w-full h-1.5 bg-gray-100 dark:bg-white/10 rounded-full z-10 top-1/2 -translate-y-1/2" />
 
                 {/* Active Range Highlight */}
                 <div
@@ -222,39 +222,39 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
             {/* Value Inputs */}
             <div className="flex items-center justify-between gap-3 relative z-50">
                 <div className="flex flex-col flex-1">
-                    <span className="text-[13px] font-normal text-gray-600 leading-none mb-1.5 text-center">
+                    <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
                         Minimum
                     </span>
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-normal text-[13px]">฿</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-normal text-[13px]">฿</span>
                         <input
                             type="text"
                             value={minInput}
                             onChange={(e) => setMinInput(e.target.value.replace(/[^0-9]/g, ''))}
                             onBlur={handleMinInputBlur}
                             onKeyDown={(e) => handleKeyDown(e, 'min')}
-                            className="w-full min-h-[40px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-shadow"
+                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
                         />
                     </div>
                 </div>
 
-                <div className="flex items-center text-gray-400 font-light self-end pb-3">
+                <div className="flex items-center text-gray-400 dark:text-gray-600 font-light self-end pb-3">
                     -
                 </div>
 
                 <div className="flex flex-col flex-1">
-                    <span className="text-[13px] font-normal text-gray-600 leading-none mb-1.5 text-center">
+                    <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
                         Maximum
                     </span>
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-normal text-[13px]">฿</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-normal text-[13px]">฿</span>
                         <input
                             type="text"
                             value={maxInput}
                             onChange={(e) => setMaxInput(e.target.value.replace(/[^0-9]/g, ''))}
                             onBlur={handleMaxInputBlur}
                             onKeyDown={(e) => handleKeyDown(e, 'max')}
-                            className="w-full min-h-[40px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-shadow"
+                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
                         />
                     </div>
                 </div>

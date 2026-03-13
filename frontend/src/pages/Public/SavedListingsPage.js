@@ -38,10 +38,10 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
             onClick={onClick}
             className="flex flex-col gap-2 cursor-pointer group animate-fadeInUp"
         >
-            <div className="w-full aspect-square bg-white border border-gray-100 shadow-sm rounded-[20px] overflow-hidden p-1.5">
+            <div className="w-full aspect-square bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 shadow-sm rounded-[20px] overflow-hidden p-1.5">
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-[4px] rounded-[14px] overflow-hidden">
                     {/* Slot 1: First image */}
-                    <div className="w-full h-full overflow-hidden relative bg-gray-100">
+                    <div className="w-full h-full overflow-hidden relative bg-gray-100 dark:bg-white/5">
                         {images[0] ? (
                             <div
                                 className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
@@ -51,7 +51,7 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
                     </div>
 
                     {/* Slot 2: Second image */}
-                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50 dark:bg-white/5">
                         {images[1] ? (
                             <div
                                 className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
@@ -61,7 +61,7 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
                     </div>
 
                     {/* Slot 3: Third image */}
-                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50 dark:bg-white/5">
                         {images[2] ? (
                             <div
                                 className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
@@ -71,9 +71,9 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
                     </div>
 
                     {/* Slot 4: Count or Fourth image */}
-                    <div className="w-full h-full overflow-hidden relative bg-gray-50">
+                    <div className="w-full h-full overflow-hidden relative bg-gray-50 dark:bg-white/5">
                         {remainingCount > 0 ? (
-                            <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-500 transition-colors group-hover:bg-gray-200">
+                            <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex flex-col items-center justify-center text-gray-500 transition-colors group-hover:bg-gray-200 dark:group-hover:bg-white/10">
                                 <span className="text-[18px] font-bold text-gray-700">+{remainingCount}</span>
                             </div>
                         ) : images[3] ? (
@@ -86,7 +86,7 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
                 </div>
             </div>
             <div className="px-1 relative">
-                <h3 className="text-[17px] font-bold text-gray-900 leading-tight truncate">{label}</h3>
+                <h3 className="text-[17px] font-bold text-gray-900 dark:text-white leading-tight truncate">{label}</h3>
                 <p className="text-[14px] text-gray-500 font-medium">
                     {items.length} {items.length === 1 ? 'place' : 'places'}
                 </p>
@@ -228,7 +228,7 @@ const SavedListingsPage = () => {
     }, [user]);
 
     return (
-        <div className="min-h-screen bg-white pb-20">
+        <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
             {/* Filter bar (desktop only): same as list page; search/filters navigate to list page */}
             {/* Filter bar (desktop only): same as list page; search/filters navigate to list page */}
             {filterBarSlot && createPortal(
@@ -256,7 +256,7 @@ const SavedListingsPage = () => {
                 </div>,
                 filterBarSlot
             )}
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-8 md:pt-12">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-5">
                 {/* Content Area */}
                 <div className="relative min-h-[400px]">
                     {initialLoading && !currentGroup ? (
@@ -277,9 +277,9 @@ const SavedListingsPage = () => {
                         /* Content */
                         <>
                             {currentGroup && !isDesktop && (
-                                <div className="fixed inset-0 z-[200] bg-white flex flex-col h-[100dvh]">
+                                <div className="fixed inset-0 z-[200] bg-white dark:bg-dashboard-dark flex flex-col h-[100dvh]">
                                     {/* App-style Mobile Header */}
-                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 z-20">
+                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 z-20">
                                         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 relative">
                                             <button
                                                 onClick={() => {
@@ -287,12 +287,12 @@ const SavedListingsPage = () => {
                                                     newParams.delete('group');
                                                     setSearchParams(newParams);
                                                 }}
-                                                className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 rounded-full active:bg-gray-100 transition-colors"
+                                                className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
                                             >
-                                                <ArrowLeftIcon className="w-7 h-7 text-gray-900" />
+                                                <ArrowLeftIcon className="w-7 h-7 text-gray-900 dark:text-white" />
                                             </button>
                                             <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                                                <h2 className="text-lg font-semibold text-gray-900 truncate max-w-[50vw]">{currentGroup}</h2>
+                                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
                                             </div>
                                             <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap -mr-1">
                                                 {activeGroup?.items.length || 0} places
@@ -331,20 +331,20 @@ const SavedListingsPage = () => {
                             {currentGroup && isDesktop ? (
                                 <div className="flex flex-col animate-fadeInUp">
                                     {/* Desktop Sub-header: Centered title, Right count */}
-                                    <div className="mb-10 flex items-center justify-between relative min-h-[48px]">
+                                    <div className="mb-6 flex items-center justify-between relative min-h-[48px]">
                                         <button
                                             onClick={() => {
                                                 const newParams = new URLSearchParams(searchParams);
                                                 newParams.delete('group');
                                                 setSearchParams(newParams);
                                             }}
-                                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50/80 backdrop-blur-sm border border-gray-100 shadow-sm hover:bg-gray-100 active:scale-95 transition-all z-10"
+                                            className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
                                         >
-                                            <ArrowLeftIcon className="w-5 h-5 text-gray-700 stroke-[2]" />
+                                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                                         </button>
 
                                         <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-                                            <h1 className="text-[20px] font-semibold text-gray-900 tracking-tight">{currentGroup}</h1>
+                                            <h1 className="text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight">{currentGroup}</h1>
                                         </div>
 
                                         <div className="text-[14px] text-gray-500 font-medium z-10">
@@ -383,7 +383,7 @@ const SavedListingsPage = () => {
                                 /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */
                                 <div className="animate-fadeInUp">
                                     <div className="mb-10">
-                                        <h1 className="text-[24px] font-semibold text-gray-900 tracking-tight">Favorites</h1>
+                                        <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
                                         {(() => {
@@ -419,13 +419,13 @@ const SavedListingsPage = () => {
                         /* Empty State */
                         <div className="text-center py-24 animate-fadeInUp">
                             <FiHeart className="mx-auto h-20 w-20 text-gray-200" />
-                            <h2 className="mt-4 text-xl font-semibold text-gray-900">No favorites yet</h2>
+                            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">No favorites yet</h2>
                             <p className="mt-2 text-gray-500 max-w-sm mx-auto">
                                 Save properties you like by clicking the heart icon, and they'll show up here.
                             </p>
                             <button
                                 onClick={() => navigate('/listings')}
-                                className="mt-8 inline-flex items-center px-8 py-3 rounded-full text-white bg-slate-900 hover:bg-slate-800 font-bold transition-all shadow-lg active:scale-95"
+                                className="mt-8 inline-flex items-center px-8 py-3 rounded-full text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-dashboard-dark dark:hover:bg-gray-200 font-bold transition-all shadow-lg active:scale-95"
                             >
                                 Start Browsing
                             </button>

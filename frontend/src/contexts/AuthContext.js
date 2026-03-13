@@ -78,6 +78,7 @@ export const AuthProvider = ({ children }) => {
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('google_picture');
         setUser(null);
     }, []);
 

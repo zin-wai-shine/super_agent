@@ -53,8 +53,8 @@ function LayerCard({ section, onTap, firstFlatIndex }) {
                     );
                 })}
             </div>
-            <span className="text-sm md:text-base md:font-semibold text-gray-900 mt-2 block w-full truncate text-center">{section.title}</span>
-            <span className="text-xs md:text-sm text-gray-500">{count} photo{count !== 1 ? 's' : ''}</span>
+            <span className="text-sm md:text-base md:font-semibold text-gray-900 dark:text-white mt-2 block w-full truncate text-center">{section.title}</span>
+            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{count} photo{count !== 1 ? 's' : ''}</span>
         </button>
     );
 }
@@ -233,18 +233,18 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                             <button
                                 type="button"
                                 onClick={() => setFocusedImageIndex(null)}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] text-white hover:text-gray-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all group"
                                 aria-label="Back to list"
                             >
-                                <ArrowLeftIcon className="w-5 h-5 text-current stroke-[2]" />
+                                <ArrowLeftIcon className="w-5 h-5 text-current stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
                             </button>
                         ) : (
                             <button
                                 type="button"
                                 onClick={() => setFocusedImageIndex(null)}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-white hover:text-gray-200 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-white/10 active:scale-95 transition-colors duration-200"
+                                className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all rounded-full group"
                             >
-                                <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6" />
+                                <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
                             </button>
                         )}
 
@@ -256,7 +256,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                             <button
                                 type="button"
                                 onClick={handleShare}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] text-white hover:text-gray-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                                className="flex items-center justify-center w-10 h-10 text-white bg-transparent dark:bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200"
                                 aria-label="Share"
                             >
                                 <ShareIcon className="w-5 h-5 text-current stroke-[2]" />
@@ -265,7 +265,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                             <button
                                 type="button"
                                 onClick={handleShare}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 p-3 md:p-2 rounded-full text-white hover:bg-white/10 active:scale-95 transition-colors duration-200"
+                                className="flex items-center justify-center w-10 h-10 rounded-full text-white bg-transparent dark:bg-white/10 hover:bg-white/20 active:scale-95 transition-all duration-200"
                                 aria-label="Share"
                             >
                                 <ShareIcon className="w-7 h-7 md:w-6 md:h-6" />
@@ -369,27 +369,27 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     let globalIndex = 0;
 
     return (
-        <div className={`flex flex-col bg-white ${isDesktop ? '' : 'h-full overflow-hidden'}`}>
+        <div className={`flex flex-col bg-white dark:bg-dashboard-dark ${isDesktop ? '' : 'h-full overflow-hidden'}`}>
             {!isDesktop && (
-                <header className="relative flex-none border-b border-gray-100 bg-white shrink-0 z-20">
+                <header className="relative flex-none border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark shrink-0 z-20">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                            className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all rounded-full -ml-2 group"
                         >
-                            <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6" />
+                            <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                         </button>
-                        <span className="absolute left-1/2 -translate-x-1/2 text-lg md:text-base font-semibold text-gray-900 truncate max-w-[50vw] pointer-events-none">
+                        <span className="absolute left-1/2 -translate-x-1/2 text-lg md:text-base font-semibold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none">
                             {activeSectionTitle || 'Photo tour'}
                         </span>
                         <button
                             type="button"
                             onClick={handleShare}
-                            className="flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 p-3 md:p-2 rounded-full text-gray-900 hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all duration-200"
                             aria-label="Share"
                         >
-                            <ShareIcon className="w-7 h-7 md:w-6 md:h-6" />
+                            <ShareIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white" />
                         </button>
                     </div>
                 </header>
@@ -400,7 +400,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`}
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
-                <div className="mx-auto w-full max-w-[1440px] md:py-8">
+                <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">
                     {/* Desktop: 30% top block (Photo tour + strip), 70% sections below */}
                     <div className="min-h-full md:flex md:flex-col">
                         <div className="md:flex-shrink-0 md:min-h-[30%]">
@@ -409,13 +409,13 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors z-10"
+                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
                                     >
-                                        <ArrowLeftIcon className="w-6 h-6 text-gray-900" />
+                                        <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                                     </button>
                                 )}
                                 {!isDesktop && (
-                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                                         Photo tour
                                     </h1>
                                 )}
@@ -423,9 +423,9 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={handleShare}
-                                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors z-10"
+                                        className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10"
                                     >
-                                        <ShareIcon className="w-6 h-6 text-gray-900" />
+                                        <ShareIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                                     </button>
                                 )}
                             </div>
@@ -533,7 +533,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         </div>
                                         {/* Second column (desktop): section title only — 30% (right); on mobile appears first via order; text left-aligned */}
                                         <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left md:sticky md:top-32 self-start">
-                                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{section.title}</h2>
+                                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{section.title}</h2>
                                         </div>
                                     </div>
                                 );

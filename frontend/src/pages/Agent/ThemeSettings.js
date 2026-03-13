@@ -309,8 +309,8 @@ const ThemeSettings = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-8 py-5 flex items-center gap-2 transition-all relative group h-full ${activeTab === tab.id
-                                ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-white/5'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5'
+                                ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-primary-600/10'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-primary-600/5'
                                 }`}
                         >
                             <span className={`text-[10px] font-extrabold uppercase tracking-widest transition-colors ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`}>
@@ -329,7 +329,7 @@ const ThemeSettings = () => {
                     {/* Section Label Header */}
                     <div className="mb-6 pb-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
                         <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
-                            <div className="p-2 bg-primary-500/10 rounded-lg">
+                            <div className="p-2 bg-primary-600/10 rounded-lg">
                                 {React.createElement(tabs.find(t => t.id === activeTab).icon, { className: "w-5 h-5 text-primary-500" })}
                             </div>
                             {tabs.find(t => t.id === activeTab).label}
@@ -436,7 +436,7 @@ const ThemeSettings = () => {
                                         </div>
                                         <input
                                             type="text"
-                                            className="input-field bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl h-12 text-sm"
+                                            className="input-field rounded-xl h-12 text-sm"
                                             placeholder="Super Real Estate"
                                             {...register('header_text')}
                                         />
@@ -455,7 +455,7 @@ const ThemeSettings = () => {
                                         </div>
                                         <input
                                             type="text"
-                                            className="input-field bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl h-12 text-sm"
+                                            className="input-field rounded-xl h-12 text-sm"
                                             placeholder="© 2024 Your Name"
                                             {...register('footer_text')}
                                         />

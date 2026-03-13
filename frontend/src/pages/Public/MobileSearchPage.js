@@ -69,22 +69,22 @@ const MobileSearchPage = () => {
     };
 
     return (
-        <div className="h-[100dvh] bg-white flex flex-col pb-safe overflow-hidden">
+        <div className="h-[100dvh] bg-white dark:bg-dashboard-dark flex flex-col pb-safe overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                <h1 className="text-xl font-bold text-gray-900">Search Properties</h1>
-                <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-dashboard-card z-10">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Search Properties</h1>
+                <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                     <XMarkIcon className="w-6 h-6 text-gray-500" />
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="px-4 border-b border-gray-100 flex gap-8">
+            <div className="px-4 border-b border-gray-100 dark:border-white/10 flex gap-8">
                 <button
                     onClick={() => setActiveTab('keywords')}
                     className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'keywords'
                         ? 'border-primary-600 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     KEYWORDS
@@ -93,7 +93,7 @@ const MobileSearchPage = () => {
                     onClick={() => setActiveTab('map')}
                     className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'map'
                         ? 'border-primary-600 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     TRANSIT MAP
@@ -111,7 +111,7 @@ const MobileSearchPage = () => {
                                 value={filters.search}
                                 onChange={(e) => handleFilterChange('search', e.target.value)}
                                 placeholder="Search by name, location..."
-                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 dark:text-white"
                             />
                         </div>
 
@@ -156,14 +156,14 @@ const MobileSearchPage = () => {
                                     placeholder="Min Price"
                                     value={filters.min_price}
                                     onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                                    className="w-full bg-gray-50 border-none rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500 dark:text-white"
                                 />
                                 <input
                                     type="number"
                                     placeholder="Max Price"
                                     value={filters.max_price}
                                     onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                                    className="w-full bg-gray-50 border-none rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500 dark:text-white"
                                 />
                             </div>
                         </div>
@@ -180,7 +180,7 @@ const MobileSearchPage = () => {
                                 Selected: {filters.station_id}
                             </div>
                         )}
-                        <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex-1 min-h-[400px]">
+                        <div className="bg-gray-50 dark:bg-white/5 rounded-xl overflow-hidden border border-gray-100 dark:border-white/10 flex-1 min-h-[400px]">
                             <TransitMapFilter
                                 onStationClick={(stationId) => handleFilterChange('station_id', stationId)}
                                 selectedStation={filters.station_id}
@@ -191,7 +191,7 @@ const MobileSearchPage = () => {
             </div>
 
             {/* Bottom Action - Static Flex Child */}
-            <div className="p-4 border-t border-gray-100 bg-white z-20">
+            <div className="p-4 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card z-20">
                 <button
                     onClick={handleApplyFilters}
                     className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-primary-200 active:scale-[0.98] transition-transform"

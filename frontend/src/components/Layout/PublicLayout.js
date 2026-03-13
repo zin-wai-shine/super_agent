@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
 import {
     Bars3Icon,
@@ -19,6 +20,8 @@ import {
     MapIcon,
     HeartIcon,
     ChevronRightIcon,
+    SunIcon,
+    MoonIcon,
 } from '@heroicons/react/24/outline';
 import {
     FiSearch,
@@ -63,6 +66,18 @@ import buildingBlock from '../../assets/images/building_block.png';
 
 const PublicLayout = () => {
     const { theme } = useTheme();
+    const { isDarkMode, toggleTheme } = usePublicDarkTheme();
+
+    // Independent Dark Mode logic
+    useEffect(() => {
+        const root = window.document.documentElement;
+        if (isDarkMode) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+    }, [isDarkMode]);
+
     const { isMainDomain, agent, loading: tenantLoading } = useTenant();
     console.log('PublicLayout State:', { isMainDomain, agent, tenantLoading });
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -320,7 +335,7 @@ const PublicLayout = () => {
         <div
             id="main-scroll-container"
             ref={scrollContainerRef}
-            className="flex flex-col bg-white min-h-[100dvh]"
+            className="flex flex-col bg-white dark:bg-dashboard-dark min-h-[100dvh]"
             style={{ fontFamily: theme.fontFamily }}
         >
             {/* Navigation Drawer (Mobile + lg when burger is used) */}
@@ -341,13 +356,22 @@ const PublicLayout = () => {
                                     <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
                                     <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>{brandName}</span>
                                 </Link>
-                                <button
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="p-2 rounded-full transition-colors hover:bg-white/10"
-                                    style={{ color: 'var(--menu-text-secondary)' }}
-                                >
-                                    <XMarkIcon className="w-6 h-6" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={toggleTheme}
+                                        className="p-2 rounded-full transition-colors hover:bg-white/10 text-gray-400"
+                                        title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                                    >
+                                        {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+                                    </button>
+                                    <button
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="p-2 rounded-full transition-colors hover:bg-white/10"
+                                        style={{ color: 'var(--menu-text-secondary)' }}
+                                    >
+                                        <XMarkIcon className="w-6 h-6" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Drawer Links — when not logged in (mobile) only Search + Login */}
@@ -603,10 +627,9 @@ const PublicLayout = () => {
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
             {!isAuthPage && (
-                <div className={`hidden md:block sticky top-0 z-[150] bg-white transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isScrolled ? 'border-b border-gray-100' : ''}`} style={{ backgroundColor: '#ffffff' }}>
+                <div className={`hidden md:block sticky top-0 z-[150] bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} border-b ${isScrolled ? 'border-gray-100 dark:border-white/5' : 'border-transparent'}`}>
                     <nav
-                        className={`transition-all duration-300 bg-white/80 backdrop-blur-md ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
-                        style={{ backgroundColor: '#ffffff' }}
+                        className={`transition-all duration-300 bg-white/80 dark:bg-transparent backdrop-blur-md ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
                         onMouseLeave={closeMenu}
                     >
                         <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20">
@@ -663,7 +686,19 @@ const PublicLayout = () => {
                                         </div>
 
                                         {/* Auth Buttons */}
-                                        <div className="flex items-center space-x-4">
+                                        <div className="flex items-center space-x-2 md:space-x-4">
+                                            {/* Theme Toggle */}
+                                            <button
+                                                onClick={toggleTheme}
+                                                className="p-2.5 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-all duration-300 shadow-sm border border-transparent dark:border-dashboard-border"
+                                                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                                            >
+                                                {isDarkMode ? (
+                                                    <SunIcon className="w-5 h-5 transition-all duration-500 rotate-0 scale-100" />
+                                                ) : (
+                                                    <MoonIcon className="w-5 h-5 transition-all duration-500 rotate-12 scale-100" />
+                                                )}
+                                            </button>
                                             {isAuthenticated ? (
                                                 <div className="flex items-center gap-1 sm:gap-2">
                                                     {/* Vertical separator — lg only */}
@@ -682,7 +717,7 @@ const PublicLayout = () => {
                                                         </div>
 
                                                         {/* Vertical divider */}
-                                                        <div className="mx-1 h-6 w-px bg-gray-200 hidden lg:block" />
+                                                        <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-white/10 hidden lg:block" />
                                                     </div>
 
                                                     {/* Hamburger — visible on all desktop sizes */}
@@ -690,34 +725,34 @@ const PublicLayout = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => setAppMenuOpen(!appMenuOpen)}
-                                                            className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shadow-sm"
+                                                            className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-colors shadow-sm dark:border dark:border-dashboard-border"
                                                             aria-label="Open menu"
                                                             aria-expanded={appMenuOpen}
                                                         >
                                                             <Bars3Icon className="w-6 h-6" strokeWidth={1.5} />
                                                         </button>
                                                         {appMenuOpen && (
-                                                            <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-[24px] border-none shadow-[0_10px_40px_-5px_rgba(0,0,0,0.15)] py-3 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[200]">
+                                                            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-dashboard-card rounded-[24px] border border-gray-100 dark:border-dashboard-border shadow-[0_10px_40px_-5px_rgba(0,0,0,0.15)] py-3 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[200]">
                                                                 {/* User Profile Summary (Since top avatar is static) */}
-                                                                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 mb-1">
-                                                                    <p className="text-[14px] font-bold text-gray-900 truncate">
+                                                                <div className="px-5 py-4 border-b border-gray-100 dark:border-dashboard-border bg-gray-50/50 dark:bg-white/5 mb-1">
+                                                                    <p className="text-[14px] font-bold text-gray-900 dark:text-white truncate">
                                                                         {user?.first_name} {user?.last_name}
                                                                     </p>
-                                                                    <p className="text-[12px] text-gray-500 truncate mt-0.5">
+                                                                    <p className="text-[12px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
                                                                         {user?.email}
                                                                     </p>
                                                                 </div>
                                                                 <div className="py-1 px-2">
-                                                                    <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
-                                                                        <FiHeart className="w-5 h-5 text-gray-900" />
+                                                                    <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                        <FiHeart className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                         Favorites
                                                                     </Link>
-                                                                    <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
-                                                                        <FiCalendar className="w-5 h-5 text-gray-900" />
+                                                                    <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                        <FiCalendar className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                         My Viewing Requests
                                                                     </Link>
-                                                                    <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
-                                                                        <FiUser className="w-5 h-5 text-gray-900" />
+                                                                    <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                        <FiUser className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                         Profile
                                                                     </Link>
                                                                     {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
@@ -741,7 +776,7 @@ const PublicLayout = () => {
                                                                                 }
                                                                                 return '/dashboard';
                                                                             })()}
-                                                                            className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                                                                            className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors"
                                                                             onClick={(e) => {
                                                                                 const href = e.currentTarget.getAttribute('href');
                                                                                 if (href.startsWith('http')) {
@@ -751,7 +786,7 @@ const PublicLayout = () => {
                                                                                 setAppMenuOpen(false);
                                                                             }}
                                                                         >
-                                                                            <FiBarChart2 className="w-5 h-5 text-gray-900" />
+                                                                            <FiBarChart2 className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                             Dashboard
                                                                         </Link>
                                                                     )}
@@ -770,11 +805,11 @@ const PublicLayout = () => {
                                                 <>
                                                     <Link
                                                         to="/login"
-                                                        className="text-[14px] font-medium text-gray-600 hover:text-[var(--primary-color)] transition-colors"
+                                                        className="text-[14px] font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--primary-color)] transition-colors"
                                                     >
                                                         Sign in
                                                     </Link>
-                                                    <Link to="/register" className="bg-gray-950 text-white px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 active:scale-95 transition-all rounded-full">
+                                                    <Link to="/register" className="bg-gray-950 dark:bg-white dark:text-gray-950 px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all rounded-full">
                                                         Get Started
                                                     </Link>
                                                 </>
@@ -793,7 +828,7 @@ const PublicLayout = () => {
 
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
-            <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible ? 'pb-20' : 'pb-0'} md:pb-0`}>
+            <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible && !hideNavOnPage ? 'pb-20' : 'pb-0'} md:pb-0`}>
                 <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, mobileBottomNavVisible, setMobileBottomNavVisible }} />
             </main>
 
@@ -807,7 +842,7 @@ const PublicLayout = () => {
                         />
                     )}
                     <div
-                        className="md:hidden fixed left-0 right-0 z-[209] bg-white rounded-t-[36px] overflow-y-auto"
+                        className="md:hidden fixed left-0 right-0 z-[209] bg-white dark:bg-dashboard-card rounded-t-[36px] overflow-y-auto"
                         style={{
                             bottom: '72px',
                             maxHeight: 'calc(80vh - 72px)',
@@ -821,19 +856,19 @@ const PublicLayout = () => {
                             className="flex justify-center pt-5 pb-4 cursor-pointer"
                             onClick={() => setShowViewPanel(false)}
                         >
-                            <div className="w-10 h-1.5 rounded-full bg-gray-200" />
+                            <div className="w-10 h-1.5 rounded-full bg-gray-200 dark:bg-white/10" />
                         </div>
 
                         {/* Pill segmented control */}
                         <div className="px-6 pb-6 pt-4 mb-6">
-                            <div className="flex items-center bg-gray-100 rounded-full p-1 gap-1 max-w-[240px] mx-auto">
+                            <div className="flex items-center bg-gray-100 dark:bg-white/5 rounded-full p-1 gap-1 max-w-[240px] mx-auto">
                                 {/* List View */}
                                 <button
                                     type="button"
                                     onClick={() => switchView(false)}
                                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-[13px] transition-all duration-250 active:scale-95 ${!isMapView
-                                        ? 'bg-primary-50 text-primary-700 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                                         }`}
                                 >
                                     {!isMapView && (
@@ -849,8 +884,8 @@ const PublicLayout = () => {
                                     type="button"
                                     onClick={() => switchView(true)}
                                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-[13px] transition-all duration-250 active:scale-95 ${isMapView
-                                        ? 'bg-primary-50 text-primary-700 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                                         }`}
                                 >
                                     {isMapView && (
@@ -874,7 +909,7 @@ const PublicLayout = () => {
                 <div>
                     <nav className="w-full">
                         <div
-                            className="bg-white border-t border-gray-200"
+                            className="bg-white dark:bg-dashboard-card border-t border-gray-200 dark:border-white/5"
                             style={{
                                 paddingTop: '0.5rem',
                                 paddingBottom: '0.5rem',
@@ -888,10 +923,10 @@ const PublicLayout = () => {
                                     className="flex-1 flex flex-col items-center justify-center py-2"
                                 >
                                     <FiSearch
-                                        className={`w-6 h-6 ${isSearchTabActive ? 'text-primary-600' : 'text-gray-400'}`}
+                                        className={`w-6 h-6 ${isSearchTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'}`}
                                     />
                                     <span
-                                        className={`mt-0.5 text-[11px] font-semibold ${isSearchTabActive ? 'text-primary-600' : 'text-gray-500'
+                                        className={`mt-0.5 text-[11px] font-semibold ${isSearchTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                             }`}
                                     >
                                         Search
@@ -906,11 +941,11 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             <FiHeart
-                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />
                                             <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
                                                 Favorites
@@ -936,11 +971,11 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             <FiCalendar
-                                                className={`w-6 h-6 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                className={`w-6 h-6 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />
                                             <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
                                                 Viewings
@@ -953,11 +988,11 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             <FiUser
-                                                className={`w-6 h-6 ${isProfileTabActive ? 'text-primary-600' : 'text-gray-400'
+                                                className={`w-6 h-6 ${isProfileTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />
                                             <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500'
+                                                className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
                                                 Profile
@@ -999,10 +1034,10 @@ const PublicLayout = () => {
             {/* Footer - shown on all pages except profile, my-bookings, login, register */}
             {
                 !hideNavOnPage && (
-                    <footer className="bg-white text-gray-900 pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
+                    <footer className="text-gray-900 dark:text-white pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
                         {/* Background Decoration */}
                         <div
-                            className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07]"
+                            className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07] dark:opacity-[0.03]"
                             style={{
                                 backgroundImage: `url(${buildingBlock})`,
                                 backgroundSize: '800px',
@@ -1022,18 +1057,18 @@ const PublicLayout = () => {
                                     <div>
                                         <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Platform</h4>
                                         <ul className="space-y-4">
-                                            <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 transition-colors">Features</Link></li>
-                                            <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 transition-colors">Pricing Plans</Link></li>
-                                            <li><Link to="/services" className="text-base font-medium hover:text-primary-600 transition-colors">Services</Link></li>
-                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Get Started</Link></li>
+                                            <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Features</Link></li>
+                                            <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Pricing Plans</Link></li>
+                                            <li><Link to="/services" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Services</Link></li>
+                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Get Started</Link></li>
                                         </ul>
                                     </div>
                                     <div>
                                         <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Support</h4>
                                         <ul className="space-y-4">
-                                            <li><Link to="/login" className="text-base font-medium hover:text-primary-600 transition-colors">Agent Login</Link></li>
-                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 transition-colors">Create Account</Link></li>
-                                            <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 transition-colors">Help Center</Link></li>
+                                            <li><Link to="/login" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Agent Login</Link></li>
+                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Create Account</Link></li>
+                                            <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Help Center</Link></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -1060,17 +1095,17 @@ const PublicLayout = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <span className="hidden md:block text-xl font-bold text-gray-900 tracking-tight">
+                                    <span className="hidden md:block text-xl font-bold text-gray-900 dark:text-white tracking-tight">
                                         {brandName}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-8">
-                                    <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">About {brandName}</Link>
-                                    <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Products</Link>
-                                    <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
-                                    <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
+                                    <Link to="/about" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">About {brandName}</Link>
+                                    <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Products</Link>
+                                    <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Privacy</Link>
+                                    <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Terms</Link>
                                 </div>
-                                <div className="text-sm font-medium text-gray-400">
+                                <div className="text-sm font-medium text-gray-400 dark:text-gray-500">
                                     {theme.footerText || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`}
                                 </div>
                             </div>

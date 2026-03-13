@@ -246,13 +246,13 @@ const BookAppointment = () => {
     // --- Success View ---
     if (success && bookedAppointment) {
         return (
-            <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
-                <div className="max-w-md w-full bg-white rounded-[var(--btn-radius)] shadow-xl p-8 text-center border border-gray-100">
-                    <div className="w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <SolidCheckCircleIcon className="w-10 h-10 text-secondary-600" />
+            <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark py-12 px-4 flex items-center justify-center">
+                <div className="max-w-md w-full bg-white dark:bg-dashboard-card rounded-[var(--btn-radius)] shadow-xl p-8 text-center border border-gray-100 dark:border-white/10">
+                    <div className="w-20 h-20 bg-secondary-100 dark:bg-secondary-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <SolidCheckCircleIcon className="w-10 h-10 text-secondary-600 dark:text-secondary-400" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Appointment Confirmed!</h2>
-                    <p className="text-gray-500 mb-8">We've sent the details to {form.email}</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Appointment Confirmed!</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mb-8">We've sent the details to {form.email}</p>
                     <Button
                         onClick={() => navigate('/listings')}
                         variant="primary"
@@ -266,12 +266,13 @@ const BookAppointment = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800">
+        <div className="min-h-screen bg-gray-50/50 dark:bg-dashboard-dark py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:text-white">
             <div className="max-w-7xl mx-auto">
-                {/* Back Link */}
                 <div className="mb-6">
-                    <Link to={`/listings/${id}`} className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-gray-900 transition-all py-2 px-4 rounded-lg hover:bg-gray-100/50 active:scale-95 group">
-                        <ArrowLeftIcon className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    <Link to={`/listings/${id}`} className="inline-flex items-center text-sm font-bold text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all group">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2 bg-transparent dark:bg-white/10 group-hover:bg-gray-100 dark:group-hover:bg-white/20 transition-all">
+                            <ArrowLeftIcon className="w-4 h-4 text-current group-hover:-translate-x-0.5 transition-transform" />
+                        </div>
                         Back to Property
                     </Link>
                 </div>
@@ -284,14 +285,13 @@ const BookAppointment = () => {
                         {/* 1. Purpose Selector (Minimal Design) */}
                         {/* Logic: If 'both', show a sleek segmented control. If single, show a clean badge/header combo. */}
                         {listing.listing_type === 'both' ? (
-                            <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">I want to</h3>
-                                <div className="bg-gray-100 p-1 rounded-[var(--btn-radius)] flex items-center">
+                            <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
+                                <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">I want to</h3>
+                                <div className="bg-gray-100 dark:bg-white/5 p-1 rounded-full flex items-center">
                                     <button
                                         type="button"
                                         onClick={() => setForm(prev => ({ ...prev, purpose: 'rent' }))}
-                                        className={`flex-1 py-2 rounded-[var(--btn-radius)] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'rent' ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
-                                        style={form.purpose === 'rent' ? { color: 'var(--primary-color)' } : {}}
+                                        className={`flex-1 py-2 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'rent' ? 'bg-white dark:bg-white/10 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 text-[var(--primary-color)]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                                     >
                                         <HomeIcon className="w-4 h-4" />
                                         For Rent
@@ -299,8 +299,7 @@ const BookAppointment = () => {
                                     <button
                                         type="button"
                                         onClick={() => setForm(prev => ({ ...prev, purpose: 'buy' }))}
-                                        className={`flex-1 py-2 rounded-[var(--btn-radius)] text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'buy' ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
-                                        style={form.purpose === 'buy' ? { color: 'var(--primary-color)' } : {}}
+                                        className={`flex-1 py-2 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'buy' ? 'bg-white dark:bg-white/10 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 text-[var(--primary-color)]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                                     >
                                         <BuildingOfficeIcon className="w-4 h-4" />
                                         For Buy
@@ -309,7 +308,7 @@ const BookAppointment = () => {
                             </div>
                         ) : (
                             // Single Option State (Rent only or Buy only)
-                            <div className="flex items-center gap-3 mb-2 p-4 bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-3 mb-2 p-4 bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 transition-colors">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center`}
                                     style={listing.listing_type === 'rent'
                                         ? { backgroundColor: 'color-mix(in srgb, var(--primary-color), white 90%)', color: 'var(--primary-color)' }
@@ -318,8 +317,8 @@ const BookAppointment = () => {
                                     {listing.listing_type === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                 </div>
                                 <div>
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Viewing Type</div>
-                                    <div className="font-bold text-gray-900 text-sm">
+                                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Viewing Type</div>
+                                    <div className="font-bold text-gray-900 dark:text-white text-sm">
                                         {listing.listing_type === 'rent' ? 'Property for Rent' : 'Property for Sale'}
                                     </div>
                                 </div>
@@ -327,18 +326,18 @@ const BookAppointment = () => {
                         )}
 
                         {/* 2. Date & Time Selection */}
-                        <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Select Date & Time</h3>
+                        <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
+                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">Select Date & Time</h3>
 
                             <div className="flex flex-col md:flex-row gap-8">
                                 {/* Calendar Side */}
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-4">
-                                        <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-gray-100 rounded-full"><ChevronDownIcon className="w-5 h-5 rotate-90 text-gray-400" /></button>
-                                        <h3 className="font-bold text-gray-800 uppercase tracking-widest text-sm">
+                                        <button onClick={() => changeMonth(-1)} className="p-1.5 bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all rounded-full"><ChevronDownIcon className="w-5 h-5 rotate-90 text-gray-400 dark:text-white" /></button>
+                                        <h3 className="font-bold text-gray-800 dark:text-white uppercase tracking-widest text-sm">
                                             {monthYear}
                                         </h3>
-                                        <button onClick={() => changeMonth(1)} className="p-1 hover:bg-gray-100 rounded-full"><ChevronDownIcon className="w-5 h-5 -rotate-90 text-gray-400" /></button>
+                                        <button onClick={() => changeMonth(1)} className="p-1.5 bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all rounded-full"><ChevronDownIcon className="w-5 h-5 -rotate-90 text-gray-400 dark:text-white" /></button>
                                     </div>
 
                                     <div className="grid grid-cols-7 gap-1 text-center mb-2">
@@ -381,8 +380,8 @@ const BookAppointment = () => {
                                                         ${isSelected
                                                             ? 'text-white shadow-lg bg-primary-500'
                                                             : isDisabled
-                                                                ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                                                                : 'text-gray-700 hover:bg-[var(--primary-color-light)] hover:text-[var(--primary-color)]'}
+                                                                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed bg-gray-50 dark:bg-white/5'
+                                                                : 'text-gray-700 dark:text-white hover:bg-[var(--primary-color-light)] dark:hover:bg-white/20 hover:text-[var(--primary-color)]'}
                                                     `}
                                                     style={isSelected ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
@@ -395,7 +394,7 @@ const BookAppointment = () => {
                                 </div>
 
                                 {/* Divider */}
-                                <div className="hidden md:block w-px bg-gray-100 min-h-full"></div>
+                                <div className="hidden md:block w-px bg-gray-100 dark:bg-white/10 min-h-full"></div>
 
                                 {/* Time Slots Side */}
                                 <div className="flex-1">
@@ -414,14 +413,14 @@ const BookAppointment = () => {
                                                     key={time}
                                                     disabled={(!isAvailable && !isLocked) || isLocked || fetchingSlots}
                                                     onClick={() => handleTimeSelect(time)}
-                                                    className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all flex flex-col items-center justify-center
+                                                    className={`py-2 px-3 rounded-full text-sm font-semibold border transition-all flex flex-col items-center justify-center
                                                         ${form.preferred_time === time
-                                                            ? 'text-white border-transparent'
+                                                            ? 'bg-[var(--primary-color)] text-white border-transparent'
                                                             : isLocked
-                                                                ? 'bg-red-50 text-red-500 border-red-200 cursor-not-allowed opacity-70'
+                                                                ? 'bg-red-50 dark:bg-red-500/10 text-red-500 border-red-200 dark:border-red-500/20 cursor-not-allowed opacity-70'
                                                                 : !isAvailable && !fetchingSlots
-                                                                    ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
-                                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]'}`}
+                                                                    ? 'bg-gray-50 dark:bg-white/5 text-gray-300 dark:text-gray-600 border-gray-100 dark:border-white/5 cursor-not-allowed'
+                                                                    : 'bg-transparent dark:bg-white/10 text-gray-600 dark:text-white border-gray-200 dark:border-white/10 hover:border-[var(--primary-color)] hover:bg-gray-50 dark:hover:bg-white/20 hover:text-[var(--primary-color)]'}`}
                                                     style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
                                                     <span>{time}</span>
@@ -443,14 +442,15 @@ const BookAppointment = () => {
                                                     key={time}
                                                     disabled={(!isAvailable && !isLocked) || isLocked || fetchingSlots}
                                                     onClick={() => handleTimeSelect(time)}
-                                                    className={`py-2 px-3 rounded-[var(--btn-radius)] text-sm font-semibold border transition-all flex flex-col items-center justify-center
+                                                    className={`py-2 px-3 rounded-full text-sm font-semibold border transition-all flex flex-col items-center justify-center
                                                         ${form.preferred_time === time
-                                                            ? 'bg-[var(--primary-color)] text-white border-primary-600 shadow-md shadow-[var(--primary-color-light)]'
+                                                            ? 'bg-[var(--primary-color)] text-white border-transparent'
                                                             : isLocked
-                                                                ? 'bg-red-50 text-red-500 border-red-200 cursor-not-allowed opacity-70'
+                                                                ? 'bg-red-50 dark:bg-red-500/10 text-red-500 border-red-200 dark:border-red-500/20 cursor-not-allowed opacity-70'
                                                                 : !isAvailable && !fetchingSlots
-                                                                    ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
-                                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-[var(--primary-color)]'}`}
+                                                                    ? 'bg-gray-50 dark:bg-white/5 text-gray-300 dark:text-gray-600 border-gray-100 dark:border-white/5 cursor-not-allowed'
+                                                                    : 'bg-transparent dark:bg-white/10 text-gray-600 dark:text-white border-gray-200 dark:border-white/10 hover:border-[var(--primary-color)] hover:bg-gray-50 dark:hover:bg-white/20 hover:text-[var(--primary-color)]'}`}
+                                                    style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
                                                     <span>{time}</span>
                                                     {isLocked && <span className="text-[10px] font-bold mt-0.5">Unavailable</span>}
@@ -465,51 +465,51 @@ const BookAppointment = () => {
                         </div>
 
                         {/* 3. User Details Form */}
-                        <div className="bg-white rounded-[var(--btn-radius)] shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Your Details</h3>
+                        <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
+                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">Your Details</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Full Name</label>
                                     <input
                                         type="text"
                                         value={form.full_name}
                                         onChange={e => setForm({ ...form, full_name: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border-transparent focus:bg-white focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 placeholder-gray-400"
+                                        className="w-full px-5 py-3.5 rounded-full bg-gray-50 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
                                         placeholder="John Doe"
                                         autoComplete="name"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Phone</label>
                                         <input
                                             type="tel"
                                             value={form.phone}
                                             onChange={e => setForm({ ...form, phone: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.phone ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-[var(--primary-color)]'}`}
+                                            className={`w-full px-5 py-3.5 rounded-full bg-gray-50 dark:bg-white/5 border transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:bg-white dark:focus:bg-white/10 focus:ring-0 ${errors.phone ? 'border-red-300 bg-red-50 dark:bg-red-500/10' : 'border-transparent focus:border-[var(--primary-color)]'}`}
                                             placeholder="+66..."
                                             autoComplete="tel"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Email</label>
                                         <input
                                             type="email"
                                             value={form.email}
                                             onChange={e => setForm({ ...form, email: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border transition-all font-semibold text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-0 ${errors.email ? 'border-red-300 bg-red-50' : 'border-transparent focus:border-[var(--primary-color)]'}`}
+                                            className={`w-full px-5 py-3.5 rounded-full bg-gray-50 dark:bg-white/5 border transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:bg-white dark:focus:bg-white/10 focus:ring-0 ${errors.email ? 'border-red-300 bg-red-50 dark:bg-red-500/10' : 'border-transparent focus:border-[var(--primary-color)]'}`}
                                             placeholder="john@example.com"
                                             autoComplete="email"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Message (Optional)</label>
+                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Message (Optional)</label>
                                     <textarea
                                         rows={3}
                                         value={form.message}
                                         onChange={e => setForm({ ...form, message: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-[var(--btn-radius)] bg-gray-50 border-transparent focus:bg-white focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 placeholder-gray-400"
+                                        className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
                                         placeholder="Any special requests?"
                                     />
                                 </div>
@@ -526,7 +526,7 @@ const BookAppointment = () => {
                                     onClick={handleSubmit}
                                     isLoading={submitting}
                                     variant="primary"
-                                    className="w-full font-bold shadow-lg"
+                                    className="w-full font-bold shadow-lg rounded-full py-4 text-base"
                                     style={{ boxShadow: '0 10px 20px -10px var(--primary-color)' }}
                                 >
                                     Confirm Appointment
@@ -540,7 +540,7 @@ const BookAppointment = () => {
                     <div className="lg:col-span-1 space-y-6 sticky top-6">
 
                         {/* 1. Property Info Card */}
-                        <div className="bg-white rounded-[var(--btn-radius)] shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden">
+                        <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-xl shadow-gray-200 dark:shadow-none border border-gray-100 dark:border-white/5 overflow-hidden transition-all">
                             <div className="h-48 bg-gray-100 relative group z-0">
                                 {listing.latitude && listing.longitude ? (
                                     <GoogleMapComponent
@@ -576,8 +576,8 @@ const BookAppointment = () => {
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
-                                        <h2 className="font-bold text-lg text-gray-900 leading-tight mb-1">{listing.district}</h2>
-                                        <p className="text-gray-500 text-sm">{listing.province}</p>
+                                        <h2 className="font-bold text-lg text-gray-900 dark:text-white leading-tight mb-1">{listing.district}</h2>
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm">{listing.province}</p>
                                     </div>
                                     <div className="px-2 py-1 bg-secondary-500 text-white text-xs font-bold rounded shadow-sm flex items-center gap-1">
                                         <StarIcon className="w-3 h-3" />
@@ -585,18 +585,18 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
 
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
+                                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 leading-relaxed line-clamp-2">
                                     {listing.title}
                                 </p>
 
-                                <div className="flex items-center text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded w-fit">
+                                <div className="flex items-center text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-full w-fit">
                                     ID: {listing.id?.slice(0, 8).toUpperCase()}
                                 </div>
                             </div>
                         </div>
 
-                        {/* 2. Real-time Selection Summary (REDESIGNED V2 - Flat & Cool) */}
-                        <div className="bg-white shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden relative ring-1 ring-gray-950/5" style={{ borderRadius: 'var(--btn-radius)' }}>
+                        {/* 2. Real-time Selection Summary (REDESIGNED V3 - Dark Mode Premium) */}
+                        <div className="bg-white dark:bg-dashboard-dark/40 shadow-xl shadow-gray-200 dark:shadow-none border border-gray-100 dark:border-white/5 overflow-hidden relative ring-1 ring-gray-950/5 rounded-3xl transition-all">
                             {/* Header - Sleek Dark Blue */}
                             <div className="bg-slate-900 p-6 text-white relative overflow-hidden">
                                 {/* Abstract Geometric Pattern */}
@@ -613,7 +613,7 @@ const BookAppointment = () => {
                                 </h3>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="w-14 h-14 rounded-[var(--btn-radius)] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md relative">
+                                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center backdrop-blur-md relative">
                                         {timeLeft && (
                                             <div className="absolute -top-1 -right-1 bg-rose-500 text-[10px] text-white font-black px-1.5 py-0.5 rounded-full animate-pulse z-10 shadow-sm border border-rose-400">
                                                 {timeLeft}
@@ -644,18 +644,18 @@ const BookAppointment = () => {
                             </div>
 
                             {/* Body - Clean White with Dividers */}
-                            <div className="bg-white p-6">
+                            <div className="bg-transparent p-6">
                                 <div className="space-y-5">
                                     {/* Time Row */}
                                     <div className="flex items-center justify-between group">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-[var(--btn-radius)] flex items-center justify-center transition-colors ${form.preferred_time ? 'bg-[var(--primary-color-light)]' : 'bg-gray-50 text-gray-300'}`}
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${form.preferred_time ? 'bg-[var(--primary-color-light)]' : 'bg-gray-50 dark:bg-white/5 text-gray-300 dark:text-gray-600'}`}
                                                 style={form.preferred_time ? { color: 'var(--primary-color)' } : {}}>
                                                 <ClockIcon className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Time</div>
-                                                <div className={`font-bold font-mono text-sm ${form.preferred_time ? 'text-gray-900' : 'text-gray-300'}`}>
+                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Time</div>
+                                                <div className={`font-bold font-mono text-sm ${form.preferred_time ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'}`}>
                                                     {form.preferred_time || '--:--'}
                                                 </div>
                                             </div>
@@ -666,17 +666,17 @@ const BookAppointment = () => {
                                     </div>
 
                                     {/* Divider */}
-                                    <div className="h-px bg-gray-100 w-full" />
+                                    <div className="h-px bg-gray-100 dark:bg-white/5 w-full" />
 
                                     {/* Purpose Row */}
                                     <div className="flex items-center justify-between group">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-[var(--btn-radius)] bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                                                 {form.purpose === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Type</div>
-                                                <div className="font-bold text-gray-900 text-sm">
+                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Type</div>
+                                                <div className="font-bold text-gray-900 dark:text-white text-sm">
                                                     {form.purpose === 'rent' ? 'Rental Viewing' : 'Purchase Viewing'}
                                                 </div>
                                             </div>
@@ -686,14 +686,14 @@ const BookAppointment = () => {
                                 </div>
 
                                 {/* Status Footer */}
-                                <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
+                                <div className="mt-8 pt-6 border-t border-dashed border-gray-200 dark:border-white/5">
                                     {(!form.preferred_date || !form.preferred_time) ? (
-                                        <div className="flex items-center justify-center gap-2 text-gray-400 bg-gray-50 py-3 rounded-[var(--btn-radius)] border border-gray-100 text-xs font-bold uppercase tracking-wide">
-                                            <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                                        <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 py-3 rounded-full border border-gray-100 dark:border-white/5 text-xs font-bold uppercase tracking-wide">
+                                            <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>
                                             Pending Selection
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-center gap-2 text-emerald-700 bg-emerald-50/50 py-3 rounded-[var(--btn-radius)] border border-emerald-100/50 text-xs font-bold uppercase tracking-wide animate-in fade-in">
+                                        <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10 py-3 rounded-full border border-emerald-100/50 dark:border-emerald-500/20 text-xs font-bold uppercase tracking-wide animate-in fade-in">
                                             <SolidCheckCircleIcon className="w-4 h-4" />
                                             Ready to Book
                                         </div>

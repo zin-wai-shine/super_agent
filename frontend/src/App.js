@@ -103,9 +103,12 @@ const GuestRoute = ({ children }) => {
     return children;
 };
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
     return (
         <WebSocketProvider>
+            <Toaster position="top-center" reverseOrder={false} />
             <AppRoutes />
         </WebSocketProvider>
     );

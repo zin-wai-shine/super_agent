@@ -69,17 +69,17 @@ const HomePage = () => {
     ];
 
     return (
-        <div className="bg-white selection:bg-primary-100 selection:text-primary-900">
+        <div className="bg-white dark:bg-dashboard-dark selection:bg-primary-100 selection:text-primary-900 transition-colors duration-500">
             {/* Hero Section */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-32">
                 {/* Background Decoration - Clear Style */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-0 w-full h-full bg-white"></div>
+                    <div className="absolute top-0 left-0 w-full h-full bg-white dark:bg-dashboard-dark transition-colors duration-500"></div>
                     {/* Perspective Dot Grid */}
                     <div
-                        className="absolute inset-0 z-0 opacity-[0.15]"
+                        className="absolute inset-0 z-0 opacity-[0.15] text-black dark:text-white"
                         style={{
-                            backgroundImage: 'radial-gradient(circle, #000 0.5px, transparent 0.5px)',
+                            backgroundImage: `radial-gradient(circle, currentColor 0.5px, transparent 0.5px)`,
                             backgroundSize: '32px 32px',
                             maskImage: 'radial-gradient(circle at center, black, transparent 80%)',
                             WebkitMaskImage: 'radial-gradient(circle at center, black, transparent 80%)',
@@ -92,7 +92,7 @@ const HomePage = () => {
                     {/* Badge */}
                     {isMainDomain && (
                         <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="inline-flex items-center gap-3 bg-gray-50/50 border border-gray-100 px-4 py-1.5 rounded-full text-[13px] font-medium text-gray-600 mb-12 backdrop-blur-sm">
+                            <div className="inline-flex items-center gap-3 bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 px-4 py-1.5 rounded-full text-[13px] font-medium text-gray-600 dark:text-gray-400 mb-12 backdrop-blur-sm">
                                 <Logo className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
                                 <span className="tracking-tight">
                                     Google Antigravity
@@ -101,7 +101,7 @@ const HomePage = () => {
                         </div>
                     )}
 
-                    <h1 className="text-4xl md:text-6xl font-normal text-gray-950 mb-6 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
+                    <h1 className="text-4xl md:text-6xl font-normal text-gray-950 dark:text-white mb-6 leading-[1.1] tracking-[-0.03em] animate-fade-up max-w-5xl mx-auto" style={{ animationDelay: '0.2s' }}>
                         {isMainDomain ? (
                             <>
                                 Experience liftoff with the <br className="hidden md:block" />
@@ -110,7 +110,7 @@ const HomePage = () => {
                         ) : (
                             <>
                                 Find Your Dream Home <br className="hidden md:block" />
-                                With <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-primary-600 font-normal inline-block w-fit pr-2">{agent?.name || 'Super Real Estate'}</span>
+                                With <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-950 dark:from-white to-primary-600 font-normal inline-block w-fit pr-2">{agent?.name || 'Super Real Estate'}</span>
                             </>
                         )}
                     </h1>
@@ -119,11 +119,11 @@ const HomePage = () => {
                         <HeroFilter />
                     </div>
 
-                    <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-16 leading-relaxed animate-fade-up font-normal" style={{ animationDelay: '0.3s' }}>
+                    <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-16 leading-relaxed animate-fade-up font-normal" style={{ animationDelay: '0.3s' }}>
                         {isMainDomain ? (
                             <>
                                 Empowering agents with state-of-the-art property search portals.
-                                Join <span className="text-gray-900 font-medium">500+ professionals</span> building their legacy.
+                                join <span className="text-gray-900 dark:text-white font-medium">500+ professionals</span> building their legacy.
                             </>
                         ) : (
                             <>
@@ -135,16 +135,16 @@ const HomePage = () => {
             </section>
 
             {/* Feature Section With Video */}
-            <section className="relative w-full bg-white overflow-hidden">
+            <section className="relative w-full bg-white dark:bg-dashboard-dark overflow-hidden">
                 <div className="flex flex-col lg:flex-row min-h-[600px] lg:h-[800px]">
                     {/* Left Text */}
-                    <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 sm:p-16 lg:px-24 xl:px-32 bg-white z-10 items-start">
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 sm:p-16 lg:px-24 xl:px-32 bg-white dark:bg-dashboard-dark z-10 items-start">
                         <div className="max-w-[600px]">
-                            <h2 className="text-[32px] md:text-[40px] lg:text-[44px] leading-[1.1] tracking-[-0.02em] font-medium text-gray-950 mb-6">
+                            <h2 className="text-[32px] md:text-[40px] lg:text-[44px] leading-[1.1] tracking-[-0.02em] font-medium text-gray-950 dark:text-white mb-6">
                                 Higher-level<br />
                                 Abstractions
                             </h2>
-                            <p className="text-[16px] md:text-[18px] lg:text-[20px] text-gray-600 leading-[1.6] font-normal">
+                            <p className="text-[16px] md:text-[18px] lg:text-[20px] text-gray-600 dark:text-gray-400 leading-[1.6] font-normal">
                                 A more intuitive task-based approach to monitoring agent activity, presenting you with essential artifacts and verification results to build trust.
                             </p>
                         </div>
@@ -167,27 +167,27 @@ const HomePage = () => {
 
             {/* Vision & Mission Section (Agent Only) */}
             {!isMainDomain && (agent?.vision || agent?.mission) && (
-                <section className="py-24 bg-gray-50/50 relative overflow-hidden">
+                <section className="py-24 bg-gray-50/50 dark:bg-white/5 relative overflow-hidden">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                             {agent?.vision && (
                                 <div className="animate-fade-up">
-                                    <h2 className="text-3xl font-black text-gray-900 mb-6 tracking-tight flex items-center gap-3">
+                                    <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6 tracking-tight flex items-center gap-3">
                                         <div className="w-1.5 h-8 bg-primary-600 rounded-full"></div>
                                         Our Vision
                                     </h2>
-                                    <p className="text-xl text-gray-600 leading-relaxed italic">
+                                    <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed italic">
                                         "{agent.vision}"
                                     </p>
                                 </div>
                             )}
                             {agent?.mission && (
                                 <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
-                                    <h2 className="text-3xl font-black text-gray-900 mb-6 tracking-tight flex items-center gap-3">
+                                    <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-6 tracking-tight flex items-center gap-3">
                                         <div className="w-1.5 h-8 bg-secondary-600 rounded-full"></div>
                                         Our Mission
                                     </h2>
-                                    <p className="text-xl text-gray-600 leading-relaxed font-medium">
+                                    <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
                                         {agent.mission}
                                     </p>
                                 </div>

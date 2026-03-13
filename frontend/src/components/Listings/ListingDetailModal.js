@@ -26,9 +26,9 @@ const ListingDetailModal = () => {
     const [headerLeading, setHeaderLeading] = useState(
         <button
             onClick={handleClose}
-            className="hidden lg:flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all p-2 rounded-full hover:bg-gray-100 active:scale-95 -ml-2"
+            className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
         >
-            <ArrowLeftIcon className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
         </button>
     );
 
@@ -78,13 +78,13 @@ const ListingDetailModal = () => {
                 headerLeading={headerLeading}
                 centerTitle={true}
             >
-                <div className="h-full relative bg-white">
+                <div className="h-full relative bg-white dark:bg-dashboard-dark">
                     <div className="h-full overflow-y-auto modal-scrollable">
                         <Suspense fallback={
-                            <div className="h-full flex items-center justify-center bg-gray-50">
+                            <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark">
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
-                                    <p className="text-gray-400 font-bold text-sm">Loading property details...</p>
+                                    <p className="text-gray-400 dark:text-gray-500 font-bold text-sm">Loading property details...</p>
                                 </div>
                             </div>
                         }>

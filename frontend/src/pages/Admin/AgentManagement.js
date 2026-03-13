@@ -29,7 +29,8 @@ import {
     ChevronDoubleRightIcon,
     ClipboardDocumentIcon,
     ArrowPathIcon,
-    InboxIcon
+    InboxIcon,
+    UsersIcon,
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 
@@ -265,8 +266,8 @@ const AgentManagement = () => {
                 header: 'Agent',
                 cell: ({ row }) => (
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-primary-700 font-bold">{row.original.name?.[0]?.toUpperCase()}</span>
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary-700 dark:text-primary-400 font-bold">{row.original.name?.[0]?.toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center space-x-2">
@@ -309,8 +310,8 @@ const AgentManagement = () => {
                                 <LinkIcon className="w-3 h-3" />
                             </a>
                             <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${agent.domain_type === 'custom'
-                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400'
+                                : 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
                                 }`}>
                                 {agent.domain_type === 'custom' ? '🔗 Custom' : '🌐 Subdomain'}
                             </span>
@@ -425,7 +426,12 @@ const AgentManagement = () => {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agent Management</h1>
+                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    Agent Management
+                </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {agents.length} total agents
                 </p>
@@ -508,7 +514,7 @@ const AgentManagement = () => {
                     {statusFilter !== 'all' && (
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors -ml-1"
                             title="Reset Status"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -545,7 +551,7 @@ const AgentManagement = () => {
                     {planFilter !== 'all' && (
                         <button
                             onClick={() => setPlanFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors -ml-1"
                             title="Reset Plan"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -608,7 +614,7 @@ const AgentManagement = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -703,7 +709,7 @@ const AgentManagement = () => {
                 </div>
 
                 {/* RIGHT: Search & Add Button */}
-                <div className="flex items-center gap-3 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     {/* Search - Compact */}
                     <div className="relative w-full lg:w-56 h-[34px]">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -712,13 +718,13 @@ const AgentManagement = () => {
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search..."
-                            className="input-field pl-9 h-[34px] text-[12px] flex items-center"
+                            className="input-field pl-9 h-[34px] min-h-0 text-[12px]"
                         />
                     </div>
 
                     <button
                         onClick={() => openModal()}
-                        className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-3 h-[34px] text-[12px] shadow-sm"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-3 h-[34px] text-[12px]"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Agent</span>
@@ -967,7 +973,7 @@ const AgentManagement = () => {
                                     <label className="input-label">Domain Type *</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-600/10'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
                                             <input

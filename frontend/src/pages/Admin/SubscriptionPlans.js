@@ -237,12 +237,12 @@ const SubscriptionPlans = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage plans and pricing for your agents</p>
                 </div>
-                <button onClick={() => openModal()} className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap shadow-sm h-[34px] text-[12px] px-3">
+                <button onClick={() => openModal()} className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap h-[34px] text-[12px] px-4 rounded-[3px]">
                     <PlusIcon className="w-4 h-4" />
                     <span>Add Plan</span>
                 </button>

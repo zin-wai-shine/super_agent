@@ -622,7 +622,7 @@ const ProjectsPage = () => {
                 {/* Selected filters — chips with × to remove */}
                 {activeFiltersList.length > 0 && (
                     <div className="space-y-2">
-                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900">Selected</h2>
+                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900 dark:text-white">Selected</h2>
                         <div className="flex flex-wrap gap-2">
                             {activeFiltersList.map(({ label, key }) => {
                                 const isExiting = exitingChipKeys.has(key);
@@ -741,14 +741,14 @@ const ProjectsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white border border-gray-200 rounded-full transition-all group hover:border-gray-400"
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
-                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700">Search transit station...</span>
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+                                    <span className="text-[13px] font-normal text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
                                 </div>
-                                <div className="bg-white border border-gray-800 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
-                                    <MapIcon className="w-5 h-5 text-gray-800" strokeWidth={2} />
+                                <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                                 </div>
                             </button>
 
@@ -763,13 +763,13 @@ const ProjectsPage = () => {
                                             const newIds = currentIds.filter(i => i !== id);
                                             handleFilterChange('station_id', newIds.join(','));
                                         }}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-800 hover:border-gray-600 rounded-full transition-colors group"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 hover:border-gray-600 dark:hover:border-white/50 rounded-full transition-colors group"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-gray-800" />
-                                        <span className="text-[13px] font-normal text-gray-900">
+                                        <div className="w-2 h-2 rounded-full bg-gray-800 dark:bg-white" />
+                                        <span className="text-[13px] font-normal text-gray-900 dark:text-white">
                                             {station ? station.label : id}
                                         </span>
-                                        <XMarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-800" strokeWidth={2.5} />
+                                        <XMarkIcon className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white" strokeWidth={2.5} />
                                     </button>
                                 );
                             })}
@@ -822,7 +822,7 @@ const ProjectsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col font-inter">
+        <div className="min-h-screen bg-white dark:bg-dashboard-dark flex flex-col font-inter">
             {/* Map Transition Loading Overlay */}
             {isMapTransitioning && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-300 animate-in fade-in">
@@ -875,13 +875,13 @@ const ProjectsPage = () => {
                         aria-hidden
                     />
                     <aside
-                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
+                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white dark:bg-dashboard-card shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
                         role="dialog"
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card">
+                            <h3 className="text-[15px] md:text-[13px] font-bold text-gray-900 dark:text-white">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -897,7 +897,7 @@ const ProjectsPage = () => {
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
                         <div
-                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 dark:border-white/10 bg-white md:bg-white dark:bg-dashboard-card md:dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
                             style={{
                                 paddingTop: 'max(1.25rem, env(safe-area-inset-top, 0px))',
                                 paddingBottom: 'max(2rem, calc(1.75rem + env(safe-area-inset-bottom, 0px)))',
@@ -929,26 +929,26 @@ const ProjectsPage = () => {
 
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className="w-full bg-white min-h-screen relative">
+            <div className="w-full bg-white dark:bg-dashboard-dark min-h-screen relative">
                 {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
-                <div className={`lg:hidden sticky top-0 z-[100] bg-white py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-card py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white border border-gray-200">
-                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                             <input
                                 type="search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                                 placeholder="Search projects & filters"
-                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
+                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
                                 aria-label="Search projects"
                             />
                         </div>
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all bg-white shadow-sm border-none`}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all bg-white dark:bg-white/5 shadow-sm border-none`}
                             aria-label="Open filters"
                         >
                             <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -992,13 +992,13 @@ const ProjectsPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className={`lg:col-span-3 hidden lg:block transition-all duration-500 ${isGoogleMapOpen ? '!hidden' : ''}`}>
-                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[112px] lg:top-[128px] h-[calc(100vh-112px)] lg:h-[calc(100vh-128px)]' : 'top-[48px] h-[calc(100vh-48px)]'} flex flex-col bg-white border-r border-gray-100/50`}>
+                            <div className={`sticky transition-all duration-500 ease-in-out ${navVisible ? 'top-[112px] lg:top-[128px] h-[calc(100vh-112px)] lg:h-[calc(100vh-128px)]' : 'top-[48px] h-[calc(100vh-48px)]'} flex flex-col bg-white dark:bg-dashboard-dark border-r border-gray-100/50 dark:border-white/10`}>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar-hover scroll-smooth pr-4 overscroll-contain group">
                                     {renderFilterContent()}
                                 </div>
 
                                 {/* Desktop Sidebar Fixed Footer */}
-                                <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
+                                <div className="flex-shrink-0 p-6 border-t border-gray-50 dark:border-white/10 bg-white dark:bg-dashboard-dark flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
                                         onClick={applyFilters}
                                         className="px-6 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
@@ -1032,7 +1032,7 @@ const ProjectsPage = () => {
                                         {initialLoading ? (
                                             <div className={`h-7 w-32 bg-gray-100 rounded animate-pulse ${isExiting ? 'animate-fadeOutDown' : ''}`} />
                                         ) : (projects || []).length > 0 ? (
-                                            <h2 className="text-[15px] font-bold text-gray-900 animate-fadeInUp">
+                                            <h2 className="text-[15px] font-bold text-gray-900 dark:text-white animate-fadeInUp">
                                                 {total} {total === 1 ? 'project' : 'projects'}
                                             </h2>
                                         ) : null}
@@ -1059,11 +1059,11 @@ const ProjectsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 border border-dashed border-gray-200 rounded-[24px] animate-fadeInUp text-center flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
-                                            <div className="w-16 h-16 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center mb-5">
+                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fadeInUp text-center flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
+                                            <div className="w-16 h-16 bg-white dark:bg-dashboard-card shadow-sm border border-gray-100 dark:border-white/10 rounded-full flex items-center justify-center mb-5">
                                                 <SparklesIcon className="w-8 h-8 text-gray-400" />
                                             </div>
-                                            <h3 className="text-[17px] font-bold text-gray-900">No projects found</h3>
+                                            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">No projects found</h3>
                                             <p className="text-[14px] text-gray-500 mt-1 max-w-[260px] text-center leading-relaxed">
                                                 Try adjusting your search or filters to discover more matching results.
                                             </p>
@@ -1127,7 +1127,7 @@ const ProjectsPage = () => {
             <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] safe-area-bottom pointer-events-none flex items-center gap-3 shadow-2xl rounded-full">
                 <button
                     onClick={() => toggleMapView()}
-                    className="pointer-events-auto flex items-center justify-center gap-2 bg-gray-900 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700"
+                    className="pointer-events-auto flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all border border-gray-700 dark:border-white/20"
                 >
                     {isGoogleMapOpen ? <ListBulletIcon className="w-5 h-5 stroke-[2]" /> : <MapIcon className="w-5 h-5 stroke-[2]" />}
                     <span className="text-sm font-bold tracking-wide">{isGoogleMapOpen ? 'List' : 'Map'}</span>
@@ -1135,9 +1135,9 @@ const ProjectsPage = () => {
                 <div className="w-px h-6 bg-gray-700 pointer-events-none" />
                 <button
                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                    className="pointer-events-auto relative flex items-center justify-center gap-2 bg-white text-gray-900 px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all outline-none"
+                    className="pointer-events-auto relative flex items-center justify-center gap-2 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl active:scale-95 transition-all outline-none border border-transparent dark:border-white/10"
                 >
-                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-900 stroke-[2]" />
+                    <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-900 dark:text-white stroke-[2]" />
                     <span className="text-sm font-bold tracking-wide">Filters</span>
                     {activeFiltersList.length > 0 && (
                         <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[11px] font-semibold border-2 border-white shadow-sm leading-none">

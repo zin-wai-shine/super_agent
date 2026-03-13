@@ -160,6 +160,6 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 	if state == "localhost" || state == "localhost:3000" || state == "127.0.0.1" {
 		scheme = "http"
 	}
-	frontendURL := fmt.Sprintf("%s://%s/auth/google/callback?access_token=%s&refresh_token=%s", scheme, state, accessToken, refreshToken)
+	frontendURL := fmt.Sprintf("%s://%s/auth/google/callback?access_token=%s&refresh_token=%s&picture=%s", scheme, state, accessToken, refreshToken, googleUser.Picture)
 	c.Redirect(http.StatusTemporaryRedirect, frontendURL)
 }

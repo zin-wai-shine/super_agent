@@ -72,7 +72,7 @@ const MyBookings = () => {
     });
 
     return (
-        <div className="min-h-screen pt-10 pb-20 bg-white">
+        <div className="pt-10 pb-24 lg:pb-20 bg-white dark:bg-dashboard-dark min-h-screen">
             {/* Filter bar (desktop only): same as Favorites page; search/filters navigate to list page */}
             {filterBarSlot && createPortal(
                 <div className="hidden lg:block w-full">
@@ -104,10 +104,10 @@ const MyBookings = () => {
                 {/* Header — same design/size as Favorites, left-aligned */}
                 <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20 px-0">
                     <div>
-                        <h1 className="text-[24px] font-semibold text-slate-900 tracking-tight leading-tight">
+                        <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight leading-tight">
                             My Viewing Requests
                         </h1>
-                        <p className="text-slate-500 mt-2 font-medium text-lg max-w-md">
+                        <p className="text-slate-500 dark:text-gray-400 mt-2 font-medium text-lg max-w-md">
                             View and manage your property viewing requests.
                         </p>
                     </div>
@@ -129,8 +129,8 @@ const MyBookings = () => {
                                     aria-selected={filter === value}
                                     onClick={() => setFilter(value)}
                                     className={`min-h-[44px] px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-[0.98] ${filter === value
-                                        ? 'bg-slate-900 text-white shadow-md'
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                                        ? 'bg-slate-900 text-white shadow-md dark:bg-white dark:text-dashboard-dark'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                                         }`}
                                 >
                                     {label}
@@ -186,19 +186,19 @@ const MyBookings = () => {
                             <div className="mb-6 relative z-10 transition-transform duration-500">
                                 <CalendarIcon className="w-14 h-14 text-slate-400" />
                             </div>
-                            <h3 className="text-2xl font-semibold text-slate-900 mb-3 relative z-10">No bookings yet</h3>
-                            <p className="text-slate-500 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10">
+                            <h3 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white mb-3 relative z-10">No viewings yet</h3>
+                            <p className="text-slate-500 dark:text-gray-400 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10 px-4">
                                 {filter === 'all'
                                     ? "Excited to find your new home? Your scheduled viewings will appear right here."
-                                    : `You don't have any ${filter} bookings at the moment.`}
+                                    : `You don't have any ${filter} viewings at the moment.`}
                             </p>
                             <Button
                                 variant="ghost"
-                                className="!p-0 !bg-transparent !border-none !shadow-none !text-slate-600 hover:!text-primary-600 !font-black transition-all duration-300 group inline-flex items-center !outline-none !ring-0 !ring-offset-0 w-auto"
+                                className="!p-0 !bg-transparent !border-none !shadow-none !text-slate-600 hover:!text-primary-600 font-semibold transition-all duration-300 group inline-flex items-center !outline-none !ring-0 !ring-offset-0 w-auto"
                                 onClick={() => window.location.href = '/listings'}
                             >
-                                <span className="text-lg">Explore Listings</span>
-                                <ArrowRightIcon className="w-6 h-6 ml-3 transition-transform duration-300 group-hover:translate-x-3" />
+                                <span className="text-base sm:text-lg font-bold text-slate-700 dark:text-gray-300 group-hover:dark:text-white">Explore Listings</span>
+                                <ArrowRightIcon className="w-5 sm:w-6 h-5 sm:h-6 ml-2 sm:ml-3 text-slate-500 transition-transform duration-300 group-hover:translate-x-3" />
                             </Button>
                         </div>
                     ) : (
@@ -211,7 +211,7 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300 overflow-hidden rounded-2xl animate-fadeInUp relative ${isPast ? 'opacity-85' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-2xl animate-fadeInUp relative ${isPast ? 'opacity-85' : ''}`}
                                     >
                                         {/* Status accent bar — left edge */}
                                         <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${appointment.status === 'confirmed' ? 'bg-blue-500' :
@@ -241,7 +241,7 @@ const MyBookings = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
+                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
@@ -253,16 +253,16 @@ const MyBookings = () => {
                                         </div>
 
                                         {/* Date & time — clear, scannable row */}
-                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-4 rounded-b-2xl">
+                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-4 rounded-b-2xl">
                                             <div className="flex items-center gap-2">
                                                 <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <span className="text-sm font-semibold text-slate-800">
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">
                                                     {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <ClockIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <span className="text-sm font-semibold text-slate-800">{appointment.preferred_time}</span>
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">{appointment.preferred_time}</span>
                                             </div>
                                         </div>
                                     </Link>

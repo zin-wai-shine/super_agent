@@ -21,14 +21,7 @@ export const DashboardThemeProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        const root = window.document.documentElement;
-        if (isDarkMode) {
-            root.classList.add('dark');
-            localStorage.setItem('dashboard_theme', 'dark');
-        } else {
-            root.classList.remove('dark');
-            localStorage.setItem('dashboard_theme', 'light');
-        }
+        localStorage.setItem('dashboard_theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
     const toggleTheme = () => {

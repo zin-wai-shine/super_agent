@@ -12,19 +12,19 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
         opacity: isExiting ? 1 : 0,
     };
 
-    const bar = 'bg-gray-100 animate-pulse';
-    const barLight = 'bg-gray-50 animate-pulse';
+    const bar = 'bg-gray-100 dark:bg-white/5 animate-pulse';
+    const barLight = 'bg-gray-50 dark:bg-white/10 animate-pulse';
 
     // Grid card: same structure as ListingCard (aspect-[4/3] image, then title, location, bed/bath, ID, price)
     const renderGridSkeleton = () => (
-        <div className="flex flex-col w-full bg-white rounded-none border-none" style={skeletonStyle}>
+        <div className="flex flex-col w-full bg-white dark:bg-dashboard-dark rounded-none border-none" style={skeletonStyle}>
             {/* Image — same aspect and radius as ListingCard */}
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[23px] mb-0">
                 <div className={`h-full w-full ${bar}`} />
                 <div className="absolute top-3.5 left-3.5">
                     <div className={`h-6 w-16 ${barLight} rounded-full`} />
                 </div>
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 animate-pulse" />
+                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/20 animate-pulse" />
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className={`w-1.5 h-1.5 rounded-full ${barLight}`} />
@@ -58,7 +58,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
                 <div className="absolute top-3 left-3">
                     <div className={`h-6 w-16 ${barLight} rounded-full`} />
                 </div>
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20" />
+                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/20" />
             </div>
             <div className="px-1.5 py-2">
                 <div className={`h-4 w-3/4 ${bar} rounded mb-1`} />
@@ -89,7 +89,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     const renderGroupedSavedCategorySkeleton = () => (
         <div className="flex flex-col gap-2" style={skeletonStyle}>
             {/* Collage Container */}
-            <div className="w-full aspect-square bg-white border border-gray-50 rounded-[20px] overflow-hidden p-1.5 shadow-sm">
+            <div className="w-full aspect-square bg-white dark:bg-dashboard-card border border-gray-50 dark:border-white/5 rounded-[20px] overflow-hidden p-1.5 shadow-sm">
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-[4px] rounded-[14px] overflow-hidden">
                     <div className={`w-full h-full ${bar}`} />
                     <div className={`w-full h-full ${barLight}`} />

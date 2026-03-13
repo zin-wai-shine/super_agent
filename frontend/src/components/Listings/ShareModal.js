@@ -96,11 +96,11 @@ const ShareModal = ({ isOpen, onClose, property }) => {
             size="sm"
         >
             <div className="p-6">
-                <p className="text-sm text-gray-500 mb-6 font-medium">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
                     Share this property with your friends and family.
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 mb-6">
+                <div className="grid grid-cols-1 gap-3 mb-6">
                     {shareLinks.map((link) => (
                         <a
                             key={link.name}
@@ -114,12 +114,12 @@ const ShareModal = ({ isOpen, onClose, property }) => {
                                     window.location.href = link.href;
                                 }
                             }}
-                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
+                            className="flex items-center gap-4 p-2 rounded-full border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group"
                         >
-                            <div className={`${link.color} text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110`}>
+                            <div className={`${link.color} w-10 h-10 flex items-center justify-center text-white rounded-full shadow-sm transition-transform group-hover:scale-105`}>
                                 {link.icon}
                             </div>
-                            <span className="font-semibold text-gray-700">Share on {link.name}</span>
+                            <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">Share on {link.name}</span>
                         </a>
                     ))}
                 </div>
@@ -127,20 +127,20 @@ const ShareModal = ({ isOpen, onClose, property }) => {
 
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-gray-100"></div>
+                        <div className="w-full border-t border-gray-100 dark:border-white/10"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-400 font-medium uppercase tracking-wider text-[10px]">Or copy link</span>
+                        <span className="px-2 bg-white dark:bg-dashboard-card text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider text-[10px]">Or copy link</span>
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="flex-1 truncate text-xs text-gray-500 font-medium px-2">
+                <div className="mt-6 flex items-center gap-2 p-2 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                    <div className="flex-1 truncate text-xs text-gray-500 dark:text-gray-400 font-medium px-4">
                         {url}
                     </div>
                     <button
                         onClick={copyToClipboard}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm border transition-all text-sm font-bold min-w-[100px] justify-center ${copied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-gray-100 hover:bg-gray-100 text-gray-700'}`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-full shadow-sm border transition-all text-sm font-bold min-w-[100px] justify-center ${copied ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-white dark:bg-white/10 border-gray-100 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200'}`}
                     >
                         {copied ? (
                             <>

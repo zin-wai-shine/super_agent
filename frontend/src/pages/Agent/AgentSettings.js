@@ -211,7 +211,7 @@ const AgentSettings = () => {
                                 <button
                                     type="button"
                                     onClick={addSocialLink}
-                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg transition-colors"
+                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -248,7 +248,7 @@ const AgentSettings = () => {
                                         <button
                                             type="button"
                                             onClick={() => removeSocialLink(index)}
-                                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
                                             title="Remove"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +259,7 @@ const AgentSettings = () => {
                                 ))}
 
                                 {socialLinks.length === 0 && (
-                                    <div className="text-center py-10 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
+                                    <div className="text-center py-10 bg-gray-50/50 dark:bg-dashboard-input/50 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-800 italic text-gray-400">
                                         No social links added yet.
                                     </div>
                                 )}
@@ -315,7 +315,7 @@ const AgentSettings = () => {
                         <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
                             <label className="input-label mb-3 block">Price Display Format</label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-gray-800 dark:border-gray-700">
+                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-dashboard-input dark:border-gray-700">
                                     <input
                                         type="radio"
                                         value="full"
@@ -336,7 +336,7 @@ const AgentSettings = () => {
                                     <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${priceFormat === 'full' ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
                                 </label>
 
-                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-gray-800 dark:border-gray-700">
+                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-dashboard-input dark:border-gray-700">
                                     <input
                                         type="radio"
                                         value="short"

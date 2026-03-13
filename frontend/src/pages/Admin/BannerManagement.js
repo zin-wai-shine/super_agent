@@ -28,6 +28,7 @@ import {
     ArrowPathIcon,
     AdjustmentsHorizontalIcon,
     PencilSquareIcon,
+    MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 import {
@@ -482,12 +483,16 @@ const BannerManagement = () => {
         <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Banner Management</h1>
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <MegaphoneIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    Banner Management
+                </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Promote your listings and brand with high-impact graphics.</p>
                 </div>
             </div>
 
-            {/* Toolbar */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
                 {/* LEFT: Page Size */}
                 <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
@@ -573,7 +578,7 @@ const BannerManagement = () => {
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Clear Date Filter"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -625,7 +630,7 @@ const BannerManagement = () => {
                 </div>
 
                 {/* RIGHT: Search & Add Button */}
-                <div className="flex items-center gap-3 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     <div className="relative w-full lg:w-64 h-[34px]">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
@@ -633,12 +638,12 @@ const BannerManagement = () => {
                             value={globalFilter}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search campaigns..."
-                            className="input-field pl-9 h-[38px] text-[12px] flex items-center"
+                            className="input-field pl-9 h-[34px] min-h-0 text-[12px]"
                         />
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] shadow-sm rounded-[3px]"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-[3px]"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Banner</span>

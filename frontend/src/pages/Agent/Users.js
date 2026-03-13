@@ -33,28 +33,42 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import EmptyState from '../../components/Common/EmptyState';
+import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [sorting, setSorting] = useState([]);
-    const [pagination, setPagination] = useState({
+    const [globalFilter, setGlobalFilter] = useSessionState('users_globalFilter', '');
+    const [statusFilter, setStatusFilter] = useSessionState('users_statusFilter', 'all');
+    const [sorting, setSorting] = useSessionState('users_sorting', []);
+    const [pagination, setPagination] = useSessionState('users_pagination', {
         pageIndex: 0,
         pageSize: 10,
     });
 
+    // Use scroll restoration
+    useScrollRestoration('Users', !loading && users.length > 0);
+
     // Date Filter State
-    const [dateRange, setDateRange] = useState([
+    const [dateRange, setDateRange] = useSessionState('users_dateRange', [
         {
-            startDate: startOfDay(new Date()),
-            endDate: endOfDay(new Date()),
+            startDate: startOfDay(new Date()).toISOString(),
+            endDate: endOfDay(new Date()).toISOString(),
             key: 'selection'
         }
     ]);
-    const [datePreset, setDatePreset] = useState('all');
-    const [isDateFiltered, setIsDateFiltered] = useState(false);
+
+    // Helper to get Date objects from possibly stringified state
+    const parsedDateRange = useMemo(() => {
+        return dateRange.map(range => ({
+            ...range,
+            startDate: range.startDate instanceof Date ? range.startDate : new Date(range.startDate),
+            endDate: range.endDate instanceof Date ? range.endDate : new Date(range.endDate)
+        }));
+    }, [dateRange]);
+
+    const [datePreset, setDatePreset] = useSessionState('users_datePreset', 'all');
+    const [isDateFiltered, setIsDateFiltered] = useSessionState('users_isDateFiltered', false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [shownDate, setShownDate] = useState(new Date());
     const datePickerRef = React.useRef(null);
@@ -83,8 +97,8 @@ const Users = () => {
                 break;
             case 'today':
                 setDateRange([{
-                    startDate: startOfDay(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -93,8 +107,8 @@ const Users = () => {
             case 'yesterday':
                 const yesterday = subDays(today, 1);
                 setDateRange([{
-                    startDate: startOfDay(yesterday),
-                    endDate: endOfDay(yesterday),
+                    startDate: startOfDay(yesterday).toISOString(),
+                    endDate: endOfDay(yesterday).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -102,8 +116,8 @@ const Users = () => {
                 break;
             case 'last7':
                 setDateRange([{
-                    startDate: startOfDay(subDays(today, 6)),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(subDays(today, 6)).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -111,8 +125,8 @@ const Users = () => {
                 break;
             case 'last30':
                 setDateRange([{
-                    startDate: startOfDay(subDays(today, 29)),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(subDays(today, 29)).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -120,8 +134,8 @@ const Users = () => {
                 break;
             case 'thisMonth':
                 setDateRange([{
-                    startDate: startOfMonth(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfMonth(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -184,14 +198,14 @@ const Users = () => {
             });
         }
 
-        if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
+        if (isDateFiltered && parsedDateRange[0].startDate && parsedDateRange[0].endDate) {
             data = data.filter(u => {
                 if (!u.created_at) return false;
                 try {
                     const date = new Date(u.created_at);
                     return isWithinInterval(date, {
-                        start: startOfDay(dateRange[0].startDate),
-                        end: endOfDay(dateRange[0].endDate)
+                        start: startOfDay(parsedDateRange[0].startDate),
+                        end: endOfDay(parsedDateRange[0].endDate)
                     });
                 } catch (e) {
                     return false;
@@ -210,7 +224,7 @@ const Users = () => {
                 const user = row.original;
                 return (
                     <div className="flex items-center space-x-3 py-1">
-                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 bg-primary-100 dark:bg-blue-600/10 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-blue-700 dark:text-blue-400 font-bold text-xs">
                                 {user.first_name?.[0]?.toUpperCase()}
                             </span>
@@ -220,7 +234,7 @@ const Users = () => {
                                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                                     {user.first_name} {user.last_name}
                                 </span>
-                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-[#3B82F6] dark:text-blue-400 text-[10px] font-bold border border-blue-100 dark:border-blue-800">
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-600/10 text-[#3B82F6] dark:text-blue-400 text-[10px] font-bold border border-blue-100 dark:border-blue-800">
                                     <CheckCircleIcon className="w-3 h-3" />
                                     <span>Site User</span>
                                 </div>
@@ -336,30 +350,30 @@ const Users = () => {
             {/* Header Section */}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-sm">
-                        <UsersIcon className="w-5 h-5 text-white" />
-                    </div>
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                            <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
                     Registered Users
                 </h1>
             </div>
 
             {/* Stats Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-[3px] border border-primary-100 dark:border-primary-900/30 bg-primary-50/50 dark:bg-primary-900/10 shadow-sm flex flex-col items-center justify-center text-center">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-primary-500"></span>
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Users</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Users</span>
                     </div>
-                    <div className="text-3xl font-extrabold text-gray-900 dark:text-white">{users.length}</div>
+                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">{users.length}</div>
                 </div>
             </div>
 
             {/* Toolbar - Aligned with Appointment Design */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
                 {/* Left: Page Size */}
-                <div className="flex items-center gap-3 w-full lg:w-32">
-                    <span className="text-sm text-gray-500 font-medium">Show</span>
-                    <div className="w-20">
+                <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
+                    <div className="w-16">
                         <StyledSelect
                             options={[
                                 { value: 5, label: '5' },
@@ -380,8 +394,7 @@ const Users = () => {
                                     borderRadius: '3px',
                                     height: '34px',
                                     minHeight: '34px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
+                                    fontSize: '11px',
                                     textAlign: 'center'
                                 })
                             }}
@@ -408,8 +421,7 @@ const Users = () => {
                                     borderRadius: '3px',
                                     height: '34px',
                                     minHeight: '34px',
-                                    fontSize: '12px',
-                                    fontWeight: '500',
+                                    fontSize: '11px',
                                     textAlign: 'center'
                                 }),
                                 valueContainer: (base) => ({
@@ -447,15 +459,14 @@ const Users = () => {
                                     borderRadius: '3px',
                                     height: '34px',
                                     minHeight: '34px',
-                                    fontSize: '12px',
-                                    fontWeight: '500'
+                                    fontSize: '11px'
                                 })
                             }}
                             formatOptionLabel={(option) => {
-                                if (option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate) {
+                                if (option.value === 'custom' && datePreset === 'custom' && parsedDateRange?.[0]?.startDate && parsedDateRange?.[0]?.endDate) {
                                     try {
-                                        const start = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
-                                        const end = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                                        const start = parsedDateRange[0].startDate;
+                                        const end = parsedDateRange[0].endDate;
                                         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
                                             return (
                                                 <div className="flex items-center justify-between w-full">
@@ -510,12 +521,16 @@ const Users = () => {
                                     locale={enUS}
                                     editableDateInputs={false}
                                     onChange={item => {
-                                        setDateRange([item.selection]);
+                                        setDateRange([{
+                                            ...item.selection,
+                                            startDate: item.selection.startDate.toISOString(),
+                                            endDate: item.selection.endDate.toISOString()
+                                        }]);
                                         setIsDateFiltered(true);
                                         setDatePreset('custom');
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
+                                    ranges={parsedDateRange}
                                     shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']}
@@ -525,16 +540,18 @@ const Users = () => {
                     </div>
                 </div>
 
-                {/* Right: Search */}
-                <div className="relative w-full lg:w-72">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                        type="text"
-                        value={globalFilter ?? ''}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
-                        placeholder="Search visitor..."
-                        className="w-full h-[38px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400 shadow-sm"
-                    />
+                {/* RIGHT: Search */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div className="relative w-full lg:w-64">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                            type="text"
+                            value={globalFilter ?? ''}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            placeholder="Search users..."
+                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
+                        />
+                    </div>
                 </div>
             </div>
 

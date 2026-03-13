@@ -560,8 +560,8 @@ const ListingsPage = () => {
         // Use scroll position to track expansion state
         setIsMobileSheetExpanded(currentScroll > navShowThreshold);
 
-        // If scrolling up or down significantly, clear the selected marker preview
-        if (selectedListingId && (currentScroll > 50 || currentScroll < -50)) {
+        // If scrolling the list up significantly, clear selection
+        if (selectedListingId && currentScroll > 150) {
             setSelectedListingId(null);
         }
 
@@ -1270,7 +1270,7 @@ const ListingsPage = () => {
                 {/* Selected (pending) filters — chips with × to remove; only updates draft */}
                 {pendingFiltersList.length > 0 && (
                     <div className="space-y-2">
-                        <h2 className="text-[15px] md:text-[13px] font-semibold text-gray-900">Selected</h2>
+                        <h2 className="text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-white">Selected</h2>
                         <div className="flex flex-wrap gap-2">
                             {pendingFiltersList.map(({ label, key, valueToRemove }) => {
                                 const chipKey = valueToRemove != null ? `${key}-${valueToRemove}` : key;
@@ -1285,7 +1285,7 @@ const ListingsPage = () => {
                                 return (
                                     <span
                                         key={chipKey}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 dark:border-white/30 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
                                             }`}
                                         style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
                                     >
@@ -1293,7 +1293,7 @@ const ListingsPage = () => {
                                         <button
                                             type="button"
                                             onClick={handleRemove}
-                                            className="flex-shrink-0 p-0.5 rounded-full hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors"
+                                            className="flex-shrink-0 p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                                             aria-label={`Remove ${label}`}
                                         >
                                             <XMarkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -1307,7 +1307,7 @@ const ListingsPage = () => {
 
                 {/* Text Search — draft only; applies when "Show X properties" */}
                 <div className="space-y-2">
-                    <label className="block text-[15px] md:text-[13px] font-semibold text-gray-900">Search by text</label>
+                    <label className="block text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-white">Search by text</label>
                     <input
                         type="text"
                         value={pendingFilters.search ?? ''}
@@ -1318,7 +1318,7 @@ const ListingsPage = () => {
                         }}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
                         placeholder="Keyword, location, property name..."
-                        className="w-full px-4 py-3 min-h-[48px] rounded-full border border-gray-200 bg-white text-gray-900 text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-500 transition-all"
+                        className="w-full px-4 py-3 min-h-[48px] rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[13px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/5 focus:border-gray-500 transition-all"
                     />
                 </div>
 
@@ -1400,14 +1400,14 @@ const ListingsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white border border-gray-200 rounded-full transition-all group hover:border-gray-400"
+                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
-                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700">Search transit station...</span>
+                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
                                 </div>
-                                <div className="bg-white border border-gray-800 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
-                                    <MapIcon className="w-5 h-5 text-gray-800" strokeWidth={2} />
+                                <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                                 </div>
                             </button>
 
@@ -1422,13 +1422,13 @@ const ListingsPage = () => {
                                             const newIds = currentIds.filter(i => i !== id);
                                             handlePendingFilterChange('station_id', newIds.join(','));
                                         }}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-800 hover:border-gray-600 rounded-full transition-colors group"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 hover:border-gray-600 dark:hover:border-white/50 rounded-full transition-colors group"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-gray-800" />
-                                        <span className="text-[13px] font-normal text-gray-900">
+                                        <div className="w-2 h-2 rounded-full bg-gray-800 dark:bg-white" />
+                                        <span className="text-[13px] font-normal text-gray-900 dark:text-white">
                                             {station ? station.label : id}
                                         </span>
-                                        <XMarkIcon className="w-4 h-4 text-gray-600 group-hover:text-gray-800" strokeWidth={2.5} />
+                                        <XMarkIcon className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white" strokeWidth={2.5} />
                                     </button>
                                 );
                             })}
@@ -1523,7 +1523,7 @@ const ListingsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col font-inter">
+        <div className="min-h-screen bg-white dark:bg-dashboard-dark flex flex-col font-inter">
             {/* --- FILTER SIDEBAR (slide-in from right with open/close animation) --- */}
             {isSidebarOpen && (
                 <>
@@ -1533,17 +1533,17 @@ const ListingsPage = () => {
                         aria-hidden
                     />
                     <aside
-                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
+                        className={`fixed right-0 top-0 h-full w-full sm:w-[360px] sm:max-w-[85vw] z-[261] bg-white dark:bg-dashboard-card shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-out ${(isSidebarClosing || sidebarAnimateIn) ? 'translate-x-full' : 'translate-x-0'}`}
                         role="dialog"
                         aria-label="Filter settings"
                     >
                         {/* Sidebar header */}
-                        <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 md:border-gray-100 bg-white">
-                            <h3 className="text-lg md:text-[13px] font-bold text-gray-900">Filter Settings</h3>
+                        <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 dark:border-white/10 md:border-gray-100 bg-white dark:bg-dashboard-card">
+                            <h3 className="text-lg md:text-[13px] font-bold text-gray-900 dark:text-white">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
-                                className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                className="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                                 aria-label="Close filters"
                             >
                                 <XMarkIcon className="w-5 h-5" />
@@ -1555,7 +1555,7 @@ const ListingsPage = () => {
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
                         <div
-                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 md:border-gray-100 bg-white md:bg-white flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
+                            className="flex-shrink-0 py-4 lg:px-6 lg:pb-6 border-t border-gray-200 dark:border-white/10 md:border-gray-100 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 pt-4 pb-5"
                             style={{
                                 paddingTop: '0.75rem',
                                 paddingBottom: '0.75rem',
@@ -1567,15 +1567,15 @@ const ListingsPage = () => {
                                 onClick={clearPendingFilters}
                                 disabled={!hasActivePendingFilters}
                                 className={`order-1 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActivePendingFilters
-                                    ? 'bg-transparent border-none text-red-600 hover:text-red-700'
-                                    : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
+                                    ? 'bg-transparent border-none text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400'
+                                    : 'bg-transparent border-none text-gray-400 dark:text-gray-600 cursor-not-allowed'
                                     }`}
                             >
                                 Clear all
                             </button>
                             <button
                                 onClick={() => applyFilters()}
-                                className="order-2 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
+                                className="order-2 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
                             >
                                 <span>Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}</span>
                             </button>
@@ -1587,11 +1587,11 @@ const ListingsPage = () => {
 
 
             {/* --- STANDARD GRID LAYOUT --- */}
-            <div className={`w-full bg-white min-h-screen relative ${isGoogleMapOpen ? 'hidden lg:block' : ''}`}>
+            <div className={`w-full bg-transparent min-h-screen relative ${isGoogleMapOpen ? 'hidden lg:block' : ''}`}>
                 {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
-                <div className={`lg:hidden sticky top-0 z-[100] bg-white py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-dark py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[44px] pl-4 pr-4 py-1.5 rounded-full bg-white border border-gray-200">
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[44px] pl-4 pr-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
                             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
                             <input
                                 type="search"
@@ -1599,17 +1599,17 @@ const ListingsPage = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
                                 placeholder="Search properties & filters"
-                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
+                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
                                 aria-label="Search properties"
                             />
                         </div>
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all bg-white shadow-sm border-none`}
+                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card shadow-sm border border-transparent dark:border-white/10`}
                             aria-label="Open filters"
                         >
-                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'} text-gray-800 dark:text-white`} />
                             {activeFiltersList.length > 0 && (
                                 <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-semibold border-2 border-white shadow-md leading-none">
                                     {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
@@ -1733,12 +1733,12 @@ const ListingsPage = () => {
                                             <div ref={observerTarget} className="h-20" />
                                         </>
                                     ) : (
-                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 border border-dashed border-gray-200 rounded-[24px] animate-fadeInUp flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
-                                            <div className="w-16 h-16 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center mb-5">
-                                                <SparklesIcon className="w-8 h-8 text-gray-400" />
+                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fadeInUp flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
+                                            <div className="w-16 h-16 bg-white dark:bg-dashboard-card shadow-sm border border-gray-100 dark:border-white/10 rounded-full flex items-center justify-center mb-5">
+                                                <SparklesIcon className="w-8 h-8 text-gray-400 dark:text-gray-600" />
                                             </div>
-                                            <h3 className="text-[17px] font-bold text-gray-900">No properties found</h3>
-                                            <p className="text-[14px] text-gray-500 mt-1 max-w-[260px] text-center leading-relaxed">
+                                            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">No properties found</h3>
+                                            <p className="text-[14px] text-gray-500 dark:text-gray-400 mt-1 max-w-[260px] text-center leading-relaxed">
                                                 Try adjusting your search or filters to discover more matching results.
                                             </p>
                                         </div>
@@ -1748,7 +1748,7 @@ const ListingsPage = () => {
                                 {/* Right Side: Map — sticky below filter bar: moves up with initial scroll then stops under filter bar */}
                                 {isGoogleMapOpen && (
                                     <div className={`hidden lg:block transition-all duration-700 ease-in-out relative lg:ml-auto ${isMapExpanded ? 'w-full h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh]' : `lg:w-[58%] xl:w-[48%] lg:sticky lg:self-start h-[85vh] min-h-[85vh] lg:h-[calc(100vh-124px)] lg:min-h-[calc(100vh-124px)] xl:h-[85vh] xl:min-h-[85vh] ${navVisible ? 'lg:top-[112px]' : 'lg:top-[80px]'}`}`}>
-                                        <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
+                                        <div className="map-overlays-rounded relative w-full h-full min-h-0 rounded-[24px] overflow-hidden shadow-sm border border-gray-200 dark:border-white/10">
                                             <GoogleMap
                                                 listings={listings}
                                                 center={mapCenter}
@@ -1777,7 +1777,7 @@ const ListingsPage = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsMapExpanded(false)}
-                                                    className="absolute top-4 right-4 z-[20] w-11 h-11 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all active:scale-95"
+                                                    className="absolute top-4 right-4 z-[20] w-11 h-11 rounded-full bg-white dark:bg-dashboard-card shadow-lg border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all active:scale-95"
                                                     aria-label="Close expanded map"
                                                 >
                                                     <XMarkIcon className="w-6 h-6" />
@@ -1786,13 +1786,13 @@ const ListingsPage = () => {
                                             {/* Map Overlays (hide when expanded so X is visible) */}
                                             {!isMapExpanded && (
                                                 <div className="absolute top-4 right-4 z-10 pointer-events-none">
-                                                    <div className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 flex items-center gap-3">
-                                                        <div className="bg-slate-100/50 p-2 rounded-full border border-white/40">
-                                                            <GlobeAltIcon className="w-5 h-5 text-slate-600" />
+                                                    <div className="bg-white/70 dark:bg-dashboard-card/80 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex items-center gap-3">
+                                                        <div className="bg-slate-100/50 dark:bg-white/10 p-2 rounded-full border border-white/40 dark:border-white/10">
+                                                            <GlobeAltIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] uppercase font-black tracking-widest text-gray-400">Map Mode</p>
-                                                            <p className="text-sm font-bold text-gray-900">{total} Properties</p>
+                                                            <p className="text-[10px] uppercase font-black tracking-widest text-gray-400 dark:text-gray-500">Map Mode</p>
+                                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{total} Properties</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1826,29 +1826,29 @@ const ListingsPage = () => {
             {/* Google Maps Modal (Mobile Only) */}
             {
                 isGoogleMapOpen && (
-                    <div className="absolute top-0 left-0 w-full min-h-[100svh] z-[200] bg-[#f7f7f7] lg:!hidden flex flex-col pointer-events-auto">
+                    <div className="absolute top-0 left-0 w-full min-h-[100svh] z-[200] bg-[#f7f7f7] dark:bg-dashboard-dark lg:!hidden flex flex-col pointer-events-auto">
                         {/* Dynamic Header Bar - Appears when sheet is expanded */}
-                        <div className={`fixed top-0 left-0 right-0 z-[220] bg-white lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-                            <div className="flex-shrink-0 w-full border-b px-4 py-3.5 flex items-center gap-2 shadow-sm">
-                                <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white border border-gray-200">
+                        <div className={`fixed top-0 left-0 right-0 z-[220] bg-white dark:bg-dashboard-card lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+                            <div className="flex-shrink-0 w-full border-b dark:border-white/10 px-4 py-3.5 flex items-center gap-2 shadow-sm">
+                                <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
                                     <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                     <input
                                         type="search"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         placeholder="Search properties & filters"
-                                        className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
+                                        className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
                                         aria-label="Search properties"
                                     />
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 active:scale-95 transition-all bg-white shadow-sm`}
+                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card shadow-sm border dark:border-white/10`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white shadow-md">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -1866,12 +1866,12 @@ const ListingsPage = () => {
                                 {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white rounded-full flex items-center justify-center text-gray-900 shadow-[0_8px_30px_rgba(0,0,0,0.15)] active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-[0_8px_30px_rgba(0,0,0,0.15)] active:scale-95 transition-all outline-none border dark:border-white/10 ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className="w-7 h-7" />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white shadow-md">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -1910,18 +1910,18 @@ const ListingsPage = () => {
                             </div>
 
                             {/* Property Stream Container - Hidden when a marker is selected on mobile */}
-                            <div className={`relative z-[205] bg-white px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
+                            <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
-                                    className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 transition-colors rounded-t-[40px]"
+                                    className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 dark:active:bg-white/5 transition-colors rounded-t-[40px]"
                                     onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
-                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 mb-3" />
+                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 dark:bg-white/10 mb-3" />
 
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
-                                        <span className="text-[14px] font-medium text-gray-400 tracking-tight animate-in fade-in duration-300 mb-2">
+                                        <span className="text-[14px] font-medium text-gray-400 dark:text-gray-500 tracking-tight animate-in fade-in duration-300 mb-2">
                                             Found around {total} properties
                                         </span>
                                     )}
@@ -1953,7 +1953,7 @@ const ListingsPage = () => {
                                     {!loading && listings.length < total && (
                                         <button
                                             onClick={() => setPage(p => p + 1)}
-                                            className="w-full py-5 text-center font-bold text-primary-600 mt-4 rounded-2xl border border-primary-100 bg-primary-50 active:scale-[0.98] transition-all"
+                                            className="w-full py-5 text-center font-bold text-primary-600 dark:text-primary-400 mt-4 rounded-2xl border border-primary-100 dark:border-primary-900/30 bg-primary-50 dark:bg-primary-950/20 active:scale-[0.98] transition-all"
                                         >
                                             View More Results
                                         </button>
@@ -1971,7 +1971,7 @@ const ListingsPage = () => {
                                                 )}
                                             </div>
                                             {!theme?.logoUrl && (
-                                                <span className="text-xl font-bold text-gray-900 tracking-tight">StayNest</span>
+                                                <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">StayNest</span>
                                             )}
                                         </div>
                                     )}
@@ -2001,38 +2001,40 @@ const ListingsPage = () => {
                                 style={{ bottom: isNavVisible ? 'calc(env(safe-area-inset-bottom) + 92px)' : 'calc(env(safe-area-inset-bottom) + 12px)' }}
                             >
                                 {(() => {
-                                    const property = listings.find(l => l.id === selectedListingId);
+                                    const property = listings.find(l => String(l.id) === String(selectedListingId));
                                     if (!property) return null;
                                     return (
                                         <div className="relative">
                                             <div
-                                                className="bg-white rounded-[28px] border border-gray-100 shadow-[0_12px_45px_rgba(0,0,0,0.15)] overflow-hidden flex items-center p-2.5 relative active:scale-[0.98] transition-all cursor-pointer"
+                                                className="bg-white dark:bg-dashboard-card rounded-[28px] border border-gray-100 dark:border-white/10 shadow-[0_12px_45px_rgba(0,0,0,0.15)] overflow-hidden flex items-center p-2.5 relative active:scale-[0.98] transition-all cursor-pointer"
                                                 onClick={() => navigate(`/listings/${property.id}${location.search}`)}
                                             >
                                                 {/* Small Image at Left */}
-                                                <div className="w-28 h-28 rounded-[22px] overflow-hidden flex-shrink-0 bg-gray-100">
+                                                <div className="w-28 h-28 rounded-[22px] overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-white/5">
                                                     <img
-                                                        src={getMediaUrl(property.images?.[0])}
+                                                        src={getMediaUrl((property.media || []).find(m => m.type === 'image')?.url || property.images?.[0])}
                                                         alt={property.title}
-                                                        className="w-full h-full object-cover"
+                                                        className="w-full h-full object-cover select-none"
                                                     />
                                                 </div>
 
                                                 {/* Information at Right */}
                                                 <div className="ml-4 flex-1 min-w-0 pr-6">
-                                                    <h3 className="text-[15px] font-normal text-gray-900 truncate mb-1">
+                                                    <h3 className="text-[15px] font-normal text-gray-900 dark:text-white truncate mb-1">
                                                         {property.title}
                                                     </h3>
-                                                    <p className="text-[15px] font-normal text-gray-400 truncate mb-1.5">
-                                                        {property.bedrooms > 0 ? `${property.bedrooms} Bed` : ''}
-                                                        {property.bathrooms > 0 ? ` · ${property.bathrooms} Bath` : ''}
-                                                        {property.area > 0 ? ` · ${property.area} Sqm` : ''}
+                                                    <p className="text-[15px] font-normal text-gray-400 dark:text-gray-500 truncate mb-1.5">
+                                                        {[
+                                                            property.bedrooms > 0 ? `${property.bedrooms} Bed` : null,
+                                                            property.bathrooms > 0 ? `${property.bathrooms} Bath` : null,
+                                                            property.area > 0 ? `${property.area} Sqm` : null
+                                                        ].filter(Boolean).join(' · ')}
                                                     </p>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-[15px] font-normal text-gray-900">
+                                                        <span className="text-[15px] font-normal text-gray-900 dark:text-white">
                                                             ฿{Number(property.price).toLocaleString()}
                                                         </span>
-                                                        <span className="bg-gray-50 text-gray-500 text-[11px] px-2 py-1 rounded">
+                                                        <span className="bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[11px] px-2 py-1 rounded">
                                                             {property.type === 'rent' ? 'For Rent' : 'For Sale'}
                                                         </span>
                                                     </div>
@@ -2045,7 +2047,7 @@ const ListingsPage = () => {
                                                     e.stopPropagation();
                                                     setSelectedListingId(null);
                                                 }}
-                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-2xl border border-gray-100 active:bg-gray-50 z-[310]"
+                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 shadow-2xl border border-gray-100 dark:border-white/10 active:bg-gray-50 dark:active:bg-white/5 z-[310]"
                                             >
                                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

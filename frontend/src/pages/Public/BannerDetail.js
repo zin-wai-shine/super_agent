@@ -56,20 +56,19 @@ const BannerDetail = () => {
     const imageUrl = getMediaUrl(banner.image_url);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark pb-20">
             {/* Header / Navigation */}
-            <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-800 sticky top-0 z-10">
+            <div className="bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
                     >
-                        <ArrowLeftIcon className="w-5 h-5" />
-                        <span className="font-bold text-sm">Back</span>
+                        <ArrowLeftIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <button
                         onClick={handleShare}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-600 dark:text-gray-400"
                         title="Share"
                     >
                         <ShareIcon className="w-5 h-5" />
@@ -79,7 +78,7 @@ const BannerDetail = () => {
 
             <div className="max-w-4xl mx-auto px-4 mt-8">
                 {/* Banner Graphic */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-xl border dark:border-gray-800">
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl overflow-hidden shadow-xl border border-gray-100 dark:border-white/10">
                     <img
                         src={imageUrl}
                         alt={banner.title}
@@ -88,12 +87,12 @@ const BannerDetail = () => {
                 </div>
 
                 {/* Content */}
-                <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border dark:border-gray-800">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b dark:border-gray-800 pb-6">
+                <div className="mt-8 bg-white dark:bg-dashboard-card rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-white/10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-gray-100 dark:border-white/10 pb-6">
                         <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
                             {banner.title}
                         </h1>
-                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-bold bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-full border dark:border-gray-800 w-fit">
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-bold bg-gray-50 dark:bg-white/5 px-4 py-2 rounded-full border border-gray-100 dark:border-white/10 w-fit">
                             <CalendarIcon className="w-4 h-4" />
                             {banner.created_at ? format(parseISO(banner.created_at), 'MMMM dd, yyyy') : '-'}
                         </div>
@@ -109,7 +108,7 @@ const BannerDetail = () => {
                     )}
 
                     {banner.link_url && (
-                        <div className="mt-10 pt-8 border-t dark:border-gray-800">
+                        <div className="mt-10 pt-8 border-t border-gray-100 dark:border-white/10">
                             <a
                                 href={banner.link_url}
                                 target="_blank"

@@ -25,15 +25,19 @@ import {
 } from '@tanstack/react-table';
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
+import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 
 const DeveloperManagement = () => {
     const [developers, setDevelopers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingDev, setEditingDev] = useState(null);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [sorting, setSorting] = useState([]);
-    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const [globalFilter, setGlobalFilter] = useSessionState('devman_globalFilter', '');
+    const [sorting, setSorting] = useSessionState('devman_sorting', []);
+    const [pagination, setPagination] = useSessionState('devman_pagination', { pageIndex: 0, pageSize: 10 });
+
+    // Use scroll restoration
+    useScrollRestoration('DeveloperManagement', !loading && developers.length > 0);
 
     // Form state
     const [formName, setFormName] = useState('');
@@ -115,7 +119,7 @@ const DeveloperManagement = () => {
             header: 'Developer Name',
             cell: ({ getValue }) => (
                 <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary-100 dark:bg-primary-600/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <BuildingOffice2Icon className="w-4 h-4 text-primary-700 dark:text-primary-400" />
                     </div>
                     <span className="font-medium text-gray-900 dark:text-white text-sm">{getValue()}</span>
@@ -133,7 +137,7 @@ const DeveloperManagement = () => {
             id: 'projects_count',
             header: 'Projects',
             cell: ({ row }) => (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400">
                     {row.original.projects?.length || 0}
                 </span>
             ),
@@ -181,8 +185,8 @@ const DeveloperManagement = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-sm">
-                            <BuildingOffice2Icon className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-500/10 rounded-xl flex items-center justify-center shadow-sm">
+                            <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Developers
                     </h1>
@@ -193,20 +197,20 @@ const DeveloperManagement = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-[3px] border border-primary-100 dark:border-primary-900/30 bg-primary-50/50 dark:bg-primary-900/10 shadow-sm flex flex-col items-center justify-center text-center">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-primary-500"></span>
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Developers</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Developers</span>
                     </div>
-                    <div className="text-3xl font-extrabold text-gray-900 dark:text-white">{developers.length}</div>
+                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">{developers.length}</div>
                 </div>
-                <div className="p-5 rounded-[3px] border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 shadow-sm flex flex-col items-center justify-center text-center">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Projects</span>
+                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Projects</span>
                     </div>
-                    <div className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">
                         {developers.reduce((sum, d) => sum + (d.projects?.length || 0), 0)}
                     </div>
                 </div>
@@ -215,32 +219,31 @@ const DeveloperManagement = () => {
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500 font-medium">Show</span>
-                    <div className="w-20">
+                    <div className="w-16">
                         <StyledSelect
                             options={[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]}
                             value={pagination.pageSize}
                             onChange={(val) => table.setPageSize(Number(val))}
                             isSearchable={false}
                             components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
-                            styles={{ control: (base) => ({ ...base, borderRadius: '3px', height: '34px', minHeight: '34px', fontSize: '12px', fontWeight: '600', textAlign: 'center' }) }}
+                            styles={{ control: (base) => ({ ...base, borderRadius: '3px', height: '34px', minHeight: '34px', fontSize: '11px', textAlign: 'center' }) }}
                         />
                     </div>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full sm:w-auto flex-1">
-                    <div className="relative w-full sm:w-64">
+                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full lg:w-auto flex-1">
+                    <div className="relative w-full lg:w-64">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search developers..."
-                            className="w-full h-[38px] pl-10 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[3px] text-[12px] focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white placeholder:text-gray-400"
+                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
                     <button
                         onClick={() => handleOpenForm()}
-                        className="w-full sm:w-auto px-4 h-[38px] bg-primary-600 hover:bg-primary-700 text-white text-[12px] font-bold rounded-[3px] flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md"
+                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
                     >
                         <PlusIcon className="w-4 h-4" />
                         Add Developer

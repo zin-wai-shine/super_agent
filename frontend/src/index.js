@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { DashboardThemeProvider } from './contexts/DashboardThemeContext';
+import { PublicDarkThemeProvider } from './contexts/PublicDarkThemeContext';
 import './index.css';
 
 // Suppress benign ResizeObserver loop error (browser quirk when layout triggers more resize callbacks in same frame)
@@ -75,7 +76,9 @@ root.render(
                     <AuthProvider>
                         <ThemeProvider>
                             <DashboardThemeProvider>
-                                <App />
+                                <PublicDarkThemeProvider>
+                                    <App />
+                                </PublicDarkThemeProvider>
                             </DashboardThemeProvider>
                         </ThemeProvider>
                     </AuthProvider>

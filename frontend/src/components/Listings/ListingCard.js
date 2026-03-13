@@ -365,7 +365,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         if (isSavedMode || isListView) {
             return (
                 <div
-                    className={`bg-white rounded-none overflow-hidden group ${animationClass}`}
+                    className={`bg-transparent rounded-none overflow-hidden group ${animationClass}`}
                     style={animationStyle}
                 >
                     <div className="relative aspect-[5/4.2] md:aspect-[5/4.7] rounded-[23px] overflow-hidden mb-2">
@@ -373,7 +373,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
                         <div className="absolute top-3.5 left-3.5">
-                            <span className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] md:text-[11px] font-medium text-gray-900 shadow-sm">
+                            <span className="bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] md:text-[11px] font-medium text-gray-900 dark:text-white shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
@@ -385,9 +385,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute top-3 right-3 z-10 p-1 active:scale-95"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
                                 ) : (
-                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 dark:text-white/20 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
                                 )}
                             </button>
                         )}
@@ -399,7 +399,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto active:scale-95 transition-all duration-300"
                             >
                                 <div
-                                    className="bg-white/90 backdrop-blur-xl rounded-lg shadow-lg flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] aspect-[2.8/1] overflow-hidden hover:bg-white transition-all duration-300"
+                                    className="bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-lg shadow-lg flex items-center justify-center border border-white/60 dark:border-white/10 w-[88px] md:w-[112px] aspect-[2.8/1] overflow-hidden hover:bg-white dark:hover:bg-dashboard-hover transition-all duration-300"
                                     style={
                                         (listing.agent.logo || listing.agent.theme?.logo_url) ? {
                                             backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
@@ -421,11 +421,11 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                     <div className="px-1.5 py-2">
                         <Link to={cardLink} className="block group/link">
-                            <h3 className="text-[15px] md:text-[13px] font-medium text-slate-900 line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">
+                            <h3 className="text-[15px] md:text-[13px] font-medium text-slate-900 dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">
                                 {title}
                             </h3>
                             <div className="mt-1 flex flex-col gap-0.5">
-                                <p className="text-[15px] md:text-[13px] text-gray-500 font-medium">
+                                <p className="text-[15px] md:text-[13px] text-gray-500 dark:text-gray-300 font-medium">
                                     {bedrooms} Bed · {bathrooms} Bath
                                 </p>
                             </div>
@@ -442,13 +442,13 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 className={`group relative flex flex-col transition-all duration-300 ${cardClassName} animate-in fade-in slide-in-from-bottom-4 duration-500`}
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
-                <div className="flex flex-col w-full bg-white rounded-none border-none">
+                <div className="flex flex-col w-full bg-transparent rounded-none border-none">
                     <div className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block">
                         <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge */}
                         <div className="absolute top-3.5 left-3.5">
-                            <span className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-[15px] md:text-[12px] font-semibold text-gray-900 shadow-sm">
+                            <span className="bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm px-3 py-1 rounded-full text-[15px] md:text-[12px] font-semibold text-gray-900 dark:text-white shadow-sm">
                                 {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                             </span>
                         </div>
@@ -460,9 +460,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute top-3 right-3 z-10 p-1 active:scale-95"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
                                 ) : (
-                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 dark:text-white/20 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
                                 )}
                             </button>
                         )}
@@ -499,33 +499,33 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                     <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
                         <div className="flex justify-between items-start">
-                            <h3 className="text-[15px] md:text-[16px] font-semibold text-slate-900 truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
+                            <h3 className="text-[15px] md:text-[16px] font-semibold text-slate-900 dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
                         </div>
 
-                        <div className="text-[15px] md:text-[14px] text-gray-500 flex items-center gap-1.5 mb-0.5">
+                        <div className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
                             <MapPinIcon className="w-4 h-4 md:w-3.5 md:h-3.5" />
                             <span className="truncate">{district || 'Bangkok'}</span>
                             {nearestStationName && (
                                 <>
-                                    <span className="text-gray-300">·</span>
-                                    <span className="truncate font-medium text-gray-600">{nearestStationName}</span>
+                                    <span className="text-gray-300 dark:text-gray-600">·</span>
+                                    <span className="truncate font-medium text-gray-800 dark:text-gray-200">{nearestStationName}</span>
                                 </>
                             )}
                         </div>
 
-                        <p className="text-[15px] md:text-[14px] text-gray-500">
+                        <p className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-300">
                             {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
                         </p>
 
                         {created_at && (
-                            <p className="text-[15px] md:text-[14px] text-gray-400 mt-0.5">
+                            <p className="text-[15px] md:text-[14px] text-gray-400 dark:text-gray-500 mt-0.5">
                                 {new Date(created_at).toLocaleDateString('en-GB')}
                             </p>
                         )}
 
                         <div className="mt-2 flex items-baseline gap-1">
-                            <span className="text-[15px] md:text-[14.5px] font-semibold text-gray-900">฿{formatPrice(price)}</span>
-                            <span className="text-[15px] md:text-[13px] text-gray-500">{listing_type === 'rent' ? '/ mo' : ''}</span>
+                            <span className="text-[15px] md:text-[14.5px] font-semibold text-gray-900 dark:text-white">฿{formatPrice(price)}</span>
+                            <span className="text-[15px] md:text-[13px] text-gray-500 dark:text-gray-400">{listing_type === 'rent' ? '/ mo' : ''}</span>
                         </div>
                     </Link>
                 </div>
@@ -537,7 +537,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     if (isListView) {
         return (
             <div
-                className={`group bg-white rounded-none border-b border-gray-100 flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 ${cardClassName}`}
+                className={`group bg-transparent rounded-none border-b border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 ${cardClassName}`}
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
                 <div className="p-4 flex gap-5">
@@ -657,9 +657,9 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
             {/* Custom Close button */}
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-50 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
+                className="absolute top-4 right-4 z-50 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors shadow-sm"
             >
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
@@ -667,7 +667,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
             <div className="flex flex-col md:flex-row min-h-[560px] overflow-hidden rounded-2xl relative">
                 {/* ── LEFT COLUMN ── Logo Panel with background image & liquid glass buttons */}
                 <div
-                    className="md:w-[360px] flex-shrink-0 flex flex-col items-center justify-start px-10 pt-14 pb-10 relative overflow-hidden border-r border-gray-100 bg-white"
+                    className="md:w-[360px] flex-shrink-0 flex flex-col items-center justify-start px-10 pt-14 pb-10 relative overflow-hidden border-r border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card"
                     style={{
                         backgroundImage: logoUrl ? `url('${logoUrl}')` : 'none',
                         backgroundSize: '180px',
@@ -676,7 +676,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                     }}
                 >
                     {/* Floating decorative elements for a softer feel */}
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-gray-50/50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gray-50/50 dark:bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
 
                     {/* Spacer to push content below the background logo */}
                     <div className="h-[180px] w-full" />
@@ -684,30 +684,30 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                     {/* Name */}
                     <div className="text-center z-10 mb-10">
                         <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em] mb-2 block">Official Agent</span>
-                        <h2 className="text-2xl font-black text-slate-900/90 leading-tight">{agent.name}</h2>
+                        <h2 className="text-2xl font-black text-slate-900/90 dark:text-white leading-tight">{agent.name}</h2>
                     </div>
 
                     {/* Contact info rows with softer design */}
                     <div className="w-full space-y-4 z-10">
                         {agent.email && (
                             <a href={`mailto:${agent.email}`} className="flex items-center gap-4 group/item">
-                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 transition-all duration-300 border border-slate-100 shadow-sm">
-                                    <EnvelopeIcon className="w-5 h-5 text-gray-400 group-hover/item:text-primary-600 transition-colors" />
+                                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 dark:group-hover/item:bg-white/20 transition-all duration-300 border border-slate-100 dark:border-white/10 shadow-sm">
+                                    <EnvelopeIcon className="w-5 h-5 text-gray-400 dark:text-gray-300 group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors" />
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Email</span>
-                                    <span className="text-[14px] text-slate-700/80 truncate font-medium group-hover/item:text-primary-600 transition-colors">{agent.email}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-0.5">Email</span>
+                                    <span className="text-[14px] text-slate-700/80 dark:text-gray-200 truncate font-medium group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors">{agent.email}</span>
                                 </div>
                             </a>
                         )}
                         {agent.phone && (
                             <a href={`tel:${agent.phone}`} className="flex items-center gap-4 group/item">
-                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 transition-all duration-300 border border-slate-100 shadow-sm">
-                                    <PhoneIcon className="w-5 h-5 text-gray-400 group-hover/item:text-primary-600 transition-colors" />
+                                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary-50 dark:group-hover/item:bg-white/20 transition-all duration-300 border border-slate-100 dark:border-white/10 shadow-sm">
+                                    <PhoneIcon className="w-5 h-5 text-gray-400 dark:text-gray-300 group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors" />
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Phone</span>
-                                    <span className="text-[14px] text-slate-700/80 truncate font-medium group-hover/item:text-primary-600 transition-colors">{agent.phone}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-0.5">Phone</span>
+                                    <span className="text-[14px] text-slate-700/80 dark:text-gray-200 truncate font-medium group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors">{agent.phone}</span>
                                 </div>
                             </a>
                         )}
@@ -719,25 +719,25 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                         <div className="flex items-center gap-4 mb-10">
                             {agent.line && (
                                 <a href={`https://line.me/ti/p/~${agent.line}`} target="_blank" rel="noreferrer"
-                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#06C755] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 hover:bg-[#06C755] dark:hover:bg-[#06C755] border border-slate-100 dark:border-white/10 flex items-center justify-center text-gray-400 dark:text-gray-300 hover:text-white dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md">
                                     <SiLine className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.facebook && (
                                 <a href={agent.facebook} target="_blank" rel="noreferrer"
-                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#1877F2] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 hover:bg-[#1877F2] dark:hover:bg-[#1877F2] border border-slate-100 dark:border-white/10 flex items-center justify-center text-gray-400 dark:text-gray-300 hover:text-white dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md">
                                     <SiFacebook className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.instagram && (
                                 <a href={agent.instagram} target="_blank" rel="noreferrer"
-                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#E4405F] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 hover:bg-[#E4405F] dark:hover:bg-[#E4405F] border border-slate-100 dark:border-white/10 flex items-center justify-center text-gray-400 dark:text-gray-300 hover:text-white dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md">
                                     <SiInstagram className="w-5 h-5" />
                                 </a>
                             )}
                             {agent.linkedin && (
                                 <a href={agent.linkedin} target="_blank" rel="noreferrer"
-                                    className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md hover:bg-[#0A66C2] border border-white/60 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md">
+                                    className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/10 hover:bg-[#0A66C2] dark:hover:bg-[#0A66C2] border border-slate-100 dark:border-white/10 flex items-center justify-center text-gray-400 dark:text-gray-300 hover:text-white dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md">
                                     <SiLinkedin className="w-5 h-5" />
                                 </a>
                             )}
@@ -749,7 +749,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                                 href={websiteUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-full group relative h-12 overflow-hidden rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center gap-2.5 text-white active:scale-95 transition-all duration-500 shadow-xl hover:bg-slate-800"
+                                className="w-full group relative h-12 overflow-hidden rounded-xl bg-slate-900 dark:bg-white border border-slate-800 dark:border-white/10 flex items-center justify-center gap-2.5 text-white dark:text-dashboard-dark active:scale-95 transition-all duration-500 shadow-xl hover:bg-slate-800 dark:hover:bg-gray-100"
                             >
                                 {/* Light sweep sweep effect */}
                                 <div className="absolute inset-0 w-full h-full -translate-x-[110%] group-hover:translate-x-[110%] transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-0" />
@@ -764,23 +764,23 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                 </div>
 
                 {/* ── RIGHT COLUMN ── White content panel with liquid glass button */}
-                <div className="flex-1 flex flex-col px-12 py-14 overflow-y-auto">
+                <div className="flex-1 flex flex-col px-12 py-14 overflow-y-auto bg-white dark:bg-dashboard-dark">
                     <div className="mb-6">
                         <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em]">About our Vision</span>
-                        <h3 className="text-3xl font-black text-slate-900/95 mt-1 leading-tight">{agent.name}</h3>
+                        <h3 className="text-3xl font-black text-slate-900/95 dark:text-white mt-1 leading-tight">{agent.name}</h3>
                     </div>
 
                     {/* Description / Bio with decorative quote */}
                     {agent.description ? (
                         <div className="relative mb-10">
-                            <div className="absolute -top-3 -left-2 text-8xl text-primary-100/40 font-serif leading-none select-none pointer-events-none" style={{ fontFamily: 'Georgia, serif' }}>"</div>
-                            <p className="text-[16px] text-slate-600/90 leading-relaxed pt-8 pl-5 relative z-10 italic">
+                            <div className="absolute -top-3 -left-2 text-8xl text-primary-100/40 dark:text-primary-500/10 font-serif leading-none select-none pointer-events-none" style={{ fontFamily: 'Georgia, serif' }}>"</div>
+                            <p className="text-[16px] text-slate-600/90 dark:text-gray-300 leading-relaxed pt-8 pl-5 relative z-10 italic">
                                 {agent.description}
                             </p>
                         </div>
                     ) : (
-                        <div className="mb-10 flex items-center justify-center h-28 bg-white/20 backdrop-blur-xl rounded-3xl border border-dashed border-white/40">
-                            <p className="text-gray-500 text-[15px] italic font-medium">No description provided for this agency.</p>
+                        <div className="mb-10 flex items-center justify-center h-28 bg-white/20 dark:bg-white/5 backdrop-blur-xl rounded-3xl border border-dashed border-white/40 dark:border-white/10">
+                            <p className="text-gray-500 dark:text-gray-400 text-[15px] italic font-medium">No description provided for this agency.</p>
                         </div>
                     )}
 
@@ -788,31 +788,31 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                     {(agent.mission || agent.vision) && (
                         <div className="grid grid-cols-1 gap-4 mb-10">
                             {agent.vision && (
-                                <div className="bg-gradient-to-br from-primary-50/50 to-white border border-primary-100/50 rounded-[2rem] p-6 shadow-sm">
+                                <div className="bg-gradient-to-br from-primary-50/50 to-white dark:from-white/5 dark:to-dashboard-card border border-primary-100/50 dark:border-white/10 rounded-[2rem] p-6 shadow-sm">
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="w-2 h-6 bg-primary-500 rounded-full" />
-                                        <span className="text-[11px] font-black text-primary-600 uppercase tracking-widest">Our Vision</span>
+                                        <span className="text-[11px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Our Vision</span>
                                     </div>
-                                    <p className="text-[14px] text-gray-600 leading-relaxed">{agent.vision}</p>
+                                    <p className="text-[14px] text-gray-600 dark:text-gray-300 leading-relaxed">{agent.vision}</p>
                                 </div>
                             )}
                             {agent.mission && (
-                                <div className="bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100/50 rounded-[2rem] p-6 shadow-sm">
+                                <div className="bg-gradient-to-br from-indigo-50/50 to-white dark:from-white/5 dark:to-dashboard-card border border-indigo-100/50 dark:border-white/10 rounded-[2rem] p-6 shadow-sm">
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="w-2 h-6 bg-indigo-500 rounded-full" />
-                                        <span className="text-[11px] font-black text-indigo-600 uppercase tracking-widest">Our Mission</span>
+                                        <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Our Mission</span>
                                     </div>
-                                    <p className="text-[14px] text-gray-600 leading-relaxed">{agent.mission}</p>
+                                    <p className="text-[14px] text-gray-600 dark:text-gray-300 leading-relaxed">{agent.mission}</p>
                                 </div>
                             )}
                         </div>
                     )}
 
                     {/* Footer CTA - Minimal Design */}
-                    <div className="mt-auto pt-8 border-t border-white/20 flex items-center justify-between">
+                    <div className="mt-auto pt-8 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
                         <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-900/80">Premium Partner</span>
-                            <span className="text-[11px] text-slate-400 font-medium tracking-wide">✓ Verified by Super Real Estate</span>
+                            <span className="text-xs font-bold text-slate-900/80 dark:text-white/80">Premium Partner</span>
+                            <span className="text-[11px] text-slate-400 dark:text-gray-500 font-medium tracking-wide">✓ Verified by Super Real Estate</span>
                         </div>
                     </div>
                 </div>

@@ -56,10 +56,10 @@ import AllPhotosModalContent from '../../components/Listings/AllPhotosModalConte
 import FilterBar from '../../components/ui/FilterBar';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
-import { TbTrain, TbCurrencyBaht } from "react-icons/tb";
+import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
-import { RiStairsLine } from "react-icons/ri";
+import { RiStairsLine, RiFridgeLine } from "react-icons/ri";
 import { LuSofa, LuWind } from "react-icons/lu";
 import { LuCalendarCheck2 } from "react-icons/lu";
 import {
@@ -99,7 +99,9 @@ import {
     MdOutlineSpa,
     MdOutlineLaptop,
     MdOutlineMeetingRoom,
-    MdOutlineGarage
+    MdOutlineGarage,
+    MdOutlineToys,
+    MdOutlineTv
 } from "react-icons/md";
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
@@ -196,9 +198,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const isMapView = searchParams.get('view') === 'map';
     const [viewedBooking, setViewedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [imageSlideDir, setImageSlideDir] = useState(null); // 'next' | 'prev' | null – for transition
-    const [imageTransitionStep, setImageTransitionStep] = useState(0); // 0 = start, 1 = end (triggers CSS transition)
     const [isFavorite, setIsFavorite] = useState(false);
     const [relatedListings, setRelatedListings] = useState([]);
     const [activeMapTab, setActiveMapTab] = useState('google');
@@ -233,16 +232,25 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [savingListing, setSavingListing] = useState(false);
     const [activeBooking, setActiveBooking] = useState(null); // Tracks if the user already booked this property
     const [showStickyHeader, setShowStickyHeader] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const bookingBarRef = useRef(null);
-    const touchStartRef = useRef({ x: 0, y: 0 });
-    const mouseStartRef = useRef({ x: 0, down: false });
-    const didSwipeRef = useRef(false);
+    const imageScrollRef = useRef(null);
     const bookingDateRef = useRef(null);
     const bookingTimeRef = useRef(null);
     const bookingFullNameRef = useRef(null);
     const bookingPhoneRef = useRef(null);
     const bookingEmailRef = useRef(null);
     const bookingConfirmRef = useRef(null);
+
+    const handleImageScroll = () => {
+        if (!imageScrollRef.current) return;
+        const scrollLeft = imageScrollRef.current.scrollLeft;
+        const width = imageScrollRef.current.clientWidth;
+        const newIndex = Math.round(scrollLeft / width);
+        if (newIndex !== currentImageIndex && newIndex < images.length) {
+            setCurrentImageIndex(newIndex);
+        }
+    };
 
     // Booking states (from BookAppointment.js)
     const [submitting, setSubmitting] = useState(false);
@@ -292,23 +300,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         setCurrentImageIndex(0);
     }, [listing?.id, images.length]);
 
-    // Trigger slide animation after paint (transitionStep 0 → 1)
-    useEffect(() => {
-        if (imageSlideDir == null) return;
-        const id = requestAnimationFrame(() => setImageTransitionStep(1));
-        return () => cancelAnimationFrame(id);
-    }, [imageSlideDir, currentImageIndex]);
-
-    // Reset slide direction after transition ends
-    useEffect(() => {
-        if (imageSlideDir == null) return;
-        const t = setTimeout(() => {
-            setImageSlideDir(null);
-            setImageTransitionStep(0);
-        }, 320);
-        return () => clearTimeout(t);
-    }, [imageSlideDir, currentImageIndex]);
-
     const openGallery = (index) => {
         if (onOpenGallery && images?.length) {
             onOpenGallery({ images, initialIndex: Math.min(index, images.length - 1) });
@@ -334,15 +325,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     useEffect(() => {
         if (onTitleChange) {
             if (isBookingOverlayOpen) {
-                onTitleChange("Request a viewing");
+                onTitleChange("Book Viewing");
                 if (isModal && onHeaderLeadingChange) {
                     onHeaderLeadingChange(
                         <button
                             onClick={() => setIsBookingOverlayOpen(false)}
-                            className="flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all p-2 rounded-full hover:bg-gray-100 active:scale-95 -ml-2"
+                            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
                         >
-                            <ArrowLeftIcon className="w-7 h-7 lg:w-6 lg:h-6" />
-                            <span className="text-base md:text-sm font-bold lg:hidden ml-1.5">Back</span>
+                            <ArrowLeftIcon className="w-7 h-7 lg:w-6 lg:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                     );
                 }
@@ -352,10 +342,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     onHeaderLeadingChange(
                         <button
                             onClick={() => setIsContactOverlayOpen(false)}
-                            className="flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all p-2 rounded-full hover:bg-gray-100 active:scale-95 -ml-2"
+                            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
                         >
-                            <ArrowLeftIcon className="w-7 h-7 lg:w-6 lg:h-6" />
-                            <span className="text-base md:text-sm font-bold lg:hidden ml-1.5">Back</span>
+                            <ArrowLeftIcon className="w-7 h-7 lg:w-6 lg:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                     );
                 }
@@ -365,9 +354,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     onHeaderLeadingChange(
                         <button
                             onClick={onClose}
-                            className="hidden lg:flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all p-2 rounded-full hover:bg-gray-100 active:scale-95 -ml-2"
+                            className="hidden lg:flex w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
                         >
-                            <ArrowLeftIcon className="w-6 h-6" />
+                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                     );
                 }
@@ -932,64 +921,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const videos = listing.media?.filter((m) => m.type === 'video') || [];
     const hasImages = images.length > 0;
 
-    const nextImage = () => {
-        setImageSlideDir('next');
-        setImageTransitionStep(0);
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    };
 
-    const prevImage = () => {
-        setImageSlideDir('prev');
-        setImageTransitionStep(0);
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    };
-
-    const SWIPE_THRESHOLD = 40;
-
-    const handleImageTouchStart = (e) => {
-        if (!hasImages || images.length < 2) return;
-        didSwipeRef.current = false;
-        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    };
-
-    const handleImageTouchEnd = (e) => {
-        if (!hasImages || images.length < 2) return;
-        const x = e.changedTouches[0].clientX;
-        const dx = x - touchStartRef.current.x;
-        if (dx > SWIPE_THRESHOLD) {
-            prevImage();
-            didSwipeRef.current = true;
-        } else if (dx < -SWIPE_THRESHOLD) {
-            nextImage();
-            didSwipeRef.current = true;
-        }
-        if (didSwipeRef.current) setTimeout(() => { didSwipeRef.current = false; }, 300);
-    };
-
-    const handleImageMouseDown = (e) => {
-        if (!hasImages || images.length < 2) return;
-        mouseStartRef.current = { x: e.clientX, down: true };
-    };
-
-    const handleImageMouseMove = (e) => {
-        if (!mouseStartRef.current.down) return;
-        const dx = e.clientX - mouseStartRef.current.x;
-        if (dx > SWIPE_THRESHOLD) {
-            prevImage();
-            didSwipeRef.current = true;
-            setTimeout(() => { didSwipeRef.current = false; }, 300);
-            mouseStartRef.current.down = false;
-        } else if (dx < -SWIPE_THRESHOLD) {
-            nextImage();
-            didSwipeRef.current = true;
-            setTimeout(() => { didSwipeRef.current = false; }, 300);
-            mouseStartRef.current.down = false;
-        }
-    };
-
-    const handleImageMouseUp = () => {
-        mouseStartRef.current.down = false;
-    };
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('th-TH', {
@@ -1015,7 +947,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div
                     className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border animate-in fade-in slide-in-from-left-2 duration-500 ${listing.listing_type === 'sale'
                         ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
-                        : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700'
+                        : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-400/20 dark:text-indigo-400'
                         }`}
                 >
                     {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
@@ -1043,26 +975,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
-                        className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                        className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
                     >
-                        <PhoneIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                        <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">Contact</span>
+                        <PhoneIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                        <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Contact</span>
                     </button>
                     {activeBooking ? (
                         <button
                             disabled
-                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 cursor-not-allowed transition-all duration-300"
+                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed transition-all duration-300 whitespace-nowrap"
                         >
                             <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600 flex-shrink-0" />
-                            <span className="text-[13px] font-semibold text-emerald-700 whitespace-nowrap">Viewing requested</span>
+                            <span className="text-[13px] font-semibold text-emerald-700 dark:text-emerald-400">Viewing requested</span>
                         </button>
                     ) : (
                         <button
                             onClick={handleBookingClick}
-                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group"
+                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
                         >
-                            <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                            <span className="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">Request viewing</span>
+                            <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                            <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Book Viewing</span>
                         </button>
                     )}
                 </div>
@@ -1072,16 +1004,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <button
                         onClick={handleToggleSave}
                         disabled={savingListing}
-                        className="flex items-center justify-center gap-1.5 lg:min-w-[82px] py-2 px-2 rounded-lg transition-all duration-300 active:scale-95 group disabled:opacity-50"
+                        className="flex items-center justify-center gap-1.5 lg:min-w-[82px] py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group disabled:opacity-50 whitespace-nowrap"
                     >
                         <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
                                 <HeartSolidIcon className="w-[18px] h-[18px] text-rose-500" />
                             ) : (
-                                <HeartIcon className="w-[18px] h-[18px] text-gray-700 group-hover:text-gray-900 opacity-60" />
+                                <HeartIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
                             )}
                         </div>
-                        <span className={`text-[13px] font-semibold transition-all duration-300 whitespace-nowrap ${isSaved ? 'text-rose-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                        <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
                             {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
@@ -1093,10 +1025,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                             url: window.location.href
                         }}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 active:scale-95 group shrink-0"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group shrink-0"
                         showLabel={true}
-                        labelClassName="text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap"
-                        iconClassName="w-4 h-4 text-gray-700 group-hover:text-gray-900 group-hover:scale-110 transition-all duration-300"
+                        labelClassName="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300 whitespace-nowrap"
+                        iconClassName="w-4 h-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300"
                     />
                 </div>
 
@@ -1111,25 +1043,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         return (
             <div
-                className={`flex flex-col overflow-hidden bg-white ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}
-                style={{ backgroundColor: 'var(--menu-bg-color, #fff)' }}
+                className={`flex flex-col overflow-hidden bg-white dark:bg-dashboard-dark ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}
             >
                 {/* Header */}
                 {!success && (
                     <div
-                        className={`relative flex items-center justify-between px-4 md:px-8 py-3 lg:py-6 shrink-0 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20 border-b'}`}
-                        style={{
-                            backgroundColor: 'var(--menu-bg-color)',
-                            borderBottomColor: 'var(--menu-divider)'
-                        }}
+                        className={`relative flex items-center justify-between px-4 md:px-8 py-3 lg:py-6 shrink-0 ${isDesktopPage ? 'lg:px-0 bg-transparent' : 'lg:px-20 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark'}`}
                     >
                         {isDesktopPage ? (
                             <div className="w-full flex items-center justify-between relative group/nav">
                                 <button
                                     onClick={() => setIsBookingOverlayOpen(false)}
-                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50/80 backdrop-blur-sm border border-gray-100 shadow-sm hover:bg-gray-100 active:scale-95 transition-all z-10 group"
+                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
                                 >
-                                    <ArrowLeftIcon className="w-5 h-5 text-gray-700 stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
+                                    <ArrowLeftIcon className="w-5 h-5 text-gray-700 dark:text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
                                 </button>
                                 <div className="w-10" />
                             </div>
@@ -1137,18 +1064,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             <>
                                 <button
                                     onClick={() => setIsBookingOverlayOpen(false)}
-                                    className="z-10 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-gray-900 hover:text-gray-700 py-3 px-3 md:py-2 md:px-2 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-colors duration-200"
+                                    className="z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all group"
                                 >
-                                    <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6" />
+                                    <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                                 </button>
 
                                 {/* Centered Title */}
                                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
                                     <span
-                                        className="text-lg font-semibold truncate pointer-events-auto"
-                                        style={{ color: 'var(--menu-text-primary)' }}
+                                        className="text-lg font-semibold truncate pointer-events-auto text-gray-900 dark:text-white"
                                     >
-                                        Request a Viewing
+                                        Book Viewing
                                     </span>
                                 </div>
 
@@ -1174,14 +1100,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         <SolidCheckCircleIcon className="w-10 h-10 relative z-10" style={{ color: 'var(--primary-color)' }} />
                                     </div>
                                     <h2
-                                        className="text-3xl font-bold mb-3 tracking-tight text-center"
-                                        style={{ color: 'var(--menu-text-primary)' }}
+                                        className="text-3xl font-bold mb-3 tracking-tight text-center text-gray-900 dark:text-white"
                                     >
                                         Appointment Confirmed!
                                     </h2>
                                     <p
-                                        className="text-base mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5"
-                                        style={{ color: 'var(--menu-text-muted)' }}
+                                        className="text-base mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5 text-gray-600 dark:text-gray-400"
                                     >
                                         You can check your viewing request and status at
                                         <span
@@ -1192,7 +1116,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 window.location.href = '/my-bookings';
                                             }}
                                         >
-                                            <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300" style={{ color: 'var(--menu-text-primary)' }}>Viewing requests</span>
+                                            <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300 text-gray-900 dark:text-white">Viewing requests</span>
                                             <ArrowRightIcon
                                                 className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
                                                 style={{ color: 'var(--primary-color)' }}
@@ -1222,7 +1146,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="space-y-10">
                                     {/* Purpose - show only the option matching listing type (rent → For Rent, sale → For Buy), auto-selected */}
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 pl-2">I want to</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 pl-2">I want to</h3>
                                         {(() => {
                                             const purposeOptions = listing?.listing_type === 'sale'
                                                 ? [{ value: 'buy', label: 'For Buy' }]
@@ -1233,7 +1157,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <button
                                                             key={opt.value}
                                                             type="button"
-                                                            className="py-2.5 px-5 rounded-full text-sm font-normal transition-all bg-gray-900 text-white border-none"
+                                                            className="py-2.5 px-5 rounded-full text-sm font-normal transition-all bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none"
                                                         >
                                                             {opt.label}
                                                         </button>
@@ -1245,22 +1169,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Calendar - half width on lg/xl */}
                                     <div ref={bookingDateRef} className="w-full lg:max-w-[50%]">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-6 pl-2">Select Date</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">Select Date</h3>
                                         {bookingErrors.preferred_date && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
                                         )}
-                                        <div className="bg-white rounded-3xl p-6">
+                                        <div className="bg-white dark:bg-dashboard-card rounded-3xl p-6">
                                             <div className="flex items-center justify-between mb-6 px-2">
-                                                <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                                                    <ChevronLeftIcon className="w-5 h-5 text-gray-400" />
+                                                <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() - 1)))} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                                                    <ChevronLeftIcon className="w-5 h-5 text-gray-400 dark:text-gray-300" />
                                                 </button>
-                                                <h4 className="font-normal text-gray-900 text-lg">{monthYear}</h4>
-                                                <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() + 1)))} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                                                    <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                                <h4 className="font-normal text-gray-900 dark:text-white text-lg">{monthYear}</h4>
+                                                <button onClick={() => setCalendarMonth(new Date(calendarMonth.setMonth(calendarMonth.getMonth() + 1)))} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                                                    <ChevronRightIcon className="w-5 h-5 text-gray-400 dark:text-gray-300" />
                                                 </button>
                                             </div>
                                             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-normal text-gray-900 py-1">{d}</div>)}
+                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-normal text-gray-900 dark:text-gray-400 py-1">{d}</div>)}
                                             </div>
                                             <div className="grid grid-cols-7 gap-1">
                                                 {generateCalendarGrid().map((day, i) => {
@@ -1286,7 +1210,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             key={i}
                                                             disabled={isDisabled}
                                                             onClick={() => handleDateSelect(day)}
-                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-normal flex items-center justify-center transition-all ${isSelected ? 'bg-gray-900 text-white shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-normal flex items-center justify-center transition-all ${isSelected ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark shadow-lg shadow-gray-200 scale-110' : isDisabled ? 'text-gray-200 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
                                                         >
                                                             {day}
                                                         </button>
@@ -1298,13 +1222,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Time Selection - button grid for all screen sizes */}
                                     <div ref={bookingTimeRef}>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-6 pl-2">Select Time</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">Select Time</h3>
                                         {bookingErrors.preferred_time && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_time}</p>
                                         )}
                                         <div className="space-y-6">
                                             <div>
-                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2 pl-5">
+                                                <h4 className="text-base font-normal text-gray-900 dark:text-white mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                                                     Morning
                                                     {fetchingSlots && <span className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin ml-1" />}
@@ -1324,10 +1248,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-gray-900 text-white border-none'
+                                                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none'
                                                                     : disabled
-                                                                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                                        : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                        ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                                        : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
                                                                     }`}
                                                             >
                                                                 {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
@@ -1337,7 +1261,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                             </div>
                                             <div>
-                                                <h4 className="text-base font-normal text-gray-900 mb-3 flex items-center gap-2 pl-5">
+                                                <h4 className="text-base font-normal text-gray-900 dark:text-white mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                                     Afternoon
                                                 </h4>
@@ -1356,10 +1280,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-gray-900 text-white border-none'
+                                                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-dashboard-dark border-none'
                                                                     : disabled
-                                                                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                                        : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                                                        ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                                        : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
                                                                     }`}
                                                             >
                                                                 {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
@@ -1375,15 +1299,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {/* Column 2: Details & Message - half width on lg/xl */}
                                 <div className="space-y-10 w-full lg:max-w-[50%]">
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900 pl-2">Your Details</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">Your Details</h3>
                                         <div className="space-y-4 pl-5">
                                             <div ref={bookingFullNameRef}>
-                                                <label className="block text-base font-normal text-gray-900 mb-1.5">Full Name</label>
+                                                <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Full Name</label>
                                                 <input
                                                     type="text"
                                                     value={bookingForm.full_name}
                                                     onChange={e => { setBookingForm({ ...bookingForm, full_name: e.target.value }); if (bookingErrors.full_name) setBookingErrors(prev => ({ ...prev, full_name: null })); }}
-                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                     style={{ borderRadius: 'var(--card-radius)' }}
                                                     placeholder="John Doe"
                                                 />
@@ -1391,24 +1315,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             </div>
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div ref={bookingPhoneRef}>
-                                                    <label className="block text-base font-normal text-gray-900 mb-1.5">Phone Number</label>
+                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Phone Number</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.phone}
                                                         onChange={e => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (bookingErrors.phone) setBookingErrors(prev => ({ ...prev, phone: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="+66..."
                                                     />
                                                     {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.phone}</p>}
                                                 </div>
                                                 <div ref={bookingEmailRef}>
-                                                    <label className="block text-base font-normal text-gray-900 mb-1.5">Email Address</label>
+                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Email Address</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.email}
                                                         onChange={e => { setBookingForm({ ...bookingForm, email: e.target.value }); if (bookingErrors.email) setBookingErrors(prev => ({ ...prev, email: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 border focus:bg-white focus:ring-1 transition-all font-normal text-gray-900 text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 focus:ring-gray-200'}`}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-white/5 border focus:bg-white dark:focus:bg-white/10 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                         style={{ borderRadius: 'var(--card-radius)' }}
                                                         placeholder="john@example.com"
                                                     />
@@ -1419,13 +1343,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </div>
 
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900 pl-2">Additional Message</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">Additional Message</h3>
                                         <div className="pl-5">
                                             <textarea
                                                 value={bookingForm.message}
                                                 onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
                                                 rows={5}
-                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 border border-gray-100 focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 text-base resize-none"
+                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 focus:bg-white dark:focus:bg-white/10 focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 dark:text-white text-base resize-none"
                                                 style={{ borderRadius: 'var(--card-radius)' }}
                                             />
                                         </div>
@@ -1442,7 +1366,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     <div className="space-y-8">
                                         <div>
                                             <h4
-                                                className="text-lg font-semibold text-gray-900 mb-8 flex items-center justify-between"
+                                                className="text-lg font-semibold text-gray-900 dark:text-white mb-8 flex items-center justify-between"
                                             >
                                                 <span>Viewing request summary</span>
                                                 {timeLeft && (
@@ -1456,16 +1380,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 className="space-y-8 pl-5"
                                             >
                                                 <div
-                                                    className="border-b pb-8"
-                                                    style={{ borderBottomColor: 'var(--menu-divider)' }}
+                                                    className="border-b pb-8 border-gray-100 dark:border-white/10"
                                                 >
-                                                    <div className="text-base font-semibold text-gray-900 mb-1">
+                                                    <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-1">
                                                         {listing.district}
                                                     </div>
-                                                    <div className="font-bold text-lg leading-tight mb-2 truncate text-gray-900">
+                                                    <div className="font-bold text-lg leading-tight mb-2 truncate text-gray-900 dark:text-white">
                                                         {listing.title}
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-base text-gray-700">
+                                                    <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-400">
                                                         <MapPinIcon className="w-4 h-4" />
                                                         {listing.location || 'Bangkok'}
                                                     </div>
@@ -1473,18 +1396,18 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                 <div className="grid grid-cols-2 gap-8">
                                                     <div>
-                                                        <div className="text-base font-semibold text-gray-900 mb-2">
+                                                        <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-2">
                                                             Preferred Date
                                                         </div>
-                                                        <div className="font-semibold text-base text-gray-900">
+                                                        <div className="font-semibold text-base text-gray-900 dark:text-white">
                                                             {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-base font-semibold text-gray-900 mb-2">
+                                                        <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-2">
                                                             Preferred Time
                                                         </div>
-                                                        <div className="font-semibold text-base text-gray-900">
+                                                        <div className="font-semibold text-base text-gray-900 dark:text-white">
                                                             {bookingForm.preferred_time || '---'}
                                                         </div>
                                                     </div>
@@ -1492,15 +1415,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                 {bookingForm.message && (
                                                     <div
-                                                        className="pt-4 border-t"
-                                                        style={{ borderTopColor: 'var(--menu-divider)' }}
+                                                        className="pt-4 border-t border-gray-100 dark:border-white/10"
                                                     >
-                                                        <div className="text-base font-semibold text-gray-900 mb-3">
+                                                        <div className="text-base font-semibold text-gray-900 dark:text-white mb-3">
                                                             Your Message
                                                         </div>
                                                         <div
-                                                            className="text-base italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900"
-                                                            style={{ borderLeftColor: 'var(--menu-divider)' }}
+                                                            className="text-base italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900 dark:text-gray-300 border-gray-200 dark:border-white/20"
                                                         >
                                                             "{bookingForm.message}"
                                                         </div>
@@ -1519,20 +1440,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {!success && (
                     <div
                         ref={bookingConfirmRef}
-                        className={`z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-5 pb-5 px-6'}`}
+                        className={`z-[70] flex flex-col gap-4 shrink-0 border-t border-gray-100 dark:border-white/10 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm ${isDesktopPage ? 'p-12 lg:p-12 lg:px-24' : 'pt-5 pb-5 px-6'}`}
                     >
                         <div className="max-w-[1440px] mx-auto w-full lg:px-20 flex flex-col items-center gap-4">
                             <label className="flex items-center gap-3 cursor-pointer group">
                                 <input
-                                    type="checkbox"
-                                    checked={confirmedDateTime}
-                                    onChange={(e) => {
-                                        setConfirmedDateTime(e.target.checked);
-                                        if (bookingErrors.confirm) setBookingErrors(prev => ({ ...prev, confirm: null }));
-                                    }}
-                                    className="w-5 h-5 rounded border-2 border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
-                                />
-                                <span className="text-base text-gray-900 font-medium select-none group-hover:text-gray-700">
+                                        type="checkbox"
+                                        checked={confirmedDateTime}
+                                        onChange={(e) => {
+                                            setConfirmedDateTime(e.target.checked);
+                                            if (bookingErrors.confirm) setBookingErrors(prev => ({ ...prev, confirm: null }));
+                                        }}
+                                        className="w-5 h-5 rounded border-2 border-gray-300 dark:border-white/20 text-primary-600 focus:ring-primary-500 focus:ring-offset-0 bg-transparent"
+                                    />
+                                    <span className="text-base text-gray-900 dark:text-white font-medium select-none group-hover:text-gray-700 dark:group-hover:text-gray-300">
                                     I confirm the date and time selected above
                                 </span>
                             </label>
@@ -1580,8 +1501,99 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         );
     };
 
+    const renderContactLinks = (isDesktopModal = false) => {
+        let links = [];
+        if (agent?.social_links) {
+            try {
+                links = JSON.parse(agent.social_links);
+            } catch (e) { }
+        }
+        if (links.length === 0) {
+            if (agent?.phone) links.push({ platform: 'Call', value: agent.phone });
+            if (agent?.facebook) links.push({ platform: 'Facebook', value: agent.facebook });
+            if (agent?.line) links.push({ platform: 'Line', value: agent.line });
+        }
+
+        // Ensure Phone/Call is at the top if it exists but isn't first
+        const callIdx = links.findIndex(l => l.platform === 'Call');
+        if (callIdx > 0) {
+            const [call] = links.splice(callIdx, 1);
+            links.unshift(call);
+        } else if (callIdx === -1 && agent?.phone) {
+            links.unshift({ platform: 'Call', value: agent.phone });
+        }
+
+        return links.map((link, idx) => {
+            const isCall = link.platform === 'Call';
+            const config = isCall ? {
+                icon: PhoneIcon,
+                color: '#3B82F6',
+                bgColor: 'rgba(59, 130, 246, 0.1)',
+                getLink: (v) => `tel:${v}`
+            } : (SOCIAL_PLATFORM_CONFIG[link.platform] || SOCIAL_PLATFORM_CONFIG['Other']);
+
+            const Icon = config.icon;
+            const href = config.getLink(link.value);
+
+            if (isDesktopModal) {
+                return (
+                    <a
+                        key={idx}
+                        href={href}
+                        target={isCall ? undefined : "_blank"}
+                        rel={isCall ? undefined : "noopener noreferrer"}
+                        className="flex items-center gap-4 p-3 rounded-full border border-gray-100 dark:border-white/10 hover:border-primary-100 dark:hover:border-white/20 hover:bg-primary-50/30 dark:hover:bg-white/5 transition-all group relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] pointer-events-none" />
+                        <div className="text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3" style={{ backgroundColor: config.color }}>
+                            <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <span className="font-bold text-[15px] text-gray-900 dark:text-white leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                                {isCall ? 'Call Us Now' : `Chat on ${link.platform}`}
+                            </span>
+                            <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium mt-1">
+                                {isCall ? link.value : `Join us on ${link.platform}`}
+                            </span>
+                        </div>
+                        <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 dark:bg-white/10 flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-white/20 transition-colors">
+                            <ChevronRightIcon className="w-4 h-4 text-gray-400 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-white" />
+                        </div>
+                    </a>
+                );
+            }
+
+            return (
+                <a
+                    key={idx}
+                    href={href}
+                    target={isCall ? undefined : "_blank"}
+                    rel={isCall ? undefined : "noopener noreferrer"}
+                    className="group flex items-center gap-4 p-3 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent hover:border-gray-100 dark:hover:border-white/10 transition-all duration-300 active:scale-[0.98]"
+                >
+                    <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                        style={{ backgroundColor: config.bgColor || 'rgba(0,0,0,0.05)' }}
+                    >
+                        <Icon className="w-5 h-5" style={{ color: config.color }} />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                        <span className="font-bold text-gray-900 dark:text-white text-[15px] tracking-tight">{link.platform}</span>
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400 leading-none mt-0.5">
+                            {isCall ? link.value : `Connect on ${link.platform}`}
+                        </span>
+                    </div>
+                    <div className="ml-auto">
+                        <ChevronRightIcon className="w-5 h-5 text-gray-300 dark:text-gray-500 group-hover:text-gray-400 dark:group-hover:text-white transition-colors" />
+                    </div>
+                </a>
+            );
+        });
+    };
+
+
     return (
-        <div key={id} className={`min-h-screen bg-white ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'} pb-24 lg:pb-0`}>
+        <div key={id} className={`min-h-screen bg-white dark:bg-dashboard-dark ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'} pb-24 lg:pb-0`}>
             {renderBookingOverlay()}
             {/* Mobile Header (White Nav & Image Carousel) - Visible only on mobile/tablet */}
             {!isBookingOverlayOpen && (
@@ -1590,10 +1602,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <div className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 py-3 z-[60] bg-transparent pointer-events-none">
                         <button
                             onClick={() => onClose ? onClose() : navigate(-1)}
-                            className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 bg-white shadow-xl rounded-full text-gray-900 active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5"
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 bg-white dark:bg-dashboard-card shadow-xl rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5 dark:ring-white/5"
                             aria-label="Back"
                         >
-                            <ArrowLeftIcon className="w-7 h-7" />
+                            <ArrowLeftIcon className="w-7 h-7 text-gray-900 dark:text-white" />
                         </button>
                         <div className="flex items-center gap-2 pointer-events-auto">
                             <PropertyShare
@@ -1604,80 +1616,59 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                     url: window.location.href
                                 }}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white shadow-xl rounded-full text-gray-900 hover:text-gray-600 active:scale-90 transition-all ring-1 ring-black/5"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white dark:bg-dashboard-card shadow-xl rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
                                 showLabel={false}
-                                iconClassName="w-7 h-7 text-gray-900"
+                                iconClassName="w-7 h-7 text-gray-900 dark:text-white"
                             />
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white shadow-xl rounded-full text-gray-900 active:scale-90 transition-all ring-1 ring-black/5"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white dark:bg-dashboard-card shadow-xl rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
                                 aria-label={isSaved ? 'Unsave' : 'Save'}
                             >
                                 {isSaved ? (
                                     <HeartSolidIcon className="w-7 h-7 text-rose-500" />
                                 ) : (
-                                    <HeartIcon className="w-7 h-7 text-gray-900" />
+                                    <HeartIcon className="w-7 h-7 text-gray-900 dark:text-white" />
                                 )}
                             </button>
                         </div>
                     </div>
 
-                    {/* Image Carousel - drag/swipe horizontally to change image */}
-                    <div
-                        className="relative w-full h-[45vh] min-h-[350px] touch-pan-y select-none overflow-hidden"
-                        onTouchStart={handleImageTouchStart}
-                        onTouchEnd={handleImageTouchEnd}
-                        onMouseDown={handleImageMouseDown}
-                        onMouseMove={handleImageMouseMove}
-                        onMouseUp={handleImageMouseUp}
-                        onMouseLeave={handleImageMouseUp}
-                    >
-                        {hasImages && images.length > 1 && imageSlideDir ? (
-                            <>
-                                {/* Leaving image */}
-                                <img
-                                    key={`leave-${imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length}`}
-                                    src={getMediaUrl(images[imageSlideDir === 'next' ? (currentImageIndex - 1 + images.length) % images.length : (currentImageIndex + 1) % images.length].url)}
-                                    alt=""
-                                    className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${imageTransitionStep === 1
-                                        ? imageSlideDir === 'next'
-                                            ? '-translate-x-full'
-                                            : 'translate-x-full'
-                                        : 'translate-x-0'
-                                        }`}
-                                    draggable={false}
-                                />
-                                {/* Entering image */}
-                                <img
-                                    key={`enter-${currentImageIndex}`}
-                                    src={getMediaUrl(images[currentImageIndex].url)}
-                                    alt={listing.title}
-                                    className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-300 ease-out ${imageTransitionStep === 1 ? 'translate-x-0' : imageSlideDir === 'next' ? 'translate-x-full' : '-translate-x-full'
-                                        }`}
-                                    draggable={false}
-                                />
-                            </>
-                        ) : (
-                            <img
-                                src={
-                                    hasImages
-                                        ? getMediaUrl(images[currentImageIndex].url)
-                                        : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'
-                                }
-                                alt={listing.title}
-                                className="w-full h-full object-cover pointer-events-none"
-                                draggable={false}
-                            />
-                        )}
+                    {/* Image Carousel - Native horizontal scroll with snapping */}
+                    <div className="relative w-full h-[45vh] min-h-[350px] overflow-hidden">
                         <div
-                            className="absolute inset-0 cursor-grab active:cursor-grabbing"
-                            onClick={() => {
-                                if (!hasImages || didSwipeRef.current) return;
-                                openGallery(currentImageIndex);
-                            }}
-                            aria-label="View photo tour"
-                        />
+                            ref={imageScrollRef}
+                            onScroll={handleImageScroll}
+                            className="flex w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide scroll-smooth"
+                            style={{ WebkitOverflowScrolling: 'touch' }}
+                        >
+                            {hasImages ? (
+                                images.map((img, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="flex-shrink-0 w-full h-full snap-start relative cursor-pointer"
+                                        onClick={() => openGallery(idx)}
+                                    >
+                                        <img
+                                            src={getMediaUrl(img.url)}
+                                            alt={`${listing.title} - ${idx + 1}`}
+                                            className="w-full h-full object-cover pointer-events-none"
+                                            draggable={false}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="w-full h-full snap-start">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop"
+                                        alt={listing.title}
+                                        className="w-full h-full object-cover pointer-events-none"
+                                        draggable={false}
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         {/* Image counter */}
                         {hasImages && images.length > 1 && (
@@ -1700,29 +1691,29 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white rounded-t-[32px] lg:rounded-[24px] overflow-hidden shadow-none px-0 pt-5 pb-0 relative z-10 ${!isBookingOverlayOpen ? '-mt-8 lg:mt-0' : ''}`}>
+                                <div className={`bg-transparent overflow-hidden px-0 pt-5 pb-0 relative z-10 ${!isBookingOverlayOpen ? '-mt-8 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
                                             <div className="flex items-center gap-6">
                                                 <button
                                                     onClick={() => navigate(-1)}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 active:scale-95 transition-all z-10 group"
+                                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
                                                 >
-                                                    <ArrowLeftIcon className="w-6 h-6 text-gray-900 group-hover:-translate-x-0.5 transition-transform" />
+                                                    <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                                                 </button>
 
                                                 <div className="flex items-center gap-2">
                                                     <div
                                                         className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border ${listing.listing_type === 'sale'
                                                             ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
-                                                            : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700'
+                                                            : 'bg-transparent dark:bg-white/10 border-indigo-400/20 text-indigo-700 dark:text-white'
                                                             }`}
                                                     >
                                                         {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
                                                     </div>
                                                     {listing.is_featured && (
-                                                        <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border bg-amber-400/10 border-amber-400/20 text-amber-700 flex items-center gap-1">
+                                                        <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border bg-transparent dark:bg-white/10 border-amber-400/20 text-amber-700 dark:text-white flex items-center gap-1">
                                                             <SparklesIcon className="w-3 h-3 text-amber-500" />
                                                             FEATURED
                                                         </div>
@@ -1733,26 +1724,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             {/* Title is now in global nav via Portal */}
 
                                             <div className="flex items-center gap-6">
-                                                <div className="flex items-center gap-2 border-r border-gray-100 pr-6 mr-6">
+                                                <div className="flex items-center gap-2 pr-2">
                                                     <button
                                                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
-                                                        className="flex items-center justify-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-50 transition-all duration-300 active:scale-95 group/btn"
+                                                        className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
                                                     >
-                                                        <PhoneIcon className="w-5 h-5 text-gray-900 group-hover/btn:scale-110 transition-all" />
-                                                        <span className="text-[13px] font-normal text-gray-900">Contact</span>
+                                                        <PhoneIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
+                                                        <span className="text-[13px] font-normal text-gray-900 dark:text-white">Contact</span>
                                                     </button>
                                                     {activeBooking ? (
-                                                        <div className="flex items-center gap-2.5 px-3 py-2 text-emerald-600">
+                                                        <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 transition-all whitespace-nowrap">
                                                             <LuCalendarCheck2 className="w-5 h-5" />
                                                             <span className="text-[13px] font-normal">Viewing requested</span>
                                                         </div>
                                                     ) : (
                                                         <button
                                                             onClick={handleBookingClick}
-                                                            className="flex items-center justify-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-50 transition-all duration-300 active:scale-95 group/btn"
+                                                            className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
                                                         >
-                                                            <CalendarDaysIcon className="w-5 h-5 text-gray-900 group-hover/btn:scale-110 transition-all" />
-                                                            <span className="text-[13px] font-normal text-gray-900">Request viewing</span>
+                                                            <CalendarDaysIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
+                                                            <span className="text-[13px] font-normal text-gray-900 dark:text-white">Book Viewing</span>
                                                         </button>
                                                     )}
                                                 </div>
@@ -1761,16 +1752,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     <button
                                                         onClick={handleToggleSave}
                                                         disabled={savingListing}
-                                                        className="flex items-center justify-center gap-2.5 min-w-[88px] px-3 py-2 rounded-xl hover:bg-gray-50 transition-all duration-300 active:scale-95 group/btn disabled:opacity-50"
+                                                        className="flex items-center justify-center gap-2.5 min-w-[88px] px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn disabled:opacity-50 whitespace-nowrap"
                                                     >
                                                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
                                                             {isSaved ? (
                                                                 <HeartSolidIcon className="w-5 h-5 text-rose-500" />
                                                             ) : (
-                                                                <HeartIcon className="w-5 h-5 text-gray-900 opacity-60" />
+                                                                <HeartIcon className="w-5 h-5 text-gray-900 dark:text-white opacity-60" />
                                                             )}
                                                         </div>
-                                                        <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900'}`}>
+                                                        <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900 dark:text-white'}`}>
                                                             {isSaved ? 'Saved' : 'Save'}
                                                         </span>
                                                     </button>
@@ -1782,10 +1773,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                                             url: window.location.href
                                                         }}
-                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-50 transition-all duration-300 active:scale-95 group/btn"
+                                                        className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn shrink-0 whitespace-nowrap"
                                                         showLabel={true}
-                                                        labelClassName="text-[13px] font-normal text-gray-900"
-                                                        iconClassName="w-4 h-4 text-gray-900 group-hover/btn:scale-110 transition-all"
+                                                        labelClassName="text-[13px] font-normal text-gray-900 dark:text-white"
+                                                        iconClassName="w-4 h-4 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -1795,26 +1786,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {/* Title & Info - same layout for listing and viewing-requested; viewing date/status inline when bookingId */}
                                     <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-6 lg:pt-0">
                                         <div className="flex-1 min-w-0 w-full">
-                                            <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 leading-[1.2] mb-2 tracking-tight">
+                                            <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 dark:text-white leading-[1.2] mb-2 tracking-tight">
                                                 {listing.title}
                                             </h1>
 
                                             {bookingId && (
                                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3 text-[14px]">
-                                                    <span className="text-gray-500">Viewing requested</span>
-                                                    <span className="text-gray-300">·</span>
-                                                    <span className="font-medium text-gray-800">
+                                                    <span className="text-gray-500 dark:text-gray-400">Viewing requested</span>
+                                                    <span className="text-gray-300 dark:text-gray-600">·</span>
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">
                                                         {viewedBooking?.preferred_date ? new Date(viewedBooking.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
                                                     </span>
-                                                    {viewedBooking?.preferred_time && <><span className="text-gray-300">·</span><span className="text-gray-700">{viewedBooking.preferred_time}</span></>}
-                                                    <span className="text-gray-300">·</span>
+                                                    {viewedBooking?.preferred_time && <><span className="text-gray-300 dark:text-gray-600">·</span><span className="text-gray-700 dark:text-gray-300">{viewedBooking.preferred_time}</span></>}
+                                                    <span className="text-gray-300 dark:text-gray-600">·</span>
                                                     <span className={`font-semibold ${viewedBooking?.status === 'confirmed' ? 'text-emerald-600' : viewedBooking?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
                                                         {viewedBooking?.status || 'Pending'}
                                                     </span>
                                                 </div>
                                             )}
 
-                                            <div className="flex items-center text-gray-800 text-[15px] pb-6">
+                                            <div className="flex items-center text-gray-800 dark:text-gray-300 text-[15px] pb-6">
                                                 <span>{listing.bedrooms || 0} bedroom{listing.bedrooms > 1 || !listing.bedrooms ? 's' : ''}</span>
                                                 <span className="mx-1.5 font-bold">·</span>
                                                 <span>{listing.bathrooms || 0} bath{listing.bathrooms > 1 || !listing.bathrooms ? 's' : ''}</span>
@@ -1829,26 +1820,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {!bookingId && (
                                         <div className="px-4 md:px-0 lg:px-0 flex gap-4 mb-8">
                                             <div className="mt-0.5">
-                                                <CheckBadgeIcon className="w-6 h-6 text-gray-900" />
+                                                <CheckBadgeIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                                             </div>
                                             <div>
-                                                <h3 className="text-[16px] font-semibold text-gray-900 leading-tight mb-1">Confirmed available</h3>
-                                                <p className="text-[14px] text-gray-500 leading-snug">This property recently verified its status and is available today.</p>
+                                                <h3 className="text-[16px] font-semibold text-gray-900 dark:text-white leading-tight mb-1">Confirmed available</h3>
+                                                <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-snug">This property recently verified its status and is available today.</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {/* Price for Mobile (Fixed styling) */}
-                                    <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 mb-2 flex items-baseline">
+                                    <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-baseline">
                                         {formatPrice(listing.price)}
                                         {listing.listing_type === 'rent' && (
-                                            <span className="text-gray-900 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 border-dashed pb-0.5">/month</span>
+                                            <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">/month</span>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Image Gallery - Desktop Bento Grid */}
-                                <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white mt-6">
+                                <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white dark:bg-dashboard-card mt-6">
 
                                     {/* Desktop Bento Grid (Visible on lg screens) */}
                                     <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] cursor-pointer">
@@ -1929,15 +1920,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors pointer-events-none">
-                                                        <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 w-fit">
+                                                        <span className="bg-white/90 dark:bg-dashboard-card/90 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 w-fit">
                                                             <Square2StackIcon className="w-5 h-5" />
                                                             Show all photos
                                                         </span>
                                                     </div>
                                                 </>
                                             ) : (
-                                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                                    <span className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-none">
+                                                <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                                                    <span className="bg-white dark:bg-dashboard-card text-gray-900 dark:text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors flex items-center gap-2 pointer-events-none">
                                                         <Square2StackIcon className="w-5 h-5" />
                                                         Show all {images.length} photos
                                                     </span>
@@ -1955,49 +1946,49 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="px-4 md:px-0 lg:px-0">
                                     {/* Features */}
                                     {/* Features Grid */}
-                                    <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200" style={{ boxShadow: 'none' }}>
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                                    <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card" style={{ boxShadow: 'none' }}>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
                                             {/* Row 1 */}
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors">
-                                                <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                                <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
+                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t md:border-t-0">
-                                                <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t md:border-t-0 border-gray-100 dark:border-white/5">
+                                                <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
+                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
-                                                <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t lg:border-t-0 border-gray-100 dark:border-white/5">
+                                                <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.area || 0} m²</div>
+                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.area || 0} m²</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t lg:border-t-0">
-                                                <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t lg:border-t-0 border-gray-100 dark:border-white/5">
+                                                <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
+                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
                                                 </div>
                                             </div>
 
                                             {/* Additional Highlights */}
                                             {listing.year_built > 0 && (
-                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
+                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t border-gray-100 dark:border-white/5">
                                                     <div className="text-xl md:text-2xl flex-shrink-0">🏗️</div>
                                                     <div>
-                                                        <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">Built in {listing.year_built}</div>
+                                                        <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">Built in {listing.year_built}</div>
                                                     </div>
                                                 </div>
                                             )}
 
                                             {listing.listing_type === 'sale' && (
-                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t">
-                                                    <TbCurrencyBaht className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0" />
+                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t border-gray-100 dark:border-white/5">
+                                                    <TbCurrencyBaht className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                     <div>
-                                                        <div className="text-base md:text-lg font-medium text-gray-700 leading-tight">
+                                                        <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">
                                                             {listing.price && listing.area
                                                                 ? `฿${Math.round(listing.price / listing.area).toLocaleString()}/sqm`
                                                                 : '-'}
@@ -2006,13 +1997,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                             )}
 
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 transition-colors border-t col-span-1 md:col-span-2">
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t col-span-1 md:col-span-2 border-gray-100 dark:border-white/5">
                                                 <span className="flex-shrink-0 md:flex md:items-center md:justify-center">
-                                                    <MapPinIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 hidden md:block" />
-                                                    <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 flex-shrink-0 md:hidden" />
+                                                    <MapPinIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white hidden md:block" />
+                                                    <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0 md:hidden" />
                                                 </span>
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 truncate leading-tight">
+                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
                                                         {(listing.station_id || listing.station_name)
                                                             ? `${listing.distance_to_station || 0}m to ${listing.station_name || listing.station?.name_en || 'Station'}`
                                                             : 'Near Transit'}
@@ -2032,23 +2023,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     try {
                                                         const featureList = JSON.parse(listing.features || '[]');
                                                         const featureMap = {
-                                                            'refrigerator': { label: 'Refrigerator', icon: <BiSolidFridge className="w-6 h-6 text-blue-500" /> },
-                                                            'bathtub': { label: 'Bathtub', icon: <PiBathtub className="w-6 h-6 text-blue-400" /> },
-                                                            'tv': { label: 'TV', icon: <HiOutlineTv className="w-6 h-6 text-gray-700" /> },
-                                                            'ac': { label: 'Air Conditioning', icon: <LuWind className="w-6 h-6 text-blue-300" /> },
-                                                            'microwave': { label: 'Microwave', icon: <MdOutlineMicrowave className="w-6 h-6 text-orange-600" /> },
+                                                            'refrigerator': { label: 'Refrigerator', icon: <RiFridgeLine className="w-6 h-6 text-blue-500" /> },
+                                                            'bathtub': { label: 'Bathtub', icon: <PiBathtub className="w-6 h-6 text-indigo-500" /> },
+                                                            'tv': { label: 'TV', icon: <MdOutlineTv className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
+                                                            'ac': { label: 'Air Conditioning', icon: <TbAirConditioning className="w-6 h-6 text-blue-400" /> },
+                                                            'microwave': { label: 'Microwave', icon: <MdOutlineMicrowave className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
                                                             'washing_machine': { label: 'Washing Machine', icon: <MdOutlineLocalLaundryService className="w-6 h-6 text-blue-600" /> },
-                                                            'water_heater': { label: 'Water Heater', icon: <IoWaterOutline className="w-6 h-6 text-orange-400" /> },
-                                                            'kitchen': { label: 'Kitchen / Stove', icon: <MdOutlineSoupKitchen className="w-6 h-6 text-gray-600" /> },
-                                                            'parking': { label: 'Covered Car Park', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-700" /> },
-                                                            'pool': { label: 'Swimming Pool', icon: <MdOutlinePool className="w-6 h-6 text-cyan-500" /> },
-                                                            'gym': { label: 'Fitness / Gym', icon: <MdOutlineFitnessCenter className="w-6 h-6 text-gray-800" /> },
-                                                            'security': { label: '24h Security', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
-                                                            'sauna': { label: 'Sauna', icon: <MdOutlineHotTub className="w-6 h-6 text-orange-300" /> },
-                                                            'garden': { label: 'Garden / BBQ', icon: <MdOutlinePark className="w-6 h-6 text-green-600" /> },
-                                                            'playground': { label: 'Playground', icon: <MdOutlineChildCare className="w-6 h-6 text-yellow-500" /> },
-                                                            'coworking': { label: 'Co-working Space', icon: <MdOutlineComputer className="w-6 h-6 text-indigo-500" /> },
-                                                            'communal_elevator': { label: 'Communal Elevator', icon: <MdOutlineElevator className="w-6 h-6 text-gray-600" /> },
+                                                            'water_heater': { label: 'Water Heater', icon: <MdOutlineHotTub className="w-6 h-6 text-orange-400" /> },
+                                                            'kitchen': { label: 'Kitchen', icon: <TbToolsKitchen2 className="w-6 h-6 text-amber-600" /> },
+                                                            'parking': { label: 'Parking', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-600" /> },
+                                                            'pool': { label: 'Swimming Pool', icon: <TbPool className="w-6 h-6 text-cyan-500" /> },
+                                                            'gym': { label: 'Gym', icon: <MdOutlineFitnessCenter className="w-6 h-6 text-slate-600 dark:text-gray-400" /> },
+                                                            'security': { label: 'Security', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
+                                                            'sauna': { label: 'Sauna', icon: <MdOutlineHotTub className="w-6 h-6 text-orange-500" /> },
+                                                            'garden': { label: 'Garden', icon: <TbTree className="w-6 h-6 text-emerald-600" /> },
+                                                            'playground': { label: 'Playground', icon: <MdOutlineToys className="w-6 h-6 text-yellow-500" /> },
+                                                            'coworking': { label: 'Coworking Space', icon: <MdOutlineLaptop className="w-6 h-6 text-indigo-500" /> },
+                                                            'communal_elevator': { label: 'Communal Elevator', icon: <MdOutlineElevator className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
                                                             'communal_reception': { label: 'Communal Reception', icon: <MdOutlineSupportAgent className="w-6 h-6 text-blue-500" /> },
                                                             'communal_restaurant': { label: 'Communal Restaurant On Premises', icon: <MdOutlineRestaurant className="w-6 h-6 text-orange-500" /> },
                                                             'communal_shop': { label: 'Communal Shop On Premises', icon: <MdOutlineStorefront className="w-6 h-6 text-orange-600" /> },
@@ -2057,8 +2048,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             'communal_coworking': { label: 'Communal Coworking Space', icon: <MdOutlineLaptop className="w-6 h-6 text-indigo-500" /> },
                                                             'communal_security_24': { label: 'Communal Security 24 hours', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
                                                             'communal_parking': { label: 'Communal Car Park', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-600" /> },
-                                                            'communal_covered_parking': { label: 'Communal Covered Car Park', icon: <MdOutlineGarage className="w-6 h-6 text-gray-700" /> },
-                                                            'communal_function_room': { label: 'Communal Function Room', icon: <MdOutlineMeetingRoom className="w-6 h-6 text-gray-800" /> },
+                                                            'communal_covered_parking': { label: 'Communal Covered Car Park', icon: <MdOutlineGarage className="w-6 h-6 text-gray-700 dark:text-gray-400" /> },
+                                                            'communal_function_room': { label: 'Communal Function Room', icon: <MdOutlineMeetingRoom className="w-6 h-6 text-gray-800 dark:text-gray-300" /> },
                                                         };
 
                                                         const unitBuildingIds = ['refrigerator', 'bathtub', 'tv', 'ac', 'microwave', 'washing_machine', 'water_heater', 'kitchen', 'parking', 'pool', 'gym', 'security', 'sauna', 'garden', 'playground', 'coworking'];
@@ -2067,7 +2058,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         const amenities = featureList.filter(id => unitBuildingIds.includes(id));
                                                         const facilities = featureList.filter(id => projectFacilityIds.includes(id));
 
-                                                        if (!featureList.length) return <p className="text-gray-500 italic">No specific amenities listed.</p>;
+                                                        if (!featureList.length) return <p className="text-gray-500 dark:text-gray-400 italic">No specific amenities listed.</p>;
 
                                                         return (
                                                             <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-4">
@@ -2078,10 +2069,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
                                                                                 return (
                                                                                     <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                                                                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
                                                                                             {item.icon}
                                                                                         </div>
-                                                                                        <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors tracking-tight text-[14px]">{item.label}</span>
+                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[14px]">{item.label}</span>
                                                                                     </div>
                                                                                 );
                                                                             })}
@@ -2108,16 +2099,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                                 {facilities.length > 0 && (
                                                                     <div>
-                                                                        <h3 className="text-2xl font-extrabold text-gray-900 mb-6 border-b lg:border-0 border-gray-100 pb-4 lg:pb-0">Project Facilities</h3>
+                                                                        <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">Project Facilities</h3>
                                                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
                                                                             {(showAllFacilities ? facilities : facilities.slice(0, 4)).map(featureId => {
                                                                                 const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
                                                                                 return (
                                                                                     <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                                                                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
                                                                                             {item.icon}
                                                                                         </div>
-                                                                                        <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors tracking-tight text-[14px]">{item.label}</span>
+                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[14px]">{item.label}</span>
                                                                                     </div>
                                                                                 );
                                                                             })}
@@ -2153,22 +2144,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Description */}
                                     <div>
-                                        <h3 className="text-3xl font-extrabold text-gray-900 mb-6">About this listing</h3>
+                                        <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">About this listing</h3>
                                         {listing.description ? (
                                             <div
-                                                className="text-gray-700 text-[15px] [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-3 [&>h1]:text-gray-900
-                                                   [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h2]:text-gray-900
-                                                   [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mb-2 [&>h3]:text-gray-900
+                                                className="text-gray-700 dark:text-gray-300 text-[15px] [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-3 [&>h1]:text-gray-900 dark:[&>h1]:text-white
+                                                   [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h2]:text-gray-900 dark:[&>h2]:text-white
+                                                   [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mb-2 [&>h3]:text-gray-900 dark:[&>h3]:text-white
                                                    [&>p]:mb-5 [&>p]:leading-[1.8]
                                                    [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-5 [&>ul]:leading-[1.8]
                                                    [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-5 [&>ol]:leading-[1.8]
                                                    [&>li]:mb-2
-                                                   [&>strong]:font-semibold [&>strong]:text-gray-900
+                                                   [&>strong]:font-semibold [&>strong]:text-gray-900 dark:[&>strong]:text-white
                                                    [&>a]:text-primary-600 [&>a]:underline"
                                                 dangerouslySetInnerHTML={{ __html: listing.description }}
                                             />
                                         ) : (
-                                            <p className="text-gray-600">No description provided.</p>
+                                            <p className="text-gray-600 dark:text-gray-400">No description provided.</p>
                                         )}
                                     </div>
 
@@ -2176,13 +2167,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {(listing.latitude && listing.longitude) && (
                                         <>
                                             <div className="mt-12 px-2 md:px-0 lg:px-0">
-                                                <div className="border-b border-gray-100 mb-8">
+                                                <div className="border-b border-gray-100 dark:border-white/10 mb-8">
                                                     <nav className="-mb-px flex space-x-10">
                                                         <button
                                                             onClick={() => setActiveMapTab('google')}
                                                             className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'google'
                                                                 ? 'border-primary-500 text-primary-600'
-                                                                : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+                                                                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-200 dark:hover:border-white/20'
                                                                 }`}
                                                         >
                                                             Google Map
@@ -2191,7 +2182,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             onClick={() => setActiveMapTab('transit')}
                                                             className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'transit'
                                                                 ? 'border-primary-500 text-primary-600'
-                                                                : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+                                                                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-200 dark:hover:border-white/20'
                                                                 }`}
                                                         >
                                                             Transit Map
@@ -2199,7 +2190,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </nav>
                                                 </div>
 
-                                                <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 bg-gray-50 group">
+                                                <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-dashboard-card group">
                                                     {activeMapTab === 'google' ? (
                                                         <div className="w-full h-full animate-in fade-in duration-700">
                                                             <GoogleMapComponent
@@ -2225,15 +2216,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     { name: 'BTS Silom', color: '#006633' },
                                                                     { name: 'MRT Blue', color: '#1E50A0' },
                                                                 ].map((line) => (
-                                                                    <div key={line.name} className="flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm">
+                                                                    <div key={line.name} className="flex items-center gap-2 px-3 py-1.5 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm rounded-full border border-gray-100 dark:border-white/10 shadow-sm">
                                                                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: line.color }} />
-                                                                        <span className="text-[14px] font-bold text-gray-700">{line.name}</span>
+                                                                        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{line.name}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
 
                                                             <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
-                                                                <div className="flex flex-col bg-white/90 backdrop-blur-sm rounded-full border border-gray-100 shadow-lg p-1 overflow-hidden">
+                                                                <div className="flex flex-col bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm rounded-full border border-gray-100 dark:border-white/10 shadow-lg p-1 overflow-hidden">
                                                                     <button
                                                                         onClick={() => {
                                                                             const nextZoom = Math.min(mapState.zoom + 0.1, 2.0);
@@ -2243,11 +2234,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 pan: constrainPan(prev.pan, nextZoom)
                                                                             }));
                                                                         }}
-                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white transition-all rounded-full"
+                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-white hover:text-primary-600 hover:bg-white dark:hover:bg-white/10 transition-all rounded-full"
                                                                     >
                                                                         <span className="text-xl font-bold">+</span>
                                                                     </button>
-                                                                    <div className="h-px bg-gray-100 mx-1.5" />
+                                                                    <div className="h-px bg-gray-100 dark:bg-white/10 mx-1.5" />
                                                                     <button
                                                                         onClick={() => {
                                                                             const minZoom = getMinZoom();
@@ -2258,14 +2249,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 pan: constrainPan(prev.pan, nextZoom)
                                                                             }));
                                                                         }}
-                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white transition-all rounded-full"
+                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-white hover:text-primary-600 hover:bg-white dark:hover:bg-white/10 transition-all rounded-full"
                                                                     >
                                                                         <span className="text-xl font-bold">−</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="absolute bottom-4 left-4 z-40 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm text-lg font-medium text-gray-500 pointer-events-none">
+                                                            <div className="absolute bottom-4 left-4 z-40 px-3 py-1.5 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm rounded-full border border-gray-100 dark:border-white/10 shadow-sm text-lg font-medium text-gray-500 dark:text-gray-400 pointer-events-none">
                                                                 Ctrl + scroll to zoom
                                                             </div>
 
@@ -2341,19 +2332,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                 <div className="mt-6 px-4 md:px-0 lg:px-0 flex flex-wrap items-center justify-between gap-4">
                                                     <div className="flex items-center gap-6">
-                                                        <div className="flex items-center text-[14px] text-gray-500">
+                                                        <div className="flex items-center text-[14px] text-gray-500 dark:text-gray-400">
                                                             <MapPinIcon className="w-5 h-5 mr-2 text-primary-500" />
-                                                            <span className="font-medium text-gray-700">
+                                                            <span className="font-medium text-gray-800 dark:text-gray-300">
                                                                 {listing.latitude && listing.longitude
                                                                     ? `Coordinates: ${listing.latitude}, ${listing.longitude}`
                                                                     : listing.address || 'Location Verified'}
                                                             </span>
                                                         </div>
                                                         {listing.station_name && (
-                                                            <div className="flex items-center text-[14px] text-gray-500 border-l border-gray-100 pl-6">
+                                                            <div className="flex items-center text-[14px] text-gray-500 dark:text-gray-400 border-l border-gray-100 dark:border-white/10 pl-6">
                                                                 <TbTrain className="w-5 h-5 mr-2 text-primary-600" />
-                                                                <span className="font-bold text-primary-900">{listing.station_name}</span>
-                                                                <span className="ml-2 font-medium text-gray-400">({listing.distance_to_station}m)</span>
+                                                                <span className="font-bold text-primary-900 dark:text-white">{listing.station_name}</span>
+                                                                <span className="ml-2 font-medium text-gray-400 dark:text-gray-500">({listing.distance_to_station}m)</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -2361,7 +2352,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="px-5 py-2.5 rounded-full bg-gray-50 text-gray-900 font-bold text-[14px] flex items-center hover:bg-gray-100 transition-all border border-gray-100"
+                                                        className="px-5 py-2.5 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] flex items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/10"
                                                     >
                                                         View on Google Maps
                                                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2386,7 +2377,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     )}
                                                 </div>
                                                 {!theme?.logoUrl && (
-                                                    <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
+                                                    <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter uppercase italic">StayNest</span>
                                                 )}
                                             </div>
                                         </div>
@@ -2398,14 +2389,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {isModal && bookingId && showStickyHeader && createPortal(
                                     <div className="flex items-center gap-8 ml-auto animate-in fade-in slide-in-from-right-4 duration-300">
                                         <div className="flex flex-col gap-0.5 items-end">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none">Date</span>
-                                            <span className="text-xs font-black text-gray-900 leading-none">
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">Date</span>
+                                            <span className="text-xs font-black text-gray-900 dark:text-white leading-none">
                                                 {viewedBooking?.preferred_date ? new Date(viewedBooking.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
                                             </span>
                                         </div>
                                         <div className="flex flex-col gap-0.5 items-end">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none">Time</span>
-                                            <span className="text-xs font-black text-gray-900 leading-none">
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">Time</span>
+                                            <span className="text-xs font-black text-gray-900 dark:text-white leading-none">
                                                 {viewedBooking?.preferred_time || '...'}
                                             </span>
                                         </div>
@@ -2415,8 +2406,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                 {/* Related Listings Section — carousel: 1 card (swipe) on mobile, 2 on md, 3 on lg+ */}
                                 {!bookingId && relatedListings.length > 0 && (
-                                    <div className="hidden md:block w-full px-4 md:px-4 lg:px-8 py-12 border-t border-gray-100">
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
+                                    <div className="hidden md:block w-full px-4 md:px-4 lg:px-8 py-12 border-t border-gray-100 dark:border-white/10">
+                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">You might also like</h2>
                                         {isMapView ? (
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
                                                 {relatedListings.map((related) => (
@@ -2455,272 +2446,108 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </div>
                                 )}
 
+                                {/* Desktop Contact Modal */}
+                                {isDesktopView && (
+                                    <Modal
+                                        isOpen={isContactOverlayOpen}
+                                        onClose={() => setIsContactOverlayOpen(false)}
+                                        title="Let's Connect"
+                                        size="md"
+                                    >
+                                        <div className="p-8">
+                                            <p className="text-base text-gray-500 mb-8 font-medium">
+                                                Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home.
+                                            </p>
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {renderContactLinks(true)}
+                                            </div>
+                                        </div>
+                                    </Modal>
+                                )}
 
-                                {
-                                    isContactOverlayOpen && (
-                                        !isModal ? (
-                                            <Modal
-                                                isOpen={isContactOverlayOpen}
-                                                onClose={() => setIsContactOverlayOpen(false)}
-                                                title="Contact Agent"
-                                                size="sm"
-                                                centerTitle={true}
+                                {/* Mobile Contact Sheet */}
+                                {!isDesktopView && (
+                                    <div
+                                        className={`fixed inset-0 z-[200] ${isContactOverlayOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                                    >
+                                        {/* Backdrop */}
+                                        <div
+                                            className={`absolute inset-0 bg-black/60 backdrop-blur-[4px] transition-opacity duration-[500ms] ${isContactOverlayOpen ? 'opacity-100' : 'opacity-0'}`}
+                                            onClick={() => setIsContactOverlayOpen(false)}
+                                        />
+
+                                        {/* The Sheet */}
+                                        <div
+                                            className={`absolute bottom-0 left-0 right-0 z-[100] shadow-[0_-30px_70px_rgba(0,0,0,0.2)] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[40px] h-[60vh]
+                                                ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
+                                        >
+                                            <div
+                                                className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle"
+                                                onClick={() => setIsContactOverlayOpen(false)}
                                             >
-                                                <div className="p-6">
-                                                    <p className="text-sm text-gray-500 mb-6 font-medium">
-                                                        Choose your preferred way to reach out to our team of experts.
-                                                    </p>
-
-                                                    {agent?.phone && (
-                                                        <div className="mb-6 pb-6 border-b border-gray-100">
-                                                            <div className="flex items-center gap-2 mb-4">
-                                                                <div className="w-1.5 h-5 bg-primary-500 rounded-full"></div>
-                                                                <h4 className="text-[17px] font-bold text-gray-900">Contact Information</h4>
-                                                            </div>
-                                                            <label className="block text-[13px] font-bold text-gray-700 mb-2">Phone Number</label>
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="flex-1 bg-primary-50/50 text-gray-900 text-[14px] px-3 py-2.5 rounded-lg border border-primary-100 flex items-center justify-between">
-                                                                    <span>{agent.phone}</span>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            navigator.clipboard.writeText(agent.phone);
-                                                                            setCopiedPhone(true);
-                                                                            setTimeout(() => setCopiedPhone(false), 2000);
-                                                                        }}
-                                                                        className="ml-2 text-primary-500 hover:text-primary-700 transition-colors p-1"
-                                                                        title="Copy phone number"
-                                                                    >
-                                                                        {copiedPhone ? <CheckCircleIcon className="w-5 h-5 text-emerald-500" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="grid grid-cols-1 gap-3">
-                                                        {(() => {
-                                                            let links = [];
-                                                            if (agent?.social_links) {
-                                                                try {
-                                                                    links = JSON.parse(agent.social_links);
-                                                                } catch (e) { }
-                                                            }
-
-                                                            // Fallback to individual fields if JSON is empty
-                                                            if (links.length === 0) {
-                                                                if (agent?.phone) links.push({ platform: 'Call', value: agent.phone });
-                                                                if (agent?.facebook) links.push({ platform: 'Facebook', value: agent.facebook });
-                                                                if (agent?.line) links.push({ platform: 'Line', value: agent.line });
-                                                            }
-
-                                                            // If still empty, show a default call button if we have a phone
-                                                            if (links.length === 0 && agent?.phone) {
-                                                                links.push({ platform: 'Call', value: agent.phone });
-                                                            }
-
-                                                            return links.map((link, idx) => {
-                                                                if (link.platform === 'Call') {
-                                                                    return (
-                                                                        <a
-                                                                            key={idx}
-                                                                            href={`tel:${link.value}`}
-                                                                            className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                                        >
-                                                                            <div className="bg-[#111827] text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110">
-                                                                                <PhoneIcon className="w-5 h-5" />
-                                                                            </div>
-                                                                            <span className="font-semibold text-gray-700">Call Now</span>
-                                                                        </a>
-                                                                    );
-                                                                }
-
-                                                                const config = SOCIAL_PLATFORM_CONFIG[link.platform] || SOCIAL_PLATFORM_CONFIG['Other'];
-                                                                const Icon = config.icon;
-                                                                const href = config.getLink(link.value);
-
-                                                                return (
-                                                                    <a
-                                                                        key={idx}
-                                                                        href={href}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all group"
-                                                                    >
-                                                                        <div
-                                                                            className="text-white p-2 rounded-lg shadow-sm transition-transform group-hover:scale-110"
-                                                                            style={{ backgroundColor: config.color }}
-                                                                        >
-                                                                            <Icon className="w-5 h-5" />
-                                                                        </div>
-                                                                        <span className="font-semibold text-gray-700">Contact via {link.platform}</span>
-                                                                    </a>
-                                                                );
-                                                            });
-                                                        })()}
-                                                    </div>
+                                                <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
+                                            </div>
+                                            <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
+                                                {/* Header */}
+                                                <div className="w-full text-center mb-4">
+                                                    <h3 className="font-black text-gray-900 dark:text-white text-xl tracking-tighter mb-1">Let's Connect</h3>
+                                                    <p className="text-gray-400 dark:text-gray-500 font-bold text-[13px] tracking-wide uppercase">Connect with our team</p>
                                                 </div>
-                                            </Modal>
-                                        ) : (
-                                            <>
-                                                {/* Local Backdrop for Mobile */}
-                                                <div
-                                                    className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[55] animate-in fade-in duration-300"
-                                                    onClick={() => setIsContactOverlayOpen(false)}
-                                                />
 
-                                                <div
-                                                    className="fixed z-[60] shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in duration-300 top-0 left-0 right-0 bottom-0 slide-in-from-top-2 overflow-y-auto modal-scrollable contact-modal-scrollable"
-                                                    style={{ backgroundColor: '#FFFFFF' }}
-                                                >
-                                                    <div className="w-full relative flex flex-col items-center p-12 lg:p-20 min-h-[60vh] justify-center">
-                                                        {/* Header */}
-                                                        <div className="mb-12 w-full text-center max-w-3xl">
-                                                            <h3 className="text-4xl lg:text-6xl font-black text-gray-900 tracking-tighter mb-6">Let's Connect</h3>
-                                                            <p className="text-gray-600 text-lg lg:text-xl font-medium max-w-2xl mx-auto leading-relaxed">Choose your preferred way to reach out to our team of experts.</p>
-                                                        </div>
-
-                                                        {agent?.phone && (
-                                                            <div className="w-full max-w-6xl mb-12 flex flex-col items-center pb-12 border-b border-gray-100">
-                                                                <div className="w-full max-w-sm">
-                                                                    <div className="flex items-center justify-center gap-2 mb-4">
-                                                                        <div className="w-1.5 h-6 bg-primary-500 rounded-full"></div>
-                                                                        <h4 className="text-[19px] font-bold text-gray-900">Contact Information</h4>
-                                                                    </div>
-                                                                    <label className="block text-sm font-bold text-gray-700 mb-2 text-center">Phone Number</label>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="flex-1 bg-primary-50/50 text-gray-900 text-[15px] px-4 py-3 rounded-xl border border-primary-100 flex items-center justify-between">
-                                                                            <span>{agent.phone}</span>
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    navigator.clipboard.writeText(agent.phone);
-                                                                                    setCopiedPhone(true);
-                                                                                    setTimeout(() => setCopiedPhone(false), 2000);
-                                                                                }}
-                                                                                className="ml-2 text-primary-500 hover:text-primary-700 transition-colors p-1"
-                                                                                title="Copy phone number"
-                                                                            >
-                                                                                {copiedPhone ? <CheckCircleIcon className="w-5 h-5 text-emerald-500" /> : <DocumentDuplicateIcon className="w-5 h-5" />}
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {/* Contact Options Grid */}
-                                                        <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl">
-                                                            {(() => {
-                                                                let links = [];
-                                                                if (agent?.social_links) {
-                                                                    try {
-                                                                        links = JSON.parse(agent.social_links);
-                                                                    } catch (e) { }
-                                                                }
-                                                                if (links.length === 0) {
-                                                                    if (agent?.phone) links.push({ platform: 'Call', value: agent.phone });
-                                                                    if (agent?.facebook) links.push({ platform: 'Facebook', value: agent.facebook });
-                                                                    if (agent?.line) links.push({ platform: 'Line', value: agent.line });
-                                                                }
-                                                                if (links.length === 0 && agent?.phone) {
-                                                                    links.push({ platform: 'Call', value: agent.phone });
-                                                                }
-
-                                                                return links.map((link, idx) => {
-                                                                    const isCall = link.platform === 'Call';
-                                                                    const config = isCall ? {
-                                                                        icon: PhoneIcon,
-                                                                        color: '#111827',
-                                                                        getLink: (v) => `tel:${v}`
-                                                                    } : (SOCIAL_PLATFORM_CONFIG[link.platform] || SOCIAL_PLATFORM_CONFIG['Other']);
-
-                                                                    const Icon = config.icon;
-                                                                    const href = config.getLink(link.value);
-
-                                                                    return (
-                                                                        <a
-                                                                            key={idx}
-                                                                            href={href}
-                                                                            target={isCall ? undefined : "_blank"}
-                                                                            rel={isCall ? undefined : "noopener noreferrer"}
-                                                                            className="group flex flex-col items-center justify-center p-8 lg:p-12 rounded-[40px] transition-all duration-500 hover:translate-y-[-8px] active:scale-95 relative overflow-hidden"
-                                                                            style={{
-                                                                                background: '#FFFFFF',
-                                                                                border: `1.5px solid ${config.color}15`,
-                                                                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
-                                                                            }}
-                                                                            onMouseEnter={(e) => {
-                                                                                e.currentTarget.style.boxShadow = `0 20px 40px ${config.color}25`;
-                                                                                e.currentTarget.style.border = `1.5px solid ${config.color}45`;
-                                                                                e.currentTarget.style.background = '#f9fafb';
-                                                                            }}
-                                                                            onMouseLeave={(e) => {
-                                                                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.04)';
-                                                                                e.currentTarget.style.border = `1.5px solid ${config.color}15`;
-                                                                                e.currentTarget.style.background = '#FFFFFF';
-                                                                            }}
-                                                                        >
-                                                                            <div
-                                                                                className="w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
-                                                                                style={{
-                                                                                    backgroundColor: config.color,
-                                                                                    boxShadow: `0 8px 20px ${config.color}45`
-                                                                                }}
-                                                                            >
-                                                                                <Icon className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                                                                            </div>
-                                                                            <span className="text-xl lg:text-2xl font-black text-gray-900 mb-1">{link.platform}</span>
-                                                                            <span className="text-sm font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                {isCall ? 'Call Now' : 'Connect Now'}
-                                                                            </span>
-                                                                        </a>
-                                                                    );
-                                                                });
-                                                            })()}
-                                                        </div>
-                                                    </div>
+                                                <div className="w-full max-w-md mt-6 space-y-4">
+                                                    {renderContactLinks(false)}
                                                 </div>
-                                            </>
-                                        )
-                                    )
-                                }
-
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
-                    </div>
                 </div>
             </div>
+        </div>
 
             {/* Sticky Mobile Footer — substantial height and padding (mobile only) */}
             <div
-                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-[90] flex items-center justify-between pointer-events-auto min-h-[72px] rounded-t-[20px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-dashboard-card border-t border-gray-200 dark:border-white/10 z-[90] flex items-center justify-between pointer-events-auto min-h-[72px] rounded-t-[20px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
                 style={{
                     paddingTop: '0.75rem',
                     paddingBottom: '0.75rem',
-                    paddingLeft: 'max(1.5rem, env(safe-area-inset-left, 0px))',
-                    paddingRight: 'max(1.5rem, env(safe-area-inset-right, 0px))',
+                    paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+                    paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                 }}
             >
-                <div className="flex flex-col">
+                <div className="flex flex-col shrink-0 pr-2">
                     <div className="flex items-baseline">
-                        <span className="text-[17px] font-extrabold text-gray-900 leading-tight">{formatPrice(listing.price)}</span>
+                        <span className="text-[17px] font-extrabold text-gray-900 dark:text-white leading-tight">{formatPrice(listing.price)}</span>
                         {listing.listing_type === 'rent' && (
-                            <span className="text-gray-900 text-[13px] font-normal ml-1">/month</span>
+                            <span className="text-gray-900 dark:text-gray-300 text-[13px] font-normal ml-1">/month</span>
                         )}
                     </div>
                 </div>
-                {activeBooking ? (
-                    <div className="flex items-center gap-2 text-primary-600 font-bold text-[15px]">
-                        <LuCalendarCheck2 className="w-5 h-5" />
-                        <span>Viewing Requested</span>
-                    </div>
-                ) : (
+
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={handleBookingClick}
-                        className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[15px] px-6 py-3.5 rounded-full min-h-[48px]"
+                        onClick={() => setIsContactOverlayOpen(true)}
+                        className="bg-gray-900 dark:bg-white active:bg-black dark:active:bg-gray-200 active:scale-[0.98] transition-all text-white dark:text-dashboard-dark font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap"
                     >
-                        Request a Viewing
+                        <span>Contact</span>
                     </button>
-                )}
+
+                    {activeBooking ? (
+                        <div className="flex items-center gap-1.5 text-primary-600 font-bold text-[14px] whitespace-nowrap px-1">
+                            <LuCalendarCheck2 className="w-5 h-5" />
+                            <span>Requested</span>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleBookingClick}
+                            className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[14px] px-4 py-3 rounded-full min-h-[48px] whitespace-nowrap"
+                        >
+                            Book Viewing
+                        </button>
+                    )}
+                </div>
             </div>
         </div >
     );
@@ -2740,9 +2567,9 @@ const ListingDetailPage = () => {
     const [headerLeading, setHeaderLeading] = useState(
         <button
             onClick={() => navigate(-1)}
-            className="hidden lg:flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all w-12 h-12 rounded-full hover:bg-gray-100 active:scale-95 -ml-4"
+            className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-4 group"
         >
-            <ArrowLeftIcon className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
         </button>
     );
     const [galleryOpen, setGalleryOpen] = useState(false);
@@ -2761,9 +2588,9 @@ const ListingDetailPage = () => {
         setHeaderLeading(
             <button
                 onClick={() => navigate(-1)}
-                className="hidden lg:flex items-center justify-center text-gray-900 hover:text-gray-700 transition-all w-12 h-12 rounded-full hover:bg-gray-100 active:scale-95 -ml-4"
+                className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-4 group"
             >
-                <ArrowLeftIcon className="w-6 h-6" />
+                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
             </button>
         );
     }, [bookingId, navigate]);
@@ -2797,17 +2624,17 @@ const ListingDetailPage = () => {
 
     if (isDesktop) {
         return (
-            <div className="min-h-screen bg-white">
-                <div className="w-full min-h-screen bg-white relative">
+            <div className="min-h-screen bg-white dark:bg-dashboard-dark">
+                <div className="w-full min-h-screen bg-white dark:bg-dashboard-dark relative">
                     {filterBarSlot && createPortal(
                         <div className="flex items-center justify-center h-full">
-                            <span className="text-[16px] font-normal text-gray-900 tracking-[0.02em]">
+                            <span className="text-[16px] font-normal text-gray-900 dark:text-white tracking-[0.02em]">
                                 {galleryOpen ? (
                                     <>
                                         <span className="font-bold">Photo</span> <span>Tour</span>
                                     </>
                                 ) : (isBookingOpen ? (
-                                    'Request a viewing'
+                                    'Book Viewing'
                                 ) : (modalTitle === 'Property Details' ? (
                                     <>
                                         <span className="font-bold">Property</span> <span>Details</span>
@@ -2839,7 +2666,7 @@ const ListingDetailPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark flex items-center justify-center">
             <Modal
                 isOpen={true}
                 onClose={() => navigate(-1)}
@@ -2852,7 +2679,7 @@ const ListingDetailPage = () => {
                 hideCloseButton={true}
                 className={MODAL_SIZE_CLASS}
             >
-                <div className="h-full overflow-y-auto modal-scrollable bg-white">
+                <div className="h-full overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-dark">
                     {renderContent()}
                 </div>
             </Modal>

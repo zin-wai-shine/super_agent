@@ -30,13 +30,13 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
     const buttonClass = (enabled) =>
         `flex items-center justify-center w-8 h-8 rounded-full border transition-all flex-shrink-0 ${
             enabled
-                ? 'border-gray-300 text-gray-700 hover:border-gray-500 hover:bg-gray-50'
-                : 'border-gray-200 text-gray-300 cursor-default'
+                ? 'border-gray-300 dark:border-white/30 text-gray-700 dark:text-gray-300 hover:border-gray-500 dark:hover:border-white/50 hover:bg-gray-50 dark:hover:bg-white/10'
+                : 'border-gray-200 dark:border-white/10 text-gray-300 dark:text-gray-600 cursor-default'
         }`;
 
     return (
         <div className="flex items-center justify-between gap-3 w-full">
-            <span className="text-base font-normal text-gray-900">{label}</span>
+            <span className="text-base font-normal text-gray-900 dark:text-white">{label}</span>
             <div className="flex items-center gap-1">
                 <button
                     type="button"
@@ -47,7 +47,7 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
                 >
                     <MinusIcon className="w-4 h-4" strokeWidth={2} />
                 </button>
-                <span className="min-w-[3rem] text-center text-base font-normal text-gray-900 py-1">
+                <span className="min-w-[3rem] text-center text-base font-normal text-gray-900 dark:text-white py-1">
                     {displayLabel}
                 </span>
                 <button

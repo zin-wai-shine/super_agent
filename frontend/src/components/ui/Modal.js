@@ -109,11 +109,11 @@ const Modal = ({
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div
-                    className={`${contentClassName || 'bg-white'} text-left w-full flex flex-col h-full overflow-hidden ${fullBleedDesktop ? 'shadow-none sm:shadow-none rounded-none sm:rounded-none' : (noRadius ? 'shadow-none rounded-none' : `shadow-2xl ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`)}`}
+                    className={`${contentClassName || 'bg-white dark:bg-dashboard-card'} text-left w-full flex flex-col h-full overflow-hidden ${fullBleedDesktop ? 'shadow-none sm:shadow-none rounded-none sm:rounded-none' : (noRadius ? 'shadow-none rounded-none' : `shadow-2xl ${fullScreenMobile ? 'rounded-none sm:rounded-[24px]' : 'rounded-[24px]'}`)}`}
                     style={(fullBleedDesktop || noRadius) ? undefined : { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
                 >
                     {hasHeader && (
-                        <div className={`border-b border-gray-100 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
+                        <div className={`border-b border-gray-100 dark:border-white/10 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
                             <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1440px] mx-auto min-h-[64px]">
                                 <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
                                     {headerLeading && (
@@ -122,7 +122,7 @@ const Modal = ({
                                         </div>
                                     )}
                                     {title && (
-                                        <h3 className={`text-lg font-bold text-gray-900 truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden' : 'block'}`}>
+                                        <h3 className={`text-lg font-bold text-gray-900 dark:text-white truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden' : 'block'}`}>
                                             {title}
                                         </h3>
                                     )}
@@ -133,7 +133,7 @@ const Modal = ({
 
                                 {centerTitle && title && (
                                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10">
-                                        <h3 className="text-lg font-bold text-gray-900 truncate text-center">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate text-center">
                                             {title}
                                         </h3>
                                     </div>
@@ -141,7 +141,7 @@ const Modal = ({
 
                                 {rightTitle && title && (
                                     <div className={`absolute ${hideCloseButton ? 'right-4' : 'right-16'} flex items-center justify-center max-w-[50%] z-10 lg:hidden`}>
-                                        <h3 className="text-lg font-semibold text-gray-900 truncate text-right">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate text-right">
                                             {title}
                                         </h3>
                                     </div>
@@ -160,7 +160,7 @@ const Modal = ({
                                     {!hideCloseButton && (
                                         <button
                                             onClick={onClose}
-                                            className="text-gray-400 hover:text-gray-500 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                            className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                                         >
                                             <XMarkIcon className="h-6 w-6" />
                                         </button>

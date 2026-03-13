@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { appointmentApi } from '../../services/api';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
@@ -30,12 +30,13 @@ import { enUS } from 'date-fns/locale';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 
 const STATUS_CONFIG = {
-    pending: { label: 'Pending', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' },
-    confirmed: { label: 'Confirmed', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-500' },
-    completed: { label: 'Completed', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-500' },
-    cancelled: { label: 'Cancelled', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', dot: 'bg-red-500' },
+    pending: { label: 'Pending', bg: 'bg-amber-100 dark:bg-amber-400/10', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
+    confirmed: { label: 'Confirmed', bg: 'bg-blue-100 dark:bg-blue-600/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+    completed: { label: 'Completed', bg: 'bg-emerald-100 dark:bg-emerald-600/10', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    cancelled: { label: 'Cancelled', bg: 'bg-red-100 dark:bg-red-400/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
 };
 
 const statusOptions = [
@@ -51,12 +52,15 @@ const AppointmentManagement = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
+    const [page, setPage] = useSessionState('appt_page', 1);
+    const [limit, setLimit] = useSessionState('appt_limit', 10);
     const [totalPages, setTotalPages] = useState(0);
-    const [statusFilter, setStatusFilter] = useState('');
-    const [search, setSearch] = useState('');
-    const [searchInput, setSearchInput] = useState('');
+    const [statusFilter, setStatusFilter] = useSessionState('appt_statusFilter', '');
+    const [search, setSearch] = useSessionState('appt_search', '');
+    const [searchInput, setSearchInput] = useSessionState('appt_searchInput', '');
+
+    // Use scroll restoration
+    useScrollRestoration('Appointments', !loading && appointments.length > 0);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -65,15 +69,25 @@ const AppointmentManagement = () => {
     const [stats, setStats] = useState({ pending: 0, confirmed: 0, completed: 0, cancelled: 0, total: 0 });
 
     // Date Filter State
-    const [dateRange, setDateRange] = useState([
+    const [dateRange, setDateRange] = useSessionState('appt_dateRange', [
         {
-            startDate: startOfDay(new Date()),
-            endDate: endOfDay(new Date()),
+            startDate: startOfDay(new Date()).toISOString(),
+            endDate: endOfDay(new Date()).toISOString(),
             key: 'selection'
         }
     ]);
-    const [datePreset, setDatePreset] = useState('today');
-    const [isDateFiltered, setIsDateFiltered] = useState(false); // Default false, or 'today' if we want it active
+
+    // Helper to get Date objects from possibly stringified state
+    const parsedDateRange = useMemo(() => {
+        return dateRange.map(range => ({
+            ...range,
+            startDate: range.startDate instanceof Date ? range.startDate : new Date(range.startDate),
+            endDate: range.endDate instanceof Date ? range.endDate : new Date(range.endDate)
+        }));
+    }, [dateRange]);
+
+    const [datePreset, setDatePreset] = useSessionState('appt_datePreset', 'today');
+    const [isDateFiltered, setIsDateFiltered] = useSessionState('appt_isDateFiltered', false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [shownDate, setShownDate] = useState(new Date());
     const datePickerRef = React.useRef(null);
@@ -86,10 +100,10 @@ const AppointmentManagement = () => {
             if (statusFilter) params.status = statusFilter;
             if (search) params.search = search;
 
-            if (isDateFiltered && dateRange[0].startDate && dateRange[0].endDate) {
+            if (isDateFiltered && parsedDateRange[0].startDate && parsedDateRange[0].endDate) {
                 try {
-                    const from = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
-                    const to = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                    const from = parsedDateRange[0].startDate;
+                    const to = parsedDateRange[0].endDate;
                     if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
                         params.date_from = format(from, 'yyyy-MM-dd');
                         params.date_to = format(to, 'yyyy-MM-dd');
@@ -135,8 +149,8 @@ const AppointmentManagement = () => {
         switch (preset) {
             case 'today':
                 setDateRange([{
-                    startDate: startOfDay(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -145,8 +159,8 @@ const AppointmentManagement = () => {
             case 'yesterday':
                 const yesterday = subDays(today, 1);
                 setDateRange([{
-                    startDate: startOfDay(yesterday),
-                    endDate: endOfDay(yesterday),
+                    startDate: startOfDay(yesterday).toISOString(),
+                    endDate: endOfDay(yesterday).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -154,8 +168,8 @@ const AppointmentManagement = () => {
                 break;
             case 'last7days':
                 setDateRange([{
-                    startDate: startOfDay(subDays(today, 6)),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(subDays(today, 6)).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -163,8 +177,8 @@ const AppointmentManagement = () => {
                 break;
             case 'thismonth':
                 setDateRange([{
-                    startDate: startOfMonth(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfMonth(today).toISOString(),
+                    endDate: endOfDay(today).toISOString(),
                     key: 'selection'
                 }]);
                 setIsDateFiltered(true);
@@ -262,7 +276,7 @@ const AppointmentManagement = () => {
                     <button
                         onClick={() => handleStatusChange(appointment, 'confirmed')}
                         disabled={updating}
-                        className={`${btnBase} bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40`}
+                        className={`${btnBase} bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20`}
                         title="Confirm"
                     >
                         <CheckIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
@@ -273,7 +287,7 @@ const AppointmentManagement = () => {
                     <button
                         onClick={() => handleStatusChange(appointment, 'completed')}
                         disabled={updating}
-                        className={`${btnBase} bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40`}
+                        className={`${btnBase} bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20`}
                         title="Complete"
                     >
                         <CheckIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
@@ -284,7 +298,7 @@ const AppointmentManagement = () => {
                     <button
                         onClick={() => handleStatusChange(appointment, 'cancelled')}
                         disabled={updating}
-                        className={`${btnBase} bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40`}
+                        className={`${btnBase} bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20`}
                         title="Cancel"
                     >
                         <XMarkIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
@@ -301,8 +315,8 @@ const AppointmentManagement = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-sm">
-                            <CalendarDaysIcon className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                            <CalendarDaysIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Appointments
                     </h1>
@@ -313,29 +327,19 @@ const AppointmentManagement = () => {
             </div>
 
             {/* Stats Cards (Global Summary) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                     const count = stats[key] || 0;
-                    // Use soft background colors matching the status badge themes
-                    const softBg = key === 'pending' ? 'bg-amber-50/50 dark:bg-amber-900/10'
-                        : key === 'confirmed' ? 'bg-blue-50/50 dark:bg-blue-900/10'
-                            : key === 'completed' ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
-                                : 'bg-red-50/50 dark:bg-red-900/10';
-                    const borderColor = key === 'pending' ? 'border-amber-100 dark:border-amber-900/30'
-                        : key === 'confirmed' ? 'border-blue-100 dark:border-blue-900/30'
-                            : key === 'completed' ? 'border-emerald-100 dark:border-emerald-900/30'
-                                : 'border-red-100 dark:border-red-900/30';
-
                     return (
                         <div
                             key={key}
-                            className={`p-5 rounded-[3px] border transition-all ${softBg} ${borderColor} shadow-sm flex flex-col items-center justify-center text-center`}
+                            className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card"
                         >
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className={`w-2 h-2 rounded-full ${config.dot}`}></span>
-                                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">{config.label}</span>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
+                                <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">{config.label}</span>
                             </div>
-                            <div className="text-3xl font-extrabold text-gray-900 dark:text-white">{count}</div>
+                            <div className="text-lg font-extrabold text-gray-900 dark:text-white">{count}</div>
                         </div>
                     );
                 })}
@@ -346,7 +350,6 @@ const AppointmentManagement = () => {
 
                 {/* LEFT: Page Size */}
                 <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
                     <div className="w-16">
                         <StyledSelect
                             options={[
@@ -369,7 +372,7 @@ const AppointmentManagement = () => {
                                     height: '34px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     borderRadius: '3px'
                                 }),
                                 valueContainer: (base) => ({
@@ -391,7 +394,7 @@ const AppointmentManagement = () => {
                 {/* CENTER: Core Filters */}
                 <div className="flex flex-wrap items-center lg:justify-center gap-3 flex-1 w-full">
                     {/* Status Filter */}
-                    <div className="w-full sm:w-40">
+                    <div className="w-full sm:w-44">
                         <StyledSelect
                             options={statusOptions}
                             value={statusFilter}
@@ -403,7 +406,7 @@ const AppointmentManagement = () => {
                                     ...base,
                                     minHeight: '34px',
                                     height: '34px',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     borderRadius: '3px'
                                 }),
                                 valueContainer: (base) => ({
@@ -431,10 +434,10 @@ const AppointmentManagement = () => {
                                 isSearchable={false}
                                 placeholder="Date Range"
                                 formatOptionLabel={(option) => {
-                                    if (option.value === 'custom' && datePreset === 'custom' && dateRange?.[0]?.startDate && dateRange?.[0]?.endDate) {
+                                    if (option.value === 'custom' && datePreset === 'custom' && parsedDateRange?.[0]?.startDate && parsedDateRange?.[0]?.endDate) {
                                         try {
-                                            const start = dateRange[0].startDate instanceof Date ? dateRange[0].startDate : new Date(dateRange[0].startDate);
-                                            const end = dateRange[0].endDate instanceof Date ? dateRange[0].endDate : new Date(dateRange[0].endDate);
+                                            const start = parsedDateRange[0].startDate;
+                                            const end = parsedDateRange[0].endDate;
                                             if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
                                                 return (
                                                     <div className="flex items-center justify-between w-full">
@@ -457,7 +460,7 @@ const AppointmentManagement = () => {
                                         ...base,
                                         minHeight: '34px',
                                         height: '34px',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
@@ -506,13 +509,17 @@ const AppointmentManagement = () => {
                                     locale={enUS}
                                     editableDateInputs={false}
                                     onChange={item => {
-                                        setDateRange([item.selection]);
+                                        setDateRange([{
+                                            ...item.selection,
+                                            startDate: item.selection.startDate.toISOString(),
+                                            endDate: item.selection.endDate.toISOString()
+                                        }]);
                                         setIsDateFiltered(true);
                                         setDatePreset('custom');
                                         setPage(1);
                                     }}
                                     moveRangeOnFirstSelection={false}
-                                    ranges={dateRange && dateRange.length > 0 ? dateRange : [{ startDate: new Date(), endDate: new Date(), key: 'selection' }]}
+                                    ranges={parsedDateRange}
                                     shownDate={shownDate instanceof Date && !isNaN(shownDate.getTime()) ? shownDate : new Date()}
                                     showMonthAndYearPickers={false}
                                     rangeColors={['#3b82f6']}
@@ -523,15 +530,15 @@ const AppointmentManagement = () => {
                 </div>
 
                 {/* RIGHT: Search */}
-                <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <form onSubmit={handleSearch} className="relative w-full sm:w-56 h-[34px]">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <form onSubmit={handleSearch} className="relative w-full lg:w-64 h-[34px]">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             placeholder="Search visitor..."
-                            className="w-full pl-9 pr-4 h-[34px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-[3px] text-[12px] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
+                            className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </form>
                 </div>
@@ -575,13 +582,13 @@ const AppointmentManagement = () => {
                                                     <div className="flex items-center gap-2">
                                                         <div className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">{appointment.full_name}</div>
                                                         {appointment.is_registered && (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-bold border border-blue-100 dark:border-blue-800" title="Registered Site User">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400 border border-blue-100 dark:border-blue-800" title="Registered Site User">
                                                                 <CheckCircleIcon className="w-2.5 h-2.5" />
                                                                 <span>Site User</span>
-                                                            </div>
+                                                            </span>
                                                         )}
                                                         {appointment.late_cancellation_count >= 3 && (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[9px] font-bold animate-pulse border border-red-200 dark:border-red-800" title={`Warning: ${appointment.late_cancellation_count} late cancellations`}>
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-400/10 text-red-700 dark:text-red-400 text-[9px] font-bold animate-pulse border border-red-200 dark:border-red-800" title={`Warning: ${appointment.late_cancellation_count} late cancellations`}>
                                                                 <ExclamationTriangleIcon className="w-2.5 h-2.5" />
                                                                 <span>Warning</span>
                                                             </div>
@@ -828,7 +835,7 @@ const AppointmentManagement = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(null)} />
                     <div className="relative bg-white dark:bg-dashboard-card rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
-                        <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 bg-red-100 dark:bg-red-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Appointment?</h3>

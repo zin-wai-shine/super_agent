@@ -122,9 +122,9 @@ const TransitFilterModal = ({
     const headerLeading = showMapOnMobile ? (
         <button
             onClick={() => setShowMapOnMobile(false)}
-            className="lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-900 hover:text-gray-700 p-3 -ml-2 rounded-full hover:bg-gray-100 active:scale-95 transition-all duration-200"
+            className="lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 p-3 -ml-2 rounded-full active:scale-95 transition-all duration-200"
         >
-            <ArrowLeftIcon className="w-7 h-7" />
+            <ArrowLeftIcon className="w-7 h-7 text-gray-900 dark:text-white" />
         </button>
     ) : null;
 
@@ -138,15 +138,15 @@ const TransitFilterModal = ({
             fullBleedDesktop={true}
             headerLeading={headerLeading}
             hideCloseButton={showMapOnMobile}
-            className="!w-full !h-full max-w-none rounded-none overflow-hidden shadow-none"
+            className="!w-full !h-full max-w-none rounded-none overflow-hidden"
         >
             <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
                 {/* Content: list or map — footer stays below */}
                 <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
                     {/* Left Column: List — hidden on mobile when map is shown */}
-                    <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[35%] sm:flex-none sm:min-w-0 flex-col bg-white min-h-0 border-r border-gray-100 flex-1 min-w-0`}>
+                    <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[35%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0`}>
                         {/* Header: Fixed — mobile: match filter base (px-4 py-4); desktop: p-6 */}
-                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-8 lg:px-20 border-b border-gray-200 sm:border-gray-50 flex-shrink-0 bg-white">
+                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-8 lg:px-20 flex-shrink-0 bg-white dark:bg-dashboard-dark">
                             <div className="hidden sm:flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
                                     <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600" />
@@ -169,10 +169,11 @@ const TransitFilterModal = ({
                                 <button
                                     type="button"
                                     onClick={() => setShowMapOnMobile(prev => !prev)}
-                                    className="flex-shrink-0 sm:hidden flex items-center justify-center w-14 h-14 rounded-full bg-transparent text-gray-600 hover:text-primary-600 hover:bg-gray-50 active:scale-95 transition-all"
+                                    className="flex-shrink-0 sm:hidden flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full active:scale-95 transition-all shadow-lg"
                                     aria-label={showMapOnMobile ? 'Show station list' : 'Show transit map'}
                                 >
-                                    <MapIcon className="w-8 h-8" strokeWidth={2} />
+                                    <span className="font-bold text-sm tracking-wide">Map</span>
+                                    <MapIcon className="w-5 h-5 text-white" />
                                 </button>
                             </div>
 
@@ -210,7 +211,7 @@ const TransitFilterModal = ({
                         </div>
 
                         {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
-                        <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-8 lg:px-20 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white">
+                        <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-8 lg:px-20 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white dark:bg-dashboard-dark">
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                                     <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
@@ -230,7 +231,7 @@ const TransitFilterModal = ({
 
                                     return (
                                         <div key={group.name} className="mt-4 first:mt-0 mb-10 last:mb-20">
-                                            <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white z-10 sticky top-0 pt-1 pb-1 sm:pt-4 sm:pb-3 md:-mx-8 lg:-mx-20 md:px-8 lg:px-20">
+                                            <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-4 sm:pb-3 md:-mx-8 lg:-mx-20 md:px-8 lg:px-20">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
                                                     <div className="flex items-center gap-2">
@@ -263,15 +264,15 @@ const TransitFilterModal = ({
                                                         className={`
                                                         flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
                                                         ${selectedIds.includes(station.id)
-                                                                ? 'bg-primary-50/50'
-                                                                : 'hover:bg-gray-50 active:scale-95'}
+                                                                ? 'bg-primary-50/50 dark:bg-primary-900/10'
+                                                                : 'hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95'}
                                                     `}
                                                     >
                                                         <div className={`
                                                         w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0
                                                         ${selectedIds.includes(station.id)
                                                                 ? 'bg-primary-600 border-primary-600 shadow-sm'
-                                                                : 'border-gray-200 bg-white'}
+                                                                : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'}
                                                     `}>
                                                             <CheckIcon className={`w-3.5 h-3.5 text-white transition-opacity ${selectedIds.includes(station.id) ? 'opacity-100' : 'opacity-0'}`} />
                                                         </div>
@@ -305,15 +306,14 @@ const TransitFilterModal = ({
                 </div>
 
                 {/* Footer: mobile — match filter base padding and safe area; desktop: px-8 lg:px-12 py-6 */}
-                <div className="transit-modal-footer-safe px-4 md:px-8 lg:px-20 py-4 md:py-6 border-t border-gray-200 sm:border-gray-100 flex-shrink-0 bg-white flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+                <div className="transit-modal-footer-safe px-4 md:px-8 lg:px-20 py-4 md:py-6 flex-shrink-0 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6">
                     <div className="flex items-center gap-4">
-                        <div>
-                            <p className="text-[13px] sm:text-[13px] font-black text-gray-900 uppercase tracking-widest leading-none">
-                                {selectedIds.length} <span className="hidden sm:inline">stations</span>
-                            </p>
-                            <p className="text-[11px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
-                                selected
-                            </p>
+                        <div className="bg-white/95 dark:bg-white/5 backdrop-blur-sm px-4 py-2.5 rounded-2xl flex items-center gap-3">
+                            <MdOutlineDirectionsTransit className="w-5 h-5 text-gray-400" />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Stations</span>
+                                <span className="text-[15px] text-gray-900 dark:text-white font-bold leading-none">{selectedIds.length} Selected</span>
+                            </div>
                         </div>
                         {selectedIds.length > 0 && (
                             <button

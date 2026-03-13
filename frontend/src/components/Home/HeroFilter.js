@@ -71,7 +71,7 @@ const HeroFilter = () => {
         <div className="w-full max-w-6xl mx-auto">
             {/* Search bar — Liquid Glass design */}
             <div
-                className="relative w-full h-[46px] bg-white/75 backdrop-blur-2xl border border-white/60 rounded-t-[24px] rounded-b-none border-b-white/20"
+                className="relative w-full h-[46px] bg-white/75 dark:bg-dashboard-card/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-t-[24px] rounded-b-none border-b-white/20 dark:border-b-white/5"
                 style={{ transition: 'border-color 0.2s ease' }}
             >
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
@@ -87,7 +87,7 @@ const HeroFilter = () => {
                         }
                     }}
                     placeholder="Search location, name, neighborhood..."
-                    className="absolute inset-0 w-full h-full bg-transparent border-none outline-none pl-12 pr-24 text-[14px] font-medium text-slate-700 placeholder-slate-400 rounded-t-[24px]"
+                    className="absolute inset-0 w-full h-full bg-transparent border-none outline-none pl-12 pr-24 text-[14px] font-medium text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 rounded-t-[24px]"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px]">
                     <button
@@ -102,42 +102,42 @@ const HeroFilter = () => {
             </div>
 
             {/* Panel — Liquid Glass Design: shared shadows & translucency */}
-            <div className="w-full flex flex-row h-[420px] overflow-hidden rounded-b-[24px] border border-white/40 bg-white/70 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)]">
+            <div className="w-full flex flex-row h-[420px] overflow-hidden rounded-b-[24px] border border-white/40 dark:border-white/5 bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
                 {/* Left: Quick Searches — Glass Sidebar */}
-                <div className="w-[320px] flex-shrink-0 flex flex-col bg-white/30 backdrop-blur-md border-r border-white/20">
+                <div className="w-[320px] flex-shrink-0 flex flex-col bg-white/30 dark:bg-white/5 backdrop-blur-md border-r border-white/20 dark:border-white/5">
                     <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400/80 mb-4">Quick Searches</p>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400/80 dark:text-gray-500 mb-4">Quick Searches</p>
                         <div className="space-y-1">
                             {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                 <button
                                     key={tag}
                                     type="button"
                                     onClick={() => handleSuggestionClick(tag, label)}
-                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-primary-50/40 text-left transition-all group"
+                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-primary-50/40 dark:hover:bg-white/5 text-left transition-all group"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Icon className="w-5 h-5 text-slate-400/70 group-hover:text-primary-600 transition-colors" />
-                                        <span className="text-[13px] text-slate-600/90 font-medium group-hover:text-slate-900 transition-colors">{label}</span>
+                                        <Icon className="w-5 h-5 text-slate-400/70 dark:text-gray-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
+                                        <span className="text-[13px] text-slate-600/90 dark:text-gray-400 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
+                                    <ChevronRightIcon className="w-4 h-4 text-slate-300 dark:text-gray-600 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
                                 </button>
                             ))}
                         </div>
                     </div>
-                    <div className="px-6 py-4 bg-white/20 border-t border-white/10 flex items-center gap-1.5 mt-auto">
-                        <MagnifyingGlassIcon className="w-4 h-4 text-slate-400/60" />
-                        <p className="text-[11px] text-slate-400/80 font-bold tracking-tight">Press Enter to search all results</p>
+                    <div className="px-6 py-4 bg-white/20 dark:bg-black/20 border-t border-white/10 dark:border-white/5 flex items-center gap-1.5 mt-auto">
+                        <MagnifyingGlassIcon className="w-4 h-4 text-slate-400/60 dark:text-gray-500" />
+                        <p className="text-[11px] text-slate-400/80 dark:text-gray-500 font-bold tracking-tight">Press Enter to search all results</p>
                     </div>
                 </div>
 
                 {/* Right: Transit Explorer — Glass Map Container */}
-                <div className="flex-1 min-w-0 bg-slate-50 relative flex flex-col overflow-hidden rounded-tl-[24px] rounded-br-[24px] border-l border-t border-white/30">
+                <div className="flex-1 min-w-0 bg-slate-50 dark:bg-dashboard-dark relative flex flex-col overflow-hidden rounded-tl-[24px] rounded-br-[24px] border-l border-t border-white/30 dark:border-white/5">
                     <div className="absolute top-6 left-6 z-[100] pointer-events-none">
-                        <div className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 flex items-center gap-3">
+                        <div className="bg-white/70 dark:bg-dashboard-card/80 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex items-center gap-3">
                             <div className="bg-primary-600 p-1.5 rounded-full shadow-lg shadow-primary-500/20">
                                 <MapIcon className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <span className="text-[11px] font-black text-slate-900/90 uppercase tracking-[0.15em]">Transit Explorer</span>
+                            <span className="text-[11px] font-black text-slate-900/90 dark:text-white uppercase tracking-[0.15em]">Transit Explorer</span>
                         </div>
                     </div>
                     <TransitMapFilter

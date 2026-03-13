@@ -13,11 +13,18 @@ const GoogleCallback = () => {
             const params = new URLSearchParams(location.search);
             const accessToken = params.get('access_token');
             const refreshToken = params.get('refresh_token');
+            const picture = params.get('picture');
 
             if (accessToken && refreshToken) {
                 // Save tokens to localStorage
                 localStorage.setItem('access_token', accessToken);
                 localStorage.setItem('refresh_token', refreshToken);
+                // Save google picture if present
+                if (picture) {
+                    localStorage.setItem('google_picture', picture);
+                } else {
+                    localStorage.removeItem('google_picture');
+                }
 
                 try {
                     // Fetch user info using the new token

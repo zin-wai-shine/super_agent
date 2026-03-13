@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { agentApi, publicApi, uploadApi, developerApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -230,6 +230,11 @@ const EditListing = () => {
         fetchData();
     }, [fetchData]);
 
+    const onError = (errors) => {
+        console.error('Form errors:', errors);
+        toast.error('Please check the required fields');
+    };
+
     const onSubmit = async (data) => {
         setSaving(true);
         try {
@@ -252,17 +257,18 @@ const EditListing = () => {
                 floor: data.floor || '',
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
-                year_built: parseInt(data.year_built) || 0,
                 project_id: data.project_id?.value || data.project_id || null,
+                year_built: data.year_built ? parseInt(data.year_built) : null,
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
                     ...(data.building_features || []),
                     ...(data.project_facilities || [])
                 ]),
             });
-            toast.success('Listing updated!');
+            toast.success('Listing updated successfully!');
+            navigate('/dashboard/listings');
         } catch (error) {
-            toast.error('Failed to update listing');
+            console.error('Update failed:', error);
         } finally {
             setSaving(false);
         }
@@ -277,7 +283,7 @@ const EditListing = () => {
             for (const file of files) {
                 await uploadApi.uploadImage(id, file, { roomType });
             }
-            toast.success('Images uploaded!');
+            toast.success('Images uploaded successfully!');
             fetchData();
         } catch (error) {
             toast.error('Upload failed');
@@ -297,7 +303,7 @@ const EditListing = () => {
                 else if (lightboxIndex > index) setLightboxIndex(lightboxIndex - 1);
             }
 
-            toast.success('Image deleted');
+            toast.success('Image deleted successfully');
         } catch (error) {
             toast.error('Failed to delete');
         }
@@ -333,13 +339,13 @@ const EditListing = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <button
-                onClick={() => navigate('/dashboard/listings')}
+            <Link
+                to="/dashboard/listings"
                 className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
             >
                 <ArrowLeftIcon className="w-5 h-5 mr-2" />
                 Back to listings
-            </button>
+            </Link>
 
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Edit Listing</h1>
 
@@ -381,7 +387,7 @@ const EditListing = () => {
                 `}
             </style>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
                 {/* Media Upload — one section per room type, upload under each title */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">📸 Photos</h2>
@@ -965,8 +971,6 @@ const EditListing = () => {
                                     type="number"
                                     className="input-field pl-12"
                                     placeholder="e.g. 2013"
-                                    min="1900"
-                                    max={new Date().getFullYear()}
                                     {...register('year_built')}
                                 />
                             </div>
@@ -1070,7 +1074,7 @@ const EditListing = () => {
                 <div className="flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => navigate('/agent/listings')}
+                        onClick={() => navigate('/dashboard/listings')}
                         className="btn-secondary"
                     >
                         Cancel

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { agentApi, publicApi, uploadApi, developerApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
-import { PhotoIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
     MdBed, MdBathtub, MdSquareFoot, MdLayers, MdCalendarToday,
     MdKitchen, MdTv, MdAir, MdMicrowave, MdLocalLaundryService, MdShower, MdRestaurant,
@@ -69,6 +69,7 @@ const CreateListing = () => {
         handleSubmit,
         watch,
         setValue,
+        reset,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -118,6 +119,11 @@ const CreateListing = () => {
         fetchProjects();
     }, []);
 
+    const onError = (errors) => {
+        console.error('Form errors:', errors);
+        toast.error('Please check the required fields');
+    };
+
     const onSubmit = async (data) => {
         setLoading(true);
         try {
@@ -140,15 +146,17 @@ const CreateListing = () => {
                 floor: data.floor || '',
                 distance_to_station: parseInt(data.distance_to_station) || 0,
                 availability_status: data.availability_status || '',
-                year_built: parseInt(data.year_built) || 0,
+                year_built: data.year_built ? parseInt(data.year_built) : null,
                 project_id: data.project_id?.value || data.project_id || null,
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
                     ...(data.building_features || []),
                     ...(data.project_facilities || [])
                 ]),
+                is_published: true,
             });
 
+            toast.success('Listing created successfully!');
             const listingId = response.data.id;
 
             // Upload images by section (each file gets its section's room type)
@@ -161,17 +169,50 @@ const CreateListing = () => {
                     for (const { file, roomType } of flatImages) {
                         await uploadApi.uploadImage(listingId, file, { roomType });
                     }
-                    toast.success('Listing and images created successfully!');
+                    toast.success('Images uploaded successfully!');
+                    navigate('/dashboard/listings');
                 } catch (uploadError) {
-                    toast.error('Listing created, but some images failed to upload');
+                    console.error('Image upload failed:', uploadError);
+                    navigate('/dashboard/listings');
                 } finally {
                     setUploading(false);
                 }
             } else {
-                toast.success('Listing created successfully!');
+                navigate('/dashboard/listings');
             }
 
-            navigate(`/dashboard/listings/${listingId}/edit`);
+            // Reset all state for next blank listing
+            reset({
+                title: '',
+                description: '',
+                property_type: propertyTypeOptions[0],
+                listing_type: listingTypeOptions[1],
+                price: '',
+                bedrooms: '',
+                bathrooms: '',
+                area: '',
+                address: '',
+                district: '',
+                province: '',
+                floor: '',
+                distance_to_station: '',
+                availability_status: 'Ready to Move In',
+                year_built: '',
+                latitude: '',
+                longitude: '',
+                map_url: '',
+                unit_amenities: [],
+                building_features: [],
+                project_facilities: [],
+                project_id: null,
+                station_id: null
+            });
+            setImageSections(initialImageSections());
+            setWalkingTime('');
+            setAvailabilityType('ready');
+            setAvailabilityDate(new Date());
+            setShownDate(new Date());
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to create listing');
         } finally {
@@ -261,6 +302,14 @@ const CreateListing = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
+            <Link
+                to="/dashboard/listings"
+                className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
+            >
+                <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                Back to listings
+            </Link>
+
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Create New Listing</h1>
 
             <style>
@@ -301,7 +350,7 @@ const CreateListing = () => {
                 `}
             </style>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
                 {/* Media Selection — one section per room type, upload under each title */}
                 <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
@@ -917,8 +966,6 @@ const CreateListing = () => {
                                     type="number"
                                     className="input-field pl-12"
                                     placeholder="e.g. 2013"
-                                    min="1900"
-                                    max={new Date().getFullYear()}
                                     {...register('year_built')}
                                 />
                             </div>
@@ -1022,7 +1069,7 @@ const CreateListing = () => {
                 <div className="flex items-center justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => navigate('/agent/listings')}
+                        onClick={() => navigate('/dashboard/listings')}
                         className="btn-secondary"
                     >
                         Cancel

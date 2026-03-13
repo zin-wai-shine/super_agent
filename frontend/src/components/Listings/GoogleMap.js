@@ -18,7 +18,7 @@ const mapContainerStyle = {
     height: '100%',
 };
 
-const LIBRARIES = ['places'];
+const LIBRARIES = ['places', 'marker'];
 
 const options = {
     disableDefaultUI: true,
@@ -94,14 +94,20 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                 `}</style>
 
                 {markerType === 'home' ? (
-                    <div className="home-marker z-10" onClick={() => onCardToggle(property.id)}>
+                    <div className="home-marker z-10" 
+                        onClick={(e) => { e.stopPropagation(); onCardToggle(property.id); }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
                             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                             <polyline points="9 22 9 12 15 12 15 22" />
                         </svg>
                     </div>
                 ) : (
-                    <div className="resting-pill z-10" onClick={() => onCardToggle(property.id)}>
+                    <div className="resting-pill z-10" 
+                        onClick={(e) => { e.stopPropagation(); onCardToggle(property.id); }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
                         <span className="price-icon text-[15px] font-medium opacity-90 leading-none">฿</span>
                         <span className="price-text">{priceNumber}</span>
                     </div>
@@ -297,6 +303,7 @@ const GoogleMapComponent = ({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
         libraries: LIBRARIES,
+        version: 'weekly'
     });
 
     const [map, setMap] = useState(null);

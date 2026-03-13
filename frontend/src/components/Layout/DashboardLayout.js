@@ -26,6 +26,7 @@ import {
     MoonIcon,
     CalendarDaysIcon,
     BuildingOffice2Icon,
+    ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardLayout = () => {
@@ -36,6 +37,16 @@ const DashboardLayout = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Independent Dark Mode logic
+    React.useEffect(() => {
+        const root = window.document.documentElement;
+        if (isDarkMode) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+    }, [isDarkMode]);
 
     const handleLogout = async () => {
         await logout();
@@ -104,24 +115,24 @@ const DashboardLayout = () => {
                     </button>
 
                     {/* Logo (New Premium Design) */}
-                    <Link to="/" className="flex items-center ml-0">
+                    <Link to={isSuperAdmin ? '/admin' : '/dashboard'} className="flex items-center ml-0">
                         {isMainDomain ? (
                             <div className="flex items-center space-x-3">
-                                <Logo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-                                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
+                                <Logo className="w-10 h-10 text-primary-600 dark:text-primary-400" />
+                                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
                             </div>
                         ) : (
-                            <div className="flex items-center">
+                            <div className="flex items-center h-16">
                                 {(agent?.theme?.logo_url || agent?.logo) ? (
-                                    <div
-                                        className="h-14 w-[300px] bg-contain bg-left bg-no-repeat transition-all duration-300 scale-[1.15] origin-left"
-                                        style={{
-                                            backgroundImage: `url(${getMediaUrl(agent.theme?.logo_url || agent.logo)})`
-                                        }}
-                                        aria-label={agent.agency_name || agent.name || 'Agent Logo'}
-                                    />
+                                    <div className="relative h-16 w-64 flex items-center">
+                                        <img
+                                            src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
+                                            alt={agent.agency_name || agent.name || 'Agent Logo'}
+                                            className="absolute left-0 h-32 w-auto max-w-[350px] object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm"
+                                        />
+                                    </div>
                                 ) : (
-                                    <span className="text-xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                                    <span className="text-2xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
                                         {agent?.subdomain || 'Agent'}
                                     </span>
                                 )}
@@ -139,9 +150,10 @@ const DashboardLayout = () => {
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-semibold text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors hidden sm:block"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20 rounded-lg transition-all border border-transparent hover:border-primary-100 dark:hover:border-primary-800 hidden sm:flex"
                     >
-                        View Site
+                        <span>View Site</span>
+                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
                     </a>
 
                     {/* Dark Mode Toggle */}
@@ -204,8 +216,8 @@ const DashboardLayout = () => {
                                     title={isCollapsed ? item.name : ''}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
-                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 shadow-sm'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                        ? 'bg-primary-50 dark:bg-primary-600/10 text-primary-700 dark:text-primary-400 shadow-sm'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-primary-600/5'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5 flex-shrink-0" />

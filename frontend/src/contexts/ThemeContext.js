@@ -172,8 +172,6 @@ export const ThemeProvider = ({ children }) => {
         } else {
             document.title = 'Super Real Estate';
         }
-
-        document.body.style.backgroundColor = theme.backgroundColor;
     }, [theme, isMainDomain, agent]);
 
     const updateTheme = (newTheme) => {

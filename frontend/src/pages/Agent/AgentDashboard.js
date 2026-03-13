@@ -51,35 +51,35 @@ const AgentDashboard = () => {
             name: 'Total Listings',
             value: stats?.total_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-primary-500/10 text-primary-600 dark:text-primary-400',
+            iconBg: 'bg-primary-50 text-primary-600 dark:bg-primary-600/10 dark:text-primary-400',
             trend: '+2 this week'
         },
         {
             name: 'Total Views',
             value: stats?.total_views || 0,
             icon: EyeIcon,
-            iconBg: 'bg-primary-500/10 text-primary-600 dark:text-primary-400',
+            iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-600/10 dark:text-blue-400',
             trend: 'Lifetime'
         },
         {
             name: 'Published',
             value: stats?.published_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-green-500/10 text-green-600 dark:text-green-400',
+            iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-600/10 dark:text-emerald-400',
             trend: 'Active'
         },
         {
             name: 'Sub-Agents',
             value: stats?.total_sub_agents || 0,
             icon: UsersIcon,
-            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+            iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-600/10 dark:text-indigo-400',
             trend: 'Team'
         },
         {
             name: 'Total Appointments',
             value: stats?.total_appointments || 0,
             icon: CalendarDaysIcon,
-            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+            iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-600/10 dark:text-amber-400',
             trend: `${stats?.appointments_this_week || 0} this week`,
             feature: 'appointments'
         },
@@ -87,7 +87,7 @@ const AgentDashboard = () => {
             name: 'Registered Users',
             value: stats?.total_users || 0,
             icon: UsersIcon,
-            iconBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+            iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-600/10 dark:text-purple-400',
             trend: 'Direct'
         },
     ];
@@ -166,7 +166,7 @@ const AgentDashboard = () => {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                <thead className="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-800/20 rounded-lg">
                                     <tr>
                                         <th className="px-4 py-3 font-medium rounded-l-lg">Property</th>
                                         <th className="px-4 py-3 font-medium">Price</th>
@@ -198,9 +198,9 @@ const AgentDashboard = () => {
                                                 ฿{listing.price?.toLocaleString()}
                                             </td>
                                             <td className="px-4 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${listing.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                                    listing.status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
-                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${listing.status === 'published' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-600/10 dark:text-emerald-400' :
+                                                    listing.status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-600/10 dark:text-gray-400' :
+                                                        'bg-amber-100 text-amber-800 dark:bg-amber-600/10 dark:text-amber-400'
                                                     }`}>
                                                     {listing.status}
                                                 </span>
@@ -224,17 +224,17 @@ const AgentDashboard = () => {
                     <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                         <div className="space-y-3">
-                            <Link to="/agent/listings/new" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-                                <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg group-hover:scale-110 transition-transform">
+                             <Link to="/dashboard/listings/new" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-primary-500/10 transition-colors group">
+                                <div className="p-2 bg-primary-50 dark:bg-primary-600/15 text-primary-600 dark:text-primary-400 rounded-lg group-hover:scale-110 transition-transform">
                                     <PlusIcon className="w-5 h-5" />
                                 </div>
                                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Add New Listing</span>
                             </Link>
-                            <Link to="/agent/clients/new" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg group-hover:scale-110 transition-transform">
+                            <Link to="/dashboard/users" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-purple-500/10 transition-colors group">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-600/15 text-purple-600 dark:text-purple-400 rounded-lg group-hover:scale-110 transition-transform">
                                     <UsersIcon className="w-5 h-5" />
                                 </div>
-                                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Add New Client</span>
+                                <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Manage Users</span>
                             </Link>
                         </div>
                     </div>
