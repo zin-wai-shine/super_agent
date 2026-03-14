@@ -29,7 +29,12 @@ const MyBookings = () => {
     const [loading, setLoading] = useState(true);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
-    const [skeletonCount, setSkeletonCount] = useState(2);
+    
+    // Track last known count for stable skeletons on reload
+    const [skeletonCount, setSkeletonCount] = useState(() => {
+        const saved = localStorage.getItem('bookings_count');
+        return saved ? parseInt(saved) : 3;
+    });
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('all');
     const [bookingsSearchTerm, setBookingsSearchTerm] = useState('');
@@ -38,12 +43,18 @@ const MyBookings = () => {
         fetchAppointments();
     }, []);
 
+    // Save count for next reload
+    useEffect(() => {
+        if (!initialLoading && appointments.length > 0) {
+            localStorage.setItem('bookings_count', appointments.length.toString());
+        }
+    }, [appointments.length, initialLoading]);
+
     const fetchAppointments = async () => {
         try {
             setLoading(true);
             setInitialLoading(true);
             setIsExiting(false);
-            setSkeletonCount(2);
 
             const [response] = await Promise.all([
                 appointmentApi.getMyAppointments(),
@@ -167,8 +178,8 @@ const MyBookings = () => {
                 {/* Content Area */}
                 <div className="relative min-h-[400px]">
                     {initialLoading ? (
-                        /* Skeletons — same layout as cards: 3 per row on md+ */
-                        <div className="flex flex-wrap gap-6 items-start pointer-events-none">
+                        /* Skeletons — using persisted count for zero-flicker reload */
+                        <div className="flex flex-wrap gap-6 items-start pointer-events-none animate-fill-fast">
                             {[...Array(skeletonCount)].map((_, index) => (
                                 <div
                                     key={`booking-skeleton-${index}`}
@@ -182,7 +193,7 @@ const MyBookings = () => {
                             ))}
                         </div>
                     ) : filteredAppointments.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-24 group animate-fadeInUp">
+                        <div className="flex flex-col items-center justify-center py-24 group animate-fill-med">
                             <div className="mb-6 relative z-10 transition-transform duration-500">
                                 <CalendarIcon className="w-14 h-14 text-slate-400" />
                             </div>
@@ -211,7 +222,7 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-2xl animate-fadeInUp relative ${isPast ? 'opacity-85' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-2xl animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
                                     >
                                         {/* Status accent bar — left edge */}
                                         <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${appointment.status === 'confirmed' ? 'bg-blue-500' :

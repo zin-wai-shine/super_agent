@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -57,6 +58,7 @@ import Modal from '../../components/ui/Modal';
 import AllPhotosModalContent from '../../components/Listings/AllPhotosModalContent';
 import FilterBar from '../../components/ui/FilterBar';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
+import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
@@ -201,7 +203,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const isMapView = searchParams.get('view') === 'map';
     const [viewedBooking, setViewedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [error, setError] = useState(null);
     const [relatedListings, setRelatedListings] = useState([]);
     const [activeMapTab, setActiveMapTab] = useState('google');
     const [mapState, setMapState] = useState({
@@ -213,6 +215,27 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const transitWrapperRef = useRef(null);
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
+    
+    // Ensure we start at the top when the detail view/page is opened
+    React.useLayoutEffect(() => {
+        if (!id) return;
+        
+        // Immediate reset for window and any existing modal scroll containers
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
+        // Find the scrollable container if we're in a modal context
+        const containers = document.querySelectorAll('.modal-scrollable');
+        containers.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
+        
+        // Use a slight timeout for async content that might have changed layout height
+        const t = setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            const containersAgain = document.querySelectorAll('.modal-scrollable');
+            containersAgain.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
+        }, 10);
+        
+        return () => clearTimeout(t);
+    }, [id]);
 
     const mapCenter = useMemo(() => {
         if (!listing?.latitude || !listing?.longitude) return undefined;
@@ -599,102 +622,92 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     }, [activeMapTab, listing?.station_id]);
 
     useEffect(() => {
-        // Smooth scroll to top when changing listings - only if not in a modal
-        if (!isModal || window.innerWidth >= 1024) {
-            const container = document.getElementById('main-scroll-container');
-            if (container) {
-                container.scrollTo({ top: 0, behavior: 'auto' });
-            } else {
-                window.scrollTo({ top: 0, behavior: 'auto' });
-            }
-        }
+        if (!id) return;
+
+        // Reset state for new fetch
+        setListing(null);
+        setError(null);
         setLoading(true);
 
+        const controller = new AbortController();
 
-        const fetchListingAndStatus = async () => {
-            if (!id) return;
+        const fetchListingData = async () => {
             try {
                 // Fetch basic listing details
-                const params = {};
-                // If on localhost and user has agent_id, use it to simulate domain
-                if (window.location.hostname.includes('localhost') && user?.agent_id) {
-                    params.agent_id = user.agent_id;
+                const response = await publicApi.getListing(id, { signal: controller.signal });
+                const fetchedListing = response.data;
+                
+                if (!fetchedListing) {
+                    setError('Property not found');
+                    return;
                 }
-                const response = await publicApi.getListing(id, params);
-                setListing(response.data);
+                
+                setListing(fetchedListing);
 
                 // Fetch user-specific stuff if logged in
                 if (isAuthenticated) {
-                    try {
-                        const savedResponse = await checkIfSaved(id);
-                        setIsSaved(savedResponse.saved);
-                    } catch (error) {
-                        console.error('Failed to check saved status:', error);
-                        setIsSaved(false);
-                    }
-
-                    // Fetch user bookings and see if there's an active one for this property
-                    try {
-                        const bookingsRes = await appointmentApi.getMyAppointments();
-                        const userBookings = bookingsRes.data.appointments || [];
-                        const active = userBookings.find(
-                            app => String(app.listing_id) === String(id) &&
-                                (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed' || app.status === 'cancelled')
-                        );
-                        setActiveBooking(active || null);
-
-                        // If we're looking for a specific booking ID
-                        if (bookingId) {
-                            const specific = userBookings.find(app => String(app.id) === String(bookingId));
-                            setViewedBooking(specific || null);
+                    // Start sub-fetches in parallel
+                    Promise.allSettled([
+                        checkIfSaved(id),
+                        appointmentApi.getMyAppointments()
+                    ]).then(([savedRes, bookingsRes]) => {
+                        if (savedRes.status === 'fulfilled') {
+                            setIsSaved(savedRes.value.saved);
                         }
-                    } catch (bookingErr) {
-                        console.error('Failed to fetch user bookings for status check:', bookingErr);
-                    }
+                        if (bookingsRes.status === 'fulfilled') {
+                            const userBookings = bookingsRes.value.data.appointments || [];
+                            const active = userBookings.find(
+                                app => String(app.listing_id) === String(id) &&
+                                    ['pending', 'confirmed', 'completed', 'cancelled'].includes(app.status)
+                            );
+                            setActiveBooking(active || null);
+
+                            if (bookingId) {
+                                const specific = userBookings.find(app => String(app.id) === String(bookingId));
+                                setViewedBooking(specific || null);
+                            }
+                        }
+                    });
                 }
 
                 // Fetch related listings
-                if (response.data) {
-                    const relatedParams = {
-                        limit: 12, // Fetch more to allow random suggestions from recent pool
-                        exclude_id: id,
-                        listing_type: response.data.listing_type, // "Currency filter" - match Sale/Rent
-                    };
+                const relatedParams = {
+                    limit: 12,
+                    exclude_id: id,
+                    listing_type: fetchedListing.listing_type,
+                };
+                if (fetchedListing.station_id) relatedParams.station_id = fetchedListing.station_id;
+                else if (fetchedListing.district) relatedParams.district = fetchedListing.district;
 
-                    if (response.data.station_id) {
-                        relatedParams.station_id = response.data.station_id;
-                    } else if (response.data.district) {
-                        relatedParams.district = response.data.district;
-                    }
-
-                    // Add agent_id for localhost dev if needed
-                    if (window.location.hostname.includes('localhost') && user?.agent_id) {
-                        relatedParams.agent_id = user.agent_id;
-                    }
-
-                    try {
-                        const relatedResponse = await publicApi.getListings(relatedParams);
+                publicApi.getListings(relatedParams, { signal: controller.signal })
+                    .then(relatedResponse => {
                         const allRelated = relatedResponse.data.listings || [];
-
-                        // Defensive Filter: Ensure current ID is absolutely excluded even if backend fails
                         const filteredRelated = allRelated.filter(item => String(item.id) !== String(id));
-
-                        // "Random and Recent": Shuffle the top recent results and pick 4
                         const shuffled = filteredRelated.sort(() => 0.5 - Math.random()).slice(0, 4);
                         setRelatedListings(shuffled);
-                    } catch (err) {
-                        console.error('Failed to fetch related listings:', err);
-                    }
-                }
+                    })
+                    .catch(err => {
+                        if (!axios.isCancel(err)) console.error('Failed to fetch related listings:', err);
+                    });
+
             } catch (error) {
-                console.error('Failed to fetch listing:', error);
+                if (axios.isCancel(error)) return;
+                console.error('Failed to fetch listing details:', error);
+                if (error.response?.status === 404) {
+                    setError('Property not found');
+                } else {
+                    setError('Something went wrong. Please try again.');
+                }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
-        fetchListingAndStatus();
-    }, [id, isAuthenticated, user]);
+        fetchListingData();
+        return () => controller.abort();
+    }, [id, isAuthenticated, user?.id, bookingId]);
 
     // Re-fetch booking status when a WebSocket notification arrives
     useEffect(() => {
@@ -935,21 +948,39 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="min-h-screen bg-white dark:bg-dashboard-dark">
+                <ListingSkeleton viewMode="detail" />
             </div>
         );
     }
 
-    if (!listing) {
+    if (error || !listing) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Property not found</h2>
-                    <p className="text-gray-500 mb-4">This property may have been removed or is unavailable.</p>
-                    <Link to="/listings">
-                        <Button>Browse Listings</Button>
-                    </Link>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark">
+                <div className="text-center p-6 bg-white dark:bg-dashboard-card rounded-3xl shadow-xl max-w-sm mx-auto animate-fillIn">
+                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <XMarkIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        {error || 'Property not found'}
+                    </h2>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                        {error === 'Property not found' 
+                            ? 'The listing you are looking for may have been removed or is currently unavailable.'
+                            : 'We encountered an error while loading the property details. Please try again or go back.'}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        {error !== 'Property not found' && (
+                            <Button onClick={() => window.location.reload()} variant="primary" fullWidth>
+                                Retry Connection
+                            </Button>
+                        )}
+                        <Link to="/listings" className="w-full">
+                            <Button variant={error === 'Property not found' ? 'primary' : 'outline'} fullWidth>
+                                Back to Listings
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
@@ -982,7 +1013,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         return createPortal(
             <div className="hidden lg:flex items-center gap-2">
                 <div
-                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border animate-in fade-in slide-in-from-left-2 duration-500 ${listing.listing_type === 'sale'
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border animate-fill-med ${listing.listing_type === 'sale'
                         ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
                         : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-400/20 dark:text-indigo-400'
                         }`}
@@ -990,7 +1021,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
                 </div>
                 {listing.is_featured && (
-                    <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border bg-amber-400/10 border-amber-400/20 text-amber-700 flex items-center gap-1 animate-in fade-in slide-in-from-left-4 duration-700">
+                    <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border bg-amber-400/10 border-amber-400/20 text-amber-700 flex items-center gap-1 animate-fill-med">
                         <SparklesIcon className="w-3 h-3 text-amber-500" />
                         FEATURED
                     </div>

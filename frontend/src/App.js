@@ -104,10 +104,12 @@ const GuestRoute = ({ children }) => {
 };
 
 import { Toaster } from 'react-hot-toast';
+import ScrollToTop from './components/Common/ScrollToTop';
 
 function App() {
     return (
         <WebSocketProvider>
+            <ScrollToTop />
             <Toaster position="top-center" reverseOrder={false} />
             <AppRoutes />
         </WebSocketProvider>

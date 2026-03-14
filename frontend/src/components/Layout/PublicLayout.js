@@ -690,7 +690,7 @@ const PublicLayout = () => {
                                             {/* Theme Toggle */}
                                             <button
                                                 onClick={toggleTheme}
-                                                className="p-2.5 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-all duration-300 shadow-sm border border-transparent dark:border-dashboard-border"
+                                                className="p-2.5 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-900 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-all duration-300 shadow-sm border border-transparent dark:border-dashboard-border"
                                                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                                             >
                                                 {isDarkMode ? (
@@ -805,11 +805,11 @@ const PublicLayout = () => {
                                                 <>
                                                     <Link
                                                         to="/login"
-                                                        className="text-[14px] font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--primary-color)] transition-colors"
+                                                        className="text-[14px] font-medium text-gray-900 dark:text-gray-400 hover:text-[var(--primary-color)] transition-colors"
                                                     >
                                                         Sign in
                                                     </Link>
-                                                    <Link to="/register" className="bg-gray-950 dark:bg-white dark:text-gray-950 px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all rounded-full">
+                                                    <Link to="/register" className="bg-gray-950 text-white dark:bg-white dark:text-gray-950 px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all rounded-full">
                                                         Get Started
                                                     </Link>
                                                 </>

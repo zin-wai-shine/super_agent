@@ -36,7 +36,7 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
     return (
         <div
             onClick={onClick}
-            className="flex flex-col gap-2 cursor-pointer group animate-fadeInUp"
+            className="flex flex-col gap-2 cursor-pointer group animate-fill-med"
         >
             <div className="w-full aspect-square bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 shadow-sm rounded-[20px] overflow-hidden p-1.5">
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-[4px] rounded-[14px] overflow-hidden">
@@ -107,9 +107,26 @@ const SavedListingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
-    const [skeletonCount, setSkeletonCount] = useState(2);
+    const [skeletonCount, setSkeletonCount] = useState(() => {
+        const saved = localStorage.getItem('fav_group_counts');
+        if (saved) {
+            const counts = JSON.parse(saved);
+            const params = new URLSearchParams(window.location.search);
+            const group = params.get('group');
+            if (group) return counts[group] || 1;
+            return counts.folders || 1;
+        }
+        return 1;
+    });
     const [removingId, setRemovingId] = useState(null);
     const [isDesktop, setIsDesktop] = useState(false);
+    
+    // Persistent group counts to prevent skeleton flicker on navigation/reload
+    const [cachedCounts] = useState(() => {
+        const saved = localStorage.getItem('fav_group_counts');
+        return saved ? JSON.parse(saved) : { Today: 1, Yesterday: 1, Earlier: 1, folders: 1 };
+    });
+
     const currentGroup = searchParams.get('group');
 
     // Derived active group from listings and search param
@@ -144,6 +161,13 @@ const SavedListingsPage = () => {
         return items.length > 0 ? { label: currentGroup, items } : null;
     }, [currentGroup, listings]);
 
+    // Calculate exact count for skeletons if navigating within the app
+    const getSkeletonCount = () => {
+        if (activeGroup) return activeGroup.items.length;
+        if (currentGroup) return cachedCounts[currentGroup] || 1;
+        return cachedCounts.folders || 1;
+    };
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -166,11 +190,35 @@ const SavedListingsPage = () => {
         return () => mq.removeEventListener('change', handleChange);
     }, []);
 
+    // Ensure scroll is at top on reload or group change
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [currentGroup]);
+
+    useEffect(() => {
+        if (initialLoading || listings.length === 0) return;
+
+        const counts = { Today: 0, Yesterday: 0, Earlier: 0, folders: 0 };
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+
+        const folderSet = new Set();
+        listings.forEach(l => {
+            const d = new Date(l.saved_at || l.created_at || new Date());
+            d.setHours(0, 0, 0, 0);
+            if (d.getTime() === today.getTime()) { counts.Today++; folderSet.add('Today'); }
+            else if (d.getTime() === yesterday.getTime()) { counts.Yesterday++; folderSet.add('Yesterday'); }
+            else { counts.Earlier++; folderSet.add('Earlier'); }
+        });
+        counts.folders = folderSet.size;
+        localStorage.setItem('fav_group_counts', JSON.stringify(counts));
+    }, [listings, initialLoading]);
+
     const fetchSavedListings = async () => {
         setLoading(true);
         setInitialLoading(true);
         setIsExiting(false);
-        setSkeletonCount(2);
+        setSkeletonCount(getSkeletonCount());
 
         try {
             const [response] = await Promise.all([
@@ -261,17 +309,22 @@ const SavedListingsPage = () => {
                 <div className="relative min-h-[400px]">
                     {initialLoading && !currentGroup ? (
                         /* Skeletons for main grid view */
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pointer-events-none">
-                            {[...Array(8)].map((_, index) => (
-                                <div key={`skeleton-wrapper-${index}`} className="min-w-0">
-                                    <ListingSkeleton
-                                        key={`skeleton-${index}`}
-                                        index={index}
-                                        viewMode="grid"
-                                        isExiting={isExiting}
-                                    />
-                                </div>
-                            ))}
+                        <div className="animate-fill-fast">
+                            <div className="mb-10">
+                                <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pointer-events-none">
+                                {[...Array(getSkeletonCount())].map((_, index) => (
+                                    <div key={`skeleton-wrapper-${index}`} className="min-w-0">
+                                        <ListingSkeleton
+                                            key={`skeleton-${index}`}
+                                            index={index}
+                                            viewMode="grouped-saved-category"
+                                            isExiting={isExiting}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (listings.length > 0 || currentGroup) ? (
                         /* Content */
@@ -303,8 +356,8 @@ const SavedListingsPage = () => {
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="px-5 pt-6 pb-24">
                                             {initialLoading || !activeGroup ? (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {[...Array(4)].map((_, i) => (
+                                                <div className="grid grid-cols-2 gap-3 animate-fill-fast">
+                                                    {[...Array(getSkeletonCount())].map((_, i) => (
                                                         <ListingSkeleton key={`mob-skel-${i}`} viewMode="grid" />
                                                     ))}
                                                 </div>
@@ -329,7 +382,7 @@ const SavedListingsPage = () => {
                             )}
 
                             {currentGroup && isDesktop ? (
-                                <div className="flex flex-col animate-fadeInUp">
+                                <div className="flex flex-col animate-fill-fast">
                                     {/* Desktop Sub-header: Centered title, Right count */}
                                     <div className="mb-6 flex items-center justify-between relative min-h-[48px]">
                                         <button
@@ -354,8 +407,8 @@ const SavedListingsPage = () => {
 
                                     {/* Desktop Listings Grid */}
                                     {initialLoading || !activeGroup ? (
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                            {[...Array(4)].map((_, i) => (
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fill-fast">
+                                            {[...Array(getSkeletonCount())].map((_, i) => (
                                                 <ListingSkeleton key={`group-skel-${i}`} viewMode="grid" />
                                             ))}
                                         </div>
@@ -381,7 +434,7 @@ const SavedListingsPage = () => {
                                 </div>
                             ) : !currentGroup && (
                                 /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */
-                                <div className="animate-fadeInUp">
+                                <div className="animate-fill-fast">
                                     <div className="mb-10">
                                         <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
                                     </div>

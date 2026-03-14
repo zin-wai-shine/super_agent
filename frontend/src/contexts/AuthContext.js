@@ -12,7 +12,15 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        try {
+            const savedUser = localStorage.getItem('user');
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch (err) {
+            console.error('Error parsing user from localStorage:', err);
+            return null;
+        }
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -23,12 +31,22 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 try {
                     const response = await api.get('/me');
-                    setUser(response.data);
+                    const userData = response.data;
+                    setUser(userData);
+                    localStorage.setItem('user', JSON.stringify(userData));
                 } catch (err) {
-                    // Token expired or invalid
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
+                    // Only clear session if the error is 401 (Unauthorized)
+                    if (err.response?.status === 401) {
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('refresh_token');
+                        localStorage.removeItem('google_picture');
+                        localStorage.removeItem('user');
+                        setUser(null);
+                    }
                 }
+            } else {
+                setUser(null);
+                localStorage.removeItem('user');
             }
             setLoading(false);
         };
@@ -43,6 +61,7 @@ export const AuthProvider = ({ children }) => {
 
             localStorage.setItem('access_token', access_token);
             localStorage.setItem('refresh_token', refresh_token);
+            localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
             return { success: true, user };
@@ -61,6 +80,7 @@ export const AuthProvider = ({ children }) => {
 
             localStorage.setItem('access_token', access_token);
             localStorage.setItem('refresh_token', refresh_token);
+            localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
             return { success: true, user };
@@ -73,19 +93,23 @@ export const AuthProvider = ({ children }) => {
 
     const loginWithToken = useCallback((userData) => {
         setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
     }, []);
 
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('google_picture');
+        localStorage.removeItem('user');
         setUser(null);
     }, []);
 
     const updateProfile = useCallback(async (data) => {
         try {
             const response = await api.put('/me', data);
-            setUser(response.data);
+            const userData = response.data;
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
             return { success: true };
         } catch (err) {
             return { success: false, error: err.response?.data?.error || 'Update failed' };

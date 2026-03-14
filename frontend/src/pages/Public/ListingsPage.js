@@ -129,6 +129,7 @@ const ListingsPage = () => {
     const stateCacheRef = useRef({ listings: [], page: 1, total: 0, searchParamsString: '' });
     const scrollPositionRef = useRef(0);
     const hasRestoredScrollRef = useRef(false);
+    const lastFetchedParamsRef = useRef(null); // Ref to avoid redundant fetches on back-nav
 
     const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
     const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
@@ -151,8 +152,41 @@ const ListingsPage = () => {
             setPage(globalListCache.page);
             setTotal(globalListCache.total);
             setInitialLoading(false); // Skip initial loading skeleton
+            
+            // Critical: Initialize the fetch ref so the fetchEffect knows we already have this data
+            // Attempt to match the EXACT JSON structure used in fetchListings
+            const filterParams = {};
+            const keys = ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'];
+            const savedFilters = JSON.parse(localStorage.getItem('listing_filters') || '{}');
+            keys.forEach(k => {
+                filterParams[k] = searchParams.get(k) || savedFilters[k] || '';
+            });
+
+            const params = { ...filterParams, page: globalListCache.page, limit: 12 };
+
+            // Map bounds logic from fetchListings
+            if (globalListCache.mapBounds && localStorage.getItem('show_google_map') === 'true') {
+                params.min_lat = globalListCache.mapBounds.min_lat;
+                params.max_lat = globalListCache.mapBounds.max_lat;
+                params.min_lng = globalListCache.mapBounds.min_lng;
+                params.max_lng = globalListCache.mapBounds.max_lng;
+            }
+            lastFetchedParamsRef.current = JSON.stringify(params);
         }
     });
+
+    // Helper to safely update listings without duplication
+    const updateListingsUnique = useCallback((newItems, replace = false) => {
+        setListings(prev => {
+            if (replace) return newItems;
+            
+            // Deduplicate based on listing ID
+            const existingIds = new Set(prev.map(item => String(item.id)));
+            const uniqueNew = (newItems || []).filter(item => item && item.id && !existingIds.has(String(item.id)));
+            
+            return [...prev, ...uniqueNew];
+        });
+    }, []);
 
     const [mapCenter, setMapCenter] = useState(() => {
         if (isCacheValid && globalListCache?.mapCenter) return globalListCache.mapCenter;
@@ -183,16 +217,24 @@ const ListingsPage = () => {
     // Track scroll position continuously
     useEffect(() => {
         const handleScroll = () => {
+            // We track both window and container to be safe, preferring the non-zero one
             const container = document.getElementById('main-scroll-container');
-            if (container) {
-                scrollPositionRef.current = container.scrollTop;
-            } else {
-                scrollPositionRef.current = window.scrollY;
-            }
+            const winScroll = typeof window !== 'undefined' ? window.scrollY : 0;
+            const contScroll = container ? container.scrollTop : 0;
+
+            // Update ref with current scroll - prefer window scroll for main page
+            scrollPositionRef.current = winScroll > 0 ? winScroll : contScroll;
         };
-        const container = document.getElementById('main-scroll-container') || window;
-        container.addEventListener('scroll', handleScroll, { passive: true });
-        return () => container.removeEventListener('scroll', handleScroll);
+
+        // Listen on both targets
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        const container = document.getElementById('main-scroll-container');
+        if (container) container.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (container) container.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     // Save cache on unmount
@@ -209,18 +251,19 @@ const ListingsPage = () => {
     }, []);
 
     // Restore scroll position once data is mounted from cache
-    useEffect(() => {
-        if (isCacheValid && globalListCache && !hasRestoredScrollRef.current) {
-            // Slight delay ensures DOM is fully painted with restored listings
-            setTimeout(() => {
+    // Use useLayoutEffect to perform restoration BEFORE paint, avoiding the "start from start" flash.
+    React.useLayoutEffect(() => {
+        if (isCacheValid && globalListCache && !hasRestoredScrollRef.current && listings.length > 0) {
+            const pos = globalListCache.scrollY;
+            if (pos > 0) {
+                // Restoration should be instant to avoid visible scrolling
+                window.scrollTo({ top: pos, behavior: 'instant' });
                 const container = document.getElementById('main-scroll-container');
                 if (container) {
-                    container.scrollTo({ top: globalListCache.scrollY, behavior: 'auto' });
-                } else {
-                    window.scrollTo({ top: globalListCache.scrollY, behavior: 'auto' });
+                    container.scrollTo({ top: pos, behavior: 'instant' });
                 }
                 hasRestoredScrollRef.current = true;
-            }, 10);
+            }
         }
     }, [isCacheValid, listings.length]);
 
@@ -478,7 +521,6 @@ const ListingsPage = () => {
     const lastBoundsRef = useRef(null);
     const prevMapBoundsRef = useRef(null);
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
-    const lastFetchedParamsRef = useRef(null); // Ref to avoid redundant fetches on back-nav
 
     const handleMapBoundsChanged = React.useCallback((data) => {
         // Simple comparison to prevent identical bounds from triggering a reload
@@ -857,9 +899,6 @@ const ListingsPage = () => {
         if (!isSidebarOpen) return;
         const timer = setTimeout(() => {
             const params = { ...pendingFilters, page: 1, limit: 1 };
-            if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
-                params.agent_id = user.agent_id;
-            }
             if (countAbortRef.current) countAbortRef.current.abort();
             const controller = new AbortController();
             countAbortRef.current = controller;
@@ -893,28 +932,30 @@ const ListingsPage = () => {
                 params.min_lng = mapBounds.min_lng;
                 params.max_lng = mapBounds.max_lng;
             }
-            if (window.location.hostname.includes('localhost') && user?.agent_id && !params.agent_id) {
-                params.agent_id = user.agent_id;
-            }
 
             // Check if we already have this data (e.g. just closing a detail modal)
             const currentParamsKey = JSON.stringify(params);
 
-            // Bypass fetch if we just restored a valid cache for this exact URL
-            if (isCacheValid && page === globalListCache.page && !hasRestoredScrollRef.current) {
+            // Bypass fetch if we already restored this exact state from cache
+            if (isCacheValid && page === globalListCache.page) {
                 lastFetchedParamsRef.current = currentParamsKey;
+                setLoading(false);
+                setInitialLoading(false);
+                setIsMapRefetching(false);
                 return;
             }
 
             if (lastFetchedParamsRef.current === currentParamsKey && listings.length > 0) {
                 setLoading(false);
                 setInitialLoading(false);
+                setIsMapRefetching(false);
                 return;
             }
 
             // Optimistic loading: If map is open but bounds aren't ready, wait.
             // This prevents "showing all properties" flash on reload in Map View.
             if (isGoogleMapOpen && !mapBounds) {
+                // If it's a fresh load, show skeletons. Otherwise, don't stall.
                 if (initialLoading) setLoading(true);
                 return;
             }
@@ -952,23 +993,24 @@ const ListingsPage = () => {
                 const newItems = data.listings || [];
 
                 // Stop loading more if the current response returned fewer items than the limit
-                // indicating we've reached the end of the data.
-                if (newItems.length < 12) {
+                // OR if it returned no items at all (safety against background changes)
+                if (newItems.length < 12 || newItems.length === 0) {
                     setHasMore(false);
                 } else {
                     setHasMore(true);
                 }
 
-                if (page === 1 && initialLoading) {
+                if (page === 1) {
                     // Trigger exit animation for skeletons to fade out before revealing cards
-                    setIsExiting(true);
-                    await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
-                    setListings(newItems);
-                    setIsExiting(false);
+                    if (initialLoading) {
+                        setIsExiting(true);
+                        await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
+                        setIsExiting(false);
+                    }
+                    updateListingsUnique(newItems, true); // Always replace on page 1
                     setInitialLoading(false);
                 } else {
-                    setListings(prev => page === 1 ? newItems : [...prev, ...newItems]);
-                    if (page === 1) setInitialLoading(false);
+                    updateListingsUnique(newItems, false); // Unique append for pagination
                 }
 
                 setTotal(data.total || 0);
@@ -979,10 +1021,8 @@ const ListingsPage = () => {
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
+                    setInitialLoading(false);
                     setIsMapRefetching(false);
-                    // Do not reset fetchTriggeredByBoundsRef here — keeps map from zooming/fitting when pan-load completes
-                    // Only set initialLoading false here if it wasn't handled by the animation block
-                    if (page !== 1) setInitialLoading(false);
                 }
             }
         };
@@ -1693,7 +1733,7 @@ const ListingsPage = () => {
                                     {/* Header: Results Count */}
                                     <div className="mb-4 mt-1 flex justify-end">
                                         {(initialLoading || isMapRefetching) ? (
-                                            <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
+                                            <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-fill-fast" />
                                         ) : (listings || []).length > 0 ? (
                                             <div className="flex items-center gap-2">
                                                 <h2 className="text-[15px] font-bold text-gray-900 dark:text-gray-100">
@@ -1732,15 +1772,17 @@ const ListingsPage = () => {
                                                     </div>
                                                 ))}
                                                 {loading && !initialLoading && !isGoogleMapOpen && (
-                                                    <div className="contents">
-                                                        {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, i) => <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />)}
+                                                    <div className="contents animate-fill-fast">
+                                                        {[...Array(Math.min(viewMode === 'grid' ? 6 : 3, total - listings.length))].map((_, i) => (
+                                                            <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>
                                             <div ref={observerTarget} className="h-20" />
                                         </div>
                                     ) : (
-                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fadeInUp flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
+                                        <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fill-med flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
                                             <div className="w-16 h-16 bg-white dark:bg-dashboard-card shadow-sm border border-gray-100 dark:border-white/10 rounded-full flex items-center justify-center mb-5">
                                                 <SparklesIcon className="w-8 h-8 text-gray-400 dark:text-gray-600" />
                                             </div>
@@ -1951,9 +1993,10 @@ const ListingsPage = () => {
                                     ))}
 
                                     {loading && (
-                                        <div className="flex flex-col gap-6 w-full">
-                                            <ListingSkeleton />
-                                            <ListingSkeleton />
+                                        <div className="flex flex-col gap-6 w-full animate-fill-fast">
+                                            {[...Array(Math.min(2, total - listings.length))].map((_, i) => (
+                                                <ListingSkeleton key={`mob-more-${i}`} />
+                                            ))}
                                         </div>
                                     )}
 
@@ -2085,7 +2128,7 @@ const ListingsPage = () => {
                             bottom: isNavVisible ? 'max(7.25rem, calc(80px + env(safe-area-inset-bottom, 16px) + 20px))' : 'max(2.25rem, calc(env(safe-area-inset-bottom, 16px) + 20px))'
                         }}
                     >
-                        <div className="animate-fadeInUp pointer-events-auto">
+                        <div className="animate-fill-med pointer-events-auto">
                             <button
                                 onClick={handleSwitchToMap}
                                 className="flex items-center gap-2 px-6 py-3 bg-[#222222] text-white rounded-full shadow-lg font-bold text-sm tracking-wide active:scale-95 transition-transform"

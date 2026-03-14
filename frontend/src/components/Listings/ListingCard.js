@@ -62,13 +62,15 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
     };
 
     const nextImage = (e) => {
-        const nextIdx = (currentIndex + 1) % images.length;
-        scrollToImage(nextIdx, e);
+        if (currentIndex < images.length - 1) {
+            scrollToImage(currentIndex + 1, e);
+        }
     };
 
     const prevImage = (e) => {
-        const prevIdx = (currentIndex - 1 + images.length) % images.length;
-        scrollToImage(prevIdx, e);
+        if (currentIndex > 0) {
+            scrollToImage(currentIndex - 1, e);
+        }
     };
 
     if (!images || images.length === 0) return null;
@@ -149,18 +151,24 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
             {/* Arrows */}
             {images.length > 1 && (
                 <>
-                    <button
-                        onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity z-30 hover:bg-white/30 pointer-events-auto"
-                    >
-                        <ChevronLeftIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity z-30 hover:bg-white/30 pointer-events-auto"
-                    >
-                        <ChevronRightIcon className="w-4 h-4" />
-                    </button>
+                    {currentIndex > 0 && (
+                        <button
+                            onClick={prevImage}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 dark:bg-black/20 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:bg-white/25 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl"
+                            aria-label="Previous image"
+                        >
+                            <ChevronLeftIcon className="w-5 h-5 drop-shadow-sm" />
+                        </button>
+                    )}
+                    {currentIndex < images.length - 1 && (
+                        <button
+                            onClick={nextImage}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 dark:bg-black/20 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:bg-white/25 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl"
+                            aria-label="Next image"
+                        >
+                            <ChevronRightIcon className="w-5 h-5 drop-shadow-sm" />
+                        </button>
+                    )}
                 </>
             )}
         </div>
@@ -372,21 +380,21 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
                         <div className="absolute top-3.5 left-3.5">
-                            <span className="bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] md:text-[11px] font-medium text-gray-900 dark:text-white shadow-sm">
+                            <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[11px] md:text-[11px] font-bold text-gray-900 dark:text-white shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
 
-                        {showSave && (
+                         {showSave && (
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 p-1 active:scale-95"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/15 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-xl hover:bg-white/25"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-6 h-6 text-rose-500/80 stroke-white/80 dark:stroke-white/20 stroke-[1px] drop-shadow-sm" />
                                 ) : (
-                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 dark:text-white/20 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-6 h-6 text-slate-800/20 dark:text-white/10 stroke-white/60 dark:stroke-white/10 stroke-[1px] drop-shadow-sm" />
                                 )}
                             </button>
                         )}
@@ -446,21 +454,21 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Status Badge */}
                         <div className="absolute top-3.5 left-3.5 animate-fill-med">
-                            <span className="bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-sm px-3 py-1 rounded-full text-[15px] md:text-[12px] font-semibold text-gray-900 dark:text-white shadow-sm">
+                            <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[15px] md:text-[12px] font-bold text-gray-900 dark:text-white shadow-sm">
                                 {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                             </span>
                         </div>
 
-                        {showSave && (
+                         {showSave && (
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 p-1 active:scale-95"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/15 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-xl hover:bg-white/25"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-6 h-6 text-rose-500/80 stroke-white/80 dark:stroke-white/20 stroke-[1px] drop-shadow-sm" />
                                 ) : (
-                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 dark:text-white/20 stroke-white dark:stroke-dashboard-card stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-6 h-6 text-slate-800/20 dark:text-white/10 stroke-white/60 dark:stroke-white/10 stroke-[1px] drop-shadow-sm" />
                                 )}
                             </button>
                         )}
@@ -529,7 +537,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     if (isListView) {
         return (
             <div
-                className={`group bg-transparent rounded-none border-b border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 ${cardClassName}`}
+                className={`group bg-transparent rounded-none border-b border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 animate-in fade-in duration-500 ${cardClassName}`}
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
                 <div className="p-4 flex gap-5">

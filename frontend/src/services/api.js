@@ -96,10 +96,14 @@ api.interceptors.response.use(
                     originalRequest.headers.Authorization = `Bearer ${access_token}`;
                     return api(originalRequest);
                 } catch (refreshError) {
-                    // Refresh failed, logout user
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    window.location.href = '/login';
+                    // Only clear tokens and redirect if the refresh failed with 401 or 400 (invalid token)
+                    if (refreshError.response?.status === 401 || refreshError.response?.status === 400) {
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('refresh_token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    }
+                    return Promise.reject(refreshError);
                 }
             }
         }
