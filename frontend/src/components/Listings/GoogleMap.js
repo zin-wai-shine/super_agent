@@ -269,12 +269,11 @@ const GoogleMapComponent = ({
     const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
     const effectivePadding = isMobile ? MOBILE_PADDING : PADDING;
     const [isZoomedIn, setIsZoomedIn] = useState(() => effectiveZoom >= 13);
-    const [isStyleChanging, setIsStyleChanging] = useState(false);
+
     const [internalOpenedMarkerId, setInternalOpenedMarkerId] = useState(null);
     const openedMarkerId = disableMarkerExpansion ? null : (externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId);
 
     const [displayLoading, setDisplayLoading] = useState(showMapLoading);
-    const [localLoading, setLocalLoading] = useState(false);
     const [map, setMap] = useState(null);
 
     const { isLoaded } = useJsApiLoader({
@@ -288,24 +287,16 @@ const GoogleMapComponent = ({
         if (showMapLoading) {
             setDisplayLoading(true);
         } else {
-            setLocalLoading(false); // Clear local loading when parent loading is finished
             const timer = setTimeout(() => setDisplayLoading(false), 800);
             return () => clearTimeout(timer);
         }
     }, [showMapLoading]);
-
-    // Handle initial/direct loading state changes
-    useEffect(() => {
-        if (localLoading) setDisplayLoading(true);
-    }, [localLoading]);
 
     const cancelPendingFetch = useCallback(() => {
         if (boundsTimeoutRef.current) {
             clearTimeout(boundsTimeoutRef.current);
             boundsTimeoutRef.current = null;
         }
-        setLocalLoading(false);
-        setDisplayLoading(false);
     }, []);
 
     const handleCardToggle = useCallback((property) => {
@@ -346,7 +337,6 @@ const GoogleMapComponent = ({
         
         // Block updates if we are the ones who just moved the map (internal move)
         if (internalMoveRef.current) {
-            internalMoveRef.current = false;
             return;
         }
 
@@ -356,8 +346,8 @@ const GoogleMapComponent = ({
         const latDiff = Math.abs(currentMapCenter.lat() - parseFloat(center.lat));
         const lngDiff = Math.abs(currentMapCenter.lng() - parseFloat(center.lng));
 
-        // Only pan if the difference is substantial (prevents micro-jitter/snap-back)
-        if (latDiff > 0.0001 || lngDiff > 0.0001) {
+        // Only pan if the difference is substantial (prevents micro-jitter/snap-back on standard drags)
+        if (latDiff > 0.005 || lngDiff > 0.005) {
             map.panTo({ lat: parseFloat(center.lat), lng: parseFloat(center.lng) });
         }
     }, [center, map]);
@@ -445,14 +435,10 @@ const GoogleMapComponent = ({
     // Force style update when theme changes
     useEffect(() => {
         if (map) {
-            setIsStyleChanging(true);
             map.setOptions({
                 styles: isDarkMode ? darkStyle : (customOptions?.styles && customOptions.styles.length > 0 ? customOptions.styles : minimalLightStyle),
                 backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff'
             });
-            // Smooth transition delay to allow tiles and styles to re-calculate
-            const timer = setTimeout(() => setIsStyleChanging(false), 800);
-            return () => clearTimeout(timer);
         }
     }, [map, isDarkMode, darkStyle, minimalLightStyle, customOptions]);
 
@@ -487,8 +473,6 @@ const GoogleMapComponent = ({
         if (boundsTimeoutRef.current) clearTimeout(boundsTimeoutRef.current);
         
         boundsTimeoutRef.current = setTimeout(() => {
-            internalMoveRef.current = true; // Mark this as an "internal" move to prevent sync loop
-            setLocalLoading(true); 
             lastReportedBoundsRef.current = data;
             
             // Stable zoom check: only update isZoomedIn if threshold is actually crossed
@@ -496,9 +480,9 @@ const GoogleMapComponent = ({
             
             onBoundsChanged(data);
             
-            // Allow external syncs again after a short cooling period
-            setTimeout(() => { internalMoveRef.current = false; }, 500);
-        }, 400);
+            // Allow external syncs again after a cooling period
+            setTimeout(() => { internalMoveRef.current = false; }, 800);
+        }, 500);
     }, [map, onBoundsChanged, cancelPendingFetch]);
 
     const mapCenter = useMemo(() => {
@@ -604,6 +588,8 @@ const GoogleMapComponent = ({
                 onIdle={handleBoundsChanged}
                 onDragStart={() => {
                     internalMoveRef.current = true;
+                    // Note: We don't unset this immediately. 
+                    // It will remain true until 800ms AFTER onBoundsChanged fires from stopping the drag.
                     cancelPendingFetch();
                 }}
                 onZoomChanged={() => {
@@ -612,24 +598,10 @@ const GoogleMapComponent = ({
                 }}
                 onClick={onClick}
             >
-                {/* Hide markers during style transition for a cleaner look */}
-                {!isStyleChanging && memoizedMarkers}
+                {/* Always show markers, handle style changes transparently */}
+                {memoizedMarkers}
             </GoogleMap>
 
-            {/* Premium Theme Transition Overlay */}
-            {isStyleChanging && (
-                <div className="absolute inset-0 z-[25] bg-white/20 dark:bg-black/20 backdrop-blur-md flex flex-col items-center justify-center animate-fadeIn">
-                    <div className="relative">
-                        <div className="w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <ArrowPathIcon className="w-6 h-6 text-primary-600 animate-pulse" />
-                        </div>
-                    </div>
-                    <span className="mt-4 text-[13px] font-bold tracking-[0.2em] uppercase text-slate-800 dark:text-white/90 drop-shadow-sm">
-                        Switching Theme
-                    </span>
-                </div>
-            )}
 
             {/* CUSTOM CONTROLS — Liquid Glass Design restorative fix */}
             {!hideCustomControls && map && (

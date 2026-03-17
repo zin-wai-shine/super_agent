@@ -2476,10 +2476,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                 {/* Related Listings Section — carousel: 1 card (swipe) on mobile, 2 on md, 3 on lg+ */}
                                 {!bookingId && relatedListings.length > 0 && (
-                                    <div className="hidden md:block w-full px-4 md:px-4 lg:px-8 py-12 border-t border-gray-100 dark:border-white/10">
-                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">You might also like</h2>
+                                    <div className="hidden md:block w-full py-12 border-t border-gray-100 dark:border-white/10">
+                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 px-4 lg:px-8">You might also like</h2>
                                         {isMapView ? (
-                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 px-4 lg:px-8">
                                                 {relatedListings.map((related) => (
                                                     <ListingCard
                                                         key={related.id}
@@ -2494,11 +2494,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="flex flex-nowrap gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory -mx-4 pl-4 pr-4 sm:mx-0 sm:px-0 sm:gap-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                            <div className="flex flex-nowrap gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory px-4 lg:px-8 sm:gap-6" style={{ WebkitOverflowScrolling: 'touch' }}>
                                                 {relatedListings.map((related) => (
                                                     <div
                                                         key={related.id}
-                                                        className="flex-shrink-0 snap-start w-full min-w-full sm:w-[calc((100%-3rem)/3)] sm:min-w-[calc((100%-3rem)/3)] sm:max-w-[calc((100%-3rem)/3)]"
+                                                        className="flex-shrink-0 snap-start w-full min-w-full sm:w-[calc((100%-4.5rem)/4)] sm:min-w-[calc((100%-4.5rem)/4)] sm:max-w-[calc((100%-4.5rem)/4)]"
                                                     >
                                                         <ListingCard
                                                             listing={related}

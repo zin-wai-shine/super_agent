@@ -532,6 +532,7 @@ const ListingsPage = () => {
 
         if (!isSame) {
             lastBoundsRef.current = data;
+            fetchTriggeredByBoundsRef.current = true; // Sync update to block fitBounds immediately
             setMapBounds(data);
             if (data.center) setMapCenter(data.center);
             if (data.zoom !== undefined) setMapZoom(data.zoom);
@@ -979,14 +980,15 @@ const ListingsPage = () => {
             try {
                 // Map-pan fetch: re-add artificial delay so the user sees the skeleton loading state
                 // giving a perception of deep data processing to feel premium.
+                // Map-pan fetch: minimal delay to keep it responsive
                 const response = isBoundsTriggeredFetch
                     ? (await Promise.all([
                         publicApi.getListings(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 800))
+                        new Promise(resolve => setTimeout(resolve, 300))
                     ]))[0]
                     : (await Promise.all([
                         publicApi.getListings(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 200))
+                        new Promise(resolve => setTimeout(resolve, 100))
                     ]))[0];
 
                 const data = response.data;

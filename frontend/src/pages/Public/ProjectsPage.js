@@ -235,6 +235,8 @@ const ProjectsPage = () => {
 
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
+    const prevMapBoundsRef = useRef(null);
+    const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
     const handleMapBoundsChanged = React.useCallback((bounds) => {
         // Simple comparison to prevent identical bounds from triggering a reload
@@ -246,6 +248,7 @@ const ProjectsPage = () => {
 
         if (!isSame) {
             lastBoundsRef.current = bounds;
+            fetchTriggeredByBoundsRef.current = true; // Sync update to block fitBounds immediately
             setMapBounds(bounds);
             setPage(1);
         }
@@ -450,8 +453,16 @@ const ProjectsPage = () => {
 
             // Only show initial skeletons if we are on page 1
             if (page === 1) {
+                const prev = prevMapBoundsRef.current;
+                const boundsJustChanged = isGoogleMapOpen && mapBounds && prev &&
+                    (prev.min_lat !== mapBounds.min_lat || prev.max_lat !== mapBounds.max_lat ||
+                        prev.min_lng !== mapBounds.min_lng || prev.max_lng !== mapBounds.max_lng);
+                
+                fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
+                prevMapBoundsRef.current = mapBounds;
+                const isBoundsTriggeredFetch = !!boundsJustChanged;
+
                 // Avoid "flash" in map view OR during typing search.
-                // If map is open OR filters.search is changing, we don't clear results.
                 const isMapBoundsUpdate = isGoogleMapOpen && projects.length > 0;
                 const isSearchTyped = searchTerm !== filters.search && projects.length > 0;
 
@@ -459,8 +470,7 @@ const ProjectsPage = () => {
                     setInitialLoading(true);
                     setProjects([]); // Clear projects for fresh fetch on page 1
                 } else if (isBoundsTriggeredFetch) {
-                    // For map boundary fetches, we intentionally switch to loading state
-                    // to show the skeletons spinning down during the artificial delay.
+                    // For map boundary fetches, show skeletons spinning down during delay.
                     setInitialLoading(true);
                 }
             }
@@ -479,15 +489,15 @@ const ProjectsPage = () => {
                     params.agent_id = user.agent_id;
                 }
 
-                // Call API and artificial delay in parallel for premium "serial" loading feel
+                // Map-pan fetch: minimal delay to keep it responsive
                 const response = isBoundsTriggeredFetch
                     ? (await Promise.all([
                         publicApi.getProjects(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 800))
+                        new Promise(resolve => setTimeout(resolve, 300))
                     ]))[0]
                     : (await Promise.all([
                         publicApi.getProjects(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 200)) // No delay for map pans
+                        new Promise(resolve => setTimeout(resolve, 100))
                     ]))[0];
 
                 const data = response.data;
@@ -1084,6 +1094,7 @@ const ProjectsPage = () => {
                                                 }}
                                                 onBoundsChanged={handleMapBoundsChanged}
                                                 isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                                fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                                             />
                                             {/* Map Overlays */}
                                             <div className="absolute top-4 right-4 z-10 pointer-events-none">
@@ -1177,8 +1188,13 @@ const ProjectsPage = () => {
                                     newParams.set('detail', property.id);
                                     setSearchParams(newParams);
                                 }}
-                                onBoundsChanged={(bounds) => { setMapBounds(bounds); setPage(1); }}
+                                onBoundsChanged={(bounds) => { 
+                                    fetchTriggeredByBoundsRef.current = true;
+                                    setMapBounds(bounds); 
+                                    setPage(1); 
+                                }}
                                 isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                             />
 
                             {/* Mobile Legend Overlay - Theme Card Style */}

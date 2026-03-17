@@ -154,19 +154,19 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
                     {currentIndex > 0 && (
                         <button
                             onClick={prevImage}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 dark:bg-black/20 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:bg-white/25 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg"
                             aria-label="Previous image"
                         >
-                            <ChevronLeftIcon className="w-5 h-5 drop-shadow-sm" />
+                            <ChevronLeftIcon className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={nextImage}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 dark:bg-black/20 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:bg-white/25 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg"
                             aria-label="Next image"
                         >
-                            <ChevronRightIcon className="w-5 h-5 drop-shadow-sm" />
+                            <ChevronRightIcon className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                 </>
@@ -389,12 +389,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/15 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-xl hover:bg-white/25"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-6 h-6 text-rose-500/80 stroke-white/80 dark:stroke-white/20 stroke-[1px] drop-shadow-sm" />
+                                    <HeartSolidIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartSolidIcon className="w-6 h-6 text-slate-800/20 dark:text-white/10 stroke-white/60 dark:stroke-white/10 stroke-[1px] drop-shadow-sm" />
+                                    <HeartIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}
@@ -463,12 +463,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/15 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-xl hover:bg-white/25"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-6 h-6 text-rose-500/80 stroke-white/80 dark:stroke-white/20 stroke-[1px] drop-shadow-sm" />
+                                    <HeartSolidIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartSolidIcon className="w-6 h-6 text-slate-800/20 dark:text-white/10 stroke-white/60 dark:stroke-white/10 stroke-[1px] drop-shadow-sm" />
+                                    <HeartIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}
@@ -552,12 +552,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-2 right-2 z-10 p-1 active:scale-95"
+                                className="absolute top-2 right-2 z-10 p-1 active:scale-95 transition-transform hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 drop-shadow-md" />
                                 ) : (
-                                    <HeartSolidIcon className="w-8 h-8 text-slate-800/40 stroke-white stroke-[2px] drop-shadow-md" />
+                                    <HeartIcon className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}
