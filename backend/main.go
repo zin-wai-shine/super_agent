@@ -151,7 +151,7 @@ func seedInitialData(db *gorm.DB) {
 		db.FirstOrCreate(&plan, models.Subscription{PlanName: plan.PlanName})
 	}
 
-	// Create super admin user
+	// Create/Update super admin user
 	hashedPassword, _ := utils.HashPassword("superadmin123")
 	superAdmin := models.User{
 		Email:        "admin@haizo.it.com",
@@ -161,7 +161,18 @@ func seedInitialData(db *gorm.DB) {
 		Role:         models.RoleSuperAdmin,
 		IsActive:     true,
 	}
-	db.FirstOrCreate(&superAdmin, models.User{Email: superAdmin.Email})
+	
+	var existingAdmin models.User
+	if err := db.Where("email = ?", superAdmin.Email).First(&existingAdmin).Error; err == nil {
+		// Update password to ensure it matches superadmin123
+		db.Model(&existingAdmin).Updates(map[string]interface{}{
+			"password_hash": hashedPassword,
+			"role":          models.RoleSuperAdmin,
+			"is_active":     true,
+		})
+	} else {
+		db.Create(&superAdmin)
+	}
 
 	// Seed specific agents: staynert and bolthaven
 	specificAgents := []struct {
@@ -190,18 +201,23 @@ func seedInitialData(db *gorm.DB) {
 			}
 			db.Create(&agent)
 
-			// Create user for this agent
+			// Create or Update user for this agent
 			agentPassword, _ := utils.HashPassword("password123")
-			agentUser := models.User{
-				Email:        sa.Email,
-				PasswordHash: agentPassword,
-				FirstName:    strings.Split(sa.Name, " ")[0],
-				LastName:     "Agent",
-				Role:         models.RoleAgent,
-				AgentID:      &agent.ID,
-				IsActive:     true,
+			var existingAgentUser models.User
+			if err := db.Where("email = ?", sa.Email).First(&existingAgentUser).Error; err == nil {
+				db.Model(&existingAgentUser).Update("password_hash", agentPassword)
+			} else {
+				agentUser := models.User{
+					Email:        sa.Email,
+					PasswordHash: agentPassword,
+					FirstName:    strings.Split(sa.Name, " ")[0],
+					LastName:     "Agent",
+					Role:         models.RoleAgent,
+					AgentID:      &agent.ID,
+					IsActive:     true,
+				}
+				db.Create(&agentUser)
 			}
-			db.Create(&agentUser)
 		}
 	}
 
