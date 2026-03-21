@@ -26,38 +26,41 @@ export const TenantProvider = ({ children }) => {
                 // Use api instance so base URL and X-Tenant (for subdomain.superealestate.IP) are correct
                 const apiUrl = api.defaults.baseURL;
                 console.log('Fetching tenant config from:', apiUrl);
-                const response = await api.get('/public/tenant/config', { timeout: 8000 }); // increased timeout to 8s
+                const response = await api.get('/public/tenant/config', { timeout: 8000 });
                 console.log('Tenant config received:', response.data);
                 
-                // Cache the config to prevent 404s on aggressive reloading
+                // Cache the config to prevent unnecessary reloads
                 sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
                 setTenantConfig(response.data);
             } catch (err) {
                 console.error('Failed to fetch tenant configuration:', err);
 
-                // Try to recover from cache
+                // If the error is a 404 (from our middleware), clear the cache as the agent is invalid/suspended
+                if (err.response?.status === 404) {
+                    sessionStorage.removeItem(cacheKey);
+                }
+
+                // Try to recover from cache ONLY if it wasn't a 404
                 const cached = sessionStorage.getItem(cacheKey);
-                if (cached) {
-                    console.log('Recovered tenant config from cache after API failure');
+                if (cached && err.response?.status !== 404) {
+                    console.log('Recovered tenant config from cache after API network failure');
                     setTenantConfig(JSON.parse(cached));
                     setLoading(false);
-                    return; // Avoid triggering the fallback
+                    return;
                 }
 
                 setError(err);
 
-                // Dev main domains (the entry points)
+                // Determine if it was probably the main domain based on hostname
                 const devMainDomains = ['localhost', '127.0.0.1', 'superealestate.localhost', 'superealestate.test', 'superealestate.local'];
-
-                // It's the main domain ONLY if it's one of the base entry points
-                const isProbablyMain = hostname === mainDomain ||
+                const isProbablyMainLabel = hostname === mainDomain ||
                     hostname === 'www.' + mainDomain ||
                     devMainDomains.includes(hostname) ||
                     hostname === 'haizo.it.com' ||
                     hostname === 'www.haizo.it.com';
 
-                console.log('API failed and no cache, guessing tenant config from hostname:', { hostname, isProbablyMain });
-                setTenantConfig({ is_main_domain: isProbablyMain, agent: null });
+                console.log('API failed definitively, guessing tenant config from hostname:', { hostname, isProbablyMainLabel });
+                setTenantConfig({ is_main_domain: isProbablyMainLabel, agent: null });
             } finally {
                 setLoading(false);
             }

@@ -244,10 +244,12 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			if subdomainHeader := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomainHeader != "" && subdomainHeader != "www" && subdomainHeader != "api" {
 				var agent models.Agent
 				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomainHeader, true, false).First(&agent).Error; err == nil {
-					c.Set("tenant_id", agent.ID)
-					c.Set("tenant", &agent)
-					c.Set("is_main_domain", false)
+					tenantID = agent.ID
+					tenant = &agent
 					foundTenant = true
+					// If we forced it via header, we are definitely NOT on main domain anymore
+					c.Set("is_main_domain", false)
+					isMainDomain = false
 				}
 			}
 		}
