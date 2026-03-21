@@ -375,7 +375,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 <div
                     className={`bg-transparent rounded-none overflow-hidden group`}
                 >
-                    <div className="relative aspect-[5/4.2] md:aspect-[5/4.7] rounded-[23px] overflow-hidden mb-2">
+                    <div className="relative aspect-[5/4.5] md:aspect-[5/5.0] rounded-[23px] overflow-hidden mb-2">
                         <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
@@ -389,12 +389,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-rose-500 drop-shadow-sm" />
+                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
+                                    <HeartIcon className="w-[22px] h-[22px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}
@@ -449,7 +449,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 className={`group relative flex flex-col transition-all duration-300 ${cardClassName}`}
             >
                 <div className="flex flex-col w-full bg-transparent rounded-none border-none">
-                    <div className="relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
+                    <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
                         <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                         {/* Status Badge */}
@@ -463,12 +463,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
+                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-rose-500 drop-shadow-sm" />
+                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-6 h-6 md:w-[26px] md:h-[26px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
+                                    <HeartIcon className="w-[22px] h-[22px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}
@@ -541,7 +541,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
                 <div className="p-4 flex gap-5">
-                    <div className="relative aspect-[4/3.5] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
+                    <div className="relative aspect-[4/3.8] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
                         <ListingImageSlider images={listingImages} title={title} cardLink={linkTo} />
                         <div className="absolute top-3.5 left-3.5 z-10">
                             <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
@@ -552,12 +552,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <button
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="absolute top-2 right-2 z-10 p-1 active:scale-95 transition-transform hover:scale-105"
+                                className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-8 h-8 text-rose-500 drop-shadow-md" />
+                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={1.5} />
+                                    <HeartIcon className="w-[22px] h-[22px] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={1.5} />
                                 )}
                             </button>
                         )}

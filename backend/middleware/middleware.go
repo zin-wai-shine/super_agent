@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -106,6 +107,13 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 // TenantMiddleware handles multi-tenant isolation
 func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip tenant resolution for specific routes (like health check)
+		if c.Request.URL.Path == "/api/health" || c.Request.URL.Path == "/health" {
+			c.Set("is_main_domain", true)
+			c.Next()
+			return
+		}
+
 		host := c.Request.Host
 		if forwardedHost := c.GetHeader("X-Forwarded-Host"); forwardedHost != "" {
 			host = forwardedHost
@@ -173,6 +181,8 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 					tenantID = agent.ID
 					tenant = &agent
 					foundTenant = true
+				} else {
+					log.Printf("Tenant resolution failed for subdomain: %s, error: %v", subdomain, err)
 				}
 			}
 

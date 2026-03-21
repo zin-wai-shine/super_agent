@@ -117,44 +117,53 @@ const ListingsPage = () => {
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
 
-    const [listings, setListings] = useState([]);
+    // Synchronously check cache before any hooks to use in initial state
+    const currentPathPlusSearch = location.pathname + location.search;
+    const isCacheValidSync = globalListCache && globalListCache.url === currentPathPlusSearch;
+
+    const [listings, setListings] = useState(() => {
+        if (isCacheValidSync && globalListCache?.listings) return globalListCache.listings;
+        return [];
+    });
+    const [total, setTotal] = useState(() => {
+        if (isCacheValidSync && globalListCache?.total) return globalListCache.total;
+        return 0;
+    });
+    const [page, setPage] = useState(() => {
+        if (isCacheValidSync && globalListCache?.page) return globalListCache.page;
+        return 1;
+    });
+    const [initialLoading, setInitialLoading] = useState(() => {
+        if (isCacheValidSync) return false;
+        return true;
+    });
+    
+    const [mapCenter, setMapCenter] = useState(() => {
+        if (isCacheValidSync && globalListCache?.mapCenter) return globalListCache.mapCenter;
+        // Default to Bangkok center for new sessions to ensure map initializes and reports bounds
+        return { lat: 13.7563, lng: 100.5018 };
+    });
+    const [mapZoom, setMapZoom] = useState(() => {
+        if (isCacheValidSync && globalListCache?.mapZoom) return globalListCache.mapZoom;
+        return 12; // Default zoom level for initial load
+    });
+    const [mapBounds, setMapBounds] = useState(() => {
+        if (isCacheValidSync && globalListCache?.mapBounds) return globalListCache.mapBounds;
+        return null;
+    });
+
     const [loading, setLoading] = useState(false);
-    const [initialLoading, setInitialLoading] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
-    const [total, setTotal] = useState(0);
-    const [pendingTotal, setPendingTotal] = useState(null); // Count for current sidebar draft (background fetch, no loading UI)
-    const [page, setPage] = useState(1);
+    const [pendingTotal, setPendingTotal] = useState(null);
     const [hasMore, setHasMore] = useState(true);
     const observerTarget = useRef(null);
     const stateCacheRef = useRef({ listings: [], page: 1, total: 0, searchParamsString: '' });
     const scrollPositionRef = useRef(0);
     const hasRestoredScrollRef = useRef(false);
-    const lastFetchedParamsRef = useRef(null); // Ref to avoid redundant fetches on back-nav
-
-    const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
-    const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
-    const [isNavVisible, setIsNavVisible] = useState(false);
-    const [mapOverlayOpacity, setMapOverlayOpacity] = useState(0);
-    const scrollContainerRef = useRef(null);
-    const lastMobileMapScrollRef = useRef(0);
-
-    // Initial check to see if we should restore from cache
-    const isCacheValid = useMemo(() => {
-        if (!globalListCache) return false;
-        // Only valid if we returned to the exact same URL parameters
-        return globalListCache.searchParamsString === searchParams.toString();
-    }, [searchParams]);
-
-    // Override initial states if cache is valid to prevent layout shift
-    useState(() => {
-        if (isCacheValid && globalListCache) {
-            setListings(globalListCache.listings);
-            setPage(globalListCache.page);
-            setTotal(globalListCache.total);
-            setInitialLoading(false); // Skip initial loading skeleton
-            
-            // Critical: Initialize the fetch ref so the fetchEffect knows we already have this data
-            // Attempt to match the EXACT JSON structure used in fetchListings
+    
+    // Initialize lastFetchedParamsRef synchronously if cache is valid
+    const lastFetchedParamsRef = useRef(() => {
+        if (isCacheValidSync && globalListCache) {
             const filterParams = {};
             const keys = ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'];
             const savedFilters = JSON.parse(localStorage.getItem('listing_filters') || '{}');
@@ -164,16 +173,26 @@ const ListingsPage = () => {
 
             const params = { ...filterParams, page: globalListCache.page, limit: 12 };
 
-            // Map bounds logic from fetchListings
             if (globalListCache.mapBounds && localStorage.getItem('show_google_map') === 'true') {
                 params.min_lat = globalListCache.mapBounds.min_lat;
                 params.max_lat = globalListCache.mapBounds.max_lat;
                 params.min_lng = globalListCache.mapBounds.min_lng;
                 params.max_lng = globalListCache.mapBounds.max_lng;
             }
-            lastFetchedParamsRef.current = JSON.stringify(params);
+            return JSON.stringify(params);
         }
+        return null;
     });
+    const lastFetchedBoundsRef = useRef(null); // The actual bounds used in the last buffered fetch
+    const hasFullResultsForLastBoundsRef = useRef(false); // Whether the last buffered fetch returned ALL items in that area
+    const currentFetchIdRef = useRef(0); // For race condition handling and interaction locks
+
+    const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
+    const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
+    const [isNavVisible, setIsNavVisible] = useState(false);
+    const [mapOverlayOpacity, setMapOverlayOpacity] = useState(0);
+    const scrollContainerRef = useRef(null);
+    const lastMobileMapScrollRef = useRef(0);
 
     // Helper to safely update listings without duplication
     const updateListingsUnique = useCallback((newItems, replace = false) => {
@@ -188,18 +207,13 @@ const ListingsPage = () => {
         });
     }, []);
 
-    const [mapCenter, setMapCenter] = useState(() => {
-        if (isCacheValid && globalListCache?.mapCenter) return globalListCache.mapCenter;
-        return null;
-    });
-    const [mapZoom, setMapZoom] = useState(() => {
-        if (isCacheValid && globalListCache?.mapZoom) return globalListCache.mapZoom;
-        return undefined;
-    });
-    const [mapBounds, setMapBounds] = useState(() => {
-        if (isCacheValid && globalListCache?.mapBounds) return globalListCache.mapBounds;
-        return null; // Map bounds for geographic filtering
-    });
+    const lastFetchedParamsStateRef = useRef(null);
+    useEffect(() => {
+        if (typeof lastFetchedParamsRef.current === 'function') {
+            lastFetchedParamsRef.current = lastFetchedParamsRef.current();
+        }
+    }, []); // Map bounds for geographic filtering
+    
 
     // Track state for caching on unmount
     useEffect(() => {
@@ -239,11 +253,15 @@ const ListingsPage = () => {
 
     // Save cache on unmount
     useEffect(() => {
+        const currentUrl = window.location.pathname + window.location.search;
         return () => {
-            // Only save if we actually have populated data
+            // Save state even if listings haven't loaded yet? 
+            // Better to only save if we have some data to restore.
             if (stateCacheRef.current.listings.length > 0) {
                 globalListCache = {
                     ...stateCacheRef.current,
+                    url: currentUrl,
+                    timestamp: Date.now(),
                     scrollY: scrollPositionRef.current
                 };
             }
@@ -253,7 +271,7 @@ const ListingsPage = () => {
     // Restore scroll position once data is mounted from cache
     // Use useLayoutEffect to perform restoration BEFORE paint, avoiding the "start from start" flash.
     React.useLayoutEffect(() => {
-        if (isCacheValid && globalListCache && !hasRestoredScrollRef.current && listings.length > 0) {
+        if (isCacheValidSync && globalListCache && !hasRestoredScrollRef.current && listings.length > 0) {
             const pos = globalListCache.scrollY;
             if (pos > 0) {
                 // Restoration should be instant to avoid visible scrolling
@@ -265,7 +283,7 @@ const ListingsPage = () => {
                 hasRestoredScrollRef.current = true;
             }
         }
-    }, [isCacheValid, listings.length]);
+    }, [isCacheValidSync, listings.length]);
 
     // Modal States
 
@@ -918,27 +936,66 @@ const ListingsPage = () => {
     useEffect(() => {
         const prev = prevMapBoundsRef.current;
         const boundsJustChanged = isGoogleMapOpen && mapBounds && prev &&
-            (prev.min_lat !== mapBounds.min_lat || prev.max_lat !== mapBounds.max_lat ||
-                prev.min_lng !== mapBounds.min_lng || prev.max_lng !== mapBounds.max_lng);
+            (Math.abs(prev.min_lat - mapBounds.min_lat) > 0.00001 || 
+             Math.abs(prev.max_lat - mapBounds.max_lat) > 0.00001 ||
+             Math.abs(prev.min_lng - mapBounds.min_lng) > 0.00001 || 
+             Math.abs(prev.max_lng - mapBounds.max_lng) > 0.00001);
+        
         fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
         prevMapBoundsRef.current = mapBounds;
         const isBoundsTriggeredFetch = !!boundsJustChanged;
 
         const controller = new AbortController();
         const fetchListings = async () => {
-            const params = { ...filters, page, limit: 12 };
+            const params = { ...filters, page, limit: isGoogleMapOpen ? 40 : 12 };
+            let bufferedBounds = null;
+
             if (mapBounds && isGoogleMapOpen) {
-                params.min_lat = mapBounds.min_lat;
-                params.max_lat = mapBounds.max_lat;
-                params.min_lng = mapBounds.min_lng;
-                params.max_lng = mapBounds.max_lng;
+                // Buffer the request by 15% to allow small pans without re-fetching
+                const latPadding = (mapBounds.max_lat - mapBounds.min_lat) * 0.15;
+                const lngPadding = (mapBounds.max_lng - mapBounds.min_lng) * 0.15;
+                
+                bufferedBounds = {
+                    min_lat: mapBounds.min_lat - latPadding,
+                    max_lat: mapBounds.max_lat + latPadding,
+                    min_lng: mapBounds.min_lng - lngPadding,
+                    max_lng: mapBounds.max_lng + lngPadding
+                };
+
+                params.min_lat = bufferedBounds.min_lat;
+                params.max_lat = bufferedBounds.max_lat;
+                params.min_lng = bufferedBounds.min_lng;
+                params.max_lng = bufferedBounds.max_lng;
+            }
+
+            // Client-side Buffer Check:
+            // If we are in Map View and moving the screen, check if the new screen 
+            // is still entirely within our last buffered fetch area AND we have all data for that area.
+            if (isGoogleMapOpen && isBoundsTriggeredFetch && lastFetchedBoundsRef.current && hasFullResultsForLastBoundsRef.current) {
+                const isContained = 
+                    mapBounds.min_lat >= lastFetchedBoundsRef.current.min_lat &&
+                    mapBounds.max_lat <= lastFetchedBoundsRef.current.max_lat &&
+                    mapBounds.min_lng >= lastFetchedBoundsRef.current.min_lng &&
+                    mapBounds.max_lng <= lastFetchedBoundsRef.current.max_lng;
+
+                // Also check if filters other than bounds have changed
+                const filtersKey = JSON.stringify(filters);
+                const lastFiltersKey = lastFetchedParamsRef.current ? JSON.parse(lastFetchedParamsRef.current) : null;
+                const filtersMatch = lastFiltersKey && JSON.stringify({ ...lastFiltersKey, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined }) === 
+                                                 JSON.stringify({ ...filters, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined });
+
+                if (isContained && filtersMatch) {
+                    setIsMapRefetching(false);
+                    setLoading(false);
+                    return;
+                }
             }
 
             // Check if we already have this data (e.g. just closing a detail modal)
             const currentParamsKey = JSON.stringify(params);
 
             // Bypass fetch if we already restored this exact state from cache
-            if (isCacheValid && page === globalListCache.page) {
+            if (isCacheValidSync && page === globalListCache.page) {
                 lastFetchedParamsRef.current = currentParamsKey;
                 setLoading(false);
                 setInitialLoading(false);
@@ -955,9 +1012,16 @@ const ListingsPage = () => {
 
             // Optimistic loading: If map is open but bounds aren't ready, wait.
             // This prevents "showing all properties" flash on reload in Map View.
-            if (isGoogleMapOpen && !mapBounds) {
-                // If it's a fresh load, show skeletons. Otherwise, don't stall.
-                if (initialLoading) setLoading(true);
+            // Optimistic loading: If map is open but bounds aren't ready or valid, wait.
+            // This prevents "showing all properties" flash on reload in Map View.
+            const hasValidBounds = mapBounds && mapBounds.min_lat !== undefined;
+            if (isGoogleMapOpen && !hasValidBounds) {
+                // We MUST wait for the map to report bounds to prevent global results flash.
+                // The map will report its bounds as soon as it initializes (using our default center if no cache).
+                if (initialLoading) {
+                    setLoading(true);
+                    setInitialLoading(true);
+                }
                 return;
             }
 
@@ -978,28 +1042,25 @@ const ListingsPage = () => {
             setLoading(true);
 
             try {
-                // Map-pan fetch: re-add artificial delay so the user sees the skeleton loading state
-                // giving a perception of deep data processing to feel premium.
-                // Map-pan fetch: minimal delay to keep it responsive
-                const response = isBoundsTriggeredFetch
-                    ? (await Promise.all([
-                        publicApi.getListings(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 300))
-                    ]))[0]
-                    : (await Promise.all([
-                        publicApi.getListings(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 100))
-                    ]))[0];
+                // Artificial delays removed for speed as requested.
+                // Batch fetch with minimal responsiveness gap.
+                const response = await publicApi.getListings(params, { signal: controller.signal });
 
                 const data = response.data;
                 const newItems = data.listings || [];
+                const limit = isGoogleMapOpen ? 40 : 12;
 
                 // Stop loading more if the current response returned fewer items than the limit
-                // OR if it returned no items at all (safety against background changes)
-                if (newItems.length < 12 || newItems.length === 0) {
+                if (newItems.length < limit || newItems.length === 0) {
                     setHasMore(false);
                 } else {
                     setHasMore(true);
+                }
+
+                // Cache metadata for buffered map interaction
+                if (isGoogleMapOpen && bufferedBounds) {
+                    lastFetchedBoundsRef.current = bufferedBounds;
+                    hasFullResultsForLastBoundsRef.current = newItems.length < limit;
                 }
 
                 if (page === 1) {
@@ -1009,7 +1070,23 @@ const ListingsPage = () => {
                         await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
                         setIsExiting(false);
                     }
-                    updateListingsUnique(newItems, true); // Always replace on page 1
+                    
+                    // IF we are in Map View and this was a pan-triggered fetch,
+                    // ACCUMULATE items instead of replacing to avoid flickering markers.
+                    // BUT: Only accumulate if other filters haven't changed.
+                    const filtersKey = JSON.stringify(filters);
+                    const lastFiltersHandle = lastFetchedParamsRef.current ? JSON.parse(lastFetchedParamsRef.current) : null;
+                    const filtersMatch = lastFiltersHandle && JSON.stringify({ ...lastFiltersHandle, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined }) === 
+                                                 JSON.stringify({ ...filters, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined });
+                    
+                    const isPureMapMove = isGoogleMapOpen && isBoundsTriggeredFetch && filtersMatch;
+                    
+                    if (isPureMapMove) {
+                        updateListingsUnique(newItems, false); // Merge
+                    } else {
+                        updateListingsUnique(newItems, true); // Replace for filter changes
+                    }
+                    
                     setInitialLoading(false);
                 } else {
                     updateListingsUnique(newItems, false); // Unique append for pagination
@@ -1734,7 +1811,7 @@ const ListingsPage = () => {
                                 <div className={`flex flex-col transition-all duration-700 ease-in-out overflow-hidden ${isGoogleMapOpen ? (isMapExpanded ? 'lg:w-0 opacity-0 pointer-events-none' : 'w-full lg:w-[42%] xl:w-[52%] opacity-100') : 'w-full'} h-full p-0`}>
                                     {/* Header: Results Count */}
                                     <div className="mb-4 mt-1 flex justify-end">
-                                        {(initialLoading || isMapRefetching) ? (
+                                        {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
                                             <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-fill-fast" />
                                         ) : (listings || []).length > 0 ? (
                                             <div className="flex items-center gap-2">
@@ -1745,7 +1822,7 @@ const ListingsPage = () => {
                                         ) : null}
                                     </div>
 
-                                    {(initialLoading || isMapRefetching) ? (
+                                    {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
                                         <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>

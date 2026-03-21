@@ -329,33 +329,40 @@ const GoogleMapComponent = ({
 
     const boundsTimeoutRef = useRef(null);
     const lastReportedBoundsRef = useRef(null);
+    const lastReportedCenterRef = useRef(null);
     const internalMoveRef = useRef(false);
+    const lastMoveTimestampRef = useRef(0);
 
     // Sync external center changes to the map instance
     useEffect(() => {
         if (!map || !center) return;
         
-        // Block updates if we are the ones who just moved the map (internal move)
-        if (internalMoveRef.current) {
+        // CRITICAL PROTECTION: Block updates if the user is interacting with the map
+        // or has finished interacting very recently.
+        const interactionRecent = Date.now() - lastMoveTimestampRef.current < 4000;
+        if (internalMoveRef.current || interactionRecent) {
             return;
         }
 
         const currentMapCenter = map.getCenter();
         if (!currentMapCenter || !center || center.lat === undefined || center.lng === undefined) return;
+        
+        const lat = parseFloat(center.lat);
+        const lng = parseFloat(center.lng);
 
-        const latDiff = Math.abs(currentMapCenter.lat() - parseFloat(center.lat));
-        const lngDiff = Math.abs(currentMapCenter.lng() - parseFloat(center.lng));
+        const latDiff = Math.abs(currentMapCenter.lat() - lat);
+        const lngDiff = Math.abs(currentMapCenter.lng() - lng);
 
-        // Only pan if the difference is substantial (prevents micro-jitter/snap-back on standard drags)
-        if (latDiff > 0.005 || lngDiff > 0.005) {
-            map.panTo({ lat: parseFloat(center.lat), lng: parseFloat(center.lng) });
+        // Only pan if the difference is substantial (strictly prevents snap-back during drag/fetch cycles)
+        if (latDiff > 0.015 || lngDiff > 0.015) {
+            map.panTo({ lat, lng });
         }
     }, [center, map]);
 
     // Sync external zoom changes
     useEffect(() => {
         if (!map || zoom === undefined) return;
-        if (internalMoveRef.current) return;
+        if (internalMoveRef.current || (Date.now() - lastMoveTimestampRef.current < 2500)) return;
 
         if (map.getZoom() !== zoom) {
             map.setZoom(zoom);
@@ -367,6 +374,11 @@ const GoogleMapComponent = ({
 
     useEffect(() => {
         if (!fitBoundsOnListingsChange || !map || !window.google?.maps) return;
+        
+        // CRITICAL FIX: If the user just moved the map manually, DO NOT snap back to result bounds
+        // This prevents the "panning then jumping back" issue when API results return.
+        if (internalMoveRef.current || (Date.now() - lastMoveTimestampRef.current < 2000)) return;
+
         const withCoords = listingsWithCoords;
         if (withCoords.length === 0) return;
         const bounds = new window.google.maps.LatLngBounds();
@@ -466,7 +478,7 @@ const GoogleMapComponent = ({
             Math.abs(lastReportedBoundsRef.current.min_lat - data.min_lat) < 0.000001 &&
             Math.abs(lastReportedBoundsRef.current.max_lat - data.max_lat) < 0.000001 &&
             Math.abs(lastReportedBoundsRef.current.min_lng - data.min_lng) < 0.000001 &&
-            Math.abs(lastReportedBoundsRef.current.max_lat - data.max_lat) < 0.000001;
+            Math.abs(lastReportedBoundsRef.current.max_lng - data.max_lng) < 0.000001;
 
         if (isSame) return;
 
@@ -474,6 +486,7 @@ const GoogleMapComponent = ({
         
         boundsTimeoutRef.current = setTimeout(() => {
             lastReportedBoundsRef.current = data;
+            if (data.center) lastReportedCenterRef.current = data.center;
             
             // Stable zoom check: only update isZoomedIn if threshold is actually crossed
             setIsZoomedIn(zoom >= 13);
@@ -481,7 +494,9 @@ const GoogleMapComponent = ({
             onBoundsChanged(data);
             
             // Allow external syncs again after a cooling period
-            setTimeout(() => { internalMoveRef.current = false; }, 800);
+            setTimeout(() => { 
+                internalMoveRef.current = false; 
+            }, 800);
         }, 500);
     }, [map, onBoundsChanged, cancelPendingFetch]);
 
@@ -581,19 +596,23 @@ const GoogleMapComponent = ({
             )}
             <GoogleMap
                 mapContainerStyle={mapStyle}
-                defaultCenter={mapCenter}
-                defaultZoom={effectiveZoom}
+                center={mapCenter}
+                zoom={effectiveZoom}
                 onLoad={setMap}
                 options={mapOptions}
                 onIdle={handleBoundsChanged}
                 onDragStart={() => {
                     internalMoveRef.current = true;
-                    // Note: We don't unset this immediately. 
-                    // It will remain true until 800ms AFTER onBoundsChanged fires from stopping the drag.
+                    lastMoveTimestampRef.current = Date.now();
                     cancelPendingFetch();
+                }}
+                onDrag={() => {
+                    // Constant update to lastMoveTimestamp while dragging to keep the lock active
+                    lastMoveTimestampRef.current = Date.now(); 
                 }}
                 onZoomChanged={() => {
                     internalMoveRef.current = true;
+                    lastMoveTimestampRef.current = Date.now();
                     cancelPendingFetch();
                 }}
                 onClick={onClick}

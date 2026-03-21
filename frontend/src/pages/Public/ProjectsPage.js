@@ -199,6 +199,8 @@ const ProjectsPage = () => {
     const [agentId, setAgentId] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
+    const [mapCenter, setMapCenter] = useState({ lat: 13.7563, lng: 100.5018 });
+    const [mapZoom, setMapZoom] = useState(12);
 
     // Open sidebar filters when triggered from mobile nav search pill
     useEffect(() => {
@@ -250,6 +252,8 @@ const ProjectsPage = () => {
             lastBoundsRef.current = bounds;
             fetchTriggeredByBoundsRef.current = true; // Sync update to block fitBounds immediately
             setMapBounds(bounds);
+            if (bounds.center) setMapCenter(bounds.center);
+            if (bounds.zoom !== undefined) setMapZoom(bounds.zoom);
             setPage(1);
         }
     }, []);
@@ -444,9 +448,12 @@ const ProjectsPage = () => {
     useEffect(() => {
         const controller = new AbortController();
         const fetchListings = async () => {
-            // Optimistic loading: If map is open but bounds aren't ready, wait.
+            // Optimistic loading: If map is open but bounds aren't ready or valid, wait.
             // This prevents "showing all properties" flash on reload in Map View.
-            if (isGoogleMapOpen && !mapBounds) {
+            const hasValidBounds = mapBounds && mapBounds.min_lat !== undefined;
+            if (isGoogleMapOpen && !hasValidBounds) {
+                // We MUST wait for the map to report bounds to prevent global results flash.
+                // The map will report its bounds as soon as it initializes.
                 if (initialLoading) setLoading(true);
                 return;
             }
@@ -1086,14 +1093,12 @@ const ProjectsPage = () => {
                                     <div className="hidden lg:flex lg:flex-col lg:flex-shrink-0 lg:min-h-0 w-[55%] h-full relative">
                                         <div className="map-overlays-rounded relative w-full h-full rounded-[24px] overflow-hidden shadow-sm border border-gray-200">
                                             <GoogleMap
-                                                projects={projects}
-                                                onMarkerClick={(property) => {
-                                                    const newParams = new URLSearchParams(searchParams);
-                                                    newParams.set('detail', property.id);
-                                                    setSearchParams(newParams);
-                                                }}
+                                                listings={projects}
+                                                center={mapCenter}
+                                                zoom={mapZoom}
                                                 onBoundsChanged={handleMapBoundsChanged}
-                                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                                onMarkerClick={handleProjectClick}
+                                                showMapLoading={loading || initialLoading}
                                                 fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                                             />
                                             {/* Map Overlays */}
@@ -1182,18 +1187,12 @@ const ProjectsPage = () => {
 
                         <div className="flex-1 w-full relative">
                             <GoogleMap
-                                projects={projects}
-                                onMarkerClick={(property) => {
-                                    const newParams = new URLSearchParams(searchParams);
-                                    newParams.set('detail', property.id);
-                                    setSearchParams(newParams);
-                                }}
-                                onBoundsChanged={(bounds) => { 
-                                    fetchTriggeredByBoundsRef.current = true;
-                                    setMapBounds(bounds); 
-                                    setPage(1); 
-                                }}
-                                isVisible={isGoogleMapOpen || (isMapTransitioning && searchParams.get('view') === 'map')}
+                                listings={projects}
+                                center={mapCenter}
+                                zoom={mapZoom}
+                                onBoundsChanged={handleMapBoundsChanged}
+                                onMarkerClick={handleProjectClick}
+                                showMapLoading={loading || initialLoading}
                                 fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                             />
 

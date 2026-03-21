@@ -19,7 +19,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     const renderGridSkeleton = () => (
         <div className="flex flex-col w-full bg-transparent" style={skeletonStyle}>
             {/* Image — matching ListingCard's specific adaptive aspect ratio */}
-            <div className={`relative aspect-[4/3.8] md:aspect-[4/3.5] w-full overflow-hidden rounded-[23px] mb-0`}>
+            <div className={`relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] mb-0`}>
                 <div className={`h-full w-full bg-gray-100 dark:bg-white/5 animate-fill-fast`} />
                 
                 {/* Status Badge */}
@@ -28,7 +28,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
                 </div>
                 
                 {/* Heart/Save Button */}
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/10 animate-fill-med" />
+                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 dark:bg-black/10 animate-fill-med" />
 
                 {/* Agent Profile Overlay Placeholder */}
                 <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px]">
@@ -65,7 +65,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     // Saved grid / Favorites: matching ListingCard's aspect-[5/4.2] md:aspect-[5/4.7]
     const renderSavedGridSkeleton = () => (
         <div className="flex flex-col w-full" style={skeletonStyle}>
-            <div className={`aspect-[5/4.2] md:aspect-[5/4.7] w-full rounded-[23px] relative overflow-hidden mb-2`}>
+            <div className={`aspect-[5/4.5] md:aspect-[5/5.0] w-full rounded-[23px] relative overflow-hidden mb-2`}>
                 <div className="h-full w-full bg-gray-100 dark:bg-white/5 animate-fill-fast" />
                 
                 {/* Status Badge Placeholder */}
@@ -74,7 +74,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
                 </div>
                 
                 {/* Heart Button Placeholder */}
-                <div className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/20 dark:bg-black/20 animate-fill-med" />
+                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 dark:bg-black/20 animate-fill-med" />
                 
                 {/* Agent Profile Overlay Placeholder */}
                 <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px]">
@@ -93,7 +93,7 @@ const ListingSkeleton = ({ viewMode = 'grid', index = 0, isExiting = false }) =>
     const renderListSkeleton = () => (
         <div className="flex flex-col w-full" style={skeletonStyle}>
             <div className="p-4 flex gap-5">
-                <div className={`aspect-[4/3.5] w-40 sm:w-48 rounded-[23px] flex-shrink-0 relative overflow-hidden ${bar}`}>
+                <div className={`aspect-[4/3.8] w-40 sm:w-48 rounded-[23px] flex-shrink-0 relative overflow-hidden ${bar}`}>
                     {/* Agent Profile Overlay Placeholder */}
                     <div className="absolute bottom-[10px] left-[10px] md:bottom-[12px] md:left-[12px]">
                         <div className={`w-[60px] md:w-[80px] aspect-[3/1] ${barLight} rounded-lg opacity-60`} />
