@@ -94,13 +94,6 @@ func main() {
 }
 
 func seedInitialData(db *gorm.DB) {
-	// Check if super admin exists
-	var count int64
-	db.Model(&models.User{}).Where("role = ?", models.RoleSuperAdmin).Count(&count)
-	if count > 0 {
-		return
-	}
-
 	log.Println("Seeding initial data...")
 
 	// Create default subscription plans
