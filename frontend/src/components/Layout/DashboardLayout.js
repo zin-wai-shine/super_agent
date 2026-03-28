@@ -101,11 +101,11 @@ const DashboardLayout = () => {
         <div className="h-screen bg-gray-50 dark:bg-dashboard-dark flex flex-col overflow-hidden transition-colors duration-200">
             {/* Top Navigation Bar */}
             <header className="h-16 flex-none bg-white dark:bg-dashboard-card border-b border-gray-200 dark:border-gray-700 z-30 flex items-center justify-between px-4 relative transition-colors duration-200">
-                <div className="flex items-center gap-4 h-full relative lg:static">
-                    {/* Mobile Sidebar Toggle */}
+                {/* 1. Mobile Sidebar Toggle (Hidden on Desktop) */}
+                <div className="flex items-center lg:hidden z-20">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="lg:hidden p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors z-50"
+                        className="p-2 -ml-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
                     >
                         {sidebarOpen ? (
                             <XMarkIcon className="w-6 h-6" />
@@ -113,47 +113,49 @@ const DashboardLayout = () => {
                             <Bars3Icon className="w-6 h-6" />
                         )}
                     </button>
-
-                    {/* Logo (New Premium Design) - Centered on Mobile */}
-                    <Link 
-                        to={isSuperAdmin ? '/admin' : '/dashboard'} 
-                        className="flex items-center ml-0 absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 transition-all duration-300"
-                    >
-                        {isMainDomain ? (
-                            <div className="flex items-center space-x-2 sm:space-x-3">
-                                <Logo className="w-8 h-8 sm:w-10 sm:h-10 text-primary-600 dark:text-primary-400" />
-                                <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center h-16">
-                                {(agent?.theme?.logo_url || agent?.logo) ? (
-                                    <div className="relative h-16 w-38 sm:w-64 flex items-center justify-center lg:justify-start">
-                                        <img
-                                            src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
-                                            alt={agent.agency_name || agent.name || 'Agent Logo'}
-                                            className="h-10 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm"
-                                        />
-                                    </div>
-                                ) : (
-                                    <span className="text-xl sm:text-2xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
-                                        {agent?.subdomain || 'Agent'}
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                    </Link>
                 </div>
 
-                {/* Right Side Actions */}
-                <div className="flex items-center space-x-2 sm:space-x-4">
+                {/* 2. Logo (Centered on Mobile, Left on Desktop) */}
+                <Link 
+                    to={isSuperAdmin ? '/admin' : '/dashboard'} 
+                    className="flex items-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 transition-all duration-300 z-10"
+                >
+                    {isMainDomain ? (
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                            <Logo className="w-8 h-8 sm:w-10 sm:h-10 text-primary-600 dark:text-primary-400" />
+                            <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 hidden sm:block dark:from-primary-400 dark:to-primary-200">Super</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center h-16">
+                            {(agent?.theme?.logo_url || agent?.logo) ? (
+                                <div className="relative h-16 w-38 sm:w-64 flex items-center justify-center lg:justify-start">
+                                    <img
+                                        src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
+                                        alt={agent.agency_name || agent.name || 'Agent Logo'}
+                                        className="h-10 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm"
+                                    />
+                                </div>
+                            ) : (
+                                <span className="text-xl sm:text-2xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                                    {agent?.subdomain || 'Agent'}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </Link>
+
+                {/* 3. Right Side Actions */}
+                <div className="flex items-center space-x-0 sm:space-x-2 lg:ml-auto z-20">
+                    {/* View Site Icon Link */}
                     <a
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20 rounded-lg transition-all border border-transparent hover:border-primary-100 dark:hover:border-primary-800"
+                        className="p-2 lg:px-3 lg:py-1.5 flex items-center gap-1.5 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 lg:hover:bg-primary-50 dark:lg:hover:bg-primary-900/20 rounded-lg transition-all border border-transparent lg:border-gray-200 dark:lg:border-gray-700 lg:hover:border-primary-100 dark:lg:hover:border-primary-800"
+                        title="View Site"
                     >
-                        <span className="hidden xs:inline">View Site</span>
-                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                        <span className="hidden lg:inline text-xs font-bold">View Site</span>
+                        <ArrowTopRightOnSquareIcon className="w-6 h-6 lg:w-4 lg:h-4" />
                     </a>
 
                     {/* Dark Mode Toggle */}
@@ -163,9 +165,9 @@ const DashboardLayout = () => {
                         title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {isDarkMode ? (
-                            <SunIcon className="w-5 h-5" />
+                            <SunIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                         ) : (
-                            <MoonIcon className="w-5 h-5" />
+                            <MoonIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                         )}
                     </button>
 

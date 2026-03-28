@@ -61,11 +61,11 @@ const NotificationBell = () => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative"
+                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors relative"
             >
-                <BellIcon className="w-6 h-6" />
+                <BellIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+                    <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-dashboard-card" />
                 )}
             </button>
 
