@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Modal from '../ui/Modal';
 import TransitMapFilter from './TransitMapFilter';
-import { MagnifyingGlassIcon, XMarkIcon, CheckIcon, MapIcon, ChevronLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon, CheckIcon, MapIcon, ChevronLeftIcon, ArrowLeftIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { publicApi } from '../../services/api';
 
@@ -296,6 +296,20 @@ const TransitFilterModal = ({
 
                     {/* Right Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
                     <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[72%] sm:min-w-0 relative bg-gray-50 dark:bg-dashboard-dark overflow-hidden min-w-0`}>
+                        {/* Mobile "Back to List" button — mirrors the "Map" button in list header */}
+                        {showMapOnMobile && (
+                            <div className="absolute top-6 right-6 z-[100] sm:hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMapOnMobile(false)}
+                                    className="flex items-center justify-center gap-2 px-6 h-[44px] min-h-[44px] bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
+                                    aria-label="Show station list"
+                                >
+                                    <span className="font-normal text-sm tracking-wide">List</span>
+                                    <ListBulletIcon className="w-5 h-5 font-bold" />
+                                </button>
+                            </div>
+                        )}
                         <TransitMapFilter
                             hideHeader={true}
                             externalStations={stations}
