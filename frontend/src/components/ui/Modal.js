@@ -171,7 +171,7 @@ const Modal = ({
                                             onClick={onClose}
                                             className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                                         >
-                                            <XMarkIcon className="h-6 w-6" />
+                                            <XMarkIcon className="w-5 h-5" />
                                         </button>
                                     )}
                                 </div>
