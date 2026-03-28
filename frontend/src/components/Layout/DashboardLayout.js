@@ -108,9 +108,9 @@ const DashboardLayout = () => {
                         className="p-2 -ml-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
                     >
                         {sidebarOpen ? (
-                            <XMarkIcon className="w-6 h-6" />
+                            <XMarkIcon className="w-7 h-7" />
                         ) : (
-                            <Bars3Icon className="w-6 h-6" />
+                            <Bars3Icon className="w-7 h-7" />
                         )}
                     </button>
                 </div>
@@ -128,11 +128,11 @@ const DashboardLayout = () => {
                     ) : (
                         <div className="flex items-center h-16">
                             {(agent?.theme?.logo_url || agent?.logo) ? (
-                                <div className="relative h-16 w-38 sm:w-64 flex items-center justify-center lg:justify-start">
+                                <div className="relative h-16 w-52 sm:w-64 flex items-center justify-center lg:justify-start">
                                     <img
                                         src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
                                         alt={agent.agency_name || agent.name || 'Agent Logo'}
-                                        className="h-10 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm"
+                                        className="h-16 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm scale-110 sm:scale-100"
                                     />
                                 </div>
                             ) : (
@@ -145,7 +145,7 @@ const DashboardLayout = () => {
                 </Link>
 
                 {/* 3. Right Side Actions */}
-                <div className="flex items-center space-x-0 sm:space-x-2 lg:ml-auto z-20">
+                <div className="flex items-center space-x-3 sm:space-x-4 lg:ml-auto z-20">
                     {/* View Site Icon Link */}
                     <a
                         href="/"
