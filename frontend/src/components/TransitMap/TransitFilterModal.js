@@ -305,12 +305,12 @@ const TransitFilterModal = ({
                     </div>
                 </div>
 
-                {/* Footer: match Sidebar design height */}
+                {/* Footer: symmetric padding and normal weight button */}
                 <div 
                     className="shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
                     style={{
-                        paddingTop: '0.75rem',
-                        paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 20px))',
+                        paddingTop: '1.25rem',
+                        paddingBottom: '1.25rem',
                     }}
                 >
                     <div className="flex items-center gap-4">
@@ -331,7 +331,7 @@ const TransitFilterModal = ({
                     <div className="flex items-center gap-3 sm:gap-4">
                         <button
                             onClick={handleApply}
-                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-3.5 md:px-5 md:py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] md:text-[13px] font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[48px] md:min-h-[40px]"
+                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-3.5 md:px-5 md:py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] md:text-[13px] font-normal hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[48px] md:min-h-[40px]"
                         >
                             Done
                         </button>
