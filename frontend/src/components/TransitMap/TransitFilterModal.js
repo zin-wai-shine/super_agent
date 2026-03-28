@@ -169,7 +169,7 @@ const TransitFilterModal = ({
                                 <button
                                     type="button"
                                     onClick={() => setShowMapOnMobile(prev => !prev)}
-                                    className="flex-shrink-0 sm:hidden flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
+                                    className="flex-shrink-0 sm:hidden flex items-center justify-center gap-2 px-6 h-[44px] min-h-[44px] bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
                                     aria-label={showMapOnMobile ? 'Show station list' : 'Show transit map'}
                                 >
                                     <span className="font-bold text-sm tracking-wide">Map</span>
