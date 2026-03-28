@@ -305,12 +305,12 @@ const TransitFilterModal = ({
                     </div>
                 </div>
 
-                {/* Footer: symmetric padding and normal weight button */}
+                {/* Footer: match Sidebar design height exactly */}
                 <div 
                     className="shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
                     style={{
-                        paddingTop: '1.25rem',
-                        paddingBottom: '1.25rem',
+                        paddingTop: '0.75rem',
+                        paddingBottom: '0.75rem',
                     }}
                 >
                     <div className="flex items-center gap-4">
