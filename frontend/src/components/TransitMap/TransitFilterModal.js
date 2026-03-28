@@ -305,8 +305,14 @@ const TransitFilterModal = ({
                     </div>
                 </div>
 
-                {/* Footer: mobile — match filter base padding and safe area; desktop: px-8 lg:px-12 py-6 */}
-                <div className="transit-modal-footer-safe px-6 md:px-8 lg:px-12 py-2.5 md:py-3.5 flex-shrink-0 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 border-t border-gray-100 dark:border-white/5">
+                {/* Footer: match Sidebar design height */}
+                <div 
+                    className="shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
+                    style={{
+                        paddingTop: '0.75rem',
+                        paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 20px))',
+                    }}
+                >
                     <div className="flex items-center gap-4">
                         {selectedIds.length > 0 ? (
                             <button
