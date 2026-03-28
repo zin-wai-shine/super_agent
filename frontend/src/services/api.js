@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
 const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
 const isProbablySubdomain = currentHostname !== mainDomain && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1' && !currentHostname.endsWith('.localhost');
 
@@ -24,7 +24,7 @@ const api = axios.create({
     },
 });
 
-// Detect subdomain from hostname (e.g. staynert.haizo.it.com → staynert)
+// Detect subdomain from hostname (e.g. staynert.srv1534108.hstgr.cloud → staynert)
 const getSubdomainFromCustomDomain = () => {
     if (typeof window === 'undefined') return null;
     const hostname = window.location.hostname;
@@ -33,7 +33,7 @@ const getSubdomainFromCustomDomain = () => {
 
     if (hostname.endsWith('.' + domain)) {
         sub = hostname.slice(0, -(domain.length + 1));
-    } else if (hostname.endsWith('.haizo.it.com')) {
+    } else if (hostname.endsWith('.srv1534108.hstgr.cloud')) {
         sub = hostname.slice(0, -13);
     } else if (hostname.endsWith('.superealestate.localhost')) {
         sub = hostname.slice(0, -25);

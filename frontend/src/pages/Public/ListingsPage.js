@@ -194,18 +194,7 @@ const ListingsPage = () => {
     const scrollContainerRef = useRef(null);
     const lastMobileMapScrollRef = useRef(0);
 
-    // Helper to safely update listings without duplication
-    const updateListingsUnique = useCallback((newItems, replace = false) => {
-        setListings(prev => {
-            if (replace) return newItems;
-            
-            // Deduplicate based on listing ID
-            const existingIds = new Set(prev.map(item => String(item.id)));
-            const uniqueNew = (newItems || []).filter(item => item && item.id && !existingIds.has(String(item.id)));
-            
-            return [...prev, ...uniqueNew];
-        });
-    }, []);
+
 
     const lastFetchedParamsStateRef = useRef(null);
     useEffect(() => {
@@ -300,6 +289,25 @@ const ListingsPage = () => {
         // 3. Default state (List mode)
         return false;
     });
+
+    // Helper to safely update listings without duplication and prune remote markers
+    const updateListingsUnique = useCallback((newItems, replace = false, currentBounds = null) => {
+        setListings(prev => {
+            if (replace) return newItems;
+            
+            // To ensure markers always appear, we skip pruning for now
+            let baseList = prev;
+            /* if (currentBounds && isGoogleMapOpen) {
+                ... pruning logic ...
+            } */
+
+            // Deduplicate based on listing ID
+            const existingIds = new Set(baseList.map(item => String(item.id)));
+            const uniqueNew = (newItems || []).filter(item => item && item.id && !existingIds.has(String(item.id)));
+            
+            return [...baseList, ...uniqueNew];
+        });
+    }, [isGoogleMapOpen]);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
     const [listHoveredListingId, setListHoveredListingId] = useState(null);
     const [selectedListingId, setSelectedListingId] = useState(null);
@@ -1082,7 +1090,7 @@ const ListingsPage = () => {
                     const isPureMapMove = isGoogleMapOpen && isBoundsTriggeredFetch && filtersMatch;
                     
                     if (isPureMapMove) {
-                        updateListingsUnique(newItems, false); // Merge
+                        updateListingsUnique(newItems, false, mapBounds); // Merge + Prune
                     } else {
                         updateListingsUnique(newItems, true); // Replace for filter changes
                     }
@@ -2164,7 +2172,7 @@ const ListingsPage = () => {
                                                             ฿{Number(property.price).toLocaleString()}
                                                         </span>
                                                         <span className="bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[11px] px-2 py-1 rounded">
-                                                            {property.type === 'rent' ? 'For Rent' : 'For Sale'}
+                                                            {property.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                                                         </span>
                                                     </div>
                                                 </div>

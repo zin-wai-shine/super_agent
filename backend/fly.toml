@@ -14,7 +14,7 @@ primary_region = "sin"
   UPLOAD_PATH = "/app/uploads"
   DB_PORT = "5432"
   # MAIN_DOMAIN should be your production domain (e.g. agent.super.com or super-frontend.fly.dev)
-  MAIN_DOMAIN = "haizo.it.com"
+  MAIN_DOMAIN = "srv1534108.hstgr.cloud"
 
 [[mounts]]
   source = "super_uploads"

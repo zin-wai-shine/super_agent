@@ -127,6 +127,8 @@ const ProjectsPage = () => {
     const [page, setPage] = useState(1);
     const observerTarget = useRef(null);
 
+
+
     // Modal States
 
     const [isGoogleMapOpen, setIsGoogleMapOpen] = useState(() => {
@@ -142,6 +144,37 @@ const ProjectsPage = () => {
         // 3. Default state (List mode)
         return false;
     });
+
+    // Helper to safely update projects without duplication and prune remote markers
+    const updateProjectsUnique = useCallback((newItems, replace = false, currentBounds = null) => {
+        setProjects(prev => {
+            if (replace) return newItems;
+            
+            // If map is open and we have bounds, prune items that are far outside the current view
+            let baseList = prev;
+            if (currentBounds && isGoogleMapOpen) {
+                const latMargin = (currentBounds.max_lat - currentBounds.min_lat) * 0.4;
+                const lngMargin = (currentBounds.max_lng - currentBounds.min_lng) * 0.4;
+                
+                baseList = prev.filter(item => {
+                    const lat = parseFloat(item.latitude);
+                    const lng = parseFloat(item.longitude);
+                    return (
+                        lat >= currentBounds.min_lat - latMargin &&
+                        lat <= currentBounds.max_lat + latMargin &&
+                        lng >= currentBounds.min_lng - lngMargin &&
+                        lng <= currentBounds.max_lng + lngMargin
+                    );
+                });
+            }
+
+            // Deduplicate based on project ID
+            const existingIds = new Set(baseList.map(item => String(item.id)));
+            const uniqueNew = (newItems || []).filter(item => item && item.id && !existingIds.has(String(item.id)));
+            
+            return [...baseList, ...uniqueNew];
+        });
+    }, [isGoogleMapOpen]);
     const [isMapTransitioning, setIsMapTransitioning] = useState(false);
     const [overlaySwitchActive, setOverlaySwitchActive] = useState(false);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
@@ -201,6 +234,7 @@ const ProjectsPage = () => {
     const [mapBounds, setMapBounds] = useState(null); // Map bounds for geographic filtering
     const [mapCenter, setMapCenter] = useState({ lat: 13.7563, lng: 100.5018 });
     const [mapZoom, setMapZoom] = useState(12);
+    const lastFetchedParamsRef = useRef(null);
 
     // Open sidebar filters when triggered from mobile nav search pill
     useEffect(() => {
@@ -509,16 +543,28 @@ const ProjectsPage = () => {
 
                 const data = response.data;
 
-                if (page === 1 && initialLoading) {
-                    // Trigger exit animation
-                    setIsExiting(true);
-                    await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
-                    setProjects(data.projects);
-                    setIsExiting(false);
+                if (page === 1) {
+                    if (initialLoading) {
+                        setIsExiting(true);
+                        await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
+                        setIsExiting(false);
+                    }
+
+                    // Pure map move check
+                    const filtersKey = JSON.stringify(filters);
+                    const lastFiltersHandle = lastFetchedParamsRef.current ? JSON.parse(lastFetchedParamsRef.current) : null;
+                    const filtersMatch = lastFiltersHandle && JSON.stringify({ ...lastFiltersHandle, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined }) === 
+                                                 JSON.stringify({ ...filters, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined });
+                    
+                    const isPureMapMove = isGoogleMapOpen && isBoundsTriggeredFetch && filtersMatch;
+                    
+                    updateProjectsUnique(data.projects, !isPureMapMove, mapBounds);
                     setInitialLoading(false);
                 } else {
-                    setProjects(prev => page === 1 ? data.projects : [...prev, ...data.projects]);
+                    updateProjectsUnique(data.projects, false);
                 }
+
+                lastFetchedParamsRef.current = JSON.stringify(params);
 
                 setTotal(data.total || 0);
             } catch (error) {

@@ -35,9 +35,11 @@ const ThemeSettings = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [uploadingFavicon, setUploadingFavicon] = useState(false);
     const [uploadingSharePreview, setUploadingSharePreview] = useState(false);
     const [activeTab, setActiveTab] = useState('brand');
     const logoInputRef = useRef(null);
+    const faviconInputRef = useRef(null);
     const sharePreviewInputRef = useRef(null);
 
     const { register, control, handleSubmit, reset, setValue } = useForm({
@@ -61,6 +63,7 @@ const ThemeSettings = () => {
         secondary_color: '#34a853',
         text_color: '#202124',
         logo_url: '',
+        favicon_url: '',
         share_preview_image: '',
         header_text: 'Super Real Estate',
         footer_text: '© 2024 Super Real Estate',
@@ -101,6 +104,7 @@ const ThemeSettings = () => {
         register('secondary_color');
         register('background_color');
         register('text_color');
+        register('favicon_url');
         register('share_preview_image');
         register('button_radius');
         register('card_radius');
@@ -134,6 +138,7 @@ const ThemeSettings = () => {
                 secondary_color: theme.secondary_color || DEFAULT_THEME.secondary_color,
                 text_color: theme.text_color || DEFAULT_THEME.text_color,
                 logo_url: theme.logo_url || '',
+                favicon_url: theme.favicon_url || '',
                 share_preview_image: theme.share_preview_image || '',
                 header_text: theme.header_text || '',
                 footer_text: theme.footer_text || '',
@@ -195,11 +200,6 @@ const ThemeSettings = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Logo must be smaller than 2MB');
-            return;
-        }
-
         setUploadingLogo(true);
         try {
             const response = await agentApi.uploadLogo(file);
@@ -212,14 +212,25 @@ const ThemeSettings = () => {
         }
     };
 
-    const handleSharePreviewUpload = async (e) => {
+    const handleFaviconUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Preview image must be smaller than 2MB');
-            return;
+        setUploadingFavicon(true);
+        try {
+            const response = await agentApi.uploadLogo(file);
+            setValue('favicon_url', response.data.url);
+            toast.success('Favicon uploaded!');
+        } catch (error) {
+            toast.error('Failed to upload favicon');
+        } finally {
+            setUploadingFavicon(false);
         }
+    };
+
+    const handleSharePreviewUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
         setUploadingSharePreview(true);
         try {
@@ -465,6 +476,41 @@ const ThemeSettings = () => {
                                 {/* Right Col: Social Share Preview (Col 6) */}
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
+                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Browser Icon (Favicon)</label>
+                                        {watchAll.favicon_url && (
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('favicon_url')}
+                                                className="text-gray-400 hover:text-primary-500 transition-colors"
+                                                title="Reset Favicon"
+                                            >
+                                                <ArrowPathIcon className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div
+                                        onClick={() => faviconInputRef.current?.click()}
+                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[120px] flex-col items-center overflow-hidden"
+                                    >
+                                        <div className="w-full text-center">
+                                            {watchAll.favicon_url ? (
+                                                <div className="relative group-hover:scale-[1.01] transition-transform duration-300 flex flex-col items-center">
+                                                    <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-12 h-12 object-contain rounded shadow-sm bg-white p-1" />
+                                                    <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Icon</div>
+                                                </div>
+                                            ) : (
+                                                <div className="py-4">
+                                                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mb-2 mx-auto">
+                                                        <GlobeAltIcon className="h-5 w-5 text-primary-400" />
+                                                    </div>
+                                                    <div className="text-[11px] font-bold text-primary-600 uppercase tracking-widest">Add Browser Icon</div>
+                                                    <p className="text-[10px] text-gray-400 mt-1">PNG or ICO (32x32px)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center">
                                         <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Social Share Preview</label>
                                         {watchAll.share_preview_image && (
                                             <button
@@ -479,7 +525,7 @@ const ThemeSettings = () => {
                                     </div>
                                     <div
                                         onClick={() => sharePreviewInputRef.current?.click()}
-                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[220px] flex-col items-center overflow-hidden"
+                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[160px] flex-col items-center overflow-hidden"
                                     >
                                         <div className="w-full text-center">
                                             {watchAll.share_preview_image ? (
@@ -488,7 +534,7 @@ const ThemeSettings = () => {
                                                     <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Image</div>
                                                 </div>
                                             ) : (
-                                                <div className="py-8">
+                                                <div className="py-6">
                                                     <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                                                         <PhotoIcon className="h-6 w-6 text-primary-400" />
                                                     </div>
@@ -507,6 +553,13 @@ const ThemeSettings = () => {
                                 className="hidden"
                                 accept="image/*"
                                 onChange={handleLogoUpload}
+                            />
+                            <input
+                                type="file"
+                                ref={faviconInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleFaviconUpload}
                             />
                             <input
                                 type="file"

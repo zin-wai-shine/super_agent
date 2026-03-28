@@ -293,7 +293,7 @@ const AgentManagement = () => {
                 accessorKey: 'subdomain',
                 header: 'Domain',
                 cell: ({ row }) => {
-                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
                     const agent = row.original;
                     const domain = agent.custom_domain || (agent.subdomain ? `${agent.subdomain}.${mainDomain}` : '');
                     const url = domain ? `http://${domain}:${window.location.port || '3000'}` : '#'; // Use current port

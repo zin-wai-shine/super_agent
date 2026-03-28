@@ -28,7 +28,8 @@ const Modal = ({
 
     useEffect(() => {
         if (isOpen && lockScroll) {
-            // Store original values
+            // Store original scroll position and styles
+            const scrollY = window.scrollY;
             const originalOverflow = document.body.style.overflow;
             const originalHtmlOverflow = document.documentElement.style.overflow;
             const originalOverscroll = document.body.style.overscrollBehavior;
@@ -58,6 +59,11 @@ const Modal = ({
             document.head.appendChild(style);
             document.body.classList.add('modal-open');
 
+            // Force scroll restoration strictly in case the browser just jumped
+            if (window.scrollY !== scrollY) {
+                window.scrollTo(0, scrollY);
+            }
+
             return () => {
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = originalOverflow;
@@ -68,6 +74,9 @@ const Modal = ({
 
                 const existing = document.getElementById('modal-internal-lock');
                 if (existing) existing.remove();
+
+                // Restore scroll position back again right after releasing
+                window.scrollTo({ top: scrollY, behavior: 'instant' });
             };
         }
     }, [isOpen, lockScroll]);

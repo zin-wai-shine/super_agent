@@ -34,7 +34,7 @@ var (
 	allowedVideoTypes = map[string]bool{
 		".mp4": true, ".webm": true, ".mov": true, ".avi": true,
 	}
-	maxImageSize int64 = 10 * 1024 * 1024  // 10MB
+	maxImageSize int64 = 25 * 1024 * 1024  // 25MB
 	maxVideoSize int64 = 100 * 1024 * 1024 // 100MB
 )
 
@@ -156,7 +156,7 @@ func (uc *UploadController) UploadVideo(c *gin.Context) {
 
 	// Check file size
 	if header.Size > maxVideoSize {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File too large. Maximum 100MB allowed"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("File too large. Maximum %dMB allowed", maxVideoSize/(1024*1024))})
 		return
 	}
 
@@ -303,9 +303,9 @@ func (uc *UploadController) UploadLogo(c *gin.Context) {
 	}
 	defer file.Close()
 
-	// Check file size (logos should be smaller, e.g., 2MB)
-	if header.Size > 2*1024*1024 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Logo too large. Maximum 2MB allowed"})
+	// Check file size (increased to 10MB for "original" resolution)
+	if header.Size > 10*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Logo/Favicon too large. Maximum 10MB allowed"})
 		return
 	}
 
@@ -356,9 +356,9 @@ func (uc *UploadController) UploadBanner(c *gin.Context) {
 	}
 	defer file.Close()
 
-	// Check file size (banners can be larger, e.g., 5MB)
-	if header.Size > 5*1024*1024 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Banner too large. Maximum 5MB allowed"})
+	// Check file size (banners can be larger, e.g., 10MB)
+	if header.Size > 10*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Banner too large. Maximum 10MB allowed"})
 		return
 	}
 

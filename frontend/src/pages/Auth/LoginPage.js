@@ -40,7 +40,7 @@ const LoginPage = () => {
                 const agent = result.user.agent;
                 if (agent && agent.subdomain) {
                     const currentHost = window.location.hostname;
-                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+                    const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
                     const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
 
                     if (currentHost !== agentHost) {

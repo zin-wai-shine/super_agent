@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -147,7 +148,7 @@ func seedInitialData(db *gorm.DB) {
 	// Create/Update super admin user
 	hashedPassword, _ := utils.HashPassword("superadmin123")
 	superAdmin := models.User{
-		Email:        "admin@haizo.it.com",
+		Email:        "admin@srv1534108.hstgr.cloud",
 		PasswordHash: hashedPassword,
 		FirstName:    "Super",
 		LastName:     "Admin",
@@ -167,50 +168,63 @@ func seedInitialData(db *gorm.DB) {
 		db.Create(&superAdmin)
 	}
 
-	// Seed specific agents: staynert and bolthaven
 	specificAgents := []struct {
-		Name      string
-		Subdomain string
-		Email     string
+		Name         string
+		Subdomain    string
+		Email        string
+		CustomDomain string
 	}{
-		{Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.haizo.it.com"},
-		{Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.haizo.it.com"},
+		{Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.srv1534108.hstgr.cloud", CustomDomain: ""},
+		{Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.srv1534108.hstgr.cloud", CustomDomain: "bolthave.com"},
 	}
 
 	for _, sa := range specificAgents {
-		var agent models.Agent
-		if err := db.Where("subdomain = ?", sa.Subdomain).First(&agent).Error; err != nil {
-			// Get professional plan for custom branding
-			var plan models.Subscription
-			db.Where("plan_name = ?", "Professional").First(&plan)
+		var plan models.Subscription
+		db.Where("plan_name = ?", "Professional").First(&plan)
 
-			agent = models.Agent{
-				Name:           sa.Name,
-				Subdomain:      sa.Subdomain,
-				DomainType:     models.DomainTypeSubdomain,
-				Email:          sa.Email,
-				IsActive:       true,
-				SubscriptionID: &plan.ID,
-			}
-			db.Create(&agent)
+		domainType := models.DomainTypeSubdomain
+		if sa.CustomDomain != "" {
+			domainType = models.DomainTypeCustom
+		}
 
-			// Create or Update user for this agent
-			agentPassword, _ := utils.HashPassword("password123")
-			var existingAgentUser models.User
-			if err := db.Where("email = ?", sa.Email).First(&existingAgentUser).Error; err == nil {
-				db.Model(&existingAgentUser).Update("password_hash", agentPassword)
-			} else {
-				agentUser := models.User{
-					Email:        sa.Email,
-					PasswordHash: agentPassword,
-					FirstName:    strings.Split(sa.Name, " ")[0],
-					LastName:     "Agent",
-					Role:         models.RoleAgent,
-					AgentID:      &agent.ID,
-					IsActive:     true,
-				}
-				db.Create(&agentUser)
-			}
+		agent := models.Agent{
+			Name:           sa.Name,
+			Subdomain:      sa.Subdomain,
+			DomainType:     domainType,
+			CustomDomain:   sa.CustomDomain,
+			Email:          sa.Email,
+			IsActive:       true,
+			IsSuspended:    false,
+			SubscriptionID: &plan.ID,
+		}
+
+		// Use FirstOrCreate with Assign to ensure existing agents are updated correctly
+		if err := db.Where(models.Agent{Subdomain: sa.Subdomain}).Assign(models.Agent{
+			Name:         sa.Name,
+			Email:        sa.Email,
+			CustomDomain: sa.CustomDomain,
+			DomainType:   domainType,
+			IsActive:     true,
+			IsSuspended:  false,
+		}).FirstOrCreate(&agent).Error; err != nil {
+			log.Printf("Failed to seed/update specific agent %s: %v", sa.Subdomain, err)
+			continue
+		}
+
+		// Create or Update user for this agent
+		agentPassword, _ := utils.HashPassword("password123")
+		var user models.User
+		if err := db.Where(models.User{Email: sa.Email}).Assign(models.User{
+			PasswordHash: agentPassword,
+			FirstName:    strings.Split(sa.Name, " ")[0],
+			LastName:     "Agent",
+			Role:         models.RoleAgent,
+			AgentID:      &agent.ID,
+			IsActive:     true,
+		}).FirstOrCreate(&user).Error; err != nil {
+			log.Printf("Failed to seed/update specific agent user %s: %v", sa.Email, err)
+		} else {
+			fmt.Printf("[Startup] Verified/Updated agent: %s (%s)\n", sa.Name, sa.Subdomain)
 		}
 	}
 
@@ -218,6 +232,7 @@ func seedInitialData(db *gorm.DB) {
 	seedTransitStations(db)
 
 	log.Println("Initial data seeded successfully")
+	fmt.Println("[Startup] Seeding completed successfully")
 }
 
 func seedTransitStations(db *gorm.DB) {

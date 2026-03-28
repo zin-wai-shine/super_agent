@@ -34,10 +34,10 @@ func LoadConfig() *Config {
 		DBName:             getEnv("DB_NAME", "super_real_estate"),
 		JWTSecret:          getEnv("JWT_SECRET", "default_jwt_secret"),
 		UploadPath:         getEnv("UPLOAD_PATH", "./uploads"),
-		MainDomain:         getEnv("MAIN_DOMAIN", "haizo.it.com"),
+		MainDomain:         getEnv("MAIN_DOMAIN", "srv1534108.hstgr.cloud"),
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
-		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://haizo.it.com:8080/api/auth/google/callback"),
+		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://srv1534108.hstgr.cloud:8080/api/auth/google/callback"),
 	}
 }
 

@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, OverlayView } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, OverlayView, OverlayViewF } from '@react-google-maps/api';
 import {
     XMarkIcon,
     MapPinIcon,
@@ -7,7 +7,11 @@ import {
     MinusIcon,
     ArrowPathIcon,
     ArrowsPointingOutIcon,
-    SparklesIcon
+    SparklesIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -64,40 +68,39 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
     }), [property.latitude, property.longitude]);
 
     return (
-        <OverlayView
+        <OverlayViewF
             position={position}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            mapPaneName="overlayMouseTarget"
         >
             <div
-                className={`marker-group ${isHighlighted ? 'list-highlighted' : ''} ${isOpened ? 'opened' : ''} relative flex flex-col items-center`}
-                style={{ transform: 'translate(-50%, -100%)' }}
+                className={`marker-group ${isHighlighted ? 'list-highlighted' : ''} ${isOpened ? 'opened' : ''} relative`}
+                style={{ transform: 'translate(-50%, -50%)', zIndex: isOpened ? 1000 : 1 }}
             >
-                {/* Marker Styles are now moved to the top-level map container */}
-
-                <div className="relative flex flex-col items-center">
-                    {/* DOT MARKER */}
-                    <div 
-                        className={`absolute inset-0 flex items-center justify-center transition-opacity transition-transform duration-300 ease-out ${
-                            (!isZoomedIn && !isFeatured && !isOpened && !isHighlighted) 
-                            ? 'scale-100 opacity-100' 
-                            : 'scale-0 opacity-0 pointer-events-none'
-                        }`}
-                    >
-                        <div 
-                            className="group relative flex items-center justify-center cursor-pointer"
-                            onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
-                        >
-                            <div className="absolute inset-x-[-8px] inset-y-[-8px] bg-black/5 dark:bg-white/10 rounded-full blur-[4px]" />
-                            <div className="w-[16px] h-[16px] rounded-full border-[2.5px] shadow-sm z-10 bg-white border-slate-900 transition-transform duration-300 group-hover:scale-125" />
-                        </div>
-                    </div>
-
-                    {/* PILL/HOME MARKER */}
-                    <div className={`transition-opacity transition-transform duration-300 ease-out flex flex-col items-center ${
-                        (isZoomedIn || isFeatured || isOpened || isHighlighted)
-                        ? 'scale-100 opacity-100 pointer-events-auto'
+                {/* DOT MARKER - Centered on anchor */}
+                <div 
+                    className={`transition-opacity transition-transform duration-300 ease-out ${
+                        (!isZoomedIn && !isFeatured && !isOpened && !isHighlighted) 
+                        ? 'scale-100 opacity-100' 
                         : 'scale-0 opacity-0 pointer-events-none'
-                    }`}>
+                    }`}
+                >
+                    <div 
+                        className="group relative flex items-center justify-center cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
+                    >
+                        <div className="absolute inset-x-[-10px] inset-y-[-10px] bg-black/5 dark:bg-white/10 rounded-full blur-[4px]" />
+                        <div className="w-[14px] h-[14px] rounded-full border-[2.5px] shadow-sm z-10 bg-white border-slate-900 transition-transform duration-300 group-hover:scale-125" />
+                    </div>
+                </div>
+
+                {/* PILL/HOME MARKER - Anchored with bottom at coordinate */}
+                <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 transition-opacity transition-transform duration-300 ease-out flex flex-col items-center ${
+                    (isZoomedIn || isFeatured || isOpened || isHighlighted)
+                    ? 'scale-100 opacity-100 pointer-events-auto'
+                    : 'scale-0 opacity-0 pointer-events-none'
+                }`}
+                    style={{ transform: 'translateY(-2px)' }}
+                >
                         {markerType === 'home' ? (
                             <div className="home-marker z-10" 
                                 onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
@@ -122,8 +125,6 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                             <polygon points="0,0 16,0 8,8" />
                         </svg>
                     </div>
-                </div>
-
                 {/* EXPANDED CARD */}
                 <div
                     className="expanded-card absolute left-1/2 -translate-x-1/2 bottom-[14px] w-0 opacity-0 bg-white/75 backdrop-blur-2xl rounded-[32px] border border-white/60 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] flex flex-col z-20 shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
@@ -218,7 +219,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                     )}
                 </div>
             </div>
-        </OverlayView>
+        </OverlayViewF>
     );
 }, (prevProps, nextProps) => {
     const p = prevProps.property;
@@ -339,7 +340,7 @@ const GoogleMapComponent = ({
         
         // CRITICAL PROTECTION: Block updates if the user is interacting with the map
         // or has finished interacting very recently.
-        const interactionRecent = Date.now() - lastMoveTimestampRef.current < 4000;
+        const interactionRecent = Date.now() - lastMoveTimestampRef.current < 2500;
         if (internalMoveRef.current || interactionRecent) {
             return;
         }
@@ -377,7 +378,7 @@ const GoogleMapComponent = ({
         
         // CRITICAL FIX: If the user just moved the map manually, DO NOT snap back to result bounds
         // This prevents the "panning then jumping back" issue when API results return.
-        if (internalMoveRef.current || (Date.now() - lastMoveTimestampRef.current < 2000)) return;
+        if (internalMoveRef.current || (Date.now() - lastMoveTimestampRef.current < 1500)) return;
 
         const withCoords = listingsWithCoords;
         if (withCoords.length === 0) return;
@@ -493,11 +494,11 @@ const GoogleMapComponent = ({
             
             onBoundsChanged(data);
             
-            // Allow external syncs again after a cooling period
+            // Allow external syncs again after a shorter cooling period
             setTimeout(() => { 
                 internalMoveRef.current = false; 
-            }, 800);
-        }, 500);
+            }, 300);
+        }, 200);
     }, [map, onBoundsChanged, cancelPendingFetch]);
 
     const mapCenter = useMemo(() => {
@@ -541,6 +542,11 @@ const GoogleMapComponent = ({
     return (
         <div className="relative w-full h-full">
             <style>{`
+                .marker-group {
+                    will-change: transform;
+                    backface-visibility: hidden;
+                    transform-style: preserve-3d;
+                }
                 .marker-group .resting-pill {
                     background: #1a1a1a; color: white; padding: 7px 12px; display: flex; align-items: center; gap: 6px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); transition: all 0.3s ease; min-width: 65px; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
                 }

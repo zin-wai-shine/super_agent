@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_URL = process.env.REACT_APP_API_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}/api` : '/api');
 // Extract base URL (e.g., http://localhost:8080)
 const BASE_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
 

@@ -357,13 +357,7 @@ const PublicLayout = () => {
                                     <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>{brandName}</span>
                                 </Link>
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={toggleTheme}
-                                        className="p-2 rounded-full transition-colors hover:bg-white/10 text-gray-400"
-                                        title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                                    >
-                                        {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-                                    </button>
+
                                     <button
                                         onClick={() => setMobileMenuOpen(false)}
                                         className="p-2 rounded-full transition-colors hover:bg-white/10"
@@ -563,7 +557,7 @@ const PublicLayout = () => {
                                                     const agent = user.agent;
                                                     if (agent && agent.subdomain) {
                                                         const currentHost = window.location.hostname;
-                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
                                                         const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
                                                         if (currentHost !== agentHost) {
                                                             const protocol = window.location.protocol;
@@ -688,17 +682,7 @@ const PublicLayout = () => {
                                         {/* Auth Buttons */}
                                         <div className="flex items-center space-x-2 md:space-x-4">
                                             {/* Theme Toggle */}
-                                            <button
-                                                onClick={toggleTheme}
-                                                className="p-2.5 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-900 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-all duration-300 shadow-sm border border-transparent dark:border-dashboard-border"
-                                                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                                            >
-                                                {isDarkMode ? (
-                                                    <SunIcon className="w-5 h-5 transition-all duration-500 rotate-0 scale-100" />
-                                                ) : (
-                                                    <MoonIcon className="w-5 h-5 transition-all duration-500 rotate-12 scale-100" />
-                                                )}
-                                            </button>
+
                                             {isAuthenticated ? (
                                                 <div className="flex items-center gap-1 sm:gap-2">
                                                     {/* Vertical separator — lg only */}
@@ -764,7 +748,7 @@ const PublicLayout = () => {
                                                                                     const agent = user.agent;
                                                                                     if (agent && agent.subdomain) {
                                                                                         const currentHost = window.location.hostname;
-                                                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+                                                                                        const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
                                                                                         const agentHost = agent.custom_domain || `${agent.subdomain}.${mainDomain}`;
                                                                                         if (currentHost !== agentHost) {
                                                                                             const protocol = window.location.protocol;
@@ -941,11 +925,11 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             <FiHeart
-                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
+                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-rose-500'
                                                     }`}
                                             />
                                             <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
+                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-rose-500'
                                                     }`}
                                             >
                                                 Favorites
@@ -1034,7 +1018,7 @@ const PublicLayout = () => {
             {/* Footer - shown on all pages except profile, my-bookings, login, register */}
             {
                 !hideNavOnPage && (
-                    <footer className="text-gray-900 dark:text-white pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
+                    <footer className="hidden md:block text-gray-900 dark:text-white pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
                         {/* Background Decoration */}
                         <div
                             className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07] dark:opacity-[0.03]"
@@ -1052,25 +1036,6 @@ const PublicLayout = () => {
                                     <h2 className="text-3xl md:text-4xl font-normal md:font-medium tracking-tight leading-[1.1]">
                                         Experience the future of<br />real estate management
                                     </h2>
-                                </div>
-                                <div className="flex gap-24 lg:gap-32 pr-4 lg:pr-12">
-                                    <div>
-                                        <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Platform</h4>
-                                        <ul className="space-y-4">
-                                            <li><Link to="/#features" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Features</Link></li>
-                                            <li><Link to="/#plans" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Pricing Plans</Link></li>
-                                            <li><Link to="/services" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Services</Link></li>
-                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Get Started</Link></li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">Support</h4>
-                                        <ul className="space-y-4">
-                                            <li><Link to="/login" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Agent Login</Link></li>
-                                            <li><Link to="/register" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Create Account</Link></li>
-                                            <li><Link to="/contact" className="text-base font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Help Center</Link></li>
-                                        </ul>
-                                    </div>
                                 </div>
                             </div>
 

@@ -159,7 +159,7 @@ const AppRoutes = () => {
 
                         <div className="space-y-4">
                             <a
-                                href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com'}`}
+                                href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud'}`}
                                 className="group relative flex items-center justify-center w-full px-8 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition-all duration-300 shadow-xl shadow-gray-200 hover:shadow-gray-300 transform hover:-translate-y-1 overflow-hidden"
                             >
                                 <span className="relative z-10">Back to Platform</span>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTenant } from './TenantContext';
+import { getMediaUrl } from '../utils/media';
 
 const ThemeContext = createContext(null);
 
@@ -10,6 +11,7 @@ const defaultTheme = {
     textColor: '#202124',
     fontFamily: 'Inter, sans-serif',
     logoUrl: '',
+    faviconUrl: '',
     headerText: 'Super Real Estate',
     footerText: '© 2024 Super Real Estate',
     buttonRadius: '0.3rem',
@@ -57,6 +59,7 @@ export const ThemeProvider = ({ children }) => {
                     textColor: t.text_color || defaultTheme.textColor,
                     fontFamily: t.font_family || defaultTheme.fontFamily,
                     logoUrl: t.logo_url || agent.logo || '',
+                    faviconUrl: t.favicon_url || t.logo_url || agent.logo || '',
                     headerText: t.header_text || agent.name || '',
                     footerText: t.footer_text || `© ${new Date().getFullYear()} ${agent.name || 'Super Real Estate'}`,
                     buttonRadius: t.button_radius || defaultTheme.buttonRadius,
@@ -171,6 +174,19 @@ export const ThemeProvider = ({ children }) => {
             document.title = theme.headerText || agent.agency_name || agent.name || 'Super Real Estate';
         } else {
             document.title = 'Super Real Estate';
+        }
+
+        // Update favicon
+        const finalFavicon = theme.faviconUrl || theme.logoUrl;
+        if (finalFavicon) {
+            const faviconUrl = getMediaUrl(finalFavicon);
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = faviconUrl;
         }
     }, [theme, isMainDomain, agent]);
 

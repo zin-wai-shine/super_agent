@@ -26,6 +26,9 @@ import {
     CurrencyDollarIcon,
     CubeIcon,
     XMarkIcon,
+    PlusIcon,
+    MinusIcon,
+    ArrowPathIcon,
     ChatBubbleOvalLeftEllipsisIcon,
     ChatBubbleLeftRightIcon,
     DevicePhoneMobileIcon,
@@ -221,7 +224,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         if (!id) return;
         
         // Immediate reset for window and any existing modal scroll containers
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        if (!isModal) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
         
         // Find the scrollable container if we're in a modal context
         const containers = document.querySelectorAll('.modal-scrollable');
@@ -229,13 +234,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         
         // Use a slight timeout for async content that might have changed layout height
         const t = setTimeout(() => {
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            if (!isModal) {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            }
             const containersAgain = document.querySelectorAll('.modal-scrollable');
             containersAgain.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
         }, 10);
         
         return () => clearTimeout(t);
-    }, [id]);
+    }, [id, isModal]);
 
     const mapCenter = useMemo(() => {
         if (!listing?.latitude || !listing?.longitude) return undefined;
@@ -247,7 +254,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
     const mapOptions = useMemo(() => ({
         gestureHandling: 'cooperative',
-        disableDefaultUI: true,
+        disableDefaultUI: false,
+        zoomControl: true,
         styles: [],
         mapId: 'DEMO_MAP_ID'
     }), []);
@@ -1759,7 +1767,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-0 relative z-10 rounded-t-[40px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-32 lg:pb-8 relative z-10 rounded-t-[40px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
@@ -2258,7 +2266,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </nav>
                                                 </div>
 
-                                                <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-dashboard-card group">
+                                                <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card group">
                                                     {activeMapTab === 'google' ? (
                                                         <div className="w-full h-full animate-in fade-in duration-700">
                                                             <GoogleMapComponent
@@ -2324,37 +2332,90 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 </div>
                                                             </div>
 
-                                                            <div className="absolute bottom-4 left-4 z-40 px-3 py-1.5 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm rounded-full border border-gray-100 dark:border-white/10 shadow-sm text-lg font-medium text-gray-500 dark:text-gray-400 pointer-events-none">
-                                                                Ctrl + scroll to zoom
-                                                            </div>
 
-                                                            <div
-                                                                ref={transitWrapperRef}
-                                                                className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing"
-                                                                onMouseDown={(e) => {
-                                                                    const startX = e.pageX - mapState.pan.x;
-                                                                    const startY = e.pageY - mapState.pan.y;
-                                                                    const handleMouseMove = (mm) => {
-                                                                        const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
-                                                                        setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
-                                                                    };
-                                                                    const handleMouseUp = () => {
-                                                                        window.removeEventListener('mousemove', handleMouseMove);
-                                                                        window.removeEventListener('mouseup', handleMouseUp);
-                                                                    };
-                                                                    window.addEventListener('mousemove', handleMouseMove);
-                                                                    window.addEventListener('mouseup', handleMouseUp);
-                                                                }}
-                                                                onWheel={(e) => {
-                                                                    if (activeMapTab !== 'transit') return;
-                                                                    if (!e.ctrlKey) return;
-                                                                    e.preventDefault();
-                                                                    const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                                                                    const minZoom = getMinZoom();
-                                                                    const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
-                                                                    setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(prev.pan, nextZoom) }));
-                                                                }}
-                                                            >
+
+                                                                <div className="absolute bottom-4 left-4 z-40 px-5 py-2.5 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md rounded-full border border-gray-100 dark:border-white/10 shadow-lg text-[13px] font-bold text-gray-400 dark:text-gray-500 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-700">
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <div className="flex gap-0.5">
+                                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500/40 animate-pulse" />
+                                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500/40 animate-pulse delay-75" />
+                                                                        </div>
+                                                                        Use two fingers to move the map
+                                                                    </div>
+                                                                </div>
+
+                                                                <div
+                                                                    ref={transitWrapperRef}
+                                                                    className="flex-1 overflow-hidden relative"
+                                                                    onMouseDown={(e) => {
+                                                                        const startX = e.pageX - mapState.pan.x;
+                                                                        const startY = e.pageY - mapState.pan.y;
+                                                                        const handleMouseMove = (mm) => {
+                                                                            const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
+                                                                            setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
+                                                                        };
+                                                                        const handleMouseUp = () => {
+                                                                            window.removeEventListener('mousemove', handleMouseMove);
+                                                                            window.removeEventListener('mouseup', handleMouseUp);
+                                                                        };
+                                                                        window.addEventListener('mousemove', handleMouseMove);
+                                                                        window.addEventListener('mouseup', handleMouseUp);
+                                                                    }}
+                                                                    onTouchStart={(e) => {
+                                                                        // Only drag with two fingers to allow scrolling the page with one
+                                                                        if (e.touches.length !== 2) return;
+                                                                        
+                                                                        const t1 = e.touches[0];
+                                                                        const t2 = e.touches[1];
+                                                                        
+                                                                        const middleX = (t1.pageX + t2.pageX) / 2;
+                                                                        const middleY = (t1.pageY + t2.pageY) / 2;
+                                                                        
+                                                                        const startX = middleX - mapState.pan.x;
+                                                                        const startY = middleY - mapState.pan.y;
+
+                                                                        const startDist = Math.hypot(t1.pageX - t2.pageX, t1.pageY - t2.pageY);
+                                                                        const startZoom = mapState.zoom;
+
+                                                                        const handleTouchMove = (tm) => {
+                                                                            if (tm.touches.length !== 2) return;
+                                                                            tm.preventDefault();
+                                                                            
+                                                                            const mt1 = tm.touches[0];
+                                                                            const mt2 = tm.touches[1];
+                                                                            const currentMiddleX = (mt1.pageX + mt2.pageX) / 2;
+                                                                            const currentMiddleY = (mt1.pageY + mt2.pageY) / 2;
+                                                                            
+                                                                            const currentDist = Math.hypot(mt1.pageX - mt2.pageX, mt1.pageY - mt2.pageY);
+                                                                            const zoomFactor = currentDist / startDist;
+                                                                            const nextZoom = Math.max(getMinZoom(), Math.min(2.0, startZoom * zoomFactor));
+
+                                                                            const newPan = { x: currentMiddleX - startX, y: currentMiddleY - startY };
+                                                                            setMapState(prev => ({ 
+                                                                                ...prev, 
+                                                                                zoom: nextZoom,
+                                                                                pan: constrainPan(newPan, nextZoom) 
+                                                                            }));
+                                                                        };
+
+                                                                        const handleTouchEnd = () => {
+                                                                            window.removeEventListener('touchmove', handleTouchMove);
+                                                                            window.removeEventListener('touchend', handleTouchEnd);
+                                                                        };
+
+                                                                        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+                                                                        window.addEventListener('touchend', handleTouchEnd);
+                                                                    }}
+                                                                    onWheel={(e) => {
+                                                                        if (activeMapTab !== 'transit') return;
+                                                                        if (!e.ctrlKey) return;
+                                                                        e.preventDefault();
+                                                                        const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                                                                        const minZoom = getMinZoom();
+                                                                        const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
+                                                                        setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(prev.pan, nextZoom) }));
+                                                                    }}
+                                                                >
                                                                 <div
                                                                     style={{
                                                                         width: '1368px',
@@ -2420,7 +2481,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="px-5 py-2.5 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] flex items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/10"
+                                                        className="px-5 py-2.5 rounded-full bg-white dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] flex items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/10"
                                                     >
                                                         View on Google Maps
                                                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2452,6 +2513,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     )}
 
                                 </div>
+                                {/* Bottom spacer for sticky footer breathing room */}
+                                <div className="lg:hidden h-24" />
                             </div>
 
 
@@ -2548,7 +2611,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                         {/* The Sheet */}
                                         <div
-                                            className={`absolute bottom-0 left-0 right-0 z-[100] shadow-[0_-30px_70px_rgba(0,0,0,0.2)] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[40px] h-[60vh]
+                                            className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[40px] h-[60vh]
                                                 ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                         >
                                             <div
@@ -2579,7 +2642,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
             {/* Sticky Mobile Footer — substantial height and padding (mobile only) */}
             <div
-                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-dashboard-card border-t border-gray-200 dark:border-white/10 z-[90] flex items-center justify-between pointer-events-auto min-h-[72px] rounded-t-[20px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+                className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-dashboard-card shadow-none z-[90] flex items-center justify-between pointer-events-auto min-h-[72px]"
                 style={{
                     paddingTop: '0.75rem',
                     paddingBottom: '0.75rem',
@@ -2741,7 +2804,7 @@ const ListingDetailPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark flex items-center justify-center">
+        <div className="min-h-screen bg-white dark:bg-dashboard-dark flex items-center justify-center">
             <Modal
                 isOpen={true}
                 onClose={() => navigate(-1)}

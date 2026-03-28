@@ -19,7 +19,7 @@ export const TenantProvider = ({ children }) => {
     useEffect(() => {
         const fetchTenantConfig = async () => {
             const hostname = window.location.hostname;
-            const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com';
+            const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
             const cacheKey = `tenantConfig_${hostname}`;
 
             try {
@@ -56,8 +56,8 @@ export const TenantProvider = ({ children }) => {
                 const isProbablyMainLabel = hostname === mainDomain ||
                     hostname === 'www.' + mainDomain ||
                     devMainDomains.includes(hostname) ||
-                    hostname === 'haizo.it.com' ||
-                    hostname === 'www.haizo.it.com';
+                    hostname === 'srv1534108.hstgr.cloud' ||
+                    hostname === 'www.srv1534108.hstgr.cloud';
 
                 console.log('API failed definitively, guessing tenant config from hostname:', { hostname, isProbablyMainLabel });
                 setTenantConfig({ is_main_domain: isProbablyMainLabel, agent: null });
@@ -76,10 +76,10 @@ export const TenantProvider = ({ children }) => {
             window.location.hostname === 'superealestate.localhost' ||
             window.location.hostname === 'superealestate.test' ||
             window.location.hostname === 'superealestate.local' ||
-            window.location.hostname === 'haizo.it.com' ||
-            window.location.hostname === 'www.haizo.it.com' ||
-            window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com') ||
-            window.location.hostname === 'www.' + (process.env.REACT_APP_MAIN_DOMAIN || 'haizo.it.com')
+            window.location.hostname === 'srv1534108.hstgr.cloud' ||
+            window.location.hostname === 'www.srv1534108.hstgr.cloud' ||
+            window.location.hostname === (process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud') ||
+            window.location.hostname === 'www.' + (process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud')
         ),
         agent: tenantConfig?.agent ?? null,
         actual_min_price: tenantConfig?.actual_min_price ?? 0,

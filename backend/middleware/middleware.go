@@ -122,16 +122,17 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		hostPort := strings.Split(host, ":")
 		domain := hostPort[0]
 
-		// Main domain detection logic (support haizo.it.com and configured domain)
+		// Main domain detection logic (support srv1534108.hstgr.cloud and configured domain)
 		mainDomain := cfg.MainDomain
 		if mainDomain == "" {
-			mainDomain = "haizo.it.com"
+			mainDomain = "srv1534108.hstgr.cloud"
 		}
 
 		isMainDomain := domain == mainDomain ||
 			domain == "www."+mainDomain ||
-			domain == "haizo.it.com" ||
-			domain == "www.haizo.it.com" ||
+			domain == "srv1534108.hstgr.cloud" ||
+			domain == "www.srv1534108.hstgr.cloud" ||
+			domain == "super-agent-frontend-zin.fly.dev" ||
 			domain == "super-agent-backend-zin.fly.dev" ||
 			domain == "localhost" ||
 			domain == "127.0.0.1" ||
@@ -141,7 +142,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 
 		c.Set("is_main_domain", isMainDomain)
 
-		// Tenant resolution from subdomain (e.g. staynert.haizo.it.com)
+		// Tenant resolution from subdomain (e.g. staynert.srv1534108.hstgr.cloud)
 		var tenantID uuid.UUID
 		var tenant *models.Agent
 		foundTenant := false
@@ -153,8 +154,8 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 
 			if strings.HasSuffix(domain, mainDomainWithDot) {
 				subdomain = strings.TrimSuffix(domain, mainDomainWithDot)
-			} else if strings.HasSuffix(domain, ".haizo.it.com") {
-				subdomain = strings.TrimSuffix(domain, ".haizo.it.com")
+			} else if strings.HasSuffix(domain, ".srv1534108.hstgr.cloud") {
+				subdomain = strings.TrimSuffix(domain, ".srv1534108.hstgr.cloud")
 			} else if strings.HasSuffix(domain, ".superealestate.localhost") {
 				subdomain = strings.TrimSuffix(domain, ".superealestate.localhost")
 			} else if strings.HasSuffix(domain, ".superealestate.test") {
@@ -169,11 +170,13 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 				subdomain = strings.TrimSuffix(domain, ".local")
 			}
 
-			// Handle nested subdomains (e.g., staynert.haizo.it.com -> staynert)
+			// Handle nested subdomains (e.g., staynert.srv1534108.hstgr.cloud -> staynert)
 			// If subdomain still contains dots, take only the first part
 			if idx := strings.Index(subdomain, "."); idx > 0 {
 				subdomain = subdomain[:idx]
 			}
+
+			subdomain = strings.ToLower(subdomain)
 
 			if subdomain != "" && subdomain != "www" && subdomain != "api" {
 				var agent models.Agent
@@ -181,13 +184,13 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 					tenantID = agent.ID
 					tenant = &agent
 					foundTenant = true
+					log.Printf("[TenantMiddleware] Resolved tenant from subdomain '%s': %s", subdomain, agent.Name)
 				} else {
-					log.Printf("Tenant resolution failed for subdomain: %s, error: %v", subdomain, err)
+					log.Printf("[TenantMiddleware] Tenant resolution failed for subdomain '%s' on %s: %v", subdomain, domain, err)
 				}
 			}
 
 			// 1b. Mobile / same network: subdomain.haizo.<IP> (e.g. staynert.haizo.192.168.1.5)
-			// This logic is now partially covered by the .haizo.it.com check, but the IP part is still unique.
 			if !foundTenant {
 				mainDomainBase := cfg.MainDomain
 				if idx := strings.Index(cfg.MainDomain, "."); idx > 0 {
@@ -195,13 +198,15 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 				}
 				prefix := "." + mainDomainBase + "."
 				if strings.Contains(domain, prefix) {
-					subdomain := strings.Split(domain, prefix)[0]
-					if subdomain != "" && subdomain != "www" && subdomain != "api" {
+					subRaw := strings.Split(domain, prefix)[0]
+					if subRaw != "" && subRaw != "www" && subRaw != "api" {
+						subRaw = strings.ToLower(subRaw)
 						var agent models.Agent
-						if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
+						if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subRaw, true, false).First(&agent).Error; err == nil {
 							tenantID = agent.ID
 							tenant = &agent
 							foundTenant = true
+							log.Printf("[TenantMiddleware] Resolved tenant from IP prefix subdomain '%s': %s", subRaw, agent.Name)
 						}
 					}
 				}
@@ -214,6 +219,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 					tenantID = agent.ID
 					tenant = &agent
 					foundTenant = true
+					log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s': %s", domain, agent.Name)
 				}
 			}
 		}
@@ -222,8 +228,7 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			c.Set("tenant_id", tenantID)
 			c.Set("tenant", tenant)
 		} else if !isMainDomain && domain != "localhost" {
-			// If not main domain and no tenant found, might be an invalid domain
-			// For now, we just proceed, but we could abort with error
+			log.Printf("[TenantMiddleware] No tenant found for non-main domain: %s", domain)
 		}
 
 		// DEV FALLBACK: If on localhost and no tenant resolved yet, check for agent_id query param
@@ -235,6 +240,8 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 					c.Set("tenant_id", agent.ID)
 					c.Set("tenant", &agent)
 					c.Set("is_main_domain", false)
+					foundTenant = true
+					log.Printf("[TenantMiddleware] Local dev fallback for agent_id: %s", devAgentID)
 				}
 			}
 		}
@@ -242,20 +249,26 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		// Final Fallback: Resolve tenant from X-Tenant header (e.g. for cross-domain requests on Fly.io)
 		if !foundTenant {
 			if subdomainHeader := strings.TrimSpace(c.GetHeader("X-Tenant")); subdomainHeader != "" && subdomainHeader != "www" && subdomainHeader != "api" {
+				subdomainHeader = strings.ToLower(subdomainHeader)
 				var agent models.Agent
 				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomainHeader, true, false).First(&agent).Error; err == nil {
 					tenantID = agent.ID
 					tenant = &agent
 					foundTenant = true
+					// IMPORTANT: Store in context for controllers to use
+					c.Set("tenant_id", tenantID)
+					c.Set("tenant", tenant)
 					// If we forced it via header, we are definitely NOT on main domain anymore
 					c.Set("is_main_domain", false)
 					isMainDomain = false
+					log.Printf("[TenantMiddleware] Resolved tenant from X-Tenant header '%s': %s", subdomainHeader, agent.Name)
 				}
 			}
 		}
 
 		// Final check: If not on the main domain and no valid tenant found, prevent access
 		if !isMainDomain && !foundTenant {
+			log.Printf("[TenantMiddleware] Aborting 404: Not main domain and no tenant found for host '%s'", host)
 			c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found or inactive"})
 			c.Abort()
 			return

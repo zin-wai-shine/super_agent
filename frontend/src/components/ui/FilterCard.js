@@ -4,7 +4,7 @@ const FilterCard = ({ title, icon, onClear, children, titleTag: TitleTag = 'span
     return (
         <div className="transition-all duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between transition-colors group">
+            <div className="flex items-center justify-between transition-colors group mb-3">
                 <div className="flex items-center gap-2">
                     {icon}
                     <TitleTag className={`text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-gray-100 ${titleClassName}`.trim()}>{title}</TitleTag>
