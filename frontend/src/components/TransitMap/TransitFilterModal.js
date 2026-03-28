@@ -325,7 +325,7 @@ const TransitFilterModal = ({
                     <div className="flex items-center gap-3 sm:gap-4">
                         <button
                             onClick={handleApply}
-                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-2 sm:py-2.5 bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[15px] sm:text-[14px] font-bold rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95"
+                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-3.5 md:px-5 md:py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] md:text-[13px] font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[48px] md:min-h-[40px]"
                         >
                             Done
                         </button>
