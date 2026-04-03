@@ -434,7 +434,7 @@ const AgentListings = () => {
                                     borderRadius: '3px',
                                     height: '34px',
                                     minHeight: '34px',
-                                    fontSize: '11px',
+                                    fontSize: '13px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
                                 }),
@@ -474,7 +474,7 @@ const AgentListings = () => {
                                     minHeight: '34px',
                                     height: '34px',
                                     borderRadius: '3px',
-                                    fontSize: '11px'
+                                    fontSize: '13px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -527,7 +527,7 @@ const AgentListings = () => {
                                         ...base,
                                         minHeight: '34px',
                                         height: '34px',
-                                        fontSize: '11px',
+                                        fontSize: '13px',
                                         borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
@@ -649,7 +649,7 @@ const AgentListings = () => {
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             placeholder="Search listings..."
-                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
+                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[13px]"
                         />
                     </div>
                     <div className="flex flex-wrap gap-2 w-full sm:w-auto">

@@ -11,7 +11,6 @@ import {
     XMarkIcon,
     TrashIcon,
     ClockIcon,
-    UserIcon,
     EnvelopeIcon,
     PhoneIcon,
     MapPinIcon,
@@ -25,6 +24,7 @@ import {
     PlusIcon,
     CheckCircleIcon,
 } from '@heroicons/react/24/outline';
+import { PiUser } from 'react-icons/pi';
 import { format, startOfDay, endOfDay, subDays, startOfMonth, subMonths, addMonths, getMonth, getYear, setMonth, setYear, parseISO, isWithinInterval } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { DateRange } from 'react-date-range';
@@ -761,7 +761,7 @@ const AppointmentManagement = () => {
                             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-3">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Visitor</h4>
                                 <div className="flex items-center gap-3">
-                                    <UserIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    <PiUser className="w-4 h-4 text-gray-400 flex-shrink-0" />
                                     <span className="text-sm font-semibold text-gray-900 dark:text-white">{selectedAppointment.full_name}</span>
                                 </div>
                                 <div className="flex items-center gap-3">

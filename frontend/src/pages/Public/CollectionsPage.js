@@ -6,31 +6,40 @@ import CollectionSkeleton from '../../components/ui/CollectionSkeleton';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { FiGrid } from "react-icons/fi";
 
+let globalGalleryCache = null;
+
 const CollectionsPage = () => {
     const navigate = useNavigate();
-    const [collections, setCollections] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const outletContext = useOutletContext() || {};
-    const { navVisible = true } = outletContext;
+    const [collections, setCollections] = useState(() => {
+        if (globalGalleryCache) return globalGalleryCache;
+        return [];
+    });
+    const [loading, setLoading] = useState(() => {
+        if (globalGalleryCache) return false;
+        return true;
+    });
 
     useEffect(() => {
         fetchCollections();
     }, []);
 
     const fetchCollections = async () => {
-        setLoading(true);
         try {
             // Use public endpoint so non-logged-in viewers can still see the gallery
             const response = await collectionApi.getPublicCollections();
-            const data = response.data || [];
+            // Filter only child collections (those without an icon are "collections", those with icon are "main categories")
+            const data = (response.data || []).filter(c => !c.icon);
             
             // Set collections immediately so React instantly shrinks the skeletal grid 
             // from 11 cards to the EXACT data count (preventing overflow loading cards).
             setCollections(data);
+            globalGalleryCache = data;
 
-            // Artificial delay to allow the staggered skeleton animation 
-            // to complete its 'discovery' phase as previously requested.
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // Delayed loading state for smooth reveal only on initial load
+            if (!globalGalleryCache || globalGalleryCache.length === 0) {
+                // Reduced delay to make content reveal snappier (from 800ms to 300ms)
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
         } catch (error) {
             console.error('Failed to fetch collections:', error);
         } finally {
@@ -68,8 +77,8 @@ const CollectionsPage = () => {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
-                            {[...Array(loading && collections.length === 0 ? 11 : collections.length)].map((_, i) => (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
+                            {[...Array(loading && collections.length === 0 ? 6 : collections.length)].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
                                     {/* Layer 1: Background Layout (Static Skeleton) */}
                                     {/* Skeleton becomes absolute background when real card arrives so it doesn't duplicate height */}
@@ -86,7 +95,8 @@ const CollectionsPage = () => {
                                                 canEdit={false}
                                                 animateEntrance={true}
                                                 index={i}
-                                                className="!w-auto h-full"
+                                                className="w-full h-full"
+                                                animateEntranceDelay={true}
                                             />
                                         </div>
                                     )}

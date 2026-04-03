@@ -10,7 +10,6 @@ import {
     MapPinIcon,
     PhoneIcon,
     ClockIcon,
-    UserIcon,
     StarIcon,
     ArrowLeftIcon,
 } from '@heroicons/react/24/solid';

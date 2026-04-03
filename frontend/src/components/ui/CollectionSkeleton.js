@@ -10,8 +10,7 @@ const CollectionSkeleton = ({ index = 0, isExiting = false }) => {
 
     return (
         <div 
-            className="flex flex-col w-full animate-fade-in-up opacity-0" 
-            style={skeletonStyle}
+            className="flex flex-col w-full" 
         >
             {/* Image Area — matches Aspect Ratios of CollectionCard */}
             <div className="relative aspect-[1/1] md:aspect-[4/3] rounded-[23px] overflow-hidden mb-3 bg-gray-100 dark:bg-white/5 animate-shimmer">

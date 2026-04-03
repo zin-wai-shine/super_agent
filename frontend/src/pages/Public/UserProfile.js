@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../../components/Common/Logo';
 import {
-    UserCircleIcon,
     ArrowLeftOnRectangleIcon,
     ChevronRightIcon,
     Squares2X2Icon,
@@ -12,6 +11,7 @@ import {
     ArrowLeftIcon,
     CheckIcon,
 } from '@heroicons/react/24/outline';
+import { PiUser } from 'react-icons/pi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenant } from '../../contexts/TenantContext';

@@ -28,8 +28,10 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 	}
 
 	var req struct {
-		Name  string                   `json:"name" binding:"required"`
-		Media []models.CollectionMedia `json:"media"`
+		Name     string                   `json:"name" binding:"required"`
+		Icon     string                   `json:"icon"`
+		ParentID *uuid.UUID               `json:"parent_id"`
+		Media    []models.CollectionMedia `json:"media"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,9 +39,15 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 		return
 	}
 
+	for i := range req.Media {
+		req.Media[i].SortOrder = i
+	}
+
 	collection := models.Collection{
 		AgentID:   agentID,
+		ParentID:  req.ParentID,
 		Name:      req.Name,
+		Icon:      req.Icon,
 		CreatedBy: userID.(uuid.UUID),
 		Media:     req.Media,
 	}
@@ -61,7 +69,9 @@ func (cc *CollectionController) GetCollections(c *gin.Context) {
 	}
 
 	var collections []models.Collection
-	if err := cc.db.Preload("Media").Where("agent_id = ?", agentID).Order("created_at DESC").Find(&collections).Error; err != nil {
+	if err := cc.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Parent").Where("agent_id = ?", agentID).Order("created_at DESC").Find(&collections).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch collections"})
 		return
 	}
@@ -88,7 +98,9 @@ func (cc *CollectionController) GetCollections(c *gin.Context) {
 func (cc *CollectionController) GetCollection(c *gin.Context) {
 	id := c.Param("id")
 	var collection models.Collection
-	if err := cc.db.Preload("Media").Preload("Listings.Media").First(&collection, "id = ?", id).Error; err != nil {
+	if err := cc.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Listings.Media").First(&collection, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Collection not found"})
 		return
 	}
@@ -100,8 +112,10 @@ func (cc *CollectionController) GetCollection(c *gin.Context) {
 func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 	id := c.Param("id")
 	var req struct {
-		Name  string                   `json:"name" binding:"required"`
-		Media []models.CollectionMedia `json:"media"`
+		Name     string                   `json:"name" binding:"required"`
+		Icon     string                   `json:"icon"`
+		ParentID *uuid.UUID               `json:"parent_id"`
+		Media    []models.CollectionMedia `json:"media"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -111,7 +125,11 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 
 	tx := cc.db.Begin()
 
-	if err := tx.Model(&models.Collection{}).Where("id = ?", id).Update("name", req.Name).Error; err != nil {
+	if err := tx.Model(&models.Collection{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"name":      req.Name,
+		"icon":      req.Icon,
+		"parent_id": req.ParentID,
+	}).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update collection"})
 		return
@@ -124,9 +142,10 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 		return
 	}
 
-	for _, m := range req.Media {
-		m.ID = uuid.Nil // Ensure new UUID is generated if not provided or to ensure clean insert
+	for i, m := range req.Media {
+		m.ID = uuid.Nil
 		m.CollectionID = uuid.MustParse(id)
+		m.SortOrder = i
 		if err := tx.Create(&m).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update media"})

@@ -11,7 +11,6 @@ import {
     CloudArrowUpIcon,
     CheckCircleIcon,
     SparklesIcon,
-    UserCircleIcon,
     ChartBarIcon,
     ArrowRightOnRectangleIcon,
     CalendarDaysIcon,
@@ -21,6 +20,7 @@ import {
     TagIcon,
     ChevronDownIcon
 } from '@heroicons/react/24/outline';
+import { PiUser } from 'react-icons/pi';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMediaUrl } from '../../utils/media';

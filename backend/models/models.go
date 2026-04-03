@@ -335,15 +335,19 @@ func (SavedListing) TableName() string {
 
 // Collection represents a grouping of listings
 type Collection struct {
-	ID        uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	AgentID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
-	Name      string            `gorm:"size:255;not null" json:"name"`
-	CreatedBy uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
-	Media     []CollectionMedia `gorm:"foreignKey:CollectionID" json:"media,omitempty"`
-	Listings  []Listing         `gorm:"many2many:collection_listings;" json:"listings,omitempty"`
-	CreatedAt time.Time         `json:"created_at"`
-	UpdatedAt time.Time         `json:"updated_at"`
-	DeletedAt gorm.DeletedAt    `gorm:"index" json:"-"`
+	ID             uuid.UUID         `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID        uuid.UUID         `gorm:"type:uuid;not null;index" json:"agent_id"`
+	ParentID       *uuid.UUID        `gorm:"type:uuid;index" json:"parent_id,omitempty"`
+	Parent         *Collection       `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
+	SubCollections []Collection      `gorm:"foreignKey:ParentID" json:"sub_collections,omitempty"`
+	Name           string            `gorm:"size:255;not null" json:"name"`
+	Icon           string            `gorm:"size:100" json:"icon,omitempty"`
+	CreatedBy      uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
+	Media          []CollectionMedia `gorm:"foreignKey:CollectionID" json:"media,omitempty"`
+	Listings       []Listing         `gorm:"many2many:collection_listings;" json:"listings,omitempty"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UpdatedAt      time.Time         `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt    `gorm:"index" json:"-"`
 }
 
 type CollectionMedia struct {

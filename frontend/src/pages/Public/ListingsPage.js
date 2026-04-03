@@ -1819,12 +1819,12 @@ const ListingsPage = () => {
                                     )}
 
                                     {/* Header: Results Count */}
-                                    <div className="mb-4 mt-1 flex justify-end">
+                                    <div className="mb-4 mt-1 flex justify-start">
                                         {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
                                             <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-fill-fast" />
                                         ) : (listings || []).length > 0 ? (
                                             <div className="flex items-center gap-2">
-                                                <h2 className="text-[15px] font-bold text-gray-900 dark:text-gray-100">
+                                                <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                                                     {total} {total === 1 ? 'property' : 'properties'}
                                                 </h2>
                                             </div>

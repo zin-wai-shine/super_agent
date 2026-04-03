@@ -18,7 +18,6 @@ import {
     EyeIcon,
     LinkIcon,
     CalendarIcon,
-    UserCircleIcon,
     SparklesIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -30,6 +29,7 @@ import {
     PencilSquareIcon,
     MegaphoneIcon,
 } from '@heroicons/react/24/outline';
+import { PiUser } from 'react-icons/pi';
 import EmptyState from '../../components/Common/EmptyState';
 import {
     useReactTable,

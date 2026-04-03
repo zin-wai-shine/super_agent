@@ -3,18 +3,17 @@ import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-do
 import { useAuth } from '../../contexts/AuthContext';
 import {
     BuildingOfficeIcon,
-    UserCircleIcon,
     MapIcon,
     ListBulletIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
     BuildingOfficeIcon as BuildingSolid,
-    UserCircleIcon as UserSolid,
     MapIcon as MapSolid,
     ListBulletIcon as ListSolid,
 } from '@heroicons/react/24/solid';
 import { BsHeart, BsHeartFill, BsCalendar2Week, BsSearch } from 'react-icons/bs';
+import { PiUser } from 'react-icons/pi';
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -67,10 +66,10 @@ const MobileBottomNav = () => {
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
         { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
-        { name: 'Profile', path: '/profile', icon: UserCircleIcon, activeIcon: UserSolid },
+        { name: 'Profile', path: '/profile', icon: PiUser, activeIcon: PiUser },
     ] : [
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Login', path: '/login', icon: UserCircleIcon, activeIcon: UserSolid },
+        { name: 'Login', path: '/login', icon: PiUser, activeIcon: PiUser },
     ];
 
     const isSearchActive = location.pathname.startsWith('/search') || location.pathname.startsWith('/listings') || location.pathname === '/';
@@ -112,7 +111,7 @@ const MobileBottomNav = () => {
                     <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
                 )}
                 <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
-                    <Icon className={`w-6 h-6 transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    <Icon className={`w-7 h-7 transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                 </div>
                 <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 ${active ? 'text-primary-600 opacity-100' : 'text-gray-400 opacity-80'}`}>
                     {item.name}
