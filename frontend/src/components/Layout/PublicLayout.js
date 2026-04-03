@@ -925,11 +925,11 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             <FiHeart
-                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-rose-500'
+                                                className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />
                                             <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-rose-500'
+                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
                                                 Favorites
