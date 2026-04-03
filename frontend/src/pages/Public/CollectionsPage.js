@@ -63,7 +63,7 @@ const CollectionsPage = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
-                            {[...Array(Math.max(11, collections.length))].map((_, i) => (
+                            {[...Array(loading && collections.length === 0 ? 11 : collections.length)].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
                                     {/* Layer 1: Background Layout (Static Skeleton) */}
                                     {/* Skeleton becomes absolute background when real card arrives so it doesn't duplicate height */}
