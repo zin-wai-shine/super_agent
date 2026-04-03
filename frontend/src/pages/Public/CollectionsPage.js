@@ -20,11 +20,17 @@ const CollectionsPage = () => {
     const fetchCollections = async () => {
         setLoading(true);
         try {
-            const response = await collectionApi.getCollections();
+            // Use public endpoint so non-logged-in viewers can still see the gallery
+            const response = await collectionApi.getPublicCollections();
+            const data = response.data || [];
+            
+            // Set collections immediately so React instantly shrinks the skeletal grid 
+            // from 11 cards to the EXACT data count (preventing overflow loading cards).
+            setCollections(data);
+
             // Artificial delay to allow the staggered skeleton animation 
-            // to complete its initial 'discovery' phase as requested.
+            // to complete its 'discovery' phase as previously requested.
             await new Promise(resolve => setTimeout(resolve, 800));
-            setCollections(response.data || []);
         } catch (error) {
             console.error('Failed to fetch collections:', error);
         } finally {
