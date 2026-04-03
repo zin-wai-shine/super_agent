@@ -51,6 +51,9 @@ func main() {
 		&models.SavedListing{},
 		&models.Developer{},
 		&models.Project{},
+		&models.Collection{},
+		&models.CollectionListing{},
+		&models.CollectionMedia{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}

@@ -21,6 +21,10 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	appointmentController := controllers.NewAppointmentController(db, wsManager)
 	developerController := controllers.NewDeveloperController(db)
 	googleAuthController := controllers.NewGoogleAuthController(db, cfg)
+	collectionController := controllers.NewCollectionController(db)
+
+	// Public static files (Move before tenant middleware)
+	router.Static("/uploads", cfg.UploadPath)
 
 	// Apply tenant middleware globally
 	router.Use(middleware.TenantMiddleware(db, cfg))
@@ -58,6 +62,8 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/appointments/slots", appointmentController.GetAvailableSlots)
 			public.POST("/appointments/lock", appointmentController.SoftLockSlot)
 			public.POST("/appointments", appointmentController.CreateAppointment)
+			public.GET("/collections", collectionController.GetCollections)
+			public.GET("/collections/:id", collectionController.GetCollection)
 
 			// Share routes (for social media crawlers)
 			share := public.Group("/share")
@@ -188,6 +194,18 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 					projects.PUT("/:id", developerController.UpdateProject)
 					projects.DELETE("/:id", developerController.DeleteProject)
 				}
+
+				// Collection management
+				collections := agent.Group("/collections")
+				{
+					collections.GET("", collectionController.GetCollections)
+					collections.POST("", collectionController.CreateCollection)
+					collections.GET("/:id", collectionController.GetCollection)
+					collections.PUT("/:id", collectionController.UpdateCollection)
+					collections.DELETE("/:id", collectionController.DeleteCollection)
+					collections.POST("/:id/listings/:listingId", collectionController.AddListingToCollection)
+					collections.DELETE("/:id/listings/:listingId", collectionController.RemoveListingFromCollection)
+				}
 			}
 
 			// Upload routes
@@ -197,6 +215,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				upload.POST("/video", uploadController.UploadVideo)
 				upload.POST("/logo", uploadController.UploadLogo)
 				upload.POST("/banner", uploadController.UploadBanner)
+				upload.POST("/collection-image", uploadController.UploadCollectionImage)
 				upload.PATCH("/:id", uploadController.UpdateMedia)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}
@@ -239,6 +258,4 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 		}
 	}
 
-	// Serve uploaded files
-	router.Static("/uploads", cfg.UploadPath)
 }

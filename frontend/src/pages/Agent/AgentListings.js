@@ -28,9 +28,19 @@ import {
     InboxIcon,
     ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import { getMediaUrl } from '../../utils/media';
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
-import { getMediaUrl } from '../../utils/media';
+import CollectionBar from '../../components/Listings/CollectionBar';
+import AddToCollectionModal from '../../components/Listings/AddToCollectionModal';
+import CreateCollectionModal from '../../components/Listings/CreateCollectionModal';
+import { 
+    FolderPlusIcon,
+    Bars3Icon,
+    FolderIcon as FolderIconSolid
+} from '@heroicons/react/24/solid';
+import { collectionApi } from '../../services/api';
+import { FolderIcon } from '@heroicons/react/24/outline';
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, isWithinInterval, parseISO, subDays, startOfMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -46,6 +56,10 @@ const AgentListings = () => {
     const [globalFilter, setGlobalFilter] = useSessionState('listings_globalFilter', '');
     const [statusFilter, setStatusFilter] = useSessionState('listings_statusFilter', 'all');
     const [sorting, setSorting] = useSessionState('listings_sorting', []);
+    const [selectedCollection, setSelectedCollection] = useState(null);
+    const [addToCollectionId, setAddToCollectionId] = useState(null);
+    const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+    const [collectionRefreshTrigger, setCollectionRefreshTrigger] = useState(0);
 
     // Use scroll restoration
     useScrollRestoration('AgentListings', !loading && listings.length > 0);
@@ -97,10 +111,14 @@ const AgentListings = () => {
     const fetchListings = async () => {
         setLoading(true);
         try {
-            // Fetch all listings and filter client-side for smoother interaction with TanStack Table
-            const response = await agentApi.getListings({});
-            const data = Array.isArray(response.data) ? response.data : (response.data.listings || []);
-            setListings(data);
+            if (selectedCollection) {
+                const response = await collectionApi.getCollection(selectedCollection.id);
+                setListings(response.data.listings || []);
+            } else {
+                const response = await agentApi.getListings({});
+                const data = Array.isArray(response.data) ? response.data : (response.data.listings || []);
+                setListings(data);
+            }
         } catch (error) {
             console.error('Failed to fetch listings:', error);
             toast.error('Failed to load listings');
@@ -111,7 +129,7 @@ const AgentListings = () => {
 
     useEffect(() => {
         fetchListings();
-    }, []);
+    }, [selectedCollection]);
 
     const handlePublish = async (id, isPublished) => {
         try {
@@ -309,6 +327,13 @@ const AgentListings = () => {
                 return (
                     <div className="flex items-center justify-end space-x-2">
                         <button
+                            onClick={() => setAddToCollectionId(listing.id)}
+                            className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-400/10 dark:text-blue-400 dark:hover:bg-blue-400/20 rounded-lg transition-all duration-200"
+                            title="Add to Collection"
+                        >
+                            <FolderPlusIcon className="w-5 h-5" />
+                        </button>
+                        <button
                             onClick={() => handlePublish(listing.id, listing.is_published)}
                             className={`p-1.5 rounded-lg transition-all duration-200 ${listing.is_published
                                 ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-400/10 dark:text-amber-400 dark:hover:bg-amber-400/20'
@@ -365,13 +390,22 @@ const AgentListings = () => {
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
-                        Listings
+                        {selectedCollection ? `${selectedCollection.name} Collection` : 'All Listings'}
                     </h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {listings.length} listing{listings.length !== 1 ? 's' : ''} registered
+                        {listings.length} listing{listings.length !== 1 ? 's' : ''} in {selectedCollection ? 'this collection' : 'total'}
                     </p>
                 </div>
             </div>
+
+            {/* Collection Bar - NEW */}
+            <CollectionBar 
+                selectedId={selectedCollection?.id}
+                onSelectCollection={setSelectedCollection}
+                refreshTrigger={collectionRefreshTrigger}
+                canEdit={false}
+                initialPath="/dashboard/listings"
+            />
 
             {/* Toolbar: Actions & Filters */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
@@ -618,13 +652,23 @@ const AgentListings = () => {
                             className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
-                    <Link
-                        to="/dashboard/listings/new"
-                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        <span>Add Listing</span>
-                    </Link>
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button
+                            onClick={() => setIsCollectionModalOpen(true)}
+                            className="flex-1 sm:flex-none h-[34px] px-4 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-[3px] text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center space-x-2"
+                        >
+                            <FolderPlusIcon className="w-4 h-4 text-primary-500" />
+                            <span className="whitespace-nowrap">New Collection</span>
+                        </button>
+                        
+                        <Link
+                            to="/dashboard/listings/new"
+                            className="flex-1 sm:flex-none h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-xs font-bold shadow-lg shadow-primary-600/20 transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            <span>Add Listing</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -783,6 +827,21 @@ const AgentListings = () => {
                     />
                 )}
             </div>
+
+            <AddToCollectionModal 
+                isOpen={!!addToCollectionId} 
+                onClose={() => setAddToCollectionId(null)} 
+                listingId={addToCollectionId} 
+            />
+
+            <CreateCollectionModal 
+                isOpen={isCollectionModalOpen}
+                onClose={() => setIsCollectionModalOpen(false)}
+                onSuccess={(newCol) => {
+                    setCollectionRefreshTrigger(prev => prev + 1);
+                    setSelectedCollection(newCol);
+                }}
+            />
         </div >
     );
 };

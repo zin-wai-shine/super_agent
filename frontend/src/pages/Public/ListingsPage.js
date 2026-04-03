@@ -8,6 +8,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { publicApi } from '../../services/api';
 import { useTheme } from '../../contexts/ThemeContext';
 import ListingCard from '../../components/Listings/ListingCard';
+import CollectionBar from '../../components/Listings/CollectionBar';
 import GoogleMap from '../../components/Listings/GoogleMap';
 import TransitMapFilter from '../../components/TransitMap/TransitMapFilter';
 import TransitFilterModal from '../../components/TransitMap/TransitFilterModal';
@@ -116,7 +117,7 @@ const ListingsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [savedListingIds, setSavedListingIds] = useState([]);
-
+    
     // Synchronously check cache before any hooks to use in initial state
     const currentPathPlusSearch = location.pathname + location.search;
     const isCacheValidSync = globalListCache && globalListCache.url === currentPathPlusSearch;
@@ -955,7 +956,11 @@ const ListingsPage = () => {
 
         const controller = new AbortController();
         const fetchListings = async () => {
-            const params = { ...filters, page, limit: isGoogleMapOpen ? 40 : 12 };
+            const params = { 
+                ...filters, 
+                page, 
+                limit: isGoogleMapOpen ? 40 : 12
+            };
             let bufferedBounds = null;
 
             if (mapBounds && isGoogleMapOpen) {
@@ -1816,7 +1821,15 @@ const ListingsPage = () => {
                         <div className="lg:col-span-12 transition-all duration-700 relative">
                             <div className={`flex flex-col lg:flex-row lg:justify-end transition-all duration-700 ease-in-out relative ${isMapExpanded ? 'gap-0' : 'gap-6 lg:gap-8'} ${isGoogleMapOpen ? 'min-h-[85vh] pt-0.5' : 'min-h-[70vh]'}`}>
                                 {/* Left Side: Property List — no overflow; full card height; scroll is on main container */}
-                                <div className={`flex flex-col transition-all duration-700 ease-in-out overflow-hidden ${isGoogleMapOpen ? (isMapExpanded ? 'lg:w-0 opacity-0 pointer-events-none' : 'w-full lg:w-[42%] xl:w-[52%] opacity-100') : 'w-full'} h-full p-0`}>
+                                <div className={`flex flex-col transition-all duration-700 ease-in-out ${isGoogleMapOpen ? (isMapExpanded ? 'lg:w-0 opacity-0 pointer-events-none' : 'w-full lg:w-[42%] xl:w-[52%] opacity-100') : 'w-full'} h-full p-0`}>
+                                    
+                                    {!isGoogleMapOpen && (
+                                        <CollectionBar 
+                                            key={`collection-bar-${location.pathname}`}
+                                            canEdit={false}
+                                        />
+                                    )}
+
                                     {/* Header: Results Count */}
                                     <div className="mb-4 mt-1 flex justify-end">
                                         {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (

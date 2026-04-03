@@ -332,3 +332,32 @@ type SavedListing struct {
 func (SavedListing) TableName() string {
 	return "saved_listings"
 }
+
+// Collection represents a grouping of listings
+type Collection struct {
+	ID        uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
+	Name      string            `gorm:"size:255;not null" json:"name"`
+	CreatedBy uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
+	Media     []CollectionMedia `gorm:"foreignKey:CollectionID" json:"media,omitempty"`
+	Listings  []Listing         `gorm:"many2many:collection_listings;" json:"listings,omitempty"`
+	CreatedAt time.Time         `json:"created_at"`
+	UpdatedAt time.Time         `json:"updated_at"`
+	DeletedAt gorm.DeletedAt    `gorm:"index" json:"-"`
+}
+
+type CollectionMedia struct {
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	CollectionID uuid.UUID `gorm:"type:uuid;not null;index" json:"collection_id"`
+	Type         string    `gorm:"size:20;not null" json:"type"` // image, video
+	URL          string    `gorm:"size:500;not null" json:"url"`
+	SortOrder    int       `gorm:"default:0" json:"sort_order"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+// CollectionListing is the junction table for many-to-many
+type CollectionListing struct {
+	CollectionID uuid.UUID `gorm:"type:uuid;primaryKey" json:"collection_id"`
+	ListingID    uuid.UUID `gorm:"type:uuid;primaryKey" json:"listing_id"`
+	CreatedAt    time.Time `json:"created_at"`
+}

@@ -167,6 +167,12 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		query = query.Where("id <> ?", excludeID)
 	}
 
+	// Filter by collection
+	if collectionID := c.Query("collection_id"); collectionID != "" {
+		query = query.Joins("JOIN collection_listings ON collection_listings.listing_id = listings.id").
+			Where("collection_listings.collection_id = ?", collectionID)
+	}
+
 	// Sorting
 	sortBy := c.DefaultQuery("sort", "created_at")
 	sortOrder := c.DefaultQuery("order", "desc")

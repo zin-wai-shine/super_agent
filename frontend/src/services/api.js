@@ -11,10 +11,12 @@ const subdomainIpMatch = currentHostname.match(new RegExp(`^(.+)\\.${mainDomainB
 const apiHost = subdomainIpMatch ? subdomainIpMatch[2] : currentHostname;
 const tenantSubdomainForIp = subdomainIpMatch ? subdomainIpMatch[1] : null;
 
-const API_URL = process.env.REACT_APP_API_URL ||
+export const API_URL = process.env.REACT_APP_API_URL ||
     ((typeof window !== 'undefined' && window.location.port === '3000')
         ? `${typeof window !== 'undefined' ? window.location.protocol : 'http:'}//${apiHost}:8080/api`
         : '/api');
+
+export const BASE_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
 
 const api = axios.create({
     baseURL: API_URL,
@@ -229,6 +231,14 @@ export const uploadApi = {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
+    uploadCollectionImage: (collectionId, file) => {
+        const formData = new FormData();
+        formData.append('collection_id', collectionId);
+        formData.append('file', file);
+        return api.post('/upload/collection-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
     uploadVideo: (listingId, file, caption = '') => {
         const formData = new FormData();
         formData.append('listing_id', listingId);
@@ -275,4 +285,19 @@ export const appointmentApi = {
     // Admin
     getAllAppointments: (params) => api.get('/admin/appointments', { params }),
     getAppointmentStats: () => api.get('/admin/appointment-stats'),
+};
+
+// Collection API
+export const collectionApi = {
+    // Public
+    getPublicCollections: (params) => api.get('/public/collections', { params }),
+    getPublicCollection: (id) => api.get(`/public/collections/${id}`),
+    // Agent
+    getCollections: (params) => api.get('/agent/collections', { params }),
+    getCollection: (id) => api.get(`/agent/collections/${id}`),
+    createCollection: (data) => api.post('/agent/collections', data),
+    updateCollection: (id, data) => api.put(`/agent/collections/${id}`, data),
+    deleteCollection: (id) => api.delete(`/agent/collections/${id}`),
+    addListing: (colId, listingId) => api.post(`/agent/collections/${colId}/listings/${listingId}`),
+    removeListing: (colId, listingId) => api.delete(`/agent/collections/${colId}/listings/${listingId}`),
 };

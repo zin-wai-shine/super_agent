@@ -27,6 +27,7 @@ import {
     CalendarDaysIcon,
     BuildingOffice2Icon,
     ArrowTopRightOnSquareIcon,
+    FolderIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardLayout = () => {
@@ -66,6 +67,7 @@ const DashboardLayout = () => {
         { name: 'Listings', href: '/dashboard/listings', icon: BuildingOfficeIcon },
         { name: 'Developers', href: '/dashboard/developers', icon: BuildingOffice2Icon },
         { name: 'Projects', href: '/dashboard/projects', icon: BuildingOfficeIcon },
+        { name: 'Collections', href: '/dashboard/collections', icon: FolderIcon },
         { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarDaysIcon },
         { name: 'Sub-Agents', href: '/dashboard/sub-agents', icon: UsersIcon },
         { name: 'Users', href: '/dashboard/users', icon: UsersIcon },

@@ -22,6 +22,8 @@ import GoogleCallback from './pages/Auth/GoogleCallback';
 import BookAppointment from './pages/Public/BookAppointment';
 import MyBookings from './pages/Public/MyBookings';
 import SavedListingsPage from './pages/Public/SavedListingsPage';
+import CollectionsPage from './pages/Public/CollectionsPage';
+import CollectionDetailPage from './pages/Public/CollectionDetailPage';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -35,6 +37,7 @@ import AppointmentManagement from './pages/Agent/AppointmentManagement';
 import Users from './pages/Agent/Users';
 import DeveloperManagement from './pages/Agent/DeveloperManagement';
 import ProjectManagement from './pages/Agent/ProjectManagement';
+import CollectionManagement from './pages/Agent/CollectionManagement';
 
 // Super Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -224,6 +227,14 @@ const AppRoutes = () => {
                     }
                 />
                 <Route
+                    path="collections"
+                    element={<CollectionsPage />}
+                />
+                <Route
+                    path="collections/:id"
+                    element={<CollectionDetailPage />}
+                />
+                <Route
                     path="login"
                     element={
                         <GuestRoute>
@@ -260,6 +271,7 @@ const AppRoutes = () => {
                 <Route path="users" element={<Users />} />
                 <Route path="developers" element={<DeveloperManagement />} />
                 <Route path="projects" element={<ProjectManagement />} />
+                <Route path="collections" element={<CollectionManagement />} />
                 <Route path="theme" element={<ThemeSettings />} />
                 <Route path="settings" element={<AgentSettings />} />
                 <Route path="notifications" element={<NotificationCenter />} />
