@@ -66,15 +66,14 @@ const CollectionsPage = () => {
                             {[...Array(Math.max(11, collections.length))].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
                                     {/* Layer 1: Background Layout (Static Skeleton) */}
-                                    {/* We only hide this skeleton if the real card above it is finished with its staggered delay and fully opaque. 
-                                        But keeping it as a base layer ensures zero flickering. */}
-                                    <div className={`transition-opacity duration-500`}>
+                                    {/* Skeleton becomes absolute background when real card arrives so it doesn't duplicate height */}
+                                    <div className={!loading && collections[i] ? "absolute inset-0 z-0 transition-opacity duration-500" : "relative transition-opacity duration-500"}>
                                         <CollectionSkeleton index={i} isExiting={!loading} />
                                     </div>
 
                                     {/* Layer 2: Real Data Card (Specific internal animations for image vs text) */}
                                     {!loading && collections[i] && (
-                                        <div className="absolute inset-0 z-10">
+                                        <div className="relative z-10 h-full">
                                             <CollectionCard
                                                 collection={collections[i]}
                                                 readOnly={true}

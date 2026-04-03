@@ -1826,6 +1826,7 @@ const ListingsPage = () => {
                                     {!isGoogleMapOpen && (
                                         <CollectionBar 
                                             key={`collection-bar-${location.pathname}`}
+                                            readOnly={true}
                                             canEdit={false}
                                         />
                                     )}
