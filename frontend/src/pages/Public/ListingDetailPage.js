@@ -19,7 +19,6 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     ShareIcon,
-    HeartIcon,
     Square2StackIcon,
     ArrowsPointingOutIcon,
     SparklesIcon,
@@ -42,7 +41,6 @@ import {
     DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import {
-    HeartIcon as HeartSolidIcon,
     CheckBadgeIcon,
     StarIcon,
     CalendarIcon,
@@ -65,6 +63,7 @@ import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
+import { BsHeart, BsHeartFill } from "react-icons/bs";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine, RiFridgeLine } from "react-icons/ri";
 import { LuSofa, LuWind } from "react-icons/lu";
@@ -1084,9 +1083,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     >
                         <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
-                                <HeartSolidIcon className="w-[18px] h-[18px] text-rose-500" />
+                                <BsHeartFill className="w-[16px] h-[16px] text-rose-500" />
                             ) : (
-                                <HeartIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
+                                <BsHeart className="w-[16px] h-[16px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" strokeWidth={0.5} />
                             )}
                         </div>
                         <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
@@ -1703,9 +1702,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 aria-label={isSaved ? 'Unsave' : 'Save'}
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-7 h-7 text-rose-500" />
+                                    <BsHeartFill className="w-[24px] h-[24px] text-rose-500" />
                                 ) : (
-                                    <HeartIcon className="w-7 h-7 text-gray-900 dark:text-white" />
+                                    <BsHeart className="w-[24px] h-[24px] text-gray-900 dark:text-white" strokeWidth={0.5} />
                                 )}
                             </button>
                         </div>
@@ -1832,9 +1831,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     >
                                                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
                                                             {isSaved ? (
-                                                                <HeartSolidIcon className="w-5 h-5 text-rose-500" />
+                                                                <BsHeartFill className="w-[18px] h-[18px] text-rose-500" />
                                                             ) : (
-                                                                <HeartIcon className="w-5 h-5 text-gray-900 dark:text-white opacity-60" />
+                                                                <BsHeart className="w-[18px] h-[18px] text-gray-900 dark:text-white opacity-60" strokeWidth={0.5} />
                                                             )}
                                                         </div>
                                                         <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900 dark:text-white'}`}>

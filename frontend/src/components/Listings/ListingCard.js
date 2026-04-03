@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-do
 import {
     MapPinIcon,
     BookmarkIcon,
-    HeartIcon,
     StarIcon,
     ShareIcon,
     ChevronLeftIcon,
@@ -11,7 +10,6 @@ import {
 } from '@heroicons/react/24/outline';
 import {
     BookmarkIcon as BookmarkSolidIcon,
-    HeartIcon as HeartSolidIcon,
     StarIcon as StarSolidIcon,
     PhoneIcon,
     EnvelopeIcon,
@@ -19,6 +17,7 @@ import {
     GlobeAltIcon
 } from '@heroicons/react/24/solid';
 import { SiLine, SiFacebook, SiInstagram, SiLinkedin } from 'react-icons/si';
+import { BsHeart, BsHeartFill } from "react-icons/bs";
 import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
@@ -392,9 +391,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
+                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-[22px] h-[22px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
+                                    <BsHeart className="w-[20px] h-[20px] text-slate-500 dark:text-gray-300" strokeWidth={0.5} />
                                 )}
                             </button>
                         )}
@@ -466,9 +465,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
+                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-[22px] h-[22px] text-slate-500 dark:text-gray-300" strokeWidth={1.5} />
+                                    <BsHeart className="w-[20px] h-[20px] text-slate-500 dark:text-gray-300" strokeWidth={0.5} />
                                 )}
                             </button>
                         )}
@@ -555,9 +554,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
                             >
                                 {isSaved ? (
-                                    <HeartSolidIcon className="w-[22px] h-[22px] text-rose-500 drop-shadow-sm" />
+                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
                                 ) : (
-                                    <HeartIcon className="w-[22px] h-[22px] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={1.5} />
+                                    <BsHeart className="w-[20px] h-[20px] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={0.5} />
                                 )}
                             </button>
                         )}

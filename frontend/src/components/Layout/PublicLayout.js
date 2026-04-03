@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
+import { BsHeart } from 'react-icons/bs';
 import {
     Bars3Icon,
     XMarkIcon,
@@ -32,7 +33,6 @@ import {
     FiStar,
     FiClock,
     FiMapPin,
-    FiHeart,
     FiUsers,
     FiBookOpen,
     FiBriefcase,
@@ -728,7 +728,7 @@ const PublicLayout = () => {
                                                                 </div>
                                                                 <div className="py-1 px-2">
                                                                     <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
-                                                                        <FiHeart className="w-5 h-5 text-gray-900 dark:text-white" />
+                                                                        <BsHeart className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                         Favorites
                                                                     </Link>
                                                                     <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
@@ -924,7 +924,7 @@ const PublicLayout = () => {
                                             to="/saved-listings"
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
-                                            <FiHeart
+                                            <BsHeart
                                                 className={`w-6 h-6 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />

@@ -8,7 +8,6 @@ import {
     MapIcon,
     ListBulletIcon,
     XMarkIcon,
-    HeartIcon,
     CalendarIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -17,9 +16,9 @@ import {
     UserCircleIcon as UserSolid,
     MapIcon as MapSolid,
     ListBulletIcon as ListSolid,
-    HeartIcon as HeartSolid,
     CalendarIcon as CalendarSolid,
 } from '@heroicons/react/24/solid';
+import { BsHeart, BsHeartFill } from 'react-icons/bs';
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -70,7 +69,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
-        { name: 'Favorites', path: '/saved-listings', icon: HeartIcon, activeIcon: HeartSolid },
+        { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: CalendarIcon, activeIcon: CalendarSolid },
         { name: 'Profile', path: '/profile', icon: UserCircleIcon, activeIcon: UserSolid },
     ] : [
