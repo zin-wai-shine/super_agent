@@ -419,19 +419,6 @@ const ProjectsPage = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const [showScrollTop, setShowScrollTop] = useState(false);
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     // Filter states
     const [filters, setFilters] = useState(() => {
         const saved = JSON.parse(localStorage.getItem('project_filters') || '{}');
@@ -1175,15 +1162,6 @@ const ProjectsPage = () => {
 
 
 
-
-            {/* Scroll to top */}
-            <button
-                onClick={scrollToTop}
-                style={{ bottom: mobileBottomNavVisible ? 'calc(env(safe-area-inset-bottom) + 112px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
-                className={`fixed right-6 md:!bottom-8 md:!right-8 bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all z-[190] ${showScrollTop && !isSidebarOpen && !isGoogleMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-            >
-                <ArrowUpIcon className="w-6 h-6" />
-            </button>
 
             {/* Mobile Floating Action Button - Filters */}
             <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] safe-area-bottom pointer-events-none flex items-center gap-3 shadow-2xl rounded-full">
