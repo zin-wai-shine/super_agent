@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    MagnifyingGlassIcon,
     MapPinIcon,
     BuildingOffice2Icon,
     HomeIcon,
@@ -9,6 +8,7 @@ import {
     MapIcon,
     ChevronRightIcon,
 } from '@heroicons/react/24/outline';
+import { BsSearch } from 'react-icons/bs';
 import TransitMapFilter from '../TransitMap/TransitMapFilter';
 
 const QUICK_SUGGESTIONS = [
@@ -75,7 +75,7 @@ const HeroFilter = () => {
                 style={{ transition: 'border-color 0.2s ease' }}
             >
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                    <MagnifyingGlassIcon className="w-5 h-5 text-primary-500" />
+                    <BsSearch className="w-5 h-5 text-primary-500" />
                 </div>
                 <input
                     type="text"
@@ -96,7 +96,7 @@ const HeroFilter = () => {
                         className="w-9 h-9 flex items-center justify-center bg-primary-600/90 hover:bg-primary-600 text-white rounded-full shadow-lg shadow-primary-500/20 transition-all duration-300 active:scale-95 group/btn overflow-hidden relative"
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
-                        <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5] relative z-10" />
+                        <BsSearch className="w-5 h-5 relative z-10" />
                     </button>
                 </div>
             </div>
@@ -125,7 +125,7 @@ const HeroFilter = () => {
                         </div>
                     </div>
                     <div className="px-6 py-4 bg-white/20 dark:bg-black/20 border-t border-white/10 dark:border-white/5 flex items-center gap-1.5 mt-auto">
-                        <MagnifyingGlassIcon className="w-4 h-4 text-slate-400/60 dark:text-gray-500" />
+                        <BsSearch className="w-4 h-4 text-slate-400/60 dark:text-gray-500" />
                         <p className="text-[11px] text-slate-400/80 dark:text-gray-500 font-bold tracking-tight">Press Enter to search all results</p>
                     </div>
                 </div>

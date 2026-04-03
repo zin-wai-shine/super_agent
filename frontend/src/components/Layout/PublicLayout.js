@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
-import { BsHeart, BsCalendar2Week } from 'react-icons/bs';
+import { BsHeart, BsCalendar2Week, BsSearch } from 'react-icons/bs';
 import {
     Bars3Icon,
     XMarkIcon,
@@ -25,7 +25,6 @@ import {
     MoonIcon,
 } from '@heroicons/react/24/outline';
 import {
-    FiSearch,
     FiHome,
     FiKey,
     FiDollarSign,
@@ -382,7 +381,7 @@ const PublicLayout = () => {
                                             onMouseEnter={(e) => location.pathname !== '/search' && (e.currentTarget.style.backgroundColor = 'var(--menu-hover-bg)')}
                                             onMouseLeave={(e) => location.pathname !== '/search' && (e.currentTarget.style.backgroundColor = 'transparent')}
                                         >
-                                            <FiSearch className="w-5 h-5" />
+                                            <BsSearch className="w-5 h-5" />
                                             <span>Search</span>
                                         </Link>
                                         <Link
@@ -905,7 +904,7 @@ const PublicLayout = () => {
                                     to={localStorage.getItem('preferredView') === 'map' ? '/listings?view=map' : '/listings'}
                                     className="flex-1 flex flex-col items-center justify-center py-2"
                                 >
-                                    <FiSearch
+                                    <BsSearch
                                         className={`w-6 h-6 ${isSearchTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'}`}
                                     />
                                     <span

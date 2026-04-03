@@ -40,7 +40,6 @@ import {
     HeartIcon,
     BuildingOfficeIcon,
     BuildingOffice2Icon,
-    MagnifyingGlassIcon,
     GlobeAltIcon,
     SparklesIcon,
     ArrowUpIcon,
@@ -50,6 +49,7 @@ import {
     HomeIcon,
     ChevronLeftIcon,
 } from '@heroicons/react/24/outline';
+import { BsSearch } from 'react-icons/bs';
 
 import {
     CheckCircleIcon,
@@ -1525,7 +1525,7 @@ const ListingsPage = () => {
                                 className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+                                    <BsSearch className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
                                     <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
                                 </div>
                                 <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
@@ -1714,7 +1714,7 @@ const ListingsPage = () => {
                 <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-dark py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
                         <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[44px] pl-4 pr-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
-                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                            <BsSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
                             <input
                                 type="search"
                                 value={searchTerm}
@@ -1959,7 +1959,7 @@ const ListingsPage = () => {
                         <div className={`fixed top-0 left-0 right-0 z-[220] bg-white dark:bg-dashboard-card lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
                             <div className="flex-shrink-0 w-full border-b dark:border-white/10 px-4 py-3.5 flex items-center gap-2 shadow-sm">
                                 <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <BsSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                     <input
                                         type="search"
                                         value={searchTerm}

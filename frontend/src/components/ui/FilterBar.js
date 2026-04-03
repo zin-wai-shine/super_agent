@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-    MagnifyingGlassIcon,
     AdjustmentsHorizontalIcon,
     XMarkIcon,
     MapPinIcon,
@@ -11,6 +10,7 @@ import {
     MapIcon,
     ChevronRightIcon,
 } from '@heroicons/react/24/outline';
+import { BsSearch } from 'react-icons/bs';
 import Button from './Button';
 import TransitMapFilter from '../TransitMap/TransitMapFilter';
 import Input from './Input';
@@ -188,7 +188,7 @@ const FilterBar = ({
                                         : 'rounded-full'
                                         }`} style={{ transition: 'border-color 0.2s ease, background-color 0.2s ease' }}>
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                            <MagnifyingGlassIcon className={`w-6 h-6 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
+                                            <BsSearch className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
                                         </div>
 
                                         <input
@@ -218,7 +218,7 @@ const FilterBar = ({
                                                 onClick={handleSearch}
                                                 className="w-9 h-9 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-sm transition-all duration-200 active:scale-95"
                                             >
-                                                <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5]" />
+                                                <BsSearch className="w-5 h-5" />
                                             </button>
                                         </div>
                                     </div>
@@ -253,7 +253,7 @@ const FilterBar = ({
 
                                                 {/* Footer hint */}
                                                 <div className="px-6 py-4 bg-gray-50/80 dark:bg-white/5 border-t border-gray-100 dark:border-white/5 flex items-center gap-1.5 mt-auto">
-                                                    <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+                                                    <BsSearch className="w-4 h-4 text-gray-400" />
                                                     <p className="text-[13px] sm:text-[11px] text-gray-400 dark:text-gray-500 font-normal tracking-tight">Press Enter to search all results</p>
                                                 </div>
                                             </div>

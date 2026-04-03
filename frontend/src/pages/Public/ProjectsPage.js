@@ -32,12 +32,12 @@ import {
     MapPinIcon,
     XMarkIcon,
     BuildingOfficeIcon,
-    MagnifyingGlassIcon,
     GlobeAltIcon,
     SparklesIcon,
     ArrowUpIcon,
     TagIcon,
 } from '@heroicons/react/24/outline';
+import { BsSearch } from 'react-icons/bs';
 
 import {
     CheckCircleIcon
@@ -794,7 +794,7 @@ const ProjectsPage = () => {
                                 className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
-                                    <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+                                    <BsSearch className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
                                     <span className="text-[13px] font-normal text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
                                 </div>
                                 <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
@@ -984,7 +984,7 @@ const ProjectsPage = () => {
                 <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-card py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
                         <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            <BsSearch className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                             <input
                                 type="search"
                                 value={searchTerm}

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-    MagnifyingGlassIcon,
     BuildingOfficeIcon,
     UserCircleIcon,
     MapIcon,
@@ -10,13 +9,12 @@ import {
     XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
-    MagnifyingGlassIcon as SearchSolid,
     BuildingOfficeIcon as BuildingSolid,
     UserCircleIcon as UserSolid,
     MapIcon as MapSolid,
     ListBulletIcon as ListSolid,
 } from '@heroicons/react/24/solid';
-import { BsHeart, BsHeartFill, BsCalendar2Week } from 'react-icons/bs';
+import { BsHeart, BsHeartFill, BsCalendar2Week, BsSearch } from 'react-icons/bs';
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -66,12 +64,12 @@ const MobileBottomNav = () => {
     };
 
     const navItems = isAuthenticated ? [
-        { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
+        { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
         { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
         { name: 'Profile', path: '/profile', icon: UserCircleIcon, activeIcon: UserSolid },
     ] : [
-        { name: 'Search', path: '/search', icon: MagnifyingGlassIcon, activeIcon: SearchSolid },
+        { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
         { name: 'Login', path: '/login', icon: UserCircleIcon, activeIcon: UserSolid },
     ];
 
