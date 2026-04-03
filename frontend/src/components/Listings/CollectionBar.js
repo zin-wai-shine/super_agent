@@ -74,7 +74,7 @@ const CollectionGroup = ({
             {/* Header Section */}
             <div className="flex items-center justify-between mb-4 px-6 md:px-1">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                    <h2 className="text-[18px] md:text-[15px] font-bold text-[#222222] dark:text-white tracking-[0.05em]">
                         {title}
                     </h2>
                     <button className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -295,7 +295,14 @@ const CollectionBar = ({
                 <>
                     {/* 1. Popular Collections Section (Standalone children) */}
                     <CollectionGroup
-                        title="Popular Collections"
+                        title={(() => {
+                            let popName = 'Popular Collections';
+                            try {
+                                const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                if (custom) popName = custom.name || popName;
+                            } catch (e) {}
+                            return popName;
+                        })()}
                         groupCollections={popularChildren}
                         selectedId={selectedId}
                         onSelectCollection={onSelectCollection}
@@ -311,7 +318,7 @@ const CollectionBar = ({
                         <div className={`${readOnly ? 'mb-0' : 'mb-8'}`}>
                             <div className="flex items-center justify-between mb-4 px-6 md:px-1">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                                    <h2 className="text-[18px] md:text-[15px] font-bold text-[#222222] dark:text-white tracking-[0.05em]">
                                         Explore Categories
                                     </h2>
                                     <div className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center">
@@ -373,7 +380,7 @@ const CollectionBar = ({
                                         onClick={() => setIsAllCategoriesOpen(true)}
                                         className="flex-shrink-0 group cursor-pointer"
                                     >
-                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-md">
+                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-[#222222] dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-md">
                                             <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
                                                 <FiGrid className="w-5 h-5" />
                                             </div>

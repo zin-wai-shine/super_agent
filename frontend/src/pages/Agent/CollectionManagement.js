@@ -112,7 +112,7 @@ const CollectionManagement = () => {
             id: 'actions',
             header: '',
             cell: ({ row }) => {
-                if (row.original.isVirtual) return null;
+                const isVirtual = row.original.isVirtual;
                 return (
                     <div className="flex justify-end space-x-1.5">
                         <button
@@ -122,23 +122,25 @@ const CollectionManagement = () => {
                         >
                             <PencilSquareIcon className="w-4 h-4" />
                         </button>
-                        <button
-                            onClick={async () => {
-                                if (window.confirm('Delete this collection?')) {
-                                    try {
-                                        await collectionApi.deleteCollection(row.original.id);
-                                        toast.success('Deleted');
-                                        fetchCollections();
-                                    } catch (e) {
-                                        toast.error('Failed to delete');
+                        {!isVirtual && (
+                            <button
+                                onClick={async () => {
+                                    if (window.confirm('Delete this collection?')) {
+                                        try {
+                                            await collectionApi.deleteCollection(row.original.id);
+                                            toast.success('Deleted');
+                                            fetchCollections();
+                                        } catch (e) {
+                                            toast.error('Failed to delete');
+                                        }
                                     }
-                                }
-                            }}
-                            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
-                            title="Delete"
-                        >
-                            <TrashIcon className="w-4 h-4" />
-                        </button>
+                                }}
+                                className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                title="Delete"
+                            >
+                                <TrashIcon className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 );
             },
@@ -172,13 +174,23 @@ const CollectionManagement = () => {
         // Count items without parent OR categorized as children
         const popularCount = collections.filter(c => !c.icon).length;
 
+        let popName = 'Popular Collections';
+        let popIcon = 'BsStars';
+        try {
+            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+            if (custom) {
+                popName = custom.name || popName;
+                popIcon = custom.icon || popIcon;
+            }
+        } catch (e) {}
+
         return [
             { 
                 id: 'virtual-popular', 
-                name: 'Popular Collections', 
+                name: popName, 
                 listings_count: popularCount, 
                 isVirtual: true,
-                icon: 'BsStars',
+                icon: popIcon,
                 created_at: new Date().toISOString()
             },
             ...realParents
@@ -187,7 +199,16 @@ const CollectionManagement = () => {
 
     const parentOptions = useMemo(() => {
         const options = [{ value: 'all', label: 'All Categories' }];
-        options.push({ value: 'virtual-popular', label: 'Popular Collections' });
+
+        let popName = 'Popular Collections';
+        try {
+            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+            if (custom) {
+                popName = custom.name || popName;
+            }
+        } catch (e) {}
+
+        options.push({ value: 'virtual-popular', label: popName });
         
         collections.filter(c => !c.parent_id && !!c.icon).forEach(p => {
             options.push({ value: p.id, label: p.name });
@@ -196,13 +217,21 @@ const CollectionManagement = () => {
     }, [collections]);
 
     const childData = useMemo(() => {
+        let popName = 'Popular Collections';
+        try {
+            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+            if (custom) {
+                popName = custom.name || popName;
+            }
+        } catch (e) {}
+
         let items = collections
             .filter(c => !c.icon) // Filter out actual parent collections
             .map(c => {
                 if (!c.parent_id) {
                     return { 
                         ...c, 
-                        parent: { name: 'Popular Collections' },
+                        parent: { name: popName },
                         effectiveParentId: 'virtual-popular'
                     };
                 }

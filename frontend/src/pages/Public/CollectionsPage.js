@@ -59,7 +59,14 @@ const CollectionsPage = () => {
                         <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">
-                        Popular Collections
+                        {(() => {
+                            let popName = 'Popular Collections';
+                            try {
+                                const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                if (custom) popName = custom.name || popName;
+                            } catch (e) {}
+                            return popName;
+                        })()}
                     </h1>
                 </div>
 

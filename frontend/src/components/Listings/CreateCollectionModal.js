@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { collectionApi, uploadApi } from '../../services/api';
+import { createPortal } from 'react-dom';
+import { collectionApi, uploadApi, agentApi } from '../../services/api';
 import { 
     XMarkIcon, 
     PhotoIcon, 
@@ -34,6 +35,8 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
     const [showNewParentInput, setShowNewParentInput] = useState(false);
     const [availableParents, setAvailableParents] = useState([]);
     const [images, setImages] = useState([]);
+    const [availableListings, setAvailableListings] = useState([]);
+    const [selectedListings, setSelectedListings] = useState([]);
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -47,11 +50,28 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
             setNewParentName('');
             setShowNewParentInput(false);
             setImages([]);
+            setSelectedListings([]);
             if (!isParentType) {
                 fetchAvailableParents();
+                fetchAvailableListings();
             }
         }
     }, [isOpen, defaultParentId, isParentType]);
+
+    const fetchAvailableListings = async (search = '') => {
+        try {
+            const listingsRes = await agentApi.getListings({ search, limit: search ? 50 : 10 });
+            const listingsArray = Array.isArray(listingsRes.data) ? listingsRes.data : (listingsRes.data?.listings || []);
+            const allOptions = listingsArray.map(l => ({
+                value: String(l.id),
+                label: l.title || `Property #${l.id}`,
+                listing: l
+            }));
+            setAvailableListings(allOptions);
+        } catch (error) {
+            console.error('Failed to fetch available listings:', error);
+        }
+    };
 
     const fetchAvailableParents = async () => {
         try {
@@ -142,6 +162,12 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                 await Promise.all(uploadPromises);
             }
 
+            if (!isParentType && selectedListings.length > 0) {
+                await Promise.all(
+                    selectedListings.map(item => collectionApi.addListing(collection.id, item.value))
+                );
+            }
+
             toast.success('Collection created successfully!');
             onSuccess(collection);
             onClose();
@@ -155,19 +181,23 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
 
     if (!isOpen) return null;
 
-    return (
+    const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-dashboard-card w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            <div className={`bg-white dark:bg-dashboard-card w-full rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh] ${isParentType ? 'max-w-lg' : 'max-w-5xl'}`}>
+                <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                         {isParentType ? 'Create Main Category' : 'Create New Collection'}
                     </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                        <XMarkIcon className="w-6 h-6 text-gray-500" />
+                    <button onClick={onClose} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                    <div className="flex-1 overflow-y-auto p-6">
+                        {isParentType ? (
+                            /* Single-column layout for Main Category */
+                            <div className="space-y-6">
                     {!isParentType && (
                         <div>
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
@@ -175,7 +205,65 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                             </label>
                             <StyledSelect
                                 options={[
-                                    { value: 'virtual-popular', label: 'Popular Collections' },
+                                    { value: 'virtual-popular', label: (() => {
+                                        let popName = 'Popular Collections';
+                                        try {
+                                            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                            if (custom) popName = custom.name || popName;
+                                        } catch (e) {}
+                                        return popName;
+                                    })() },
+                                    ...availableParents
+                                ]}
+                                value={parentId || 'virtual-popular'}
+                                onChange={setParentId}
+                                placeholder="Select main category"
+                            />
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            {isParentType ? 'Main Category Name' : 'Collection Name'}
+                        </label>
+                        <input
+                            type="text"
+                            placeholder={isParentType ? "e.g. Popular Collections" : "e.g. Luxury Condos"}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all text-[15px] font-medium text-gray-900 dark:text-white"
+                            required
+                        />
+                    </div>
+
+                    {isParentType && (
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                Select Icon
+                            </label>
+                            <IconPicker selectedIcon={icon} onSelect={setIcon} />
+                        </div>
+                    )}
+                            </div>
+                        ) : (
+                            /* Two-column layout for child collections */
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                    {!isParentType && (
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                Parent Collection (Optional)
+                            </label>
+                            <StyledSelect
+                                options={[
+                                    { value: 'virtual-popular', label: (() => {
+                                        let popName = 'Popular Collections';
+                                        try {
+                                            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                            if (custom) popName = custom.name || popName;
+                                        } catch (e) {}
+                                        return popName;
+                                    })() },
                                     ...availableParents
                                 ]}
                                 value={parentId || 'virtual-popular'}
@@ -215,21 +303,32 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                         />
                     </div>
 
-                    {isParentType && (
-                        <div>
+                    {!isParentType && (
+                        <div className="z-50 relative">
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Select Icon
+                                Assigned Properties
                             </label>
-                            <IconPicker selectedIcon={icon} onSelect={setIcon} />
+                            <StyledSelect
+                                isMulti={true}
+                                options={availableListings}
+                                value={selectedListings}
+                                onChange={setSelectedListings}
+                                returnObjects={true}
+                                controlShouldRenderValue={false}
+                                onInputChange={(val, { action }) => {
+                                    if (action === 'input-change') fetchAvailableListings(val);
+                                }}
+                                placeholder="Search & select properties..."
+                            />
                         </div>
                     )}
 
                     {!isParentType && (
                         <div>
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Building & Facilities Photos
+                                Building &amp; Facilities Photos
                             </label>
-                            <div 
+                            <div
                                 onClick={() => fileInputRef.current?.click()}
                                 className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all group"
                             >
@@ -247,7 +346,7 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                             </div>
 
                             {images.length > 0 && (
-                                <DndContext 
+                                <DndContext
                                     sensors={sensors}
                                     collisionDetection={closestCenter}
                                     onDragEnd={handleDragEnd}
@@ -261,17 +360,17 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                                                 First image is cover
                                             </span>
                                         </div>
-                                        <SortableContext 
+                                        <SortableContext
                                             items={images.map(img => img.id)}
                                             strategy={rectSortingStrategy}
                                         >
                                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                                                 {images.map((img) => (
-                                                    <SortableImage 
-                                                        key={img.id} 
-                                                        id={img.id} 
-                                                        img={img} 
-                                                        onRemove={() => removeImage(img.id)} 
+                                                    <SortableImage
+                                                        key={img.id}
+                                                        id={img.id}
+                                                        img={img}
+                                                        onRemove={() => removeImage(img.id)}
                                                     />
                                                 ))}
                                             </div>
@@ -281,37 +380,81 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                             )}
                         </div>
                     )}
+                                </div> {/* End Left Column */}
 
-                    <div className="flex space-x-2 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 h-[34px] border border-gray-200 dark:border-gray-700 rounded-[3px] text-gray-700 dark:text-gray-300 text-[13px] font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                        >
-                            Cancel
-                        </button>
+                                {/* Right Column: Selected Properties Preview */}
+                                {!isParentType && (
+                                    <div className="space-y-3">
+                                        <label className="block text-sm font-bold" style={{ color: '#222222' }}>
+                                            Selected Properties ({selectedListings.length})
+                                        </label>
+                                        <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto scrollbar-hide">
+                                            {selectedListings.map(item => {
+                                                const l = item.listing;
+                                                return (
+                                                    <div key={item.value} className="flex items-center gap-3 py-3">
+                                                        {/* Rounded image */}
+                                                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                                                            {l?.media?.[0]?.url ? (
+                                                                <img src={getMediaUrl(l.media[0].url)} alt="preview" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <span className="text-[10px] text-gray-400">No Img</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Text */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-semibold truncate" style={{ color: '#222222' }}>
+                                                                {item.label}
+                                                            </p>
+                                                            <div className="text-[11px] mt-0.5 flex flex-wrap gap-x-2" style={{ color: '#222222' }}>
+                                                                {l?.bedrooms > 0 && <span>{l.bedrooms} Beds</span>}
+                                                                {l?.bathrooms > 0 && <span>{l.bathrooms} Baths</span>}
+                                                                {l?.unit_size > 0 && <span>{l.unit_size} Sqm</span>}
+                                                            </div>
+                                                            <p className="text-[11px] font-medium mt-0.5" style={{ color: '#222222' }}>
+                                                                {l?.price ? `$${l.price.toLocaleString()}` : ''}
+                                                            </p>
+                                                        </div>
+                                                        {/* Remove button */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedListings(prev => prev.filter(s => s.value !== item.value))}
+                                                            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-red-500"
+                                                        >
+                                                            <XMarkIcon className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                            {selectedListings.length === 0 && (
+                                                <div className="text-sm text-gray-400 text-center py-10 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                                                    No properties selected yet.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-none px-6 py-4 flex justify-end space-x-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-dashboard-card">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-[2] h-[34px] bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-[13px] font-bold shadow-lg shadow-primary-600/20 transition-all disabled:opacity-50 flex items-center justify-center space-x-2"
+                            className="btn-primary px-6 disabled:opacity-50"
                         >
-                            {loading ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span>Creating...</span>
-                                </>
-                            ) : (
-                                <span>Create Collection</span>
-                            )}
+                            {loading ? 'Creating...' : 'Create Collection'}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     );
+
+    return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };
 
 export default CreateCollectionModal;

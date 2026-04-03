@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"super_real_estate/config"
@@ -52,6 +53,13 @@ func (ac *AgentController) GetListings(c *gin.Context) {
 	// Search
 	if search := c.Query("search"); search != "" {
 		query = query.Where("title ILIKE ? OR description ILIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+
+	// Limit
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 {
+			query = query.Limit(limit)
+		}
 	}
 
 	if err := query.Order("created_at DESC").Find(&listings).Error; err != nil {

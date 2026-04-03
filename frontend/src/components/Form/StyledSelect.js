@@ -218,6 +218,7 @@ const StyledSelect = ({
     isDisabled = false,
     isMulti = false,
     isLoading = false,
+    returnObjects = false,
     className = '',
     error = false,
     ...props
@@ -304,7 +305,11 @@ const StyledSelect = ({
         <Select
             options={options}
             value={selectValue}
-            onChange={(selected) => {
+            onChange={(selected, actionMeta) => {
+                if (returnObjects) {
+                    onChange(selected, actionMeta);
+                    return;
+                }
                 // If isMulti, return array of values, otherwise return single value
                 if (isMulti) {
                     onChange(selected ? selected.map(s => s.value) : []);
