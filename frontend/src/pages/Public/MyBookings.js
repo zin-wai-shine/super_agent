@@ -6,7 +6,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
 import FilterBar from '../../components/ui/FilterBar';
 import {
-    CalendarIcon,
     MapPinIcon,
     ClockIcon,
     HomeIcon,
@@ -17,6 +16,7 @@ import {
     AdjustmentsHorizontalIcon,
     ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { BsCalendar2Week } from 'react-icons/bs';
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
 
 const MyBookings = () => {
@@ -195,7 +195,7 @@ const MyBookings = () => {
                     ) : filteredAppointments.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-24 group animate-fill-med">
                             <div className="mb-6 relative z-10 transition-transform duration-500">
-                                <CalendarIcon className="w-14 h-14 text-slate-400" />
+                                <BsCalendar2Week className="w-12 h-12 text-slate-400" />
                             </div>
                             <h3 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white mb-3 relative z-10">No viewings yet</h3>
                             <p className="text-slate-500 dark:text-gray-400 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10 px-4">
@@ -266,7 +266,7 @@ const MyBookings = () => {
                                         {/* Date & time — clear, scannable row */}
                                         <div className="px-5 py-4 md:py-4 bg-slate-50/80 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-4 rounded-b-2xl">
                                             <div className="flex items-center gap-2">
-                                                <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                                                <BsCalendar2Week className="w-4 h-4 text-slate-400 shrink-0" />
                                                 <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">
                                                     {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </span>

@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
-import { BsHeart } from 'react-icons/bs';
+import { BsHeart, BsCalendar2Week } from 'react-icons/bs';
 import {
     Bars3Icon,
     XMarkIcon,
@@ -39,7 +39,6 @@ import {
     FiZap,
     FiMessageCircle,
     FiFacebook,
-    FiCalendar,
     FiUser,
     FiShield,
     FiFileText,
@@ -732,7 +731,7 @@ const PublicLayout = () => {
                                                                         Favorites
                                                                     </Link>
                                                                     <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
-                                                                        <FiCalendar className="w-5 h-5 text-gray-900 dark:text-white" />
+                                                                        <BsCalendar2Week className="w-5 h-5 text-gray-900 dark:text-white" />
                                                                         My Viewing Requests
                                                                     </Link>
                                                                     <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
@@ -954,7 +953,7 @@ const PublicLayout = () => {
                                             to="/my-bookings"
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
-                                            <FiCalendar
+                                            <BsCalendar2Week
                                                 className={`w-6 h-6 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
                                                     }`}
                                             />

@@ -10,11 +10,11 @@ import {
     MapPinIcon,
     PhoneIcon,
     ClockIcon,
-    CalendarIcon,
     UserIcon,
     StarIcon,
     ArrowLeftIcon,
 } from '@heroicons/react/24/solid';
+import { BsCalendar2Week } from 'react-icons/bs';
 import {
     HomeIcon,
     BuildingOfficeIcon,
@@ -629,7 +629,7 @@ const BookAppointment = () => {
                                                 </span>
                                             </>
                                         ) : (
-                                            <CalendarIcon className="w-6 h-6 text-white/20" />
+                                            <BsCalendar2Week className="w-6 h-6 text-white/20" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
