@@ -90,8 +90,8 @@ services:
     container_name: super_nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8084:80"
+      - "4433:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./uploads:/var/www/uploads:ro
