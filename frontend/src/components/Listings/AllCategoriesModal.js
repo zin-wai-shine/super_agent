@@ -33,34 +33,35 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-black/60">
             {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fade-in"
+                className="absolute inset-0"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-2xl bg-white dark:bg-dashboard-card rounded-[32px] shadow-2xl overflow-hidden animate-slide-up border border-white/20 dark:border-white/5">
+            <div className="relative w-full max-w-2xl bg-white dark:bg-dashboard-card rounded-t-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800">
+                
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-white/5 backdrop-blur-md sticky top-0 z-10">
+                <div className="px-6 py-5 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Explore All Categories</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Discover properties across all {categories.length} search filters</p>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Explore Categories</h2>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Discover properties across {categories.length} curated filters</p>
                     </div>
                     <button 
                         onClick={onClose}
-                        className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-white/20 transition-all active:scale-90"
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                     >
-                        <XMarkIcon className="w-6 h-6" />
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Grid */}
-                <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-6 overflow-y-auto custom-scrollbar">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {categories.map((category) => {
-                            // Comprehensive icon resolver to match the new IconPicker logic
+                            // Comprehensive icon resolver
                             const Icon = MdIcons[category.icon] || 
                                          FaIcons[category.icon] || 
                                          Fa6Icons[category.icon] ||
@@ -82,12 +83,12 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
                                         navigate(`/collections?category=${category.id}`);
                                         onClose();
                                     }}
-                                    className="p-2 pr-4 rounded-full bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary-500/30 hover:bg-primary-50/20 dark:hover:bg-primary-500/10 cursor-pointer transition-all flex items-center gap-3 active:scale-[0.97] group"
+                                    className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-white dark:hover:bg-white/10 cursor-pointer transition-all flex items-center gap-3 group"
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 transition-colors group-hover:bg-primary-100 dark:group-hover:bg-primary-900/60 flex-shrink-0">
-                                        <Icon className="w-5 h-5 pointer-events-none" />
+                                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-primary-600 shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+                                        <Icon className="w-5 h-5" />
                                     </div>
-                                    <span className="text-[14px] font-medium text-gray-900 dark:text-white truncate">
+                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate group-hover:text-primary-600 transition-colors">
                                         {category.name}
                                     </span>
                                 </div>
@@ -97,12 +98,12 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 bg-gray-50/50 dark:bg-white/5 border-t border-gray-100 dark:border-white/5 flex justify-end">
+                <div className="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-50 dark:border-gray-800 flex justify-end">
                     <button 
                         onClick={onClose}
-                        className="px-8 py-3 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-sm hover:opacity-90 transition-all shadow-xl active:scale-95"
+                        className="px-6 py-2 bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg font-bold text-xs transition-all"
                     >
-                        Close Exploration
+                        Close
                     </button>
                 </div>
             </div>

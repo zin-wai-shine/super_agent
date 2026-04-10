@@ -36,46 +36,46 @@ const CollectionCard = ({
             className={`flex-shrink-0 group cursor-pointer ${className}`}
             onClick={handleClick}
         >
-            <div className={`relative aspect-[1/1] md:aspect-[4/3] rounded-[23px] overflow-hidden mb-3 transition-all duration-300 ${isSelected ? 'ring-1 ring-primary-500/20' : ''}`}>
-                {/* Image Section: Slides left-to-right INSIDE the container */}
+            <div className={`relative aspect-[1/1] md:aspect-[4/3] rounded-[24px] overflow-hidden mb-3 transition-all ${isSelected ? 'ring-2 ring-primary-500 shadow-lg' : 'border border-gray-100 dark:border-white/5 shadow-sm group-hover:border-primary-500/30'}`}>
+                {/* Image Section */}
                 {firstImage ? (
                     <div 
-                        className={`w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 ${animateEntrance ? 'opacity-0 animate-reveal-left' : ''}`} 
+                        className={`w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105`} 
                         style={{ 
                             backgroundImage: `url(${getMediaUrl(firstImage)})`,
-                            animationDelay: animateEntrance ? delay : '0ms'
                         }}
                     />
                 ) : (
-                    <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 text-gray-300 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
-                         style={animateEntrance ? { animationDelay: delay } : {}}>
-                        <FolderIcon className="w-12 h-12" />
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-white/5 text-gray-300">
+                        <FolderIcon className="w-10 h-10 mb-2 transition-transform group-hover:scale-110" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-40">Empty</span>
                     </div>
                 )}
 
                 {/* Edit Action */}
                 {!readOnly && canEdit && (
-                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onEdit) onEdit(collection);
                             }}
-                            className="p-1.5 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:text-primary-600 shadow-md"
+                            className="w-9 h-9 bg-white/95 dark:bg-dashboard-card rounded-xl text-gray-900 dark:text-white hover:bg-primary-600 hover:text-white shadow-md flex items-center justify-center transition-colors"
                         >
-                            <PencilSquareIcon className="w-4 h-4" />
+                            <PencilSquareIcon className="w-5 h-5" />
                         </button>
                     </div>
                 )}
             </div>
 
             {/* Text Content */}
-            <div className={`px-1 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
-                 style={animateEntrance ? { animationDelay: delay } : {}}>
-                <p className="text-[13px] text-gray-500 font-medium">
-                    {collection.listings_count || 0} properties
-                </p>
-                <h3 className={`text-[14px] font-semibold leading-snug transition-colors ${isSelected ? 'text-primary-600' : 'text-[#222222] dark:text-white'}`}>
+            <div className="px-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
+                        {collection.listings_count || 0} items
+                    </p>
+                </div>
+                <h3 className={`text-sm font-bold leading-snug transition-colors group-hover:text-primary-600 ${isSelected ? 'text-primary-600' : 'text-gray-900 dark:text-white'}`}>
                     {collection.name}
                 </h3>
             </div>

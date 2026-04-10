@@ -220,211 +220,214 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
     if (!isOpen || !collection) return null;
 
     const modalContent = (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className={`bg-white dark:bg-dashboard-card w-full ${isParentType ? 'max-w-lg' : 'max-w-5xl'} rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]`}>
-                <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                        {isParentType ? 'Edit Main Category' : 'Edit Collection'}
-                    </h3>
-                    <button onClick={onClose} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+        <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 bg-black/60">
+            <div className={`bg-white dark:bg-dashboard-card w-full ${isParentType ? 'max-w-lg mt-10 sm:mt-0' : 'max-w-5xl'} rounded-b-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh]`}>
+                
+                <div className="flex-none flex items-center justify-between px-8 py-6 border-b border-gray-50 dark:border-gray-800">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            {isParentType ? 'Edit Main Category' : 'Edit Collection'}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {isParentType ? 'Modify top-level organization unit' : 'Refine property grouping and media'}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={onClose} 
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                    >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-                    <div className="flex-1 overflow-y-auto p-6">
-                        <div className={`grid grid-cols-1 ${isParentType ? '' : 'md:grid-cols-2'} gap-8`}>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                        <div className={`grid grid-cols-1 ${isParentType ? '' : 'md:grid-cols-2'} gap-10`}>
                             <div className="space-y-6">
-                    {!isParentType && (
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Parent Collection (Optional)
-                            </label>
-                            <StyledSelect
-                                options={[
-                                    { value: 'virtual-popular', label: (() => {
-                                        let popName = 'Popular Collections';
-                                        try {
-                                            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-                                            if (custom) popName = custom.name || popName;
-                                        } catch (e) {}
-                                        return popName;
-                                    })() },
-                                    ...availableParents
-                                ]}
-                                value={parentId || 'virtual-popular'}
-                                onChange={setParentId}
-                                placeholder="Select main category"
-                            />
-                        </div>
-                    )}
-
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            {isParentType ? 'Main Category Name' : 'Collection Name'}
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="e.g., Luxury Condos"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all text-gray-900 dark:text-white"
-                            required
-                        />
-                    </div>
-
-                    {!isParentType && (
-                        <div className="z-50 relative">
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Assigned Properties
-                            </label>
-                            <StyledSelect
-                                isMulti={true}
-                                options={availableListings}
-                                value={selectedListings}
-                                onChange={setSelectedListings}
-                                returnObjects={true}
-                                controlShouldRenderValue={false}
-                                onInputChange={(val, { action }) => {
-                                    if (action === 'input-change') fetchAvailableListings(val);
-                                }}
-                                placeholder="Search & select properties..."
-                            />
-                        </div>
-                    )}
-
-                    {isParentType && (
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Select Icon
-                            </label>
-                            <IconPicker selectedIcon={icon} onSelect={setIcon} />
-                        </div>
-                    )}
-
-                    {!isParentType && (
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Building & Facilities Photos
-                            </label>
-                            <div 
-                                onClick={() => fileInputRef.current?.click()}
-                                className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all group"
-                            >
-                                <CloudArrowUpIcon className="w-12 h-12 text-gray-400 group-hover:text-primary-500 transition-colors mb-4" />
-                                <p className="text-sm font-bold text-gray-900 dark:text-white">Add more images</p>
-                                <p className="text-xs text-gray-500 mt-1">PNG, JPG, WebP supported</p>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                            </div>
-
-                            {images.length > 0 && (
-                                <DndContext 
-                                    sensors={sensors}
-                                    collisionDetection={closestCenter}
-                                    onDragEnd={handleDragEnd}
-                                >
-                                    <div className="mt-8">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                Order Photos (Drag to reorder)
-                                            </label>
-                                            <span className="text-[10px] font-bold bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-500 italic">
-                                                First image is cover
-                                            </span>
-                                        </div>
-                                        <SortableContext 
-                                            items={images.map(img => img.id)}
-                                            strategy={rectSortingStrategy}
-                                        >
-                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                                                {images.map((img) => (
-                                                    <SortableImage 
-                                                        key={img.id} 
-                                                        id={img.id} 
-                                                        img={img} 
-                                                        onRemove={() => removeImage(img.id)} 
-                                                    />
-                                                ))}
-                                            </div>
-                                        </SortableContext>
+                                {!isParentType && (
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Parent Category</label>
+                                        <StyledSelect
+                                            options={[
+                                                { value: 'virtual-popular', label: (() => {
+                                                    let popName = 'Popular Collections';
+                                                    try {
+                                                        const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                                        if (custom) popName = custom.name || popName;
+                                                    } catch (e) {}
+                                                    return popName;
+                                                })() },
+                                                ...availableParents
+                                            ]}
+                                            value={parentId || 'virtual-popular'}
+                                            onChange={setParentId}
+                                            placeholder="Select main category"
+                                        />
                                     </div>
-                                </DndContext>
-                            )}
-                        </div>
-                    )}
-                            </div> {/* End Left Column */}
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Display Title</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., Luxury Condos"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-sm text-gray-900 dark:text-white"
+                                        required
+                                    />
+                                </div>
+
+                                {!isParentType && (
+                                    <div className="z-50 relative space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Link Properties</label>
+                                        <StyledSelect
+                                            isMulti={true}
+                                            options={availableListings}
+                                            value={selectedListings}
+                                            onChange={setSelectedListings}
+                                            returnObjects={true}
+                                            controlShouldRenderValue={false}
+                                            onInputChange={(val, { action }) => {
+                                                if (action === 'input-change') fetchAvailableListings(val);
+                                            }}
+                                            placeholder="Add or remove properties..."
+                                        />
+                                    </div>
+                                )}
+
+                                {isParentType && (
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Visual Icon</label>
+                                        <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                            <IconPicker selectedIcon={icon} onSelect={setIcon} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!isParentType && (
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Media Assets</label>
+                                        <div 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/10 transition-all group"
+                                        >
+                                            <CloudArrowUpIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 mb-2 transition-colors" />
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white">Click to Upload</p>
+                                            <p className="text-[10px] text-gray-500 mt-1">PNG, JPG, WebP supported</p>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="hidden"
+                                            />
+                                        </div>
+
+                                        {images.length > 0 && (
+                                            <DndContext 
+                                                sensors={sensors}
+                                                collisionDetection={closestCenter}
+                                                onDragEnd={handleDragEnd}
+                                            >
+                                                <div className="mt-6 space-y-3">
+                                                    <label className="text-[10px] font-bold text-primary-600 uppercase tracking-widest block px-1">
+                                                        Images ({images.length}) - Drag to Sort
+                                                    </label>
+                                                    <SortableContext 
+                                                        items={images.map(img => img.id)}
+                                                        strategy={rectSortingStrategy}
+                                                    >
+                                                        <div className="grid grid-cols-4 gap-3">
+                                                            {images.map((img) => (
+                                                                <SortableImage 
+                                                                    key={img.id} 
+                                                                    id={img.id} 
+                                                                    img={img} 
+                                                                    onRemove={() => removeImage(img.id)} 
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </SortableContext>
+                                                </div>
+                                            </DndContext>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Right Column: Selected Properties Preview */}
                             {!isParentType && (
-                                <div className="space-y-3">
-                                    <label className="block text-sm font-bold" style={{ color: '#222222' }}>
-                                        Selected Properties ({selectedListings.length})
-                                    </label>
-                                    <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto scrollbar-hide">
-                                        {selectedListings.map(item => {
-                                            const l = item.listing;
-                                            return (
-                                                <div key={item.value} className="flex items-center gap-3 py-3">
-                                                    {/* Rounded image */}
-                                                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                                                        {l?.media?.[0]?.url ? (
-                                                            <img src={getMediaUrl(l.media[0].url)} alt="preview" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center">
-                                                                <span className="text-[10px] text-gray-400">No Img</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {/* Text */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-semibold truncate" style={{ color: '#222222' }}>
-                                                            {item.label}
-                                                        </p>
-                                                        <div className="text-[11px] mt-0.5 flex flex-wrap gap-x-2" style={{ color: '#222222' }}>
-                                                            {l?.bedrooms > 0 && <span>{l.bedrooms} Beds</span>}
-                                                            {l?.bathrooms > 0 && <span>{l.bathrooms} Baths</span>}
-                                                            {l?.unit_size > 0 && <span>{l.unit_size} Sqm</span>}
+                                <div className="space-y-4">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block px-1">Preview Selection ({selectedListings.length})</label>
+                                    <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 min-h-[350px]">
+                                        <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                                            {selectedListings.map(item => {
+                                                const l = item.listing;
+                                                return (
+                                                    <div key={item.value} className="flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                                                            {l?.media?.[0]?.url ? (
+                                                                <img src={getMediaUrl(l.media[0].url)} alt="preview" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <PhotoIcon className="w-5 h-5 text-gray-300" />
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <p className="text-[11px] font-medium mt-0.5" style={{ color: '#222222' }}>
-                                                            {l?.price ? `$${l.price.toLocaleString()}` : ''}
-                                                        </p>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">
+                                                                {item.label}
+                                                            </p>
+                                                            <p className="text-[10px] text-primary-600 font-bold mt-0.5">
+                                                                {l?.price ? `$${l.price.toLocaleString()}` : 'Price on Request'}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedListings(prev => prev.filter(s => s.value !== item.value))}
+                                                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <XMarkIcon className="w-4 h-4" />
+                                                        </button>
                                                     </div>
-                                                    {/* Remove button */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedListings(prev => prev.filter(s => s.value !== item.value))}
-                                                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-red-500"
-                                                    >
-                                                        <XMarkIcon className="w-5 h-5" />
-                                                    </button>
+                                                );
+                                            })}
+                                            {selectedListings.length === 0 && (
+                                                <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400">
+                                                    <PhotoIcon className="w-10 h-10 mb-2 opacity-20" />
+                                                    <p className="text-xs font-medium">No properties linked yet</p>
                                                 </div>
-                                            );
-                                        })}
-                                        {selectedListings.length === 0 && (
-                                            <div className="text-sm text-gray-400 text-center py-10 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                                                No properties selected yet.
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex-none px-6 py-4 flex justify-end border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-dashboard-card">
+                    <div className="flex-none px-8 py-4 flex justify-end gap-3 border-t border-gray-50 dark:border-gray-800">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-2.5 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-200 transition-colors"
+                        >
+                            Cancel
+                        </button>
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="btn-primary px-6 disabled:opacity-50"
+                            disabled={loading || !name}
+                            className="flex items-center gap-2 px-8 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-colors shadow-lg shadow-primary-500/20"
                         >
-                            {loading ? 'Updating...' : 'Save Changes'}
+                            {loading ? (
+                                <>
+                                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Updating...</span>
+                                </>
+                            ) : (
+                                <span>Save Changes</span>
+                            )}
                         </button>
                     </div>
                 </form>

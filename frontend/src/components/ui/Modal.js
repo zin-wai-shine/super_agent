@@ -98,7 +98,7 @@ const Modal = ({
 
     return createPortal(
         <div
-            className={`fixed inset-0 overflow-visible flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-center'} ${fullBleedDesktop ? 'sm:items-stretch' : ''}`}
+            className={`fixed inset-0 overflow-y-auto overflow-x-hidden flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-start sm:items-center'} ${fullBleedDesktop ? 'sm:items-stretch' : ''} pt-10 sm:pt-0`}
             style={{ zIndex: overlayZIndex ?? 1000 }}
         >
             {/* Backdrop */}

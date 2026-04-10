@@ -70,37 +70,34 @@ const CollectionGroup = ({
     if (groupCollections.length === 0) return null;
 
     return (
-        <div className="collection-group-section mb-8">
+        <div className="collection-group-section mb-10">
             {/* Header Section */}
-            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-[18px] md:text-[15px] font-bold text-[#222222] dark:text-white tracking-[0.05em]">
+            <div className="flex items-center justify-between mb-5 px-6 md:px-0">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                         {title}
                     </h2>
-                    <button className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
-                    </button>
+                    <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
+                    <span className="text-xs font-medium text-gray-400 dark:text-gray-500 hidden md:block">
+                        {groupCollections.length} collections
+                    </span>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
-                    </button>
-
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <button 
                             onClick={() => handleScroll('left')}
                             disabled={!canScrollLeft}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeft ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-center transition-all ${canScrollLeft ? 'bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white shadow-sm' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
                         >
-                            <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
+                            <ChevronLeftIcon className="w-4 h-4" />
                         </button>
                         <button 
                             onClick={() => handleScroll('right')}
                             disabled={!canScrollRight}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRight ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-center transition-all ${canScrollRight ? 'bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white shadow-sm' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
                         >
-                            <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
+                            <ChevronRightIcon className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -110,13 +107,10 @@ const CollectionGroup = ({
             <div className="relative">
                 <div 
                     ref={scrollRef}
-                    className="flex overflow-x-auto gap-5 md:gap-5 pb-6 scrollbar-hide scroll-smooth px-6 md:px-1 scroll-px-6 md:scroll-px-1"
+                    className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide px-6 md:px-0 scroll-smooth"
                 >
                     {groupCollections.map((collection, i) => (
-                        <div key={collection.id} className="relative flex-shrink-0 w-[180px] md:w-[200px]">
-                            <div className="absolute inset-0 pointer-events-none">
-                                <CollectionSkeleton index={i} isExiting={true} />
-                            </div>
+                        <div key={collection.id} className="relative flex-shrink-0 w-[160px] md:w-[200px]">
                             <CollectionCard
                                 collection={collection}
                                 isSelected={selectedId === collection.id}
@@ -125,7 +119,7 @@ const CollectionGroup = ({
                                 readOnly={readOnly}
                                 canEdit={canEdit}
                                 initialPath={initialPath}
-                                animateEntrance={true}
+                                animateEntrance={false}
                                 index={i}
                                 className="relative z-10"
                             />
@@ -133,33 +127,17 @@ const CollectionGroup = ({
                     ))}
 
                     <div 
-                        className="flex-shrink-0 w-[180px] md:w-[200px] group cursor-pointer animate-fillIn"
+                        className="flex-shrink-0 w-[160px] md:w-[200px] group cursor-pointer"
                         onClick={() => onNavigate('/collections')}
                     >
-                        <div className="relative aspect-[1/1] md:aspect-[4/3] bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 shadow-sm rounded-[23px] overflow-hidden mb-3 transition-all duration-300 group-hover:shadow-md">
-                            <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
-                                <div className="relative w-[75%] h-[75%]">
-                                    <div className="absolute top-0 right-0 w-[65%] h-[65%] bg-gray-100 rounded-[14px] rotate-12 -translate-y-2 translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-md overflow-hidden opacity-40">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
-                                    </div>
-                                    <div className="absolute top-0 left-0 w-[70%] h-[70%] bg-gray-200 rounded-[14px] -rotate-6 translate-y-2 -translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-lg overflow-hidden opacity-70">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
-                                    </div>
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[75%] h-[75%] bg-gray-50 rounded-[14px] translate-y-3 border-[3px] border-white dark:border-dashboard-card shadow-xl overflow-hidden">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
-                                    </div>
-                                </div>
+                        <div className="relative aspect-[1/1] md:aspect-[4/3] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-[24px] overflow-hidden mb-3 transition-colors group-hover:bg-gray-100 dark:group-hover:bg-white/10">
+                            <div className="w-full h-full flex items-center justify-center">
+                                <ArrowSmallRightIcon className="w-8 h-8 text-gray-300 group-hover:text-primary-500 transition-colors" />
                             </div>
                         </div>
                         <div className="px-1">
-                            <div className="h-4" /> 
-                            <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-tight">See all</h3>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-0.5">View More</p>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors">See all</h3>
                         </div>
                     </div>
                 </div>
@@ -262,32 +240,15 @@ const CollectionBar = ({
     };
 
     return (
-        <div className="collection-section py-4 mb-8 -mx-6 md:mx-0">
+        <div className="collection-section py-2 mb-6 -mx-6 md:mx-0">
             {loading ? (
-                <div className="px-6 md:px-1 overflow-hidden">
-                    {/* A. Popular Collections Skeleton Section */}
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="h-6 w-48 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
-                        <div className="hidden md:flex w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 animate-pulse" />
-                    </div>
-                    
-                    <div className="flex gap-5 overflow-x-auto pb-10 scrollbar-hide">
+                <div className="px-6 md:px-0">
+                    <div className="h-6 w-48 bg-gray-100 dark:bg-white/5 rounded-lg animate-pulse mb-6" />
+                    <div className="flex gap-6 overflow-x-auto pb-10 scrollbar-hide">
                         {[...Array(6)].map((_, i) => (
-                            <div key={`pop-skel-${i}`} className="flex-shrink-0 w-[180px] md:w-[200px]">
+                            <div key={`pop-skel-${i}`} className="flex-shrink-0 w-[160px] md:w-[200px]">
                                 <CollectionSkeleton index={i} />
                             </div>
-                        ))}
-                    </div>
-
-                    {/* B. Explore Categories Skeleton Section */}
-                    <div className="flex items-center gap-2 mb-4 mt-4">
-                        <div className="h-6 w-48 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
-                        <div className="hidden md:flex w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 animate-pulse" />
-                    </div>
-
-                    <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
-                        {[...Array(10)].map((_, i) => (
-                            <CategorySkeleton key={`cat-skel-${i}`} index={i} />
                         ))}
                     </div>
                 </div>
@@ -315,39 +276,34 @@ const CollectionBar = ({
 
                     {/* 2. Main Categories Section (Icons scroll) */}
                     {mainCategories.length > 0 && (
-                        <div className={`${readOnly ? 'mb-0' : 'mb-8'}`}>
-                            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
-                                <div className="flex items-center gap-2">
-                                    <h2 className="text-[18px] md:text-[15px] font-bold text-[#222222] dark:text-white tracking-[0.05em]">
-                                        Explore Categories
-                                    </h2>
-                                    <div className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center">
-                                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
-                                    </div>
-                                </div>
+                        <div className={`${readOnly ? 'mb-0' : 'mb-6'}`}>
+                            <div className="flex items-center justify-between mb-5 px-6 md:px-0">
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                                    Browse Categories
+                                </h2>
 
                                 {/* Scroll Buttons */}
-                                <div className="hidden md:flex items-center gap-3">
+                                <div className="hidden md:flex items-center gap-2">
                                     <button
                                         onClick={() => scrollCategories('left')}
                                         disabled={!canScrollLeftCats}
-                                        className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeftCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                                        className={`w-9 h-9 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-center transition-all ${canScrollLeftCats ? 'bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white shadow-sm active:scale-95' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
                                     >
-                                        <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
+                                        <ChevronLeftIcon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => scrollCategories('right')}
                                         disabled={!canScrollRightCats}
-                                        className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRightCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                                        className={`w-9 h-9 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-center transition-all ${canScrollRightCats ? 'bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white shadow-sm active:scale-95' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
                                     >
-                                        <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
+                                        <ChevronRightIcon className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
 
                             <div 
                                 ref={categoriesScrollRef}
-                                className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide px-6 md:px-1 scroll-smooth"
+                                className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide px-6 md:px-0 scroll-smooth"
                             >
                                 {mainCategories.slice(0, 10).map((category) => {
                                     // Dynamic icon resolver
@@ -363,11 +319,11 @@ const CollectionBar = ({
                                             onClick={() => navigate(`/collections?category=${category.id}`)}
                                             className="flex-shrink-0 group cursor-pointer"
                                         >
-                                            <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-md border border-[#222222]/10 dark:border-white/5 flex flex-row items-center gap-3 transition-all duration-300 hover:bg-gray-50/80 dark:hover:bg-white/5 group-active:scale-95">
-                                                <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
-                                                    <Icon className="w-5 h-5" />
+                                            <div className="h-14 min-w-[max-content] px-4 rounded-xl bg-white dark:bg-dashboard-card border border-gray-100 dark:border-gray-800 flex flex-row items-center gap-3 transition-all hover:border-primary-500/30 hover:shadow-md active:scale-95">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-primary-600 flex-shrink-0 transition-colors">
+                                                    <Icon className="w-4 h-4" />
                                                 </div>
-                                                <span className="text-[14px] font-medium text-[#222222] dark:text-white whitespace-nowrap">
+                                                <span className="text-sm font-bold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                     {category.name}
                                                 </span>
                                             </div>
@@ -380,12 +336,12 @@ const CollectionBar = ({
                                         onClick={() => setIsAllCategoriesOpen(true)}
                                         className="flex-shrink-0 group cursor-pointer"
                                     >
-                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-[#222222] dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-md">
-                                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
-                                                <FiGrid className="w-5 h-5" />
+                                        <div className="h-14 min-w-[max-content] px-4 rounded-xl bg-gray-900 dark:bg-white flex flex-row items-center gap-3 transition-all hover:bg-black dark:hover:bg-gray-100 active:scale-95">
+                                            <div className="w-8 h-8 rounded-lg bg-white/10 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
+                                                <FiGrid className="w-4 h-4" />
                                             </div>
-                                            <span className="text-[14px] font-semibold text-white dark:text-gray-900 whitespace-nowrap">
-                                                See all
+                                            <span className="text-sm font-bold text-white dark:text-gray-900 whitespace-nowrap">
+                                                All Categories
                                             </span>
                                         </div>
                                     </div>
