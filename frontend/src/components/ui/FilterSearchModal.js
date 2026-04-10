@@ -85,7 +85,7 @@ const FilterSearchModal = ({
                         {/* Search Input - Matching Image 1/2 Design */}
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                                <MagnifyingGlassIcon className="h-6 w-6 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                <MagnifyingGlassIcon className="h-6 w-6 text-gray-400 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300 transition-colors" />
                             </div>
                             <input
                                 ref={inputRef}
@@ -93,7 +93,7 @@ const FilterSearchModal = ({
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder={placeholder}
-                                className="block w-full pl-16 pr-12 py-4 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/20 focus:border-primary-500 transition-all outline-none rounded-full text-[16px] font-normal text-gray-900 dark:text-white placeholder-gray-400"
+                                className="block w-full pl-16 pr-12 py-4 bg-white dark:bg-dashboard-card border border-gray-400 dark:border-white/30 focus:border-gray-600 dark:focus:border-white/50 transition-all outline-none rounded-full text-[16px] font-normal text-gray-900 dark:text-white placeholder-gray-400"
                             />
                             <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none">
                                 <ChevronUpIcon className="h-5 w-5 text-gray-300" />
