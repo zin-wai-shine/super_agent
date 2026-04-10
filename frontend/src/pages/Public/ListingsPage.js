@@ -604,7 +604,9 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
+        const shouldLock = isGoogleMapOpen || isSidebarOpen;
+        document.body.style.overflow = shouldLock ? 'hidden' : '';
+        document.documentElement.style.overflow = shouldLock ? 'hidden' : '';
 
         // Handle mobile nav visibility: hide on entry to map, but let scroll handle it thereafter
         if (isGoogleMapOpen && window.innerWidth < 1024) {
@@ -618,7 +620,10 @@ const ListingsPage = () => {
             setIsNavVisible(true);
         }
 
-        return () => { document.body.style.overflow = 'unset'; };
+        return () => { 
+            document.body.style.overflow = ''; 
+            document.documentElement.style.overflow = '';
+        };
     }, [isGoogleMapOpen, isSidebarOpen, setMobileBottomNavVisible]);
 
     const handleUnifiedScroll = useCallback(() => {
@@ -1604,7 +1609,7 @@ const ListingsPage = () => {
                             items={(developers || []).map(d => ({
                                 id: d.id,
                                 name: d.name,
-                                subtitle: d.company || 'Real Estate Developer',
+                                subtitle: d.company || '',
                                 image: d.logo || d.image,
                                 isAvatar: true
                             }))}
@@ -1612,6 +1617,9 @@ const ListingsPage = () => {
                             onSelect={id => handlePendingFilterChange('developer_id', id)}
                             placeholder="Search developer..."
                             allLabel="All Developers"
+                            useModal={true}
+                            title="Developer"
+                            icon={FilterIcons.developer}
                         />
                     </FilterCard>
 
@@ -1624,7 +1632,7 @@ const ListingsPage = () => {
                             items={(projectsList || []).map(p => ({
                                 id: p.id,
                                 name: p.name,
-                                subtitle: p.developer?.name || p.developer_name,
+                                subtitle: p.developer?.name || p.developer_name || '',
                                 image: p.cover_image || p.image,
                                 isAvatar: false
                             }))}
@@ -1632,6 +1640,9 @@ const ListingsPage = () => {
                             onSelect={id => handlePendingFilterChange('project_id', id)}
                             placeholder="Search project..."
                             allLabel="All Projects"
+                            useModal={true}
+                            title="Project"
+                            icon={FilterIcons.project}
                         />
                     </FilterCard>
                     {/* Spacer for bottom of sidebar */}

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MagnifyingGlassIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
+import FilterSearchModal from './FilterSearchModal';
 
 /**
  * Combobox: one dropdown box that shows selected value when collapsed and acts as search when expanded.
@@ -19,9 +20,13 @@ const ScrollableFilterList = ({
     placeholder = 'Search...',
     allLabel = 'All',
     defaultExpanded = false,
+    useModal = false,
+    title = 'Select Item',
+    icon = null
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const inputRef = useRef(null);
 
     const filteredItems = useMemo(() => {
@@ -60,7 +65,40 @@ const ScrollableFilterList = ({
 
     return (
         <div className="flex flex-col gap-2">
-            {!isExpanded ? (
+            {useModal ? (
+                /* Modal Trigger: Stylish pill button with search icon */
+                <>
+                    <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        className={`w-full flex items-center justify-between min-h-[52px] px-5 py-3 rounded-full border transition-all duration-300 ${selectedId
+                            ? 'border-gray-800 dark:border-white/40 bg-white dark:bg-dashboard-card'
+                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card hover:border-gray-400 dark:hover:border-white/30'
+                        }`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            <span className={`text-[14px] font-medium truncate ${selectedId ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                {selectedId ? displayLabel : placeholder}
+                            </span>
+                        </div>
+                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isModalOpen ? 'rotate-180' : ''} ${selectedId ? 'text-gray-800 dark:text-white' : 'text-gray-400 dark:text-gray-500'} stroke-[2.5] flex-shrink-0`} />
+                    </button>
+
+                    <FilterSearchModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        title={title}
+                        subtitle={`Choose from ${(items || []).length} available ${title.toLowerCase()}s`}
+                        items={items}
+                        selectedId={selectedId}
+                        onSelect={onSelect}
+                        placeholder={placeholder}
+                        allLabel={allLabel}
+                        icon={icon}
+                    />
+                </>
+            ) : !isExpanded ? (
                 /* Collapsed: show selected value, click to open */
                 <button
                     type="button"

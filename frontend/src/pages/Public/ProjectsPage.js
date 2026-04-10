@@ -308,8 +308,14 @@ const ProjectsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        document.body.style.overflow = (isGoogleMapOpen || isSidebarOpen) ? 'hidden' : 'unset';
-        return () => { document.body.style.overflow = 'unset'; };
+        const shouldLock = isGoogleMapOpen || isSidebarOpen;
+        document.body.style.overflow = shouldLock ? 'hidden' : '';
+        document.documentElement.style.overflow = shouldLock ? 'hidden' : '';
+        
+        return () => { 
+            document.body.style.overflow = ''; 
+            document.documentElement.style.overflow = '';
+        };
     }, [isGoogleMapOpen, isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
@@ -854,7 +860,7 @@ const ProjectsPage = () => {
                             items={(developers || []).map(d => ({
                                 id: d.id,
                                 name: d.name,
-                                subtitle: d.company || 'Real Estate Developer',
+                                subtitle: d.company || '',
                                 image: d.logo || d.image,
                                 isAvatar: true
                             }))}
@@ -862,6 +868,9 @@ const ProjectsPage = () => {
                             onSelect={id => handleSelectChange('developer_id', id)}
                             placeholder="Search developer..."
                             allLabel="All Developers"
+                            useModal={true}
+                            title="Developer"
+                            icon={FilterIcons.developer}
                         />
                     </FilterCard>
                     {/* Spacer for bottom of sidebar */}

@@ -139,7 +139,7 @@ const TransitFilterModal = ({
             headerLeading={headerLeading}
             hideCloseButton={showMapOnMobile}
             className="!w-full !h-full max-w-none rounded-none overflow-hidden"
-            useBackButton={true}
+            useBackButton={!showMapOnMobile}
         >
             <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
                 {/* Content: list or map — footer stays below */}
