@@ -1824,7 +1824,7 @@ const ListingsPage = () => {
                                             <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-fill-fast" />
                                         ) : (listings || []).length > 0 ? (
                                             <div className="flex items-center gap-2">
-                                                <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                                                <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                                                     {total} {total === 1 ? 'property' : 'properties'}
                                                 </h2>
                                             </div>
@@ -2038,10 +2038,10 @@ const ListingsPage = () => {
                             </div>
 
                             {/* Property Stream Container - Hidden when a marker is selected on mobile */}
-                            <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
+                            <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[20px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
-                                    className="flex flex-col items-center py-5 cursor-pointer active:bg-gray-50/50 dark:active:bg-white/5 transition-colors rounded-t-[40px]"
+                                    className="sticky top-0 z-[220] flex flex-col items-center py-5 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
                                     onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
@@ -2049,7 +2049,7 @@ const ListingsPage = () => {
 
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
-                                        <span className="text-[14px] font-medium text-gray-400 dark:text-gray-500 tracking-tight animate-in fade-in duration-300 mb-2">
+                                        <span className="text-[13px] font-bold text-gray-400 dark:text-gray-500 tracking-tight animate-in fade-in duration-300 mb-2 uppercase">
                                             Found around {total} properties
                                         </span>
                                     )}

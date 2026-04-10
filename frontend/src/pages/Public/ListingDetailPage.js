@@ -414,6 +414,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         if (shouldLock) {
             document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
 
             // Also lock the inner modal scrollable if we're in modal mode
             if (isModal) {
@@ -427,6 +428,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             }
         } else {
             document.body.style.overflow = 'unset';
+            document.body.style.paddingRight = '0px';
             if (isModal) {
                 const containers = document.querySelectorAll('.modal-scrollable');
                 containers.forEach(container => {
@@ -436,6 +438,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         }
         return () => {
             document.body.style.overflow = 'unset';
+            document.body.style.paddingRight = '0px';
             const containers = document.querySelectorAll('.modal-scrollable');
             containers.forEach(container => {
                 container.style.overflow = '';
@@ -1766,7 +1769,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-32 lg:pb-8 relative z-10 rounded-t-[40px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
@@ -2610,11 +2613,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                         {/* The Sheet */}
                                         <div
-                                            className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[40px] h-[60vh]
+                                            className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[60vh]
                                                 ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                         >
                                             <div
-                                                className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle"
+                                                className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
                                                 onClick={() => setIsContactOverlayOpen(false)}
                                             >
                                                 <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />

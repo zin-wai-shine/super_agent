@@ -96,11 +96,13 @@ const PublicLayout = () => {
     React.useEffect(() => {
         if (showViewPanel && window.innerWidth < 1024) {
             document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
             // Also prevent touchmove to be extra sure on iOS
             const preventDefault = (e) => e.preventDefault();
             document.addEventListener('touchmove', preventDefault, { passive: false });
             return () => {
                 document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
                 document.removeEventListener('touchmove', preventDefault);
             };
         }
@@ -325,7 +327,8 @@ const PublicLayout = () => {
     const isSavedPage = location.pathname === '/saved-listings';
     const isProfilePage = location.pathname === '/profile';
     const isBookingsPage = location.pathname === '/my-bookings';
-    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage;
+    const isListingDetailPage = location.pathname.startsWith('/listings/') && location.pathname.split('/').length > 2;
+    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage || isListingDetailPage;
     const scrollContainerRef = useRef(null);
     return (
         <div
@@ -822,7 +825,7 @@ const PublicLayout = () => {
                         />
                     )}
                     <div
-                        className="md:hidden fixed left-0 right-0 z-[209] bg-white dark:bg-dashboard-card rounded-t-[36px] overflow-y-auto"
+                        className="md:hidden fixed left-0 right-0 z-[209] bg-white dark:bg-dashboard-card rounded-t-[20px] overflow-y-auto"
                         style={{
                             bottom: '72px',
                             maxHeight: 'calc(80vh - 72px)',

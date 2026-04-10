@@ -40,9 +40,9 @@ const CollectionDetailPage = () => {
 
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-5">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
                 {/* Header Section: Back button, Title, Count */}
-                <div className="mb-10 flex items-center justify-between relative min-h-[48px]">
+                <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-5 sm:mb-10 flex items-center justify-between relative min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate(-1)}
@@ -53,7 +53,7 @@ const CollectionDetailPage = () => {
                     </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none text-center">
-                        <h1 className="text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight truncate max-w-[50vw]">
+                        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[50vw]">
                             {loading ? '...' : collection?.name}
                         </h1>
                     </div>

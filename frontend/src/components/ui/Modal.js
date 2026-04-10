@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const Modal = ({
     isOpen,
@@ -23,7 +23,8 @@ const Modal = ({
     fullBleedDesktop = false,
     noRadius = false,
     contentClassName = '',
-    overlayZIndex
+    overlayZIndex,
+    useBackButton = false
 }) => {
 
     useEffect(() => {
@@ -98,7 +99,7 @@ const Modal = ({
 
     return createPortal(
         <div
-            className={`fixed inset-0 overflow-y-auto overflow-x-hidden flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-start sm:items-center'} ${fullBleedDesktop ? 'sm:items-stretch' : ''} pt-10 sm:pt-0`}
+            className={`fixed inset-0 overflow-y-auto overflow-x-hidden flex justify-center pointer-events-none ${fullScreenMobile ? 'items-stretch sm:items-center' : 'items-start sm:items-center'} ${fullBleedDesktop ? 'sm:items-stretch' : ''} pt-0 sm:pt-0`}
             style={{ zIndex: overlayZIndex ?? 1000 }}
         >
             {/* Backdrop */}
@@ -122,16 +123,24 @@ const Modal = ({
                     style={(fullBleedDesktop || noRadius) ? undefined : { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
                 >
                     {hasHeader && (
-                        <div className={`border-b border-gray-100 dark:border-white/10 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
+                        <div className={`sticky top-0 z-[60] bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
                             <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1440px] mx-auto min-h-[64px]">
                                 <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
+                                    {useBackButton && (
+                                        <button
+                                            onClick={onClose}
+                                            className="mr-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 p-2 rounded-full transition-colors flex-shrink-0"
+                                        >
+                                            <ArrowLeftIcon className="w-6 h-6" />
+                                        </button>
+                                    )}
                                     {headerLeading && (
                                         <div className="flex-shrink-0">
                                             {headerLeading}
                                         </div>
                                     )}
                                     {title && (
-                                        <h3 className={`text-lg font-bold text-gray-900 dark:text-white truncate flex-shrink-0 ${(centerTitle || rightTitle) ? 'hidden' : 'block'}`}>
+                                        <h3 className={`text-[17px] font-bold text-gray-900 dark:text-white truncate flex-shrink-0 ${(centerTitle || rightTitle || useBackButton) ? 'hidden' : 'block'}`}>
                                             {title}
                                         </h3>
                                     )}
@@ -140,9 +149,9 @@ const Modal = ({
                                     </div>
                                 </div>
 
-                                {centerTitle && title && (
+                                {(centerTitle || useBackButton) && title && (
                                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10">
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate text-center">
+                                        <h3 className="text-[17px] font-bold text-gray-900 dark:text-white truncate text-center">
                                             {title}
                                         </h3>
                                     </div>
@@ -166,7 +175,7 @@ const Modal = ({
                                     <div id="modal-header-actions" className="flex items-center gap-2">
                                         {headerActions}
                                     </div>
-                                    {!hideCloseButton && (
+                                    {!hideCloseButton && !useBackButton && (
                                         <button
                                             onClick={onClose}
                                             className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"

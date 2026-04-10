@@ -139,6 +139,7 @@ const TransitFilterModal = ({
             headerLeading={headerLeading}
             hideCloseButton={showMapOnMobile}
             className="!w-full !h-full max-w-none rounded-none overflow-hidden"
+            useBackButton={true}
         >
             <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
                 {/* Content: list or map — footer stays below */}
@@ -151,7 +152,7 @@ const TransitFilterModal = ({
                                 <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
                                     <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
+                                <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
                             </div>
 
                             <div className="flex items-center gap-3 mb-4">

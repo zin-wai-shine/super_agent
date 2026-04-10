@@ -94,6 +94,7 @@ const ShareModal = ({ isOpen, onClose, property }) => {
             onClose={onClose}
             title="Share Property"
             size="sm"
+            useBackButton={true}
         >
             <div className="p-6">
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">

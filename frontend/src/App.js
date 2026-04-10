@@ -108,10 +108,23 @@ const GuestRoute = ({ children }) => {
 
 import { Toaster } from 'react-hot-toast';
 import ScrollToTop from './components/Common/ScrollToTop';
+import { useEffect } from 'react';
 
 function App() {
+    useEffect(() => {
+        const calculateScrollbarWidth = () => {
+            const width = window.innerWidth - document.documentElement.clientWidth;
+            document.documentElement.style.setProperty('--scrollbar-width', `${width}px`);
+        };
+
+        calculateScrollbarWidth();
+        window.addEventListener('resize', calculateScrollbarWidth);
+        return () => window.removeEventListener('resize', calculateScrollbarWidth);
+    }, []);
+
     return (
         <WebSocketProvider>
+
             <ScrollToTop />
             <Toaster position="top-center" reverseOrder={false} />
             <AppRoutes />

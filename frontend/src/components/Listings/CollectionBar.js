@@ -74,7 +74,7 @@ const CollectionGroup = ({
             {/* Header Section */}
             <div className="flex items-center justify-between mb-4 px-6 md:px-1">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                    <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                         {title}
                     </h2>
                     <button className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -114,9 +114,6 @@ const CollectionGroup = ({
                 >
                     {groupCollections.map((collection, i) => (
                         <div key={collection.id} className="relative flex-shrink-0 w-[180px] md:w-[200px]">
-                            <div className="absolute inset-0 pointer-events-none">
-                                <CollectionSkeleton index={i} isExiting={true} />
-                            </div>
                             <CollectionCard
                                 collection={collection}
                                 isSelected={selectedId === collection.id}
@@ -311,7 +308,7 @@ const CollectionBar = ({
                         <div className={`${readOnly ? 'mb-0' : 'mb-8'}`}>
                             <div className="flex items-center justify-between mb-4 px-6 md:px-1">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-[14px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                                    <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                                         Explore Categories
                                     </h2>
                                     <div className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center">

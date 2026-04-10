@@ -397,7 +397,7 @@ const SavedListingsPage = () => {
                                         </button>
 
                                         <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-                                            <h1 className="text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight">{currentGroup}</h1>
+                                            <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight">{currentGroup}</h1>
                                         </div>
 
                                         <div className="text-[14px] text-gray-500 font-medium z-10">
@@ -435,8 +435,8 @@ const SavedListingsPage = () => {
                             ) : !currentGroup && (
                                 /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */
                                 <div className="animate-fill-fast">
-                                    <div className="mb-10">
-                                        <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
+                                    <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-0 sm:mb-10 -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
+                                        <h1 className="text-[24px] font-bold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
                                         {(() => {

@@ -49,25 +49,33 @@ const CollectionsPage = () => {
 
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 pt-5">
-                {/* Header */}
-                <div className="mb-10 flex items-center gap-4 relative min-h-[48px]">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all group"
-                    >
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
-                    </button>
-                    <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">
-                        {(() => {
-                            let popName = 'Popular Collections';
-                            try {
-                                const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-                                if (custom) popName = custom.name || popName;
-                            } catch (e) {}
-                            return popName;
-                        })()}
-                    </h1>
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
+                {/* Header Section: Back button, Centered Title */}
+                <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-5 sm:mb-10 flex items-center justify-between relative min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all group"
+                        >
+                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
+
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center">
+                        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[50vw]">
+                            {(() => {
+                                let popName = 'Popular Collections';
+                                try {
+                                    const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
+                                    if (custom) popName = custom.name || popName;
+                                } catch (e) { }
+                                return popName;
+                            })()}
+                        </h1>
+                    </div>
+
+                    {/* Empty div for spacing/balance */}
+                    <div className="w-10 h-10 invisible" />
                 </div>
 
                 {/* Staggered Per-Card Discovery Grid */}
@@ -88,10 +96,11 @@ const CollectionsPage = () => {
                             {[...Array(loading && collections.length === 0 ? 6 : collections.length)].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
                                     {/* Layer 1: Background Layout (Static Skeleton) */}
-                                    {/* Skeleton becomes absolute background when real card arrives so it doesn't duplicate height */}
-                                    <div className={!loading && collections[i] ? "absolute inset-0 z-0 transition-opacity duration-500" : "relative transition-opacity duration-500"}>
-                                        <CollectionSkeleton index={i} isExiting={!loading} />
-                                    </div>
+                                    {(loading || !collections[i]) && (
+                                        <div className="relative transition-opacity duration-500">
+                                            <CollectionSkeleton index={i} isExiting={!loading} />
+                                        </div>
+                                    )}
 
                                     {/* Layer 2: Real Data Card (Specific internal animations for image vs text) */}
                                     {!loading && collections[i] && (

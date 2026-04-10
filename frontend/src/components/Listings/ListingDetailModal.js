@@ -66,17 +66,14 @@ const ListingDetailModal = () => {
                 onClose={handleClose}
                 size="full"
                 closeOnBackdropClick={false}
-                lockScroll
-                hideHeader={false}
-                hideHeaderOnMobile={true}
-                hideCloseButton={true}
-                fullScreenMobile
-                fullBleedDesktop
-                className={MODAL_SIZE_CLASS}
-                style={{ overscrollBehavior: 'contain' }}
+                lockScroll={true}
+                fullScreenMobile={true}
+                fullBleedDesktop={true}
                 title={modalTitle}
-                headerLeading={headerLeading}
                 centerTitle={true}
+                useBackButton={true}
+                hideHeaderOnMobile={true}
+                className={MODAL_SIZE_CLASS}
             >
                 <div className="h-full relative bg-white dark:bg-dashboard-dark">
                     <div className="h-full overflow-y-auto modal-scrollable">
