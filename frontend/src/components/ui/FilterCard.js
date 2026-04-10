@@ -7,7 +7,12 @@ const FilterCard = ({ title, icon, onClear, children, titleTag: TitleTag = 'span
             <div className="flex items-center justify-between transition-colors group mb-3">
                 <div className="flex items-center gap-2">
                     {icon}
-                    <TitleTag className={`text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-gray-100 ${titleClassName}`.trim()}>{title}</TitleTag>
+                    <TitleTag 
+                        className={`text-[15px] md:text-[13px] font-semibold ${titleClassName}`.trim()}
+                        style={{ color: '#222222' }}
+                    >
+                        {title}
+                    </TitleTag>
                 </div>
                 <div className="flex items-center gap-2">
                     {onClear && (

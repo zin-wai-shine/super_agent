@@ -28,14 +28,14 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
     };
 
     const buttonClass = (enabled) =>
-        `flex items-center justify-center w-8 h-8 rounded-full border transition-all flex-shrink-0 ${
+        `flex items-center justify-center w-10 h-10 rounded-full border transition-all flex-shrink-0 ${
             enabled
                 ? 'border-gray-300 dark:border-white/30 text-gray-700 dark:text-gray-300 hover:border-gray-500 dark:hover:border-white/50 hover:bg-gray-50 dark:hover:bg-white/10'
                 : 'border-gray-200 dark:border-white/10 text-gray-300 dark:text-gray-600 cursor-default'
         }`;
 
     return (
-        <div className="flex items-center justify-between gap-3 w-full">
+        <div className="flex items-center justify-between gap-3 w-full py-1">
             <span className="text-base font-normal text-gray-900 dark:text-white">{label}</span>
             <div className="flex items-center gap-1">
                 <button
@@ -45,9 +45,9 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
                     aria-label={`Decrease ${label}`}
                     className={buttonClass(canDecrement)}
                 >
-                    <MinusIcon className="w-4 h-4" strokeWidth={2} />
+                    <MinusIcon className="w-5 h-5" strokeWidth={2.5} />
                 </button>
-                <span className="min-w-[3rem] text-center text-base font-normal text-gray-900 dark:text-white py-1">
+                <span className="min-w-[3.5rem] text-center text-base font-normal text-gray-900 dark:text-white">
                     {displayLabel}
                 </span>
                 <button
@@ -57,7 +57,7 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
                     aria-label={`Increase ${label}`}
                     className={buttonClass(canIncrement)}
                 >
-                    <PlusIcon className="w-4 h-4" strokeWidth={2} />
+                    <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
                 </button>
             </div>
         </div>

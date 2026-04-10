@@ -1428,21 +1428,18 @@ const ListingsPage = () => {
                 )}
 
                 {/* Text Search — draft only; applies when "Show X properties" */}
-                <div className="space-y-2">
-                    <label className="block text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-white">Search by text</label>
-                    <input
-                        type="text"
-                        value={pendingFilters.search ?? ''}
-                        onChange={(e) => {
-                            const v = e.target.value;
-                            updatePendingFilters({ search: v });
-                            setSearchTerm(v);
-                        }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
-                        placeholder="Keyword, location, property name..."
-                        className="w-full px-4 py-3 min-h-[48px] rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[13px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/5 focus:border-gray-500 transition-all"
-                    />
-                </div>
+                <input
+                    type="text"
+                    value={pendingFilters.search ?? ''}
+                    onChange={(e) => {
+                        const v = e.target.value;
+                        updatePendingFilters({ search: v });
+                        setSearchTerm(v);
+                    }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
+                    placeholder="Keyword, location, property name..."
+                    className="w-full px-4 py-3 min-h-[48px] rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[13px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/5 focus:border-gray-500 transition-all mb-7"
+                />
 
                 {/* Filter Sections */}
                 <div className="space-y-7">
