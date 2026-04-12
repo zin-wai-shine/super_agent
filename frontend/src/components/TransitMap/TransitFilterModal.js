@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Modal from '../ui/Modal';
+import { createPortal } from 'react-dom';
 import TransitMapFilter from './TransitMapFilter';
 import { MagnifyingGlassIcon, XMarkIcon, CheckIcon, MapIcon, ChevronLeftIcon, ArrowLeftIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { MdOutlineDirectionsTransit } from "react-icons/md";
@@ -37,6 +37,19 @@ const TransitFilterModal = ({
 
     useEffect(() => {
         if (!isOpen) setShowMapOnMobile(false);
+        
+        // Prevent body scroll when modal is open
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
+        } else {
+            document.body.style.overflow = 'unset';
+            document.body.style.paddingRight = '0px';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.body.style.paddingRight = '0px';
+        };
     }, [isOpen]);
 
     const groupedStations = useMemo(() => {
@@ -90,6 +103,29 @@ const TransitFilterModal = ({
         })).filter(group => group.stations.length > 0);
     }, [groupedStations, searchTerm]);
 
+    // Map Focus Logic: When searching on map, find the best match to zoom/center
+    const focusedStationId = useMemo(() => {
+        if (!searchTerm || !showMapOnMobile || stations.length === 0) return null;
+        
+        const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
+        const normalizedTerm = normalize(searchTerm);
+        
+        // 1. Try exact match first
+        const exactMatch = stations.find(s => 
+            normalize(s.name_en) === normalizedTerm || 
+            normalize(s.id) === normalizedTerm
+        );
+        if (exactMatch) return exactMatch.id;
+
+        // 2. Try starts with
+        const startsWithMatch = stations.find(s => 
+            normalize(s.name_en).startsWith(normalizedTerm)
+        );
+        if (startsWithMatch) return startsWithMatch.id;
+
+        return null;
+    }, [searchTerm, showMapOnMobile, stations]);
+
     const handleToggleStation = (id) => {
         setSelectedIds(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -128,57 +164,93 @@ const TransitFilterModal = ({
         </button>
     ) : null;
 
-    return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Transit Station Selection"
-            size="full"
-            fullScreenMobile={true}
-            fullBleedDesktop={true}
-            headerLeading={headerLeading}
-            hideCloseButton={showMapOnMobile}
-            className="!w-full !h-full max-w-none rounded-none overflow-hidden"
-            useBackButton={!showMapOnMobile}
-        >
-            <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
-                {/* Content: list or map — footer stays below */}
-                <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
-                    {/* Left Column: List — hidden on mobile when map is shown */}
-                    <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[28%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0 border-r border-gray-100 dark:border-white/5`}>
-                        {/* Header: Fixed — mobile: match filter base (px-4 py-4); desktop: p-6 */}
-                        <div className="px-4 pt-6 pb-2 sm:pb-6 md:px-6 lg:px-8 flex-shrink-0 bg-white dark:bg-dashboard-dark">
-                            <div className="hidden sm:flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-                                    <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                                </div>
-                                <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
-                            </div>
+    return createPortal(
+        <div className={`fixed inset-0 z-[2000] flex items-end sm:items-center justify-center transition-all duration-500 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            {/* Backdrop */}
+            <div 
+                className={`absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
+                onClick={onClose}
+            />
 
-                            <div className="flex items-center gap-3 mb-4">
+            {/* Modal Content container */}
+            <div className={`relative w-full sm:max-w-[85vw] lg:max-w-[1000px] flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
+                ${isOpen 
+                    ? 'translate-y-0 opacity-100' 
+                    : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'
+                }
+            `}>
+                {/* Mobile Decorative Header - Match Project Modal Design */}
+                <div className="absolute -top-10 inset-x-0 bottom-0 bg-primary-600/30 rounded-t-[24px] sm:hidden -z-10 blur-[1px]" />
+                <div className="absolute -top-8 inset-x-0 bottom-0 bg-primary-600 rounded-t-[20px] sm:hidden -z-10 flex flex-col items-center shadow-[0_-8px_30px_rgba(0,0,0,0.1)]">
+                    <div className="h-8 w-full flex flex-col items-center justify-center">
+                        <h2 className="text-[14px] font-bold text-white tracking-[0.05em] leading-none uppercase">Transit Selection</h2>
+                    </div>
+                </div>
+
+                {/* Main Box - Bottom-up animation container */}
+                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[32px] sm:rounded-[32px] overflow-hidden flex flex-col h-[85vh] sm:h-auto sm:max-h-[85vh] shadow-2xl border border-white/10">
+                    
+                    {/* Pull Handle (Mobile) */}
+                    <div className="flex justify-center pt-5 pb-1 sm:hidden flex-shrink-0">
+                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full" />
+                    </div>
+
+                    <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
+                        {/* Mobile Header: Unified Search + Toggle (ONLY visible on mobile) */}
+                        <div className="sm:hidden px-4 pt-6 pb-2 flex-shrink-0 bg-white dark:bg-dashboard-dark border-b border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-3 mb-3 mt-1">
                                 <div className="relative flex-1 min-w-0">
-                                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="text"
                                         placeholder="Search BTS/MRT station..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 min-h-[44px] rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] sm:text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 focus:border-gray-500 dark:focus:border-primary-500 transition-all"
+                                        className="w-full h-[58px] pl-14 pr-6 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:focus:ring-white/5 transition-all shadow-sm"
                                     />
                                 </div>
-                                {/* Transit map — tap whole container to show map instead of list (mobile); no border, larger */}
+                                {/* View Toggle — Positions remain identical to eliminate cursor travel */}
                                 <button
                                     type="button"
                                     onClick={() => setShowMapOnMobile(prev => !prev)}
-                                    className="flex-shrink-0 sm:hidden flex items-center justify-center gap-2 px-6 h-[44px] min-h-[44px] bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
+                                    className="flex-shrink-0 flex items-center justify-center w-[58px] h-[58px] bg-primary-600 border border-primary-600 text-white rounded-full active:scale-95 transition-all shadow-lg shadow-primary-600/20"
                                     aria-label={showMapOnMobile ? 'Show station list' : 'Show transit map'}
                                 >
-                                    <span className="font-normal text-sm tracking-wide">Map</span>
-                                    <MapIcon className="w-5 h-5" />
+                                    {showMapOnMobile ? (
+                                        <ListBulletIcon className="w-7 h-7" />
+                                    ) : (
+                                        <MapIcon className="w-7 h-7" />
+                                    )}
                                 </button>
                             </div>
+                        </div>
 
-                            {/* Selected Pills — mobile: same horizontal padding as filter; desktop: full width scroll */}
+                        {/* Content: list or map — footer stays below */}
+                        <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
+                            {/* Left Column: List — hidden on mobile when map is shown */}
+                            <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[28%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0 border-r border-gray-100 dark:border-white/5`}>
+                                
+                                {/* Desktop Header: Original Format (ONLY visible on desktop) */}
+                                <div className="hidden sm:block px-6 lg:px-8 py-6 flex-shrink-0 bg-white dark:bg-dashboard-dark">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                                            <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                                        </div>
+                                        <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
+                                    </div>
+                                    <div className="relative">
+                                        <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search BTS/MRT station..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full h-[60px] pl-14 pr-6 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                        {/* Selected Pills — mobile: same horizontal padding as filter; desktop: full width scroll */}
                             {selectedIds.length > 0 && (
                                 <div className="overflow-y-hidden overflow-x-auto scrollbar-hide pt-2 pb-6 px-4 md:-mx-8 lg:-mx-12 sm:w-[calc(100%+3rem)] sm:px-0" style={{ maxHeight: '7rem' }}>
                                     <div className="inline-grid grid-flow-col grid-rows-2 auto-cols-max gap-x-3 gap-y-2 pb-0.5 md:pl-8 lg:pl-12">
@@ -188,7 +260,7 @@ const TransitFilterModal = ({
                                             return (
                                                 <div
                                                     key={id}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/10 rounded-full border border-primary-100 dark:border-primary-500/20 group transition-all w-max"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/10 rounded-full border border-primary-100 dark:border-primary-600/20 group transition-all w-max"
                                                 >
                                                     <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: station.line_color || '#ccc' }} />
                                                     <span className="text-[14px] sm:text-[12px] font-bold text-primary-700 dark:text-primary-400 whitespace-nowrap">
@@ -209,7 +281,6 @@ const TransitFilterModal = ({
                                     </div>
                                 </div>
                             )}
-                        </div>
 
                         {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
                         <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 lg:px-8 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white dark:bg-dashboard-dark">
@@ -248,10 +319,10 @@ const TransitFilterModal = ({
                                                     onClick={() => handleSelectLine(group.stations, allSelected)}
                                                     className="flex items-center gap-1.5 transition-colors group"
                                                 >
-                                                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-400'}`}>
+                                                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-600'}`}>
                                                         <CheckIcon className={`w-3 h-3 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
                                                     </div>
-                                                    <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500'}`}>
+                                                    <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-600'}`}>
                                                         Select all
                                                     </span>
                                                 </button>
@@ -297,24 +368,12 @@ const TransitFilterModal = ({
 
                     {/* Right Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
                     <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[72%] sm:min-w-0 relative bg-gray-50 dark:bg-dashboard-dark overflow-hidden min-w-0`}>
-                        {/* Mobile "Back to List" button — mirrors the "Map" button in list header */}
-                        {showMapOnMobile && (
-                            <div className="absolute top-6 right-6 z-[100] sm:hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowMapOnMobile(false)}
-                                    className="flex items-center justify-center gap-2 px-6 h-[44px] min-h-[44px] bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full active:scale-95 transition-all shadow-lg"
-                                    aria-label="Show station list"
-                                >
-                                    <span className="font-normal text-sm tracking-wide">List</span>
-                                    <ListBulletIcon className="w-5 h-5 font-bold" />
-                                </button>
-                            </div>
-                        )}
+
                         <TransitMapFilter
                             hideHeader={true}
                             externalStations={stations}
                             selectedStations={selectedIds}
+                            selectedStation={focusedStationId}
                             onStationClick={(id) => handleToggleStation(id)}
                         />
                     </div>
@@ -353,8 +412,11 @@ const TransitFilterModal = ({
                     </div>
                 </div>
             </div>
-        </Modal>
-    );
+        </div>
+    </div>
+</div>,
+document.body
+);
 };
 
 export default TransitFilterModal;

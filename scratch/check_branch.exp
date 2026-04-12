@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set password "-4V2HOvVFF,q7Bx2"
+spawn ssh -o StrictHostKeyChecking=no root@srv1534108.hstgr.cloud "cd super_real_estate && git branch --show-current"
+expect "password:"
+send -- "$password\r"
+interact
