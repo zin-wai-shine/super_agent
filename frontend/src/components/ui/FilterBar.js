@@ -183,12 +183,12 @@ const FilterBar = ({
                                 {/* Search Section — centered; 50% → 95% / lg 100% / xl 100% when focused; expand & reduce animated */}
                                 <div className={`relative flex-shrink-0 transition-[width] duration-300 ease-in-out ${isFocused ? 'w-[95%] lg:w-[100%] xl:w-[100%]' : 'w-[50%] max-w-[520px] min-w-[260px]'}`}>
                                     {/* Search input wrapper */}
-                                    <div className={`relative group h-[58px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 ${isFocused
-                                        ? 'rounded-t-[28px] rounded-b-none border-gray-300 dark:border-white/20'
-                                        : 'rounded-full hover:border-gray-300 dark:hover:border-white/20 shadow-sm'
+                                    <div className={`relative group h-[58px] sm:h-[44px] sm:min-h-[40px] bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80 border border-gray-200 dark:border-white/10 sm:border-primary-500/30 ${isFocused
+                                        ? 'rounded-t-[24px] rounded-b-none border-b-transparent'
+                                        : 'rounded-full'
                                         }`} style={{ transition: 'all 0.3s ease' }}>
-                                        <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none z-10">
-                                            <BsSearch className={`w-5 h-5 transition-colors ${isFocused ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`} />
+                                        <div className="absolute inset-y-0 left-0 pl-6 sm:pl-4 flex items-center pointer-events-none z-10">
+                                            <BsSearch className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary-500' : 'text-gray-400'}`} />
                                         </div>
 
                                         <input
@@ -199,11 +199,11 @@ const FilterBar = ({
                                             onFocus={handleFocus}
                                             onBlur={handleBlur}
                                             placeholder="Search properties & filters"
-                                            className="w-full h-full bg-white dark:bg-dashboard-card pl-14 pr-12 text-[15px] font-normal text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none border-none focus:ring-0 rounded-full"
+                                            className="w-full h-full bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80 pl-16 sm:pl-12 pr-12 sm:pr-[3.25rem] text-[15px] sm:text-[14px] font-normal text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none border-none focus:ring-0 rounded-full"
                                         />
 
-                                        <div className="absolute inset-y-0 right-3 flex items-center">
-                                            {/* Minimal Clear button */}
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-[5px] gap-1">
+                                            {/* Clear button */}
                                             {inputValue && (
                                                 <button
                                                     onClick={handleClear}
@@ -212,6 +212,14 @@ const FilterBar = ({
                                                     <XMarkIcon className="w-4 h-4" />
                                                 </button>
                                             )}
+
+                                            {/* Circular Search Button - Desktop Only */}
+                                            <button
+                                                onClick={handleSearch}
+                                                className="hidden sm:flex w-9 h-9 items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-sm transition-all duration-200 active:scale-95"
+                                            >
+                                                <BsSearch className="w-5 h-5" />
+                                            </button>
                                         </div>
                                     </div>
 

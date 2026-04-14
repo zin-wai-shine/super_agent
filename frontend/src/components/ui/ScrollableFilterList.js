@@ -71,7 +71,7 @@ const ScrollableFilterList = ({
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className={`w-full flex items-center justify-between min-h-[52px] px-5 py-3 rounded-full border transition-all duration-300 ${selectedId
+                        className={`w-full flex items-center justify-between h-[58px] sm:h-[48px] px-5 rounded-full border transition-all duration-300 ${selectedId
                             ? 'border-gray-800 dark:border-white/40 bg-white dark:bg-dashboard-card'
                             : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card hover:border-gray-400 dark:hover:border-white/30'
                         }`}

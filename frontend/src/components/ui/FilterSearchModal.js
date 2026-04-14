@@ -59,7 +59,7 @@ const FilterSearchModal = ({
             />
 
             {/* Modal Box */}
-            <div className={`relative w-full sm:max-w-[85vw] lg:max-w-[1000px] flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] aria-hidden:hidden
+            <div className={`relative w-full sm:w-[70%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] aria-hidden:hidden
                 ${isOpen 
                     ? 'translate-y-0 opacity-100' 
                     : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'
@@ -74,7 +74,7 @@ const FilterSearchModal = ({
                 </div>
 
                 {/* Main Content */}
-                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[24px] sm:rounded-[32px] shadow-[0_32px_128px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col h-[85vh] sm:h-auto max-h-[85vh] sm:max-h-[85vh] border border-black/[0.03] dark:border-white/5">
+                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[24px] sm:rounded-[28px] shadow-[0_32px_128px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col h-[85vh] sm:h-[70vh] max-h-[85vh] sm:max-h-[70vh] border border-black/[0.03] dark:border-white/5">
                     
                     {/* Pull Handle (Mobile) */}
                     <div className="flex justify-center pt-5 pb-1 sm:hidden flex-shrink-0">
@@ -82,76 +82,94 @@ const FilterSearchModal = ({
                     </div>
 
                     {/* Header */}
-                    <div className="px-6 pt-6 pb-6 sm:px-12 sm:pt-12 sm:pb-4 flex-shrink-0">
-                        <div className="flex items-center gap-3">
-                            {/* Search Input - Matching Image 1/2 Design */}
-                            <div className="relative group flex-1">
-                                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                                    <MagnifyingGlassIcon className="h-6 w-6 text-gray-400 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300 transition-colors" />
-                                </div>
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder={placeholder}
-                                    className="block w-full h-[58px] pl-16 pr-12 bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 focus:border-gray-300 dark:focus:border-white/30 transition-all outline-none rounded-full text-[15px] font-normal text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm"
-                                />
-                                <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none">
-                                    <ChevronUpIcon className="h-5 w-5 text-gray-300" />
-                                </div>
+                    <div className="p-5 sm:p-4 flex-shrink-0 border-b border-black/[0.03] dark:border-white/5">
+                        <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-4">
+                            {/* Left: Title (Desktop) */}
+                            <div className="hidden sm:block">
+                                <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em] leading-none">{title}</h2>
                             </div>
 
-                            {/* All Option - Now to the right of search */}
-                            <button
-                                onClick={() => handleSelect('')}
-                                className={`flex-shrink-0 px-6 sm:px-10 py-4 rounded-full border transition-all duration-300 text-center whitespace-nowrap text-[16px] ${!selectedId 
-                                    ? 'bg-primary-600 border-primary-600 text-white font-semibold shadow-lg shadow-primary-600/20' 
-                                    : 'bg-white dark:bg-white/5 border-gray-800 dark:border-white/10 hover:border-gray-900 dark:hover:border-white/30 text-gray-600 dark:text-gray-400 font-normal'
-                                }`}
-                            >
-                                <span className="font-normal">All</span>
-                            </button>
+                            {/* Center: Search & Action (Desktop centered) / Right on Mobile */}
+                            <div className="flex items-center gap-2 sm:justify-center">
+                                {/* Search Input */}
+                                <div className="relative group w-full sm:w-[420px]">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300 transition-colors" />
+                                    </div>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder={placeholder}
+                                        className="block w-full h-[58px] sm:h-[42px] pl-12 pr-10 bg-gray-50/50 dark:bg-white/2 border border-gray-200/50 dark:border-white/10 focus:border-gray-800 dark:focus:border-white/30 transition-all outline-none rounded-full text-[15px] sm:text-[13px] font-normal text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                    />
+                                    <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none">
+                                        <ChevronUpIcon className="h-4 w-4 text-gray-300" />
+                                    </div>
+                                </div>
+
+                                {/* All Option */}
+                                <button
+                                    onClick={() => handleSelect('')}
+                                    className={`flex-shrink-0 flex items-center justify-center w-[58px] h-[58px] sm:w-[42px] sm:h-[42px] rounded-full border transition-all duration-300 text-center whitespace-nowrap text-[14px] sm:text-[13px] ${!selectedId 
+                                        ? 'bg-primary-600 border-primary-600 text-white font-semibold shadow-lg shadow-primary-600/20' 
+                                        : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 text-gray-600 dark:text-gray-400 font-normal'
+                                    }`}
+                                >
+                                    <span>{allLabel}</span>
+                                </button>
+                            </div>
+
+                            {/* Right: Close Button (Desktop Only) */}
+                            <div className="hidden sm:flex justify-end">
+                                <button
+                                    onClick={onClose}
+                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                >
+                                    <XMarkIcon className="w-6 h-6" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     {/* Content List */}
-                    <div className="px-6 sm:px-12 pb-12 overflow-y-auto custom-scrollbar-thin flex-1 scroll-smooth">
+                    <div className="pt-6 px-6 sm:pt-6 sm:px-12 pb-12 overflow-y-auto custom-scrollbar-thin flex-1 scroll-smooth">
                         <div className="flex flex-col gap-4">
                             {/* Item Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mt-2">
                                 {filteredItems.map((item) => (
                                     <button
                                         key={item.id}
                                         onClick={() => handleSelect(item.id)}
-                                        className={`flex items-center gap-4 sm:gap-5 w-full px-4 sm:px-5 py-3.5 sm:py-4 rounded-full border transition-all duration-300 text-left group ${selectedId === item.id 
-                                            ? 'bg-gray-50/50 dark:bg-white/2 border-primary-500/20' 
-                                            : 'bg-gray-50/50 dark:bg-white/2 border-transparent hover:bg-white dark:hover:bg-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:shadow-xl'
+                                        className={`flex items-center gap-3 w-full pl-2 pr-5 py-2 rounded-full border transition-all duration-300 text-left group ${selectedId === item.id 
+                                            ? 'bg-gray-50 dark:bg-white/5 border-transparent shadow-sm' 
+                                            : 'bg-gray-50/80 dark:bg-white/[0.03] border-transparent hover:bg-gray-50 dark:hover:bg-white/10'
                                         }`}
                                     >
-                                        <div className="flex-shrink-0 relative">
+                                        {/* Icon Container - Matching Category style */}
+                                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 overflow-hidden shadow-sm bg-white dark:bg-white/10 ${
+                                            selectedId === item.id ? ' ring-2 ring-primary-600/10' : ''
+                                        }`}>
                                             {item.image ? (
                                                 <img
                                                     src={getMediaUrl(item.image)}
                                                     alt=""
-                                                    className={`w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-full border-2 ${selectedId === item.id ? 'border-primary-600' : 'border-white dark:border-white/10'} shadow-md group-hover:scale-110 transition-transform duration-500`}
+                                                    className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-90 ${
-                                                selectedId === item.id 
-                                                    ? 'bg-primary-600 text-white' 
-                                                    : 'bg-white dark:bg-white/10 text-gray-400 group-hover:text-primary-600'
-                                            }`}>
-                                                    <span className="text-[13px] sm:text-[14px] font-normal tracking-tighter">{item.name?.substring(0, 2)}</span>
-                                                </div>
+                                                <span className={`text-[13px] font-medium tracking-tight transition-colors duration-300 ${selectedId === item.id ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400 group-hover:text-primary-600'}`}>
+                                                    {item.name?.substring(0, 2)}
+                                                </span>
                                             )}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className={`text-[15px] sm:text-[16px] font-normal tracking-tight leading-snug ${selectedId === item.id ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'}`}>
+
+                                        <div className="flex-1 min-w-0 pr-2">
+                                            <div className={`text-[14px] sm:text-[15px] font-medium truncate tracking-tight leading-tight transition-colors duration-300 ${selectedId === item.id ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white group-hover:text-primary-600'}`}>
                                                 {item.name}
                                             </div>
                                             {item.subtitle && (
-                                                <div className="text-[12px] text-gray-400 dark:text-gray-500 truncate font-normal mt-0.5">
+                                                <div className="text-[11px] text-gray-400 dark:text-gray-500 truncate font-normal mt-0.5">
                                                     {item.subtitle}
                                                 </div>
                                             )}

@@ -1435,7 +1435,7 @@ const ListingsPage = () => {
                 {/* Text Search — draft only; applies when "Show X properties" */}
                 <input
                     type="text"
-                    value={pendingFilters.search ?? ''}
+                    value={pendingFilters.search || ''}
                     onChange={(e) => {
                         const v = e.target.value;
                         updatePendingFilters({ search: v });
@@ -1443,7 +1443,7 @@ const ListingsPage = () => {
                     }}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
                     placeholder="Keyword, location, property name..."
-                    className="w-full h-[58px] px-6 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:focus:ring-white/5 transition-all mb-7 shadow-sm"
+                    className="w-full h-[58px] sm:h-[48px] px-6 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all mb-7"
                 />
 
                 {/* Filter Sections */}
@@ -1524,7 +1524,7 @@ const ListingsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
+                                className="w-full h-[58px] sm:h-[48px] flex items-center justify-between pl-5 pr-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
                                     <BsSearch className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
@@ -1616,7 +1616,7 @@ const ListingsPage = () => {
                             selectedId={pendingFilters.developer_id}
                             onSelect={id => handlePendingFilterChange('developer_id', id)}
                             placeholder="Search developer..."
-                            allLabel="All Developers"
+                            allLabel="All"
                             useModal={true}
                             title="Developer"
                             icon={FilterIcons.developer}
@@ -1639,7 +1639,7 @@ const ListingsPage = () => {
                             selectedId={pendingFilters.project_id}
                             onSelect={id => handlePendingFilterChange('project_id', id)}
                             placeholder="Search project..."
-                            allLabel="All Projects"
+                            allLabel="All"
                             useModal={true}
                             title="Project"
                             icon={FilterIcons.project}
@@ -1669,7 +1669,7 @@ const ListingsPage = () => {
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 dark:border-white/10 md:border-gray-100 bg-white dark:bg-dashboard-card">
-                            <h3 className="text-lg md:text-[13px] font-bold text-gray-900 dark:text-white">Filter Settings</h3>
+                            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">Filter Settings</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -1693,19 +1693,17 @@ const ListingsPage = () => {
                                 paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
                             }}
                         >
-                            <button
-                                onClick={clearPendingFilters}
-                                disabled={!hasActivePendingFilters}
-                                className={`order-1 px-2.5 py-2 md:px-3 md:py-2 rounded text-[13px] font-normal transition-all duration-300 ${hasActivePendingFilters
-                                    ? 'bg-transparent border-none text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400'
-                                    : 'bg-transparent border-none text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                    }`}
-                            >
-                                Clear all
-                            </button>
+                            {hasActivePendingFilters && (
+                                <button
+                                    onClick={clearPendingFilters}
+                                    className="order-1 px-6 py-3.5 md:px-5 md:py-2.5 min-h-[48px] md:min-h-[40px] rounded-full text-[13px] font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300 flex items-center justify-center"
+                                >
+                                    Clear all
+                                </button>
+                            )}
                             <button
                                 onClick={() => applyFilters()}
-                                className="order-2 inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
+                                className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
                             >
                                 <span>Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}</span>
                             </button>

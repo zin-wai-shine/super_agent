@@ -145,7 +145,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                             onChange={(e) => setMinInput(e.target.value.replace(/[^0-9]/g, ''))}
                             onBlur={handleMinInputBlur}
                             onKeyDown={(e) => handleKeyDown(e, 'min')}
-                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
+                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:border-gray-800 dark:focus:border-white/30 transition-all"
                         />
                     </div>
                 </div>
@@ -166,7 +166,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
                             onChange={(e) => setMaxInput(e.target.value.replace(/[^0-9]/g, ''))}
                             onBlur={handleMaxInputBlur}
                             onKeyDown={(e) => handleKeyDown(e, 'max')}
-                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
+                            className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-8 pr-4 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:border-gray-800 dark:focus:border-white/30 transition-all"
                         />
                     </div>
                 </div>

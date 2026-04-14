@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import TransitMapFilter from './TransitMapFilter';
-import { MagnifyingGlassIcon, XMarkIcon, CheckIcon, MapIcon, ChevronLeftIcon, ArrowLeftIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon, CheckIcon, MapIcon, ChevronLeftIcon, ChevronRightIcon, ArrowLeftIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { publicApi } from '../../services/api';
 
@@ -16,6 +16,39 @@ const TransitFilterModal = ({
     const [selectedIds, setSelectedIds] = useState(initialSelected);
     const [searchTerm, setSearchTerm] = useState('');
     const [showMapOnMobile, setShowMapOnMobile] = useState(false);
+    const pillsScrollRef = React.useRef(null);
+    const [canScroll, setCanScroll] = useState({ left: false, right: false });
+
+    // Function to check if scrolling is possible
+    const checkScroll = () => {
+        if (pillsScrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = pillsScrollRef.current;
+            setCanScroll({
+                left: scrollLeft > 2,
+                right: scrollWidth > clientWidth && scrollLeft < scrollWidth - clientWidth - 2
+            });
+        }
+    };
+
+    useEffect(() => {
+        // Run check after a short delay to allow layout to settle
+        const timer = setTimeout(checkScroll, 100);
+        window.addEventListener('resize', checkScroll);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', checkScroll);
+        };
+    }, [selectedIds, searchTerm]);
+
+    const handleScroll = (direction) => {
+        if (pillsScrollRef.current) {
+            const scrollAmount = 200;
+            pillsScrollRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     useEffect(() => {
         const fetchStations = async () => {
@@ -173,7 +206,7 @@ const TransitFilterModal = ({
             />
 
             {/* Modal Content container */}
-            <div className={`relative w-full sm:max-w-[85vw] lg:max-w-[1000px] flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
+            <div className={`relative w-full sm:w-[85%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
                 ${isOpen 
                     ? 'translate-y-0 opacity-100' 
                     : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'
@@ -188,7 +221,7 @@ const TransitFilterModal = ({
                 </div>
 
                 {/* Main Box - Bottom-up animation container */}
-                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[32px] sm:rounded-[32px] overflow-hidden flex flex-col h-[85vh] sm:h-auto sm:max-h-[85vh] shadow-2xl border border-white/10">
+                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[32px] sm:rounded-[28px] overflow-hidden flex flex-col h-[85vh] sm:h-[85vh] sm:max-h-[85vh] shadow-2xl border border-white/10">
                     
                     {/* Pull Handle (Mobile) */}
                     <div className="flex justify-center pt-5 pb-1 sm:hidden flex-shrink-0">
@@ -227,161 +260,226 @@ const TransitFilterModal = ({
 
                         {/* Content: list or map — footer stays below */}
                         <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
-                            {/* Left Column: List — hidden on mobile when map is shown */}
-                            <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[28%] sm:flex-none sm:min-w-0 flex-col bg-white dark:bg-dashboard-dark min-h-0 flex-1 min-w-0 border-r border-gray-100 dark:border-white/5`}>
-                                
-                                {/* Desktop Header: Original Format (ONLY visible on desktop) */}
-                                <div className="hidden sm:block px-6 lg:px-8 py-6 flex-shrink-0 bg-white dark:bg-dashboard-dark">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-                                            <MdOutlineDirectionsTransit className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                                        </div>
-                                        <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
-                                    </div>
-                                    <div className="relative">
-                                        <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search BTS/MRT station..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full h-[60px] pl-14 pr-6 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 transition-all"
-                                        />
-                                    </div>
+                            {/* Left Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
+                            <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[70%] sm:min-w-0 relative bg-white dark:bg-dashboard-card min-w-0 p-0 sm:p-4 sm:pr-2`}>
+                                <div className="w-full h-full sm:rounded-[20px] overflow-hidden sm:border sm:border-gray-900/5 dark:sm:border-white/5 sm:shadow-sm">
+                                    <TransitMapFilter
+                                        hideHeader={true}
+                                        externalStations={stations}
+                                        selectedStations={selectedIds}
+                                        selectedStation={focusedStationId}
+                                        onStationClick={(id) => handleToggleStation(id)}
+                                    />
                                 </div>
+                            </div>
 
-                        {/* Selected Pills — mobile: same horizontal padding as filter; desktop: full width scroll */}
-                            {selectedIds.length > 0 && (
-                                <div className="overflow-y-hidden overflow-x-auto scrollbar-hide pt-2 pb-6 px-4 md:-mx-8 lg:-mx-12 sm:w-[calc(100%+3rem)] sm:px-0" style={{ maxHeight: '7rem' }}>
-                                    <div className="inline-grid grid-flow-col grid-rows-2 auto-cols-max gap-x-3 gap-y-2 pb-0.5 md:pl-8 lg:pl-12">
-                                        {selectedIds.map(id => {
-                                            const station = stations.find(s => s.id === id);
-                                            if (!station) return null;
-                                            return (
-                                                <div
-                                                    key={id}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/10 rounded-full border border-primary-100 dark:border-primary-600/20 group transition-all w-max"
-                                                >
-                                                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: station.line_color || '#ccc' }} />
-                                                    <span className="text-[14px] sm:text-[12px] font-bold text-primary-700 dark:text-primary-400 whitespace-nowrap">
-                                                        {station.name_en}
-                                                    </span>
+                            {/* Right Column: List — hidden on mobile when map is shown */}
+                            <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[30%] sm:min-w-0 flex-col bg-white dark:bg-dashboard-card min-h-0 flex-1 min-w-0 p-0 sm:p-4 sm:pl-2`}>
+                                <div className="flex-1 min-h-0 w-full flex flex-col bg-white dark:bg-dashboard-card sm:rounded-[20px] overflow-hidden sm:border sm:border-gray-900/5 dark:sm:border-white/5 sm:shadow-sm">
+                                    {/* Desktop Header: Original Format (ONLY visible on desktop) */}
+                                    <div className="hidden sm:block pt-4 px-4 pb-2 flex-shrink-0 bg-white dark:bg-dashboard-card">
+                                        <div className="flex items-center justify-between gap-3 sm:mb-2 mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                                                    <MdOutlineDirectionsTransit className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 dark:text-primary-400" />
+                                                </div>
+                                                <h2 className="text-[17px] sm:text-[16px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
+                                            </div>
+                                            <button 
+                                                onClick={onClose}
+                                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all active:scale-90"
+                                            >
+                                                <XMarkIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                        <div className="relative">
+                                            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search BTS/MRT station..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="w-full h-[50px] sm:h-[42px] pl-11 pr-5 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[14px] sm:text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:border-gray-800 dark:focus:border-white/30 transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Selected Pills Header: Navigation buttons */}
+                                    {selectedIds.length > 0 && (
+                                        <div className="flex flex-col">
+                                            <div className="hidden sm:flex items-center justify-between px-4 mt-2">
+                                                <span className="text-[11px] uppercase tracking-wider font-bold text-gray-400">Selected</span>
+                                                <div className="flex items-center gap-1.5">
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleToggleStation(id);
-                                                        }}
-                                                        className="p-0.5 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 transition-colors flex-shrink-0"
+                                                        onClick={() => handleScroll('left')}
+                                                        disabled={!canScroll.left}
+                                                        className={`w-7 h-7 flex items-center justify-center rounded-full border border-gray-100 dark:border-white/10 transition-all ${canScroll.left ? 'bg-white dark:bg-white/5 text-gray-900 dark:text-white hover:border-gray-300 active:scale-90' : 'bg-gray-50/50 dark:bg-white/5 text-gray-200 dark:text-gray-700 cursor-not-allowed opacity-50'}`}
                                                     >
-                                                        <XMarkIcon className="w-3.5 h-3.5" />
+                                                        <ChevronLeftIcon className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleScroll('right')}
+                                                        disabled={!canScroll.right}
+                                                        className={`w-7 h-7 flex items-center justify-center rounded-full border border-gray-100 dark:border-white/10 transition-all ${canScroll.right ? 'bg-white dark:bg-white/5 text-gray-900 dark:text-white hover:border-gray-300 active:scale-90' : 'bg-gray-50/50 dark:bg-white/5 text-gray-200 dark:text-gray-700 cursor-not-allowed opacity-50'}`}
+                                                    >
+                                                        <ChevronRightIcon className="w-4 h-4" />
                                                     </button>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                        {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
-                        <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 lg:px-8 pt-0 pb-6 sm:py-0 sm:pb-4 bg-white dark:bg-dashboard-dark">
-                            {loading ? (
-                                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                    <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
-                                    <p className="text-[15px] sm:text-sm text-gray-400 font-medium">Loading stations...</p>
-                                </div>
-                            ) : filteredGroups.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
-                                        <XMarkIcon className="w-6 h-6 text-gray-300" />
-                                    </div>
-                                    <p className="text-[15px] sm:text-sm text-gray-400 font-medium">No stations found</p>
-                                </div>
-                            ) : (
-                                filteredGroups.map(group => {
-                                    const lineIds = group.stations.map(s => s.id);
-                                    const allSelected = lineIds.length > 0 && lineIds.every(id => selectedIds.includes(id));
-
-                                    return (
-                                        <div key={group.name} className="mt-4 first:mt-0 mb-10 last:mb-20">
-                                            <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-4 sm:pb-3 md:-mx-6 lg:-mx-8 md:px-6 lg:px-8">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[15px] sm:text-[13px] font-normal text-gray-900 dark:text-white">
-                                                            {group.name}
-                                                        </span>
-                                                        <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">
-                                                            {group.stations.length} stations
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleSelectLine(group.stations, allSelected)}
-                                                    className="flex items-center gap-1.5 transition-colors group"
-                                                >
-                                                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-600'}`}>
-                                                        <CheckIcon className={`w-3 h-3 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
-                                                    </div>
-                                                    <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-600'}`}>
-                                                        Select all
-                                                    </span>
-                                                </button>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                                                {group.stations.map(station => (
-                                                    <div
-                                                        key={station.id}
-                                                        onClick={() => handleToggleStation(station.id)}
-                                                        className={`
-                                                        flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
-                                                        ${selectedIds.includes(station.id)
-                                                                ? 'bg-primary-50/50 dark:bg-primary-900/10'
-                                                                : 'hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95'}
-                                                    `}
-                                                    >
-                                                        <div className={`
-                                                        w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0
-                                                        ${selectedIds.includes(station.id)
-                                                                ? 'bg-primary-600 border-primary-600 shadow-sm'
-                                                                : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'}
-                                                    `}>
-                                                            <CheckIcon className={`w-3.5 h-3.5 text-white transition-opacity ${selectedIds.includes(station.id) ? 'opacity-100' : 'opacity-0'}`} />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className={`text-[15px] sm:text-[14px] font-normal leading-tight break-words transition-colors ${selectedIds.includes(station.id) ? 'text-primary-700 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                                {station.name_en}
+                                            <div 
+                                                ref={pillsScrollRef}
+                                                onScroll={checkScroll}
+                                                className="overflow-y-hidden overflow-x-auto scrollbar-hide pt-2 pb-4 px-4" 
+                                                style={{ maxHeight: '7rem' }}
+                                            >
+                                                <div className="inline-grid grid-flow-col grid-rows-2 auto-cols-max gap-x-3 gap-y-2 pb-0.5 md:pl-0">
+                                                    {selectedIds.map(id => {
+                                                        const station = stations.find(s => s.id === id);
+                                                        if (!station) return null;
+                                                        return (
+                                                            <div
+                                                                key={id}
+                                                                className="flex items-center gap-1.5 px-3 py-1 sm:py-0.5 rounded-full border transition-all w-max group backdrop-blur-[2px]"
+                                                                style={{ 
+                                                                    backgroundColor: `${station.line_color || '#ccc'}15`, 
+                                                                    borderColor: `${station.line_color || '#ccc'}30`
+                                                                }}
+                                                            >
+                                                                <span 
+                                                                    className="text-[13px] sm:text-[12px] font-medium whitespace-nowrap"
+                                                                    style={{ color: station.line_color || '#666' }}
+                                                                >
+                                                                    {station.name_en}
+                                                                </span>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleToggleStation(id);
+                                                                    }}
+                                                                    className="p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+                                                                    style={{ color: station.line_color || '#666' }}
+                                                                >
+                                                                    <XMarkIcon className="w-3.5 h-3.5" />
+                                                                </button>
                                                             </div>
-                                                            <div className="text-[10px] sm:text-[9px] text-gray-400 font-extrabold uppercase tracking-[0.15em] mt-0.5">
-                                                                {station.id}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         </div>
-                                    );
-                                })
-                            )}
+                                    )}
+
+                                    {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
+                                    <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 pt-0 pb-6 bg-white dark:bg-dashboard-card">
+                                        {loading ? (
+                                            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                                <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
+                                                <p className="text-[15px] sm:text-sm text-gray-400 font-medium">Loading stations...</p>
+                                            </div>
+                                        ) : filteredGroups.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
+                                                    <XMarkIcon className="w-6 h-6 text-gray-300" />
+                                                </div>
+                                                <p className="text-[15px] sm:text-sm text-gray-400 font-medium">No stations found</p>
+                                            </div>
+                                        ) : (
+                                            filteredGroups.map(group => {
+                                                const lineIds = group.stations.map(s => s.id);
+                                                const allSelected = lineIds.length > 0 && lineIds.every(id => selectedIds.includes(id));
+
+                                                return (
+                                                    <div key={group.name} className="sm:mt-2 first:mt-0 mt-4 mb-10 last:mb-20">
+                                                        <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-2 sm:pb-2 md:-mx-6 lg:-mx-8 md:px-6 lg:px-8">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[15px] sm:text-[13px] font-normal text-gray-900 dark:text-white">
+                                                                        {group.name}
+                                                                    </span>
+                                                                    <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                                                                        {group.stations.length} stations
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleSelectLine(group.stations, allSelected)}
+                                                                className="flex items-center gap-1.5 transition-colors group"
+                                                            >
+                                                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-600'}`}>
+                                                                    <CheckIcon className={`w-3 h-3 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
+                                                                </div>
+                                                                <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-600'}`}>
+                                                                    Select all
+                                                                </span>
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                                                            {group.stations.map(station => (
+                                                                <div
+                                                                    key={station.id}
+                                                                    onClick={() => handleToggleStation(station.id)}
+                                                                    className={`
+                                                                    flex items-center gap-3 px-3 py-2.5 rounded-full cursor-pointer transition-all duration-200
+                                                                    ${selectedIds.includes(station.id)
+                                                                            ? 'bg-primary-50/50 dark:bg-primary-900/10'
+                                                                            : 'hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95'}
+                                                                `}
+                                                                >
+                                                                    <div className={`
+                                                                    w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0
+                                                                    ${selectedIds.includes(station.id)
+                                                                            ? 'bg-primary-600 border-primary-600 shadow-sm'
+                                                                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'}
+                                                                `}>
+                                                                        <CheckIcon className={`w-3.5 h-3.5 text-white transition-opacity ${selectedIds.includes(station.id) ? 'opacity-100' : 'opacity-0'}`} />
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <div className={`text-[15px] sm:text-[14px] font-normal leading-tight break-words transition-colors ${selectedIds.includes(station.id) ? 'text-primary-700 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                                            {station.name_en}
+                                                                        </div>
+                                                                        <div className="text-[10px] sm:text-[9px] text-gray-400 font-extrabold uppercase tracking-[0.15em] mt-0.5">
+                                                                            {station.id}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                    
+                                    {/* Desktop Inline Footer: Integrated inside the card base */}
+                                    <div className="hidden sm:flex shrink-0 items-center justify-between p-4 bg-white dark:bg-dashboard-card border-t border-gray-100 dark:border-white/5">
+                                        <div className="flex items-center">
+                                            {selectedIds.length > 0 && (
+                                                <button
+                                                    onClick={handleClearAll}
+                                                    className="px-6 py-2.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[13px] font-bold hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95 min-h-[40px]"
+                                                >
+                                                    Clear all
+                                                </button>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={handleApply}
+                                            className="px-8 py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] font-normal hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[40px]"
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
-                    <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[72%] sm:min-w-0 relative bg-gray-50 dark:bg-dashboard-dark overflow-hidden min-w-0`}>
-
-                        <TransitMapFilter
-                            hideHeader={true}
-                            externalStations={stations}
-                            selectedStations={selectedIds}
-                            selectedStation={focusedStationId}
-                            onStationClick={(id) => handleToggleStation(id)}
-                        />
-                    </div>
-                </div>
-
-                {/* Footer: match Sidebar design height exactly */}
+                {/* Footer: match Sidebar design height exactly - HIDDEN ON DESKTOP */}
                 <div 
-                    className="shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
+                    className="sm:hidden shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
                     style={{
                         paddingTop: '0.75rem',
                         paddingBottom: '0.75rem',
@@ -413,8 +511,7 @@ const TransitFilterModal = ({
                 </div>
             </div>
         </div>
-    </div>
-</div>,
+    </div>,
 document.body
 );
 };

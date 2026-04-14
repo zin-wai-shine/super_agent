@@ -43,7 +43,7 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
             />
 
             {/* Bottom Sheet Box (Mobile) / Modal (Desktop) */}
-            <div className={`relative w-full max-w-2xl flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform
+            <div className={`relative w-full sm:w-[70%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform
                 ${isOpen 
                     ? 'translate-y-0 opacity-100' 
                     : 'translate-y-full sm:translate-y-4 sm:scale-95 opacity-0 sm:opacity-0'
@@ -64,7 +64,7 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
 
 
                 {/* Main Content Box */}
-                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[20px] sm:rounded-[12px] shadow-2xl overflow-hidden flex flex-col h-[70vh] sm:h-auto max-h-[90vh] border border-black/[0.03] dark:border-white/5">
+                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[20px] sm:rounded-[28px] shadow-2xl overflow-hidden flex flex-col h-[70vh] sm:h-[70vh] max-h-[90vh] sm:max-h-[70vh] border border-black/[0.03] dark:border-white/5">
                 
                 {/* Pull Handle (Mobile Only) */}
                 <div className="flex justify-center pt-5 pb-2 sm:hidden flex-shrink-0">
@@ -72,10 +72,9 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
                 </div>
 
                 {/* Header (Desktop only or for Close button) */}
-                <div className="flex items-center justify-between px-6 py-4 sm:p-6 sm:border-b sm:border-gray-100 sm:dark:border-white/5 flex-shrink-0">
+                <div className="p-5 sm:p-4 sm:border-b sm:border-gray-100 sm:dark:border-white/5 flex-shrink-0 flex items-center justify-between">
                     <div className="flex flex-col sm:flex">
                         <h2 className="hidden sm:block text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">Explore Categories</h2>
-                        <p className="hidden sm:block text-[13px] text-gray-400 dark:text-gray-500 font-medium tracking-tight">Discover properties across {categories.length} curated filters</p>
                     </div>
 
                     {/* Close button only visible on Desktop */}
@@ -89,7 +88,7 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
 
 
                 {/* Grid */}
-                <div className="px-6 sm:px-8 pb-10 overflow-y-auto scrollbar-hide flex-1">
+                <div className="pt-6 px-6 sm:pt-6 sm:px-12 pb-10 overflow-y-auto scrollbar-hide flex-1">
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {categories.map((category) => {
