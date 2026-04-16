@@ -77,13 +77,19 @@ const CollectionGroup = ({
                     <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                         {title}
                     </h2>
-                    <button className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <button 
+                        onClick={() => onNavigate('/collections')}
+                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
                         <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
                     </button>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <button 
+                        onClick={() => onNavigate('/collections')}
+                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
                         <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
                     </button>
 
@@ -311,27 +317,39 @@ const CollectionBar = ({
                                     <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                                         Explore Categories
                                     </h2>
-                                    <div className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center">
+                                    <button 
+                                        onClick={() => setIsAllCategoriesOpen(true)}
+                                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                    >
                                         <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
-                                    </div>
+                                    </button>
                                 </div>
 
-                                {/* Scroll Buttons */}
-                                <div className="hidden md:flex items-center gap-3">
-                                    <button
-                                        onClick={() => scrollCategories('left')}
-                                        disabled={!canScrollLeftCats}
-                                        className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeftCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => setIsAllCategoriesOpen(true)}
+                                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                     >
-                                        <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
+                                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
                                     </button>
-                                    <button
-                                        onClick={() => scrollCategories('right')}
-                                        disabled={!canScrollRightCats}
-                                        className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRightCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
-                                    >
-                                        <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
-                                    </button>
+
+                                    {/* Scroll Buttons */}
+                                    <div className="hidden md:flex items-center gap-3">
+                                        <button
+                                            onClick={() => scrollCategories('left')}
+                                            disabled={!canScrollLeftCats}
+                                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeftCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                                        >
+                                            <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
+                                        </button>
+                                        <button
+                                            onClick={() => scrollCategories('right')}
+                                            disabled={!canScrollRightCats}
+                                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRightCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                                        >
+                                            <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

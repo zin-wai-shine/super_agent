@@ -183,7 +183,16 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
 
     const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 bg-black/60">
-            <div className={`bg-white dark:bg-dashboard-card w-full rounded-b-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800 ${isParentType ? 'max-w-lg mt-10 sm:mt-0' : 'max-w-5xl'}`}>
+            <div className="relative w-full sm:w-auto h-full sm:h-auto flex flex-col justify-start sm:justify-center items-center">
+                {/* Desktop Close Button (Floating Above) */}
+                <button
+                    onClick={onClose}
+                    className="hidden sm:flex absolute -top-12 right-0 w-10 h-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/80 text-white shadow-lg transition-all active:scale-95 group z-[2010]"
+                >
+                    <XMarkIcon className="w-6 h-6 stroke-[2.5] transition-transform group-hover:rotate-90" />
+                </button>
+
+                <div className={`bg-white dark:bg-dashboard-card w-full rounded-b-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800 ${isParentType ? 'max-w-lg mt-10 sm:mt-0' : 'max-w-5xl md:w-[90vw] lg:w-[80vw]'}`}>
                 
                 <div className="flex-none flex items-center justify-between px-8 py-6 border-b border-gray-50 dark:border-gray-800">
                     <div>
@@ -194,12 +203,6 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                             {isParentType ? 'Add a top-level organization unit' : 'Group specific properties together'}
                         </p>
                     </div>
-                    <button 
-                        onClick={onClose} 
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                    >
-                        <XMarkIcon className="w-5 h-5" />
-                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
@@ -403,7 +406,8 @@ const CreateCollectionModal = ({ isOpen, onClose, onSuccess, type = 'child', def
                 </form>
             </div>
         </div>
-    );
+    </div>
+);
 
     return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

@@ -49,6 +49,13 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
                     : 'translate-y-full sm:translate-y-4 sm:scale-95 opacity-0 sm:opacity-0'
                 }
             `}>
+                {/* Desktop Close Button (Floating Above) */}
+                <button
+                    onClick={onClose}
+                    className="hidden sm:flex absolute -top-12 right-0 w-10 h-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/80 text-white shadow-lg transition-all active:scale-95 group z-[2010]"
+                >
+                    <XMarkIcon className="w-6 h-6 stroke-[2.5] transition-transform group-hover:rotate-90" />
+                </button>
                 {/* Decorative Stacked Layers (Primary Color) - Extended down for depth */}
                 <div className="absolute -top-10 inset-x-0 bottom-0 bg-primary-600/30 rounded-t-[24px] sm:hidden -z-10 blur-[1px]" />
                 <div className="absolute -top-8 inset-x-0 bottom-0 bg-primary-600 rounded-t-[20px] sm:hidden -z-10 flex flex-col items-center shadow-[0_-8px_30px_rgba(0,0,0,0.1)]">
@@ -76,14 +83,6 @@ const AllCategoriesModal = ({ isOpen, onClose, categories }) => {
                     <div className="flex flex-col sm:flex">
                         <h2 className="hidden sm:block text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">Explore Categories</h2>
                     </div>
-
-                    {/* Close button only visible on Desktop */}
-                    <button 
-                        onClick={onClose}
-                        className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                    >
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
                 </div>
 
 

@@ -15,6 +15,7 @@ const TransitFilterModal = ({
     const [loading, setLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState(initialSelected);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [showMapOnMobile, setShowMapOnMobile] = useState(false);
     const pillsScrollRef = React.useRef(null);
     const [canScroll, setCanScroll] = useState({ left: false, right: false });
@@ -212,6 +213,13 @@ const TransitFilterModal = ({
                     : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'
                 }
             `}>
+                {/* Desktop Close Button (Floating Above) */}
+                <button
+                    onClick={onClose}
+                    className="hidden sm:flex absolute -top-12 right-0 w-10 h-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/80 text-white shadow-lg transition-all active:scale-95 group z-[2010]"
+                >
+                    <XMarkIcon className="w-6 h-6 stroke-[2.5] transition-transform group-hover:rotate-90" />
+                </button>
                 {/* Mobile Decorative Header - Match Project Modal Design */}
                 <div className="absolute -top-10 inset-x-0 bottom-0 bg-primary-600/30 rounded-t-[24px] sm:hidden -z-10 blur-[1px]" />
                 <div className="absolute -top-8 inset-x-0 bottom-0 bg-primary-600 rounded-t-[20px] sm:hidden -z-10 flex flex-col items-center shadow-[0_-8px_30px_rgba(0,0,0,0.1)]">
@@ -276,31 +284,49 @@ const TransitFilterModal = ({
                             {/* Right Column: List — hidden on mobile when map is shown */}
                             <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[30%] sm:min-w-0 flex-col bg-white dark:bg-dashboard-card min-h-0 flex-1 min-w-0 p-0 sm:p-4 sm:pl-2`}>
                                 <div className="flex-1 min-h-0 w-full flex flex-col bg-white dark:bg-dashboard-card sm:rounded-[20px] overflow-hidden sm:border sm:border-gray-900/5 dark:sm:border-white/5 sm:shadow-sm">
-                                    {/* Desktop Header: Original Format (ONLY visible on desktop) */}
+                                    {/* Desktop Header: Transforming Search (ONLY visible on desktop) */}
                                     <div className="hidden sm:block pt-4 px-4 pb-2 flex-shrink-0 bg-white dark:bg-dashboard-card">
-                                        <div className="flex items-center justify-between gap-3 sm:mb-2 mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-                                                    <MdOutlineDirectionsTransit className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 dark:text-primary-400" />
+                                        <div className="relative flex items-center min-h-[48px] w-full overflow-hidden">
+                                            {/* Unified Animation: Title glides left while fading */}
+                                            <div className={`flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isSearchExpanded ? 'opacity-0 -translate-x-full pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+                                                <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shadow-sm">
+                                                    <MdOutlineDirectionsTransit className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                                                 </div>
-                                                <h2 className="text-[17px] sm:text-[16px] font-semibold text-gray-900 dark:text-white tracking-tight">Select Stations</h2>
+                                                <h2 className="text-[17px] sm:text-[16px] font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">Select Stations</h2>
                                             </div>
-                                            <button 
-                                                onClick={onClose}
-                                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all active:scale-90"
+
+                                            {/* Search Container: Absolute right, glides across to full width */}
+                                            <div 
+                                                className={`absolute right-0 h-[48px] flex items-center rounded-full transition-all duration-600 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-[width,transform,background-color] ${isSearchExpanded ? 'w-full px-4 bg-gray-50/80 dark:bg-white/5 border border-gray-900/5 dark:border-white/10 shadow-sm' : 'w-12 bg-transparent border-transparent'}`}
                                             >
-                                                <XMarkIcon className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                        <div className="relative">
-                                            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                placeholder="Search BTS/MRT station..."
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="w-full h-[50px] sm:h-[42px] pl-11 pr-5 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[14px] sm:text-[13px] font-normal placeholder:text-gray-400 focus:outline-none focus:border-gray-800 dark:focus:border-white/30 transition-all"
-                                            />
+                                                <button 
+                                                    onClick={() => !isSearchExpanded && setIsSearchExpanded(true)}
+                                                    className={`flex items-center justify-center transition-all duration-300 ${isSearchExpanded ? 'text-primary-600 mr-3' : 'w-12 h-12 rounded-full bg-gray-50/50 dark:bg-white/5 text-gray-400 hover:text-gray-900 shadow-sm hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                                                >
+                                                    <MagnifyingGlassIcon className={`${isSearchExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                                                </button>
+
+                                                {isSearchExpanded && (
+                                                    <div className="flex-1 flex items-center animate-in fade-in duration-300 delay-300">
+                                                        <input
+                                                            autoFocus
+                                                            type="text"
+                                                            placeholder="Search stations..."
+                                                            value={searchTerm}
+                                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                                            onBlur={() => !searchTerm && setIsSearchExpanded(false)}
+                                                            className="flex-1 h-full bg-transparent border-none outline-none text-gray-900 dark:text-white text-[14px] font-normal placeholder:text-gray-400"
+                                                        />
+                                                        
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setIsSearchExpanded(false); setSearchTerm(''); }}
+                                                            className="ml-2 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 transition-colors"
+                                                        >
+                                                            <XMarkIcon className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -454,7 +480,7 @@ const TransitFilterModal = ({
                                     </div>
                                     
                                     {/* Desktop Inline Footer: Integrated inside the card base */}
-                                    <div className="hidden sm:flex shrink-0 items-center justify-between p-4 bg-white dark:bg-dashboard-card border-t border-gray-100 dark:border-white/5">
+                                    <div className="hidden sm:flex shrink-0 items-center justify-between p-4 bg-white dark:bg-dashboard-card">
                                         <div className="flex items-center">
                                             {selectedIds.length > 0 && (
                                                 <button
@@ -479,7 +505,7 @@ const TransitFilterModal = ({
 
                 {/* Footer: match Sidebar design height exactly - HIDDEN ON DESKTOP */}
                 <div 
-                    className="sm:hidden shrink-0 border-t border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
+                    className="sm:hidden shrink-0 bg-white dark:bg-dashboard-card flex flex-row flex-nowrap items-center justify-between gap-3 sm:gap-6 px-6 md:px-8 lg:px-12"
                     style={{
                         paddingTop: '0.75rem',
                         paddingBottom: '0.75rem',
