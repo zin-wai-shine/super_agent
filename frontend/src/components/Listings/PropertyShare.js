@@ -37,9 +37,7 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
         };
 
 
-        // Removed the physical file attachment logic because it sends an extra raw image 
-        // alongside the link, which confuses the native sharing UI.
-
+        // Rely on Open Graph tags via the URL for the preview image to avoid duplicate attachments
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
