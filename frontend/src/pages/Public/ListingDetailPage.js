@@ -1756,7 +1756,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             {renderBookingOverlay()}
             {/* Mobile Header (White Nav & Image Carousel) - Visible only on mobile/tablet */}
             {!isBookingOverlayOpen && (
-                <div className="lg:hidden w-full flex flex-col relative">
+                <div 
+                    className="lg:hidden w-full flex flex-col relative"
+                    style={{ marginTop: 'calc(-1 * env(safe-area-inset-top))' }}
+                >
                     {/* Float Top Nav for Mobile - Buttons over image */}
                     <div 
                         className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 z-[60] bg-transparent pointer-events-none"
