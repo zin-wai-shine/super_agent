@@ -25,10 +25,12 @@ func NewPublicController(db *gorm.DB) *PublicController {
 func (pc *PublicController) GetListings(c *gin.Context) {
 	var listings []models.Listing
 	query := pc.db.Model(&models.Listing{}).
-		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
-		Where("is_published = ?", true)
+		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station")
 
-	tenantID, hasTenant := c.Get("tenant_id")
+	if tenantID, exists := c.Get("tenant_id"); exists {
+		query = query.Where("agent_id = ?", tenantID)
+	}
+
 	collectionID := c.Query("collection_id")
 
 
