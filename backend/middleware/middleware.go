@@ -267,7 +267,10 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		}
 
 		// Final check: If not on the main domain and no valid tenant found, prevent access
-		if !isMainDomain && !foundTenant {
+		// EXEMPTION: Public share routes don't strictly need tenant pre-resolution as they use UUIDs
+		isShareRoute := strings.Contains(c.Request.URL.Path, "/api/public/share") || strings.Contains(c.Request.URL.Path, "/p/")
+		
+		if !isMainDomain && !foundTenant && !isShareRoute {
 			log.Printf("[TenantMiddleware] Aborting 404: Not main domain and no tenant found for host '%s'", host)
 			c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found or inactive"})
 			c.Abort()

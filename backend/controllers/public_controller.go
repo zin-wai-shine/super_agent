@@ -615,7 +615,8 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 	}
 
 	if strings.HasPrefix(image, "/") {
-		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
+		// Add cache buster to image URL
+		image = fmt.Sprintf("%s://%s%s?t=%d", scheme, host, image, time.Now().Unix())
 	}
 
 	html := fmt.Sprintf(`<!DOCTYPE html>
@@ -623,10 +624,12 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 <head>
     <meta charset="utf-8">
     <title>%s</title>
-    <meta property="og:site_name" content="Super Real Estate" />
+    <meta property="og:site_name" content="%s" />
     <meta property="og:title" content="%s" />
     <meta property="og:description" content="%s" />
     <meta property="og:image" content="%s" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="%s" />
@@ -639,7 +642,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
         window.location.href = "/listings/%s";
     </script>
 </body>
-</html>`, title, title, fullDescription, image, title, fullDescription, image, title, id)
+</html>`, title, listing.Agent.Name, title, fullDescription, image, title, fullDescription, image, title, id)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
