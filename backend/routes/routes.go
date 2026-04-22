@@ -16,7 +16,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	authController := controllers.NewAuthController(db)
 	superAdminController := controllers.NewSuperAdminController(db, cfg)
 	agentController := controllers.NewAgentController(db, cfg)
-	publicController := controllers.NewPublicController(db, cfg)
+	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
 	appointmentController := controllers.NewAppointmentController(db, wsManager)
 	developerController := controllers.NewDeveloperController(db)

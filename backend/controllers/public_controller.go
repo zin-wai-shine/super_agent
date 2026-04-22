@@ -6,10 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"super_real_estate/config"
 	"super_real_estate/models"
-	"io"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,12 +14,11 @@ import (
 )
 
 type PublicController struct {
-	db  *gorm.DB
-	cfg *config.Config
+	db *gorm.DB
 }
 
-func NewPublicController(db *gorm.DB, cfg *config.Config) *PublicController {
-	return &PublicController{db: db, cfg: cfg}
+func NewPublicController(db *gorm.DB) *PublicController {
+	return &PublicController{db: db}
 }
 
 // GetListings returns published listings with optional filters
@@ -555,7 +551,10 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	if err := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Where("id = ?", id).First(&listing).Error; err != nil {
+	// Preload media sorted by SortOrder
+	if err := pc.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Agent").Preload("Agent.Theme").Where("id = ?", id).First(&listing).Error; err != nil {
 		c.String(http.StatusNotFound, "Listing not found")
 		return
 	}
@@ -584,7 +583,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		}
 		cleanDesc = strings.ReplaceAll(cleanDesc, "\n", " ")
 		cleanDesc = strings.TrimSpace(cleanDesc)
-		
+
 		if len(cleanDesc) > 150 {
 			cleanDesc = cleanDesc[:147] + "..."
 		}
@@ -600,7 +599,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = listing.Agent.Logo
 	}
 
-	// Form absolute image URL
+	// Form absolute URL
 	scheme := "https"
 	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
 		scheme = proto
@@ -614,44 +613,47 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
 	}
 
-	// Fetch index.html from frontend
-	frontendURL := pc.cfg.FrontendURL
-	
-	resp, err := http.Get(frontendURL + "/index.html")
-	if err != nil {
-		fmt.Printf("[MetaInjection] Error fetching frontend template: %v. Falling back to basic HTML.\n", err)
-		// Fallback to basic HTML with OG tags if frontend is unreachable
-		fallbackHtml := fmt.Sprintf(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>%s</title><meta property="og:title" content="%s" /><meta property="og:description" content="%s" /><meta property="og:image" content="%s" /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="%s" /><meta name="twitter:description" content="%s" /><meta name="twitter:image" content="%s" /></head><body><script>window.location.href = "/listings/%s";</script></body></html>`, 
-			title, title, description, image, title, description, image, id)
-		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(fallbackHtml))
+	// Attempt to read the real index.html and inject tags
+	indexPath := "index.html"
+	indexBytes, err := os.ReadFile(indexPath)
+	if err == nil {
+		content := string(indexBytes)
+
+		// Replace Titles
+		content = strings.ReplaceAll(content, "<title>Super Real Estate</title>", fmt.Sprintf("<title>%s</title>", title))
+		content = strings.ReplaceAll(content, "content=\"Super Real Estate\"", fmt.Sprintf("content=\"%s\"", title))
+
+		// Replace Descriptions
+		genericDesc := "Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service."
+		content = strings.ReplaceAll(content, genericDesc, description)
+
+		// Replace Images
+		content = strings.ReplaceAll(content, "content=\"/logo-super.png\"", fmt.Sprintf("content=\"%s\"", image))
+
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(content))
 		return
 	}
-	defer resp.Body.Close()
-	
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to read frontend template")
-		return
-	}
-	
-	html := string(body)
-	
-	// Replace meta tags
-	// Title
-	html = strings.ReplaceAll(html, "<title>Super Real Estate</title>", fmt.Sprintf("<title>%s</title>", title))
-	
-	// Open Graph Tags
-	html = strings.ReplaceAll(html, "<meta property=\"og:title\" content=\"Super Real Estate\" />", fmt.Sprintf("<meta property=\"og:title\" content=\"%s\" />", title))
-	html = strings.ReplaceAll(html, "<meta property=\"og:description\"\n    content=\"Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service.\" />", fmt.Sprintf("<meta property=\"og:description\" content=\"%s\" />", description))
-	html = strings.ReplaceAll(html, "<meta property=\"og:image\" content=\"/logo-super.png\" />", fmt.Sprintf("<meta property=\"og:image\" content=\"%s\" />", image))
-	
-	// Twitter Tags
-	html = strings.ReplaceAll(html, "<meta property=\"twitter:title\" content=\"Super Real Estate\" />", fmt.Sprintf("<meta property=\"twitter:title\" content=\"%s\" />", title))
-	html = strings.ReplaceAll(html, "<meta property=\"twitter:description\"\n    content=\"Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service.\" />", fmt.Sprintf("<meta property=\"twitter:description\" content=\"%s\" />", description))
-	html = strings.ReplaceAll(html, "<meta property=\"twitter:image\" content=\"/logo-super.png\" />", fmt.Sprintf("<meta property=\"twitter:image\" content=\"%s\" />", image))
-	
-	// General Description
-	html = strings.ReplaceAll(html, "<meta name=\"description\" content=\"Super Real Estate - Find your dream property near Bangkok's transit stations\" />", fmt.Sprintf("<meta name=\"description\" content=\"%s\" />", description))
+
+	// Fallback to simple HTML if index.html is missing
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>%s</title>
+    <!-- Social Preview Tags (Backend Rendered Fallback) -->
+    <meta property="og:title" content="%s" />
+    <meta property="og:description" content="%s" />
+    <meta property="og:image" content="%s" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%s" />
+    <meta name="twitter:description" content="%s" />
+    <meta name="twitter:image" content="%s" />
+</head>
+<body>
+    <script>window.location.href = "/listings/%s";</script>
+</body>
+</html>`, title, title, description, image, title, description, image, id)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }

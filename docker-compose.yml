@@ -38,10 +38,10 @@ services:
       - UPLOAD_PATH=/app/uploads
       - GIN_MODE=debug
       - MAIN_DOMAIN=srv1534108.hstgr.cloud
-      - FRONTEND_URL=http://frontend:3000
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
+      - ./frontend/public/index.html:/app/index.html:ro
     ports:
       - "8080:8080"
     depends_on:
