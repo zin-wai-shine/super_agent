@@ -24,7 +24,7 @@ const CollectionDetailPage = () => {
         try {
             // Parallel fetch for collection info and its listings
             const [colRes, listRes] = await Promise.all([
-                collectionApi.getCollection(id),
+                collectionApi.getPublicCollection(id),
                 publicApi.getListings({ collection_id: id, limit: 100 })
             ]);
             

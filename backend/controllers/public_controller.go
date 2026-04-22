@@ -28,10 +28,9 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
 		Where("is_published = ?", true)
 
-	// Tenant filtering (if accessed via agent subdomain)
-	if tenantID, exists := c.Get("tenant_id"); exists {
-		query = query.Where("agent_id = ?", tenantID)
-	}
+	tenantID, hasTenant := c.Get("tenant_id")
+	collectionID := c.Query("collection_id")
+
 
 	// Filter by property type (supports comma-separated for multi-select)
 	if propertyType := c.Query("type"); propertyType != "" {
@@ -167,10 +166,19 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		query = query.Where("id <> ?", excludeID)
 	}
 
-	// Filter by collection
-	if collectionID := c.Query("collection_id"); collectionID != "" {
+	// Filter by collection and apply tenant scoping
+	if collectionID != "" {
 		query = query.Joins("JOIN collection_listings ON collection_listings.listing_id = listings.id").
 			Where("collection_listings.collection_id = ?", collectionID)
+
+		if hasTenant {
+			// Ensure the collection belongs to the current tenant
+			query = query.Joins("JOIN collections ON collections.id = collection_listings.collection_id").
+				Where("collections.agent_id = ?", tenantID)
+		}
+	} else if hasTenant {
+		// Standard tenant scoping for non-collection views
+		query = query.Where("listings.agent_id = ?", tenantID)
 	}
 
 	// Sorting
