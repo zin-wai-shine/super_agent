@@ -146,37 +146,37 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		if idx := strings.Index(domain, ":"); idx > 0 {
 			searchDomain = domain[:idx]
 		}
-
 		// Tenant resolution
 		var tenantID uuid.UUID
 		var tenant *models.Agent
 		foundTenant := false
+		
+		cleanDomain := strings.TrimPrefix(searchDomain, "www.")
 
-		// 1. Try resolving from subdomain (split by dot)
-		parts := strings.Split(searchDomain, ".")
-		if len(parts) >= 2 {
-			potentialSub := parts[0]
-			// Skip common platform subdomains
-			if potentialSub != "www" && potentialSub != "api" && potentialSub != "admin" {
-				potentialSub = strings.ToLower(potentialSub)
-				var agent models.Agent
-				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", potentialSub, true, false).First(&agent).Error; err == nil {
-					tenantID = agent.ID
-					tenant = &agent
-					foundTenant = true
-					log.Printf("[TenantMiddleware] Resolved tenant from subdomain '%s': %s", potentialSub, agent.Name)
-				}
-			}
+		// 1. Try resolving as a custom domain first (exact match or without www)
+		var agent models.Agent
+		if err := db.Where("(custom_domain = ? OR custom_domain = ?) AND is_active = ? AND is_suspended = ?", searchDomain, cleanDomain, true, false).First(&agent).Error; err == nil {
+			tenantID = agent.ID
+			tenant = &agent
+			foundTenant = true
+			log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s': %s", searchDomain, agent.Name)
 		}
 
-		// 2. Try resolving from exact custom domain if not found yet
+		// 2. Try resolving from subdomain (split by dot)
 		if !foundTenant {
-			var agent models.Agent
-			if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", searchDomain, true, false).First(&agent).Error; err == nil {
-				tenantID = agent.ID
-				tenant = &agent
-				foundTenant = true
-				log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s': %s", searchDomain, agent.Name)
+			parts := strings.Split(searchDomain, ".")
+			if len(parts) >= 2 {
+				potentialSub := parts[0]
+				// Skip common platform subdomains
+				if potentialSub != "www" && potentialSub != "api" && potentialSub != "admin" {
+					potentialSub = strings.ToLower(potentialSub)
+					if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", potentialSub, true, false).First(&agent).Error; err == nil {
+						tenantID = agent.ID
+						tenant = &agent
+						foundTenant = true
+						log.Printf("[TenantMiddleware] Resolved tenant from subdomain '%s': %s", potentialSub, agent.Name)
+					}
+				}
 			}
 		}
 
