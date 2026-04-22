@@ -605,7 +605,9 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        const shouldLock = isGoogleMapOpen || isSidebarOpen;
+        // Only lock body scroll for the sidebar/filters drawer, NOT for the map view
+        // because map view uses unified window scroll for the bottom sheet effect.
+        const shouldLock = isSidebarOpen;
         document.body.style.overflow = shouldLock ? 'hidden' : '';
         document.documentElement.style.overflow = shouldLock ? 'hidden' : '';
 
@@ -1962,8 +1964,8 @@ const ListingsPage = () => {
                 isGoogleMapOpen && (
                     <div className="absolute top-0 left-0 w-full min-h-[100svh] z-[200] bg-[#f7f7f7] dark:bg-dashboard-dark lg:!hidden flex flex-col pointer-events-auto">
                         {/* Dynamic Header Bar - Appears when sheet is expanded */}
-                        <div className={`fixed top-0 left-0 right-0 z-[220] bg-white dark:bg-dashboard-card lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-                            <div className="flex-shrink-0 w-full border-b dark:border-white/10 px-4 py-3.5 flex items-center gap-2 shadow-sm">
+                        <div className={`fixed top-0 left-0 right-0 z-[220] bg-white dark:bg-dashboard-card lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] pointer-events-none ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+                            <div className="flex-shrink-0 w-full border-b dark:border-white/10 px-4 py-3.5 flex items-center gap-2 shadow-sm pointer-events-auto">
                                 <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
                                     <BsSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                     <input
@@ -2047,11 +2049,11 @@ const ListingsPage = () => {
                             <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[20px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
-                                    className="sticky top-0 z-[220] flex flex-col items-center pt-3 pb-5 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
+                                    className="sticky top-0 z-[220] flex flex-col items-center justify-center h-[80px] gap-2 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
                                     onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
-                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 dark:bg-white/10 mb-3" />
+                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 dark:bg-white/10" />
 
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
