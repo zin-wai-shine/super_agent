@@ -227,7 +227,7 @@ const HomePage = () => {
                                     Create My Portal
                                     <ArrowRightIcon className="w-6 h-6" />
                                 </Link>
-                                <span className="text-slate-500 text-sm font-bold uppercase tracking-widest">
+                                <span className="text-slate-500 text-sm font-bold" style={{ color: '#222222' }}>
                                     14-day free trial included
                                 </span>
                             </div>

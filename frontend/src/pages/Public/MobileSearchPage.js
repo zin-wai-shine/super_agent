@@ -105,7 +105,7 @@ const MobileSearchPage = () => {
                     <>
                         {/* Search Input */}
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Keywords</label>
+                            <label className="text-xs font-bold mb-2 block" style={{ color: '#222222' }}>Keywords</label>
                             <input
                                 type="text"
                                 value={filters.search}
@@ -117,7 +117,7 @@ const MobileSearchPage = () => {
 
                         {/* Filters Grid */}
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Property Type</label>
+                            <label className="text-xs font-bold mb-2 block" style={{ color: '#222222' }}>Property Type</label>
                             <StyledSelect
                                 options={propertyTypeOptions}
                                 value={getSelectedOption(propertyTypeOptions, filters.type)}
@@ -128,7 +128,7 @@ const MobileSearchPage = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Action</label>
+                                <label className="text-xs font-bold mb-2 block" style={{ color: '#222222' }}>Action</label>
                                 <StyledSelect
                                     options={listingTypeOptions}
                                     value={getSelectedOption(listingTypeOptions, filters.listing_type)}
@@ -137,7 +137,7 @@ const MobileSearchPage = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Bedrooms</label>
+                                <label className="text-xs font-bold mb-2 block" style={{ color: '#222222' }}>Bedrooms</label>
                                 <StyledSelect
                                     options={bedroomOptions}
                                     value={getSelectedOption(bedroomOptions, filters.bedrooms)}
@@ -149,7 +149,7 @@ const MobileSearchPage = () => {
 
                         {/* Price */}
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider">Price Range</label>
+                            <label className="text-xs font-bold mb-2 block" style={{ color: '#222222' }}>Price Range</label>
                             <div className="grid grid-cols-2 gap-3">
                                 <input
                                     type="number"
@@ -171,7 +171,7 @@ const MobileSearchPage = () => {
                 ) : (
                     /* Transit Map */
                     <div className="h-full flex flex-col">
-                        <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wider flex items-center gap-2">
+                        <label className="text-xs font-bold mb-2 block flex items-center gap-2" style={{ color: '#222222' }}>
                             <MapPinIcon className="w-4 h-4" />
                             Search by Location
                         </label>
