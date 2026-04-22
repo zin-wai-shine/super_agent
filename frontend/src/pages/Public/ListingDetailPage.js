@@ -1760,11 +1760,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {/* Float Top Nav for Mobile - Buttons over image */}
                     <div 
                         className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 z-[60] bg-transparent pointer-events-none"
-                        style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
+                        style={{ paddingTop: 'max(20px, calc(env(safe-area-inset-top) + 12px))' }}
                     >
                         <button
                             onClick={() => onClose ? onClose() : navigate(-1)}
-                            className="flex items-center justify-center min-w-[40px] min-h-[40px] bg-white/90 backdrop-blur-md dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5 dark:ring-white/5"
+                            className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5 dark:ring-white/5"
                             aria-label="Back"
                         >
                             <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -1778,7 +1778,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                     url: window.location.href
                                 }}
-                                className="flex items-center justify-center min-w-[40px] min-h-[40px] bg-white/90 backdrop-blur-md dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
+                                className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
                                 showLabel={false}
                                 iconClassName="w-6 h-6 text-gray-900 dark:text-white"
                             />
@@ -1786,14 +1786,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 isSaved={isSaved}
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="min-w-[40px] min-h-[40px] bg-white/90 backdrop-blur-md dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
-                                iconSize={24}
+                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
+                                iconSize={26}
                             />
                         </div>
                     </div>
 
                     {/* Image Carousel - Native horizontal scroll with snapping */}
-                    <div className="relative w-full h-[60vh] min-h-[400px] overflow-hidden">
+                    <div className="relative w-full h-[70vh] min-h-[450px] overflow-hidden">
                         <div
                             ref={imageScrollRef}
                             onScroll={handleImageScroll}
