@@ -136,6 +136,8 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			domain == "super-agent-backend-zin.fly.dev" ||
 			domain == "localhost" ||
 			domain == "127.0.0.1" ||
+			domain == "superrealestate.localhost" ||
+			domain == "superrealestate.localhost:3000" ||
 			domain == "superealestate.localhost" ||
 			domain == "superealestate.test" ||
 			domain == "superealestate.local"
@@ -152,18 +154,21 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			subdomain := ""
 			mainDomainWithDot := "." + mainDomain
 
-			if strings.HasSuffix(domain, mainDomainWithDot) {
-				subdomain = strings.TrimSuffix(domain, mainDomainWithDot)
-			} else if strings.HasSuffix(domain, ".srv1534108.hstgr.cloud") {
-				subdomain = strings.TrimSuffix(domain, ".srv1534108.hstgr.cloud")
-			} else if strings.HasSuffix(domain, ".superealestate.localhost") {
-				subdomain = strings.TrimSuffix(domain, ".superealestate.localhost")
-			} else if strings.HasSuffix(domain, ".superealestate.test") {
-				subdomain = strings.TrimSuffix(domain, ".superealestate.test")
-			} else if strings.HasSuffix(domain, ".superealestate.local") {
-				subdomain = strings.TrimSuffix(domain, ".superealestate.local")
-			} else if strings.HasSuffix(domain, ".localhost") {
-				subdomain = strings.TrimSuffix(domain, ".localhost")
+			searchDomain := domain
+			if idx := strings.Index(domain, ":"); idx > 0 {
+				searchDomain = domain[:idx]
+			}
+
+			if strings.HasSuffix(searchDomain, mainDomainWithDot) {
+				subdomain = strings.TrimSuffix(searchDomain, mainDomainWithDot)
+			} else if strings.HasSuffix(searchDomain, ".srv1534108.hstgr.cloud") {
+				subdomain = strings.TrimSuffix(searchDomain, ".srv1534108.hstgr.cloud")
+			} else if strings.HasSuffix(searchDomain, ".superrealestate.localhost") {
+				subdomain = strings.TrimSuffix(searchDomain, ".superrealestate.localhost")
+			} else if strings.HasSuffix(searchDomain, ".superealestate.localhost") {
+				subdomain = strings.TrimSuffix(searchDomain, ".superealestate.localhost")
+			} else if strings.HasSuffix(searchDomain, ".localhost") {
+				subdomain = strings.TrimSuffix(searchDomain, ".localhost")
 			} else if strings.HasSuffix(domain, ".test") {
 				subdomain = strings.TrimSuffix(domain, ".test")
 			} else if strings.HasSuffix(domain, ".local") {
