@@ -142,47 +142,35 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 			domain == "superealestate.test" ||
 			domain == "superealestate.local"
 
-		c.Set("is_main_domain", isMainDomain)
+		searchDomain := domain
+		if idx := strings.Index(domain, ":"); idx > 0 {
+			searchDomain = domain[:idx]
+		}
 
-		// Tenant resolution from subdomain (e.g. staynert.srv1534108.hstgr.cloud)
+		// Tenant resolution
 		var tenantID uuid.UUID
 		var tenant *models.Agent
 		foundTenant := false
 
-		if !isMainDomain {
-			searchDomain := domain
-			if idx := strings.Index(domain, ":"); idx > 0 {
-				searchDomain = domain[:idx]
-			}
-
-			// Extract subdomain by looking for the FIRST part
-			parts := strings.Split(searchDomain, ".")
-			if len(parts) >= 2 {
-				potentialSub := parts[0]
-				if potentialSub == "www" && len(parts) > 2 {
-					potentialSub = parts[1]
-				}
-				
-				if potentialSub != "" && potentialSub != "api" {
-					potentialSub = strings.ToLower(potentialSub)
-					var agent models.Agent
-					// Try searching by subdomain OR custom domain
-					if err := db.Where("(subdomain = ? OR custom_domain = ?) AND is_active = ? AND is_suspended = ?", potentialSub, searchDomain, true, false).First(&agent).Error; err == nil {
-						tenantID = agent.ID
-						tenant = &agent
-						foundTenant = true
-						log.Printf("[TenantMiddleware] Resolved tenant '%s' for host '%s'", agent.Name, domain)
-					}
+		// 1. Try resolving from subdomain (split by dot)
+		parts := strings.Split(searchDomain, ".")
+		if len(parts) >= 2 {
+			potentialSub := parts[0]
+			// Skip common platform subdomains
+			if potentialSub != "www" && potentialSub != "api" && potentialSub != "admin" {
+				potentialSub = strings.ToLower(potentialSub)
+				var agent models.Agent
+				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", potentialSub, true, false).First(&agent).Error; err == nil {
+					tenantID = agent.ID
+					tenant = &agent
+					foundTenant = true
+					log.Printf("[TenantMiddleware] Resolved tenant from subdomain '%s': %s", potentialSub, agent.Name)
 				}
 			}
 		}
 
+		// 2. Try resolving from exact custom domain if not found yet
 		if !foundTenant {
-			// Fallback: search by exact custom domain
-			searchDomain := domain
-			if idx := strings.Index(domain, ":"); idx > 0 {
-				searchDomain = domain[:idx]
-			}
 			var agent models.Agent
 			if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", searchDomain, true, false).First(&agent).Error; err == nil {
 				tenantID = agent.ID
@@ -195,7 +183,12 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		if foundTenant {
 			c.Set("tenant_id", tenantID)
 			c.Set("tenant", tenant)
-		} else if !isMainDomain && domain != "localhost" {
+			c.Set("is_main_domain", false)
+		} else {
+			c.Set("is_main_domain", isMainDomain)
+		}
+
+		if !foundTenant && !isMainDomain && domain != "localhost" && domain != "127.0.0.1" {
 			log.Printf("[TenantMiddleware] No tenant found for non-main domain: %s", domain)
 		}
 
