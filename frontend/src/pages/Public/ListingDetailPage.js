@@ -1796,7 +1796,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </div>
 
                     {/* Image Carousel - Native horizontal scroll with snapping */}
-                    <div className="relative w-full h-[70vh] min-h-[450px] overflow-hidden">
+                    <div className="relative w-full h-[55vh] min-h-[380px] overflow-hidden">
                         <div
                             ref={imageScrollRef}
                             onScroll={handleImageScroll}
@@ -1832,7 +1832,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         {/* Image counter */}
                         {hasImages && images.length > 1 && (
-                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black/70 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest z-[50] pointer-events-none flex items-center justify-center min-w-[60px]">
+                            <div className="absolute bottom-28 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black/70 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest z-[50] pointer-events-none flex items-center justify-center min-w-[60px]">
                                 {currentImageIndex + 1} / {images.length}
                             </div>
                         )}
@@ -1851,7 +1851,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-8 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-10 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-10 pb-32 lg:pb-8 relative z-10 rounded-t-[32px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
