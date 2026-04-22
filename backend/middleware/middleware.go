@@ -214,12 +214,17 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 
 			// 2. Try to resolve as a custom domain
 			if !foundTenant {
+				searchDomain := domain
+				if strings.HasPrefix(domain, "www.") {
+					searchDomain = strings.TrimPrefix(domain, "www.")
+				}
+
 				var agent models.Agent
-				if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", domain, true, false).First(&agent).Error; err == nil {
+				if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", searchDomain, true, false).First(&agent).Error; err == nil {
 					tenantID = agent.ID
 					tenant = &agent
 					foundTenant = true
-					log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s': %s", domain, agent.Name)
+					log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s' (searched '%s'): %s", domain, searchDomain, agent.Name)
 				}
 			}
 		}

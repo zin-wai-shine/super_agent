@@ -327,7 +327,7 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	query := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").Where("id = ? AND is_published = ?", id, true)
+	query := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").Where("id = ?", id)
 
 	// Tenant filtering
 	if tenantID, exists := c.Get("tenant_id"); exists {
