@@ -1934,7 +1934,7 @@ const ListingsPage = () => {
                                                             <GlobeAltIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] uppercase font-black tracking-widest text-gray-400 dark:text-gray-500">Map Mode</p>
+                                                            <p className="text-[10px] font-bold" style={{ color: '#222222' }}>Map Mode</p>
                                                             <p className="text-sm font-bold text-gray-900 dark:text-white">{total} Properties</p>
                                                         </div>
                                                     </div>
@@ -2055,7 +2055,10 @@ const ListingsPage = () => {
 
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
-                                        <span className="text-[13px] font-bold text-gray-400 dark:text-gray-500 tracking-tight animate-in fade-in duration-300 mb-2 uppercase">
+                                        <span 
+                                            className="text-[13px] font-bold tracking-tight animate-in fade-in duration-300 mb-2"
+                                            style={{ color: '#222222' }}
+                                        >
                                             Found around {total} properties
                                         </span>
                                     )}

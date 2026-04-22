@@ -138,18 +138,18 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
 
                                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-start z-10 pointer-events-none">
                                     {isFeatured && (
-                                        <span className="bg-amber-400/90 backdrop-blur-md text-amber-950 text-[10px] font-black px-3 py-1.5 rounded-full shadow-[0_4px_12px_rgba(251,191,36,0.3)] border border-amber-300/50 tracking-[0.1em] uppercase flex items-center gap-1.5">
+                                        <span className="bg-amber-400/90 backdrop-blur-md text-amber-950 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-[0_4px_12px_rgba(251,191,36,0.3)] border border-amber-300/50 flex items-center gap-1.5">
                                             <SparklesIcon className="w-3 h-3" />
                                             Featured
                                         </span>
                                     )}
-                                    <span className="text-[10px] font-black px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white shadow-lg border border-white/20 tracking-[0.1em] uppercase">
+                                    <span className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white shadow-lg border border-white/20">
                                         {listingType === 'sale' ? 'For Sale' : 'For Rent'}
                                     </span>
                                 </div>
 
                                 {dateStr && (
-                                    <div className="absolute bottom-3 right-3 bg-slate-900/60 backdrop-blur-md text-white/90 text-[9px] font-black px-3 py-1.5 rounded-full tracking-widest uppercase border border-white/10 z-10 pointer-events-none transition-opacity duration-300">
+                                    <div className="absolute bottom-3 right-3 bg-slate-900/60 backdrop-blur-md text-white/90 text-[9px] font-bold px-3 py-1.5 rounded-full border border-white/10 z-10 pointer-events-none transition-opacity duration-300">
                                         {dateStr}
                                     </div>
                                 )}

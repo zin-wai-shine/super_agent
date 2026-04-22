@@ -760,7 +760,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
 
                     {/* Name */}
                     <div className="text-center z-10 mb-10">
-                        <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em] mb-2 block">Official Agent</span>
+                        <span className="text-[10px] font-bold mb-2 block" style={{ color: '#222222' }}>Official Agent</span>
                         <h2 className="text-2xl font-black text-slate-900/90 dark:text-white leading-tight">{agent.name}</h2>
                     </div>
 
@@ -772,7 +772,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                                     <EnvelopeIcon className="w-5 h-5 text-gray-400 dark:text-gray-300 group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors" />
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                    <span className="text-[10px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-0.5">Email</span>
+                                    <span className="text-[10px] font-bold mb-0.5" style={{ color: '#222222' }}>Email</span>
                                     <span className="text-[14px] text-slate-700/80 dark:text-gray-200 truncate font-medium group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors">{agent.email}</span>
                                 </div>
                             </a>
@@ -783,7 +783,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                                     <PhoneIcon className="w-5 h-5 text-gray-400 dark:text-gray-300 group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors" />
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                    <span className="text-[10px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider mb-0.5">Phone</span>
+                                    <span className="text-[10px] font-bold mb-0.5" style={{ color: '#222222' }}>Phone</span>
                                     <span className="text-[14px] text-slate-700/80 dark:text-gray-200 truncate font-medium group-hover/item:text-primary-600 dark:group-hover/item:text-white transition-colors">{agent.phone}</span>
                                 </div>
                             </a>
@@ -833,7 +833,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
 
                                 <div className="relative z-10 flex items-center gap-2.5 whitespace-nowrap">
                                     <GlobeAltIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
-                                    <span className="text-[13px] font-black uppercase tracking-wider">Visit Website</span>
+                                    <span className="text-[13px] font-bold" style={{ color: '#222222' }}>Visit Website</span>
                                 </div>
                             </a>
                         )}
@@ -843,7 +843,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                 {/* ── RIGHT COLUMN ── White content panel with liquid glass button */}
                 <div className="flex-1 flex flex-col px-12 py-14 overflow-y-auto bg-white dark:bg-dashboard-dark">
                     <div className="mb-6">
-                        <span className="text-[10px] font-black text-primary-600/80 uppercase tracking-[0.2em]">About our Vision</span>
+                        <span className="text-[10px] font-bold" style={{ color: '#222222' }}>About our Vision</span>
                         <h3 className="text-3xl font-black text-slate-900/95 dark:text-white mt-1 leading-tight">{agent.name}</h3>
                     </div>
 

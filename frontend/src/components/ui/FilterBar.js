@@ -233,7 +233,7 @@ const FilterBar = ({
                                             {/* Left Column: Quick Searches (1/3) */}
                                             <div className="w-[320px] flex-shrink-0 flex flex-col bg-[#F9FAFC] dark:bg-dashboard-card lg:bg-white dark:lg:bg-dashboard-card">
                                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                                                    <p className="text-[13px] sm:text-[11px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">Quick Searches</p>
+                                                    <p className="text-[13px] sm:text-[11px] font-bold mb-4" style={{ color: '#222222' }}>Quick Searches</p>
                                                     <div className="space-y-1">
                                                         {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                                             <button
@@ -266,7 +266,7 @@ const FilterBar = ({
                                                         <div className="bg-primary-600 p-1 rounded-full">
                                                             <MapIcon className="w-3.5 h-3.5 text-white" />
                                                         </div>
-                                                        <span className="text-[13px] sm:text-[11px] font-medium text-gray-900 dark:text-white uppercase tracking-widest">Transit Explorer</span>
+                                                        <span className="text-[13px] sm:text-[11px] font-bold" style={{ color: '#222222' }}>Transit Explorer</span>
                                                     </div>
                                                 </div>
 
