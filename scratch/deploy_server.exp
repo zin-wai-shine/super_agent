@@ -14,6 +14,8 @@ expect "# "
 send "git pull origin v1\r"
 expect "# "
 send "docker compose up -d --build\r"
+expect "# "
+send "docker exec super_nginx nginx -s reload\r"
 expect {
     "#" { send "exit\r" }
     timeout { send "\x03"; exit }
