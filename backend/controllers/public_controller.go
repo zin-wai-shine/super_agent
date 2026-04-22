@@ -567,7 +567,20 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 
 	description := fmt.Sprintf("฿%s | %d Bed | %d Bath | %.0f sqm", priceStr, listing.Bedrooms, listing.Bathrooms, listing.Area)
 	if listing.Description != "" {
-		cleanDesc := strings.ReplaceAll(listing.Description, "\n", " ")
+		// Basic HTML tag stripping
+		cleanDesc := listing.Description
+		for strings.Contains(cleanDesc, "<") && strings.Contains(cleanDesc, ">") {
+			start := strings.Index(cleanDesc, "<")
+			end := strings.Index(cleanDesc, ">")
+			if start < end {
+				cleanDesc = cleanDesc[:start] + cleanDesc[end+1:]
+			} else {
+				break
+			}
+		}
+		cleanDesc = strings.ReplaceAll(cleanDesc, "\n", " ")
+		cleanDesc = strings.TrimSpace(cleanDesc)
+		
 		if len(cleanDesc) > 150 {
 			cleanDesc = cleanDesc[:147] + "..."
 		}
@@ -613,15 +626,8 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
     <meta name="twitter:image" content="%s" />
 </head>
 <body>
-    <h1>%s</h1>
-    <p>%s</p>
-    <img src="%s" />
-    <script>
-        // Redirect actual users to the frontend listing page
-        window.location.href = "/listings/%s";
-    </script>
 </body>
-</html>`, title, title, description, image, title, description, image, title, description, image, id)
+</html>`, title, title, description, image, title, description, image)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }

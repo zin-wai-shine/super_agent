@@ -33,7 +33,7 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
         const shareData = {
             title: property.title,
             text: cleanDescription,
-            url: `${window.location.origin}/api/public/share/listing/${property.id}`,
+            url: `${window.location.origin}/listings/${property.id}`,
         };
 
 
@@ -92,7 +92,7 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
                 onClose={() => setIsModalOpen(false)}
                 property={{
                     ...property,
-                    url: `${window.location.origin}/api/public/share/listing/${property.id}`
+                    url: `${window.location.origin}/listings/${property.id}`
                 }}
             />
         </>
