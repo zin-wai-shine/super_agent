@@ -2047,7 +2047,7 @@ const ListingsPage = () => {
                             <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[20px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
-                                    className="sticky top-0 z-[220] flex flex-col items-center py-5 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
+                                    className="sticky top-0 z-[220] flex flex-col items-center pt-3 pb-5 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
                                     onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
@@ -2056,7 +2056,7 @@ const ListingsPage = () => {
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
                                         <span 
-                                            className="text-[13px] font-bold tracking-tight animate-in fade-in duration-300 mb-2"
+                                            className="text-[16px] font-bold tracking-tight animate-in fade-in duration-300"
                                             style={{ color: '#222222' }}
                                         >
                                             Found around {total} properties
