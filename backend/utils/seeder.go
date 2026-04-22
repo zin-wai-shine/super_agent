@@ -16,13 +16,7 @@ import (
 
 // SeedFakeData generates fake agents and listings if none exist
 func SeedFakeData(db *gorm.DB) {
-	var listingCount int64
-	db.Model(&models.Listing{}).Count(&listingCount)
-
-	if listingCount > 0 {
-		log.Println("Listings already exist, skipping fake data seeding.")
-		return
-	}
+	log.Println("Checking for agents lacking fake data...")
 
 	log.Println("Seeding fake data (Agents and Listings)...")
 
@@ -86,26 +80,39 @@ func SeedFakeData(db *gorm.DB) {
 		agents = append(agents, agent)
 	}
 
-	// 3. Create Fake Listings for each Agent
+	// 3. Create Fake Listings for ALL Agents (including bolthaven/staynert)
 	// Listing types
 	listingTypes := []string{"sale", "rent"}
 	propertyTypes := []string{"condo", "house", "townhome", "land"}
 
-	for _, agent := range agents {
-		// Generate 5 listings per agent
-		for j := 0; j < 5; j++ {
+	// Fetch all agents to ensure everyone has listings
+	var allAgents []models.Agent
+	db.Find(&allAgents)
+
+	for _, agent := range allAgents {
+		// Check if agent already has listings
+		var count int64
+		db.Model(&models.Listing{}).Where("agent_id = ?", agent.ID).Count(&count)
+		if count > 0 {
+			continue
+		}
+
+		log.Printf("Seeding 8 fake listings for agent: %s (%s)", agent.Name, agent.Subdomain)
+		
+		// Generate 8 listings per agent
+		for j := 0; j < 8; j++ {
 			// Random station
 			station := stations[rand.Intn(len(stations))]
 
 			price := float64(rand.Intn(10000000) + 1000000) // Random price between 1M and 11M
 			if rand.Intn(2) == 0 {                          // 50% chance for rent
-				price = float64(rand.Intn(50000) + 5000) // Rent 5k - 55k
+				price = float64(rand.Intn(50000) + 15000) // Rent 15k - 65k
 			}
 
 			listing := models.Listing{
 				AgentID:      agent.ID,
 				CreatedBy:    agent.ID, // Simplified ownership
-				Title:        fmt.Sprintf("Beautiful %s near %s", propertyTypes[rand.Intn(len(propertyTypes))], station.NameEN),
+				Title:        fmt.Sprintf("%s in %s near %s", propertyTypes[rand.Intn(len(propertyTypes))], agent.Name, station.NameEN),
 				Description:  faker.Paragraph(),
 				PropertyType: propertyTypes[rand.Intn(len(propertyTypes))],
 				ListingType:  listingTypes[rand.Intn(len(listingTypes))],
@@ -128,14 +135,14 @@ func SeedFakeData(db *gorm.DB) {
 			}
 
 			// Add fake images (using picsum)
-			for k := 0; k < 3; k++ {
+			for k := 0; k < 5; k++ {
 				imageID := rand.Intn(1000)
 				media := models.Media{
 					ListingID: listing.ID,
 					Type:      "image",
 					URL:       fmt.Sprintf("https://picsum.photos/id/%d/800/600", imageID),
 					Thumbnail: fmt.Sprintf("https://picsum.photos/id/%d/200/200", imageID),
-					Caption:   "Living Room",
+					Caption:   PHOTO_ROOM_TYPES[k%len(PHOTO_ROOM_TYPES)],
 					SortOrder: k,
 				}
 				db.Create(&media)
