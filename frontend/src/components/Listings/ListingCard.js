@@ -17,15 +17,91 @@ import {
     GlobeAltIcon
 } from '@heroicons/react/24/solid';
 import { SiLine, SiFacebook, SiInstagram, SiLinkedin } from 'react-icons/si';
-import { BsHeart, BsHeartFill } from "react-icons/bs";
+import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
 import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
+import { MdOutlineDirectionsTransit } from "react-icons/md";
 
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
+
+const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) => {
+    const [animate, setAnimate] = React.useState(false);
+    const [showSaved, setShowSaved] = React.useState(false);
+    const [isFlashing, setIsFlashing] = React.useState(false);
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (disabled) return;
+        
+        // Trigger animation only when saving
+        if (!isSaved) {
+            setAnimate(true);
+            setShowSaved(true);
+            setIsFlashing(true);
+            setTimeout(() => setAnimate(false), 850);
+            setTimeout(() => setShowSaved(false), 1200);
+            setTimeout(() => setIsFlashing(false), 400);
+        }
+        onClick(e);
+    };
+
+    return (
+        <button
+            onClick={handleClick}
+            disabled={disabled}
+            className={`relative flex items-center justify-center transition-all active:scale-90 hover:scale-105 ${className}`}
+        >
+            {/* Flash Effect */}
+            {isFlashing && (
+                <div className="absolute inset-[-4px] bg-rose-500/20 dark:bg-rose-500/30 rounded-full animate-heart-flash blur-sm" />
+            )}
+            {/* YouTube-style Saved Tooltip */}
+            {showSaved && (
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 pointer-events-none z-[100] animate-saved-tooltip">
+                    <span className="bg-[#222222]/90 text-white text-[12px] px-2.5 py-1 rounded-full whitespace-nowrap shadow-xl font-medium border border-white/10">
+                        Saved
+                    </span>
+                </div>
+            )}
+
+            {/* Particles (Dots and Sparkles) */}
+            {animate && (
+                <>
+                    {/* Dots */}
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div 
+                            key={`dot-${i}`} 
+                            className={`heart-particle heart-dot-active-${i} ${i % 2 === 0 ? 'bg-rose-500' : 'bg-amber-400'}`} 
+                        />
+                    ))}
+                    {/* Sparkles */}
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div 
+                            key={`sparkle-${i}`} 
+                            className={`heart-particle heart-sparkle heart-sparkle-active-${i} ${i % 2 === 0 ? 'bg-pink-400' : 'bg-white'}`} 
+                        />
+                    ))}
+                </>
+            )}
+
+            <div className={animate ? 'heart-pop-active' : ''}>
+                {isSaved ? (
+                    <HiHeart className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
+                ) : (
+                    <HiOutlineHeart 
+                        className="text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300" 
+                        style={{ width: iconSize, height: iconSize }} 
+                    />
+                )}
+            </div>
+        </button>
+    );
+};
 
 export const ListingImageSlider = ({ images, title, cardLink }) => {
     const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -372,66 +448,67 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         if (isSavedMode || isListView) {
             return (
                 <div
-                    className={`bg-transparent rounded-none overflow-hidden group`}
+                    className={`relative bg-transparent rounded-none group`}
                 >
-                    <div className="relative aspect-[5/4.5] md:aspect-[5/5.0] rounded-[23px] overflow-hidden mb-2">
-                        <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
+                    <div className="relative">
+                        <div className="relative aspect-[5/4.5] md:aspect-[5/5.0] rounded-[23px] overflow-hidden mb-2">
+                             <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
-                        {/* Status Badge (Rent/Sale) — smaller on mobile for Favorites */}
-                        <div className="absolute top-3.5 left-3.5">
+                             {/* Agent Profile Overlay - Floating Card Design */}
+                             {isMainDomain && listing.agent && (
+                                 <button
+                                     onClick={handleAgentClick}
+                                     className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto active:scale-95 transition-all duration-300"
+                                 >
+                                     <div
+                                         className="bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-lg shadow-lg flex items-center justify-center border border-white/60 dark:border-white/10 w-[88px] md:w-[112px] aspect-[2.8/1] overflow-hidden hover:bg-white dark:hover:bg-dashboard-hover transition-all duration-300"
+                                         style={
+                                             (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                                 backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                                 backgroundSize: '75%',
+                                                 backgroundRepeat: 'no-repeat',
+                                                 backgroundPosition: 'center'
+                                             } : {}
+                                         }
+                                     >
+                                         {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                             <span className="text-primary-600 font-bold text-[11px] md:text-xs whitespace-nowrap px-2 truncate w-full text-center">
+                                                 {listing.agent.name || 'Agent'}
+                                             </span>
+                                         )}
+                                     </div>
+                                 </button>
+                             )}
+                        </div>
+
+                        {/* Status Badge Group */}
+                        <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
                             <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[11px] md:text-[11px] font-bold text-gray-900 dark:text-white shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
 
-                         {showSave && (
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
-                            >
-                                {isSaved ? (
-                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
-                                ) : (
-                                    <BsHeart className="w-[20px] h-[20px] text-slate-500 dark:text-gray-300" strokeWidth={0.5} />
-                                )}
-                            </button>
-                        )}
-
-                        {/* Agent Profile Overlay - Floating Card Design */}
-                        {isMainDomain && listing.agent && (
-                            <button
-                                onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto active:scale-95 transition-all duration-300"
-                            >
-                                <div
-                                    className="bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-lg shadow-lg flex items-center justify-center border border-white/60 dark:border-white/10 w-[88px] md:w-[112px] aspect-[2.8/1] overflow-hidden hover:bg-white dark:hover:bg-dashboard-hover transition-all duration-300"
-                                    style={
-                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
-                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
-                                            backgroundSize: '75%',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center'
-                                        } : {}
-                                    }
-                                >
-                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
-                                        <span className="text-primary-600 font-bold text-[11px] md:text-xs whitespace-nowrap px-2 truncate w-full text-center">
-                                            {listing.agent.name || 'Agent'}
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
+                        {/* Favorite Button - Top Right Corner */}
+                        {showSave && (
+                            <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
+                                <HeartButton
+                                    isSaved={isSaved}
+                                    onClick={handleToggleSave}
+                                    disabled={savingListing}
+                                    className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
+                                    iconSize={32}
+                                />
+                            </div>
                         )}
                     </div>
 
                     <div className="px-1.5 py-2">
                         <Link to={cardLink} className="block group/link">
-                            <h3 className="text-[15px] md:text-[13px] font-medium text-slate-900 dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">
+                            <h3 className="text-[16px] md:text-[13px] font-semibold text-[#222222] dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">
                                 {title}
                             </h3>
                             <div className="mt-1 flex flex-col gap-0.5">
-                                <p className="text-[15px] md:text-[13px] text-gray-500 dark:text-gray-300 font-medium">
+                                <p className="text-[16px] md:text-[13px] text-[#222222]/70 dark:text-gray-300 font-medium">
                                     {bedrooms} Bed · {bathrooms} Bath
                                 </p>
                             </div>
@@ -448,86 +525,86 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 className={`group relative flex flex-col transition-all duration-300 ${cardClassName}`}
             >
                 <div className="flex flex-col w-full bg-transparent rounded-none border-none">
-                    <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
-                        <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
+                        <div className="relative">
+                            <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
+                                <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
-                        {/* Status Badge */}
-                        <div className="absolute top-3.5 left-3.5 animate-fill-med">
-                            <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[15px] md:text-[12px] font-bold text-gray-900 dark:text-white shadow-sm">
-                                {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
-                            </span>
-                        </div>
-
-                         {showSave && (
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
-                            >
-                                {isSaved ? (
-                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
-                                ) : (
-                                    <BsHeart className="w-[20px] h-[20px] text-slate-500 dark:text-gray-300" strokeWidth={0.5} />
+                                {/* Agent Profile Overlay - Floating Card Design */}
+                                {isMainDomain && listing.agent && (
+                                    <button
+                                        onClick={handleAgentClick}
+                                        className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
+                                    >
+                                        <div
+                                            className="bg-white/85 backdrop-blur-xl rounded-[4px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
+                                            style={
+                                                (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                                    backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                                    backgroundSize: '78%',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center',
+                                                    padding: '0px'
+                                                } : {}
+                                            }
+                                        >
+                                            {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                                <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
+                                                    {listing.agent.name || 'Agent'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
                                 )}
-                            </button>
-                        )}
+                            </div>
 
-                        {/* Agent Profile Overlay - Floating Card Design */}
-                        {isMainDomain && listing.agent && (
-                            <button
-                                onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
-                            >
-                                <div
-                                    className="bg-white/85 backdrop-blur-xl rounded-[4px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
-                                    style={
-                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
-                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
-                                            backgroundSize: '78%',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center',
-                                            padding: '0px'
-                                        } : {}
-                                    }
-                                >
-                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
-                                        <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
-                                            {listing.agent.name || 'Agent'}
-                                        </span>
-                                    )}
+                            {/* Status Badge */}
+                            <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none animate-fill-med">
+                                <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[15px] md:text-[12px] font-bold text-gray-900 dark:text-white shadow-sm">
+                                    {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
+                                </span>
+                            </div>
+
+                            {/* Favorite Button - Top Right Corner */}
+                            {showSave && (
+                                <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
+                                    <HeartButton
+                                        isSaved={isSaved}
+                                        onClick={handleToggleSave}
+                                        disabled={savingListing}
+                                        className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
+                                        iconSize={32}
+                                    />
                                 </div>
-                            </button>
-                        )}
-
-
-                    </div>
-
-                    <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
-                        <div className="flex justify-between items-start animate-fill-med">
-                            <h3 className="text-[15px] md:text-[16px] font-semibold text-slate-900 dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
-                        </div>
-
-                        <div className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5 animate-fill-med">
-                            <MapPinIcon className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                            <span className="truncate">{district || 'Bangkok'}</span>
-                            {nearestStationName && (
-                                <>
-                                    <span className="text-gray-300 dark:text-gray-600">·</span>
-                                    <span className="truncate font-medium text-gray-800 dark:text-gray-200">{nearestStationName}</span>
-                                </>
                             )}
                         </div>
-
-                        <p className="text-[15px] md:text-[14px] text-gray-500 dark:text-gray-300 animate-fill-slow">
-                            {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
-                        </p>
-
-                        <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
-                            <span className="text-[15px] md:text-[14.5px] font-semibold text-gray-900 dark:text-white">฿{formatPrice(price)}</span>
-                            <span className="text-[15px] md:text-[13px] text-gray-500 dark:text-gray-400">{listing_type === 'rent' ? '/ mo' : ''}</span>
-                        </div>
-                    </Link>
                 </div>
+
+                <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
+                    <div className="flex justify-between items-start animate-fill-med">
+                        <h3 className="text-[16px] md:text-[16px] font-semibold text-[#222222] dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
+                    </div>
+
+                    {stationWithDistance && (
+                        <div className="text-[17px] md:text-[14px] flex items-center gap-2 mb-1.5 animate-fill-med mt-0.5 font-sans">
+                            <div 
+                                className="w-[34px] h-[26px] md:w-[30px] md:h-[22px] rounded-[6px] flex items-center justify-center p-1 flex-shrink-0 shadow-sm"
+                                style={{ backgroundColor: station?.line_color || line_color || '#222222' }}
+                            >
+                                <MdOutlineDirectionsTransit className="w-full h-full text-white" />
+                            </div>
+                            <span className="truncate font-medium text-[#646464] dark:text-gray-300">{stationWithDistance}</span>
+                        </div>
+                    )}
+
+                    <p className="text-[16px] md:text-[14px] text-[#222222]/70 dark:text-gray-300 animate-fill-slow">
+                        {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
+                    </p>
+
+                    <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
+                        <span className="text-[16.5px] md:text-[14.5px] font-semibold text-[#222222] dark:text-white">฿{formatPrice(price)}</span>
+                        <span className="text-[14.5px] md:text-[13px] text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ mo' : ''}</span>
+                    </div>
+                </Link>
             </div>
         );
     };
@@ -539,82 +616,83 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 className={`group bg-transparent rounded-none border-b border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 animate-in fade-in duration-500 ${cardClassName}`}
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
             >
-                <div className="p-4 flex gap-5">
+                <div className="p-4 flex gap-5 relative">
                     <div className="relative aspect-[4/3.8] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
                         <ListingImageSlider images={listingImages} title={title} cardLink={linkTo} />
-                        <div className="absolute top-3.5 left-3.5 z-10">
-                            <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
-                                <span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
-                            </div>
-                        </div>
-                        {showSave && (
-                            <button
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center p-0 active:scale-90 transition-all shadow-lg hover:scale-105"
-                            >
-                                {isSaved ? (
-                                    <BsHeartFill className="w-[20px] h-[20px] text-rose-500 drop-shadow-sm" />
-                                ) : (
-                                    <BsHeart className="w-[20px] h-[20px] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" strokeWidth={0.5} />
-                                )}
-                            </button>
-                        )}
-
-                        {/* Agent Profile Overlay - Floating Card Design */}
-                        {isMainDomain && listing.agent && (
-                            <button
-                                onClick={handleAgentClick}
-                                className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
-                            >
-                                <div
-                                    className="bg-white/85 backdrop-blur-xl rounded-[4px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
-                                    style={
-                                        (listing.agent.logo || listing.agent.theme?.logo_url) ? {
-                                            backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
-                                            backgroundSize: '78%',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center',
-                                            padding: '0px'
-                                        } : {}
-                                    }
-                                >
-                                    {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
-                                        <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
-                                            {listing.agent.name || 'Agent'}
-                                        </span>
-                                    )}
+                                <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2 pointer-events-none">
+                                    <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+                                        <span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
+                                    </div>
                                 </div>
-                            </button>
-                        )}
-                    </div>
+
+                                {/* Favorite Button - Top Right Corner */}
+                                {showSave && (
+                                    <div className="absolute top-3.5 right-3.5 z-10 pointer-events-none">
+                                        <HeartButton
+                                            isSaved={isSaved}
+                                            onClick={handleToggleSave}
+                                            disabled={savingListing}
+                                            className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
+                                            iconSize={32}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Agent Profile Overlay - Floating Card Design */}
+                                {isMainDomain && listing.agent && (
+                                    <button
+                                        onClick={handleAgentClick}
+                                        className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]"
+                                    >
+                                        <div
+                                            className="bg-white/85 backdrop-blur-xl rounded-[4px] shadow-[0_4px_20px_0_rgba(31,38,135,0.12)] flex items-center justify-center border border-white/60 w-[88px] md:w-[112px] h-auto aspect-[3/1] overflow-hidden shimmer-sweep hover:bg-white transition-all duration-300 group-hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.18)]"
+                                            style={
+                                                (listing.agent.logo || listing.agent.theme?.logo_url) ? {
+                                                    backgroundImage: `url('${getMediaUrl(listing.agent.logo || listing.agent.theme?.logo_url)}')`,
+                                                    backgroundSize: '78%',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center',
+                                                    padding: '0px'
+                                                } : {}
+                                            }
+                                        >
+                                            {!(listing.agent.logo || listing.agent.theme?.logo_url) && (
+                                                <span className="text-primary-600 font-bold text-xs md:text-sm whitespace-nowrap px-2 truncate w-full text-center">
+                                                    {listing.agent.name || 'Agent'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
+                            </div>
                     <div className="flex-1 py-1 flex flex-col justify-between">
                         <div>
                             <div className="flex justify-between items-start mb-1">
                                 <Link to={linkTo}>
-                                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 md:hover:text-primary-600 transition-colors">{title}</h3>
+                                    <h3 className="text-[16px] sm:text-lg font-semibold text-[#222222] dark:text-white line-clamp-1 md:hover:text-primary-600 transition-colors">{title}</h3>
                                 </Link>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                                <MapPinIcon className="w-4 h-4" />
-                                <span className="truncate">{district || 'Bangkok'}</span>
-                                {stationWithDistance && (
-                                    <>
-                                        <span className="text-gray-300">·</span>
-                                        <span className="truncate">{stationWithDistance}</span>
-                                    </>
-                                )}
-                            </div>
-                            <div className="flex gap-4 text-sm text-gray-600">
+                            {stationWithDistance && (
+                                <div className="flex items-center gap-2 text-[17px] sm:text-sm mb-1.5 mt-0.5 font-sans">
+                                    <div 
+                                        className="w-[34px] h-[26px] sm:w-[30px] sm:h-[22px] rounded-[6px] flex items-center justify-center p-1 flex-shrink-0 shadow-sm"
+                                        style={{ backgroundColor: station?.line_color || line_color || '#222222' }}
+                                    >
+                                        <MdOutlineDirectionsTransit className="w-full h-full text-white" />
+                                    </div>
+                                    <span className="truncate font-medium text-[#646464] dark:text-gray-300">{stationWithDistance}</span>
+                                </div>
+                            )}
+                            <div className="flex gap-4 text-[16px] sm:text-sm text-[#222222]/70 dark:text-gray-300">
                                 <span>{bedrooms} Bed</span>
                                 <span>{bathrooms} Bath</span>
                                 <span>{area} sqm</span>
                             </div>
                         </div>
                         <div className="flex justify-between items-end">
-                            <p className="text-[16px] font-semibold text-gray-900">
+                            <p className="text-[16.5px] font-semibold text-[#222222] dark:text-white">
                                 ฿{formatPrice(price)}
-                                <span className="text-sm font-normal text-gray-500">{listing_type === 'rent' ? '/mo' : ''}</span>
+                                <span className="text-[14.5px] font-normal text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/mo' : ''}</span>
                             </p>
                         </div>
                     </div>

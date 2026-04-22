@@ -1,56 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collectionApi } from '../../services/api';
 import CollectionCard from '../../components/Listings/CollectionCard';
 import CollectionSkeleton from '../../components/ui/CollectionSkeleton';
+import AllCategoriesModal from '../../components/Listings/AllCategoriesModal';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { FiGrid } from "react-icons/fi";
+import { HiOutlineQueueList } from "react-icons/hi2";
 
-let globalGalleryCache = null;
+let globalCollectionsCache = null;
+let globalCategoriesCache = null;
 
 const CollectionsPage = () => {
     const navigate = useNavigate();
-    const [collections, setCollections] = useState(() => {
-        if (globalGalleryCache) return globalGalleryCache;
-        return [];
-    });
-    const [loading, setLoading] = useState(() => {
-        if (globalGalleryCache) return false;
-        return true;
-    });
+    const [searchParams] = useSearchParams();
+    const activeCategoryId = searchParams.get('category');
+    
+    const [collections, setCollections] = useState(globalCollectionsCache || []);
+    const [categories, setCategories] = useState(globalCategoriesCache || []);
+    const [loading, setLoading] = useState(!globalCollectionsCache);
+    const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchCollections();
-    }, []);
+        fetchData();
+    }, [activeCategoryId]);
 
-    const fetchCollections = async () => {
+    const fetchData = async () => {
         try {
-            // Use public endpoint so non-logged-in viewers can still see the gallery
             const response = await collectionApi.getPublicCollections();
-            // Filter only child collections (those without an icon are "collections", those with icon are "main categories")
-            const data = (response.data || []).filter(c => !c.icon);
+            const allData = response.data || [];
             
-            // Set collections immediately so React instantly shrinks the skeletal grid 
-            // from 11 cards to the EXACT data count (preventing overflow loading cards).
-            setCollections(data);
-            globalGalleryCache = data;
+            // Filter categories (those with icons)
+            const categoriesData = allData.filter(c => c.icon);
+            setCategories(categoriesData);
+            globalCategoriesCache = categoriesData;
 
-            // Delayed loading state for smooth reveal only on initial load
-            if (!globalGalleryCache || globalGalleryCache.length === 0) {
-                // Reduced delay to make content reveal snappier (from 800ms to 300ms)
+            // Filter collections (those without icons)
+            let collectionsData = allData.filter(c => !c.icon);
+            
+            // If we have an active category filter, filter the collections
+            if (activeCategoryId) {
+                collectionsData = collectionsData.filter(c => c.category_id === activeCategoryId);
+            }
+            
+            setCollections(collectionsData);
+            globalCollectionsCache = collectionsData;
+
+            // Smooth reveal
+            if (!globalCollectionsCache || globalCollectionsCache.length === 0) {
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
         } catch (error) {
-            console.error('Failed to fetch collections:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    const activeCategoryName = useMemo(() => {
+        const found = categories.find(c => c.id === activeCategoryId);
+        return found ? found.name : null;
+    }, [categories, activeCategoryId]);
+
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
             <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
-                {/* Header Section: Back button, Centered Title */}
+                {/* Header Section: Back button, Centered Title, Categories Button */}
                 <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-5 sm:mb-10 flex items-center justify-between relative min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
                     <div className="flex items-center gap-4">
                         <button
@@ -61,10 +76,10 @@ const CollectionsPage = () => {
                         </button>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center">
-                        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[50vw]">
-                            {(() => {
-                                let popName = 'Popular Collections';
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center min-w-0 px-4">
+                        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                            {activeCategoryName || (() => {
+                                let popName = 'Popular Properties';
                                 try {
                                     const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
                                     if (custom) popName = custom.name || popName;
@@ -74,8 +89,16 @@ const CollectionsPage = () => {
                         </h1>
                     </div>
 
-                    {/* Empty div for spacing/balance */}
-                    <div className="w-10 h-10 invisible" />
+                    {/* Categories Trigger Button */}
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => setIsCategoriesModalOpen(true)}
+                            className="flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 group bg-transparent border-transparent px-2"
+                        >
+                            <HiOutlineQueueList className="w-7 h-7 text-[#222222] dark:text-white transition-colors duration-300 group-hover:text-primary-600" />
+                            <span className="hidden sm:block ml-2 text-[14px] font-medium text-gray-900 dark:text-white group-hover:text-primary-600">Categories</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Staggered Per-Card Discovery Grid */}
@@ -95,14 +118,12 @@ const CollectionsPage = () => {
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
                             {[...Array(loading && collections.length === 0 ? 6 : collections.length)].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
-                                    {/* Layer 1: Background Layout (Static Skeleton) */}
                                     {(loading || !collections[i]) && (
                                         <div className="relative transition-opacity duration-500">
                                             <CollectionSkeleton index={i} isExiting={!loading} />
                                         </div>
                                     )}
 
-                                    {/* Layer 2: Real Data Card (Specific internal animations for image vs text) */}
                                     {!loading && collections[i] && (
                                         <div className="relative z-10 h-full">
                                             <CollectionCard
@@ -122,6 +143,13 @@ const CollectionsPage = () => {
                     )}
                 </div>
             </div>
+
+            <AllCategoriesModal 
+                isOpen={isCategoriesModalOpen}
+                onClose={() => setIsCategoriesModalOpen(false)}
+                categories={categories}
+                selectedId={activeCategoryId}
+            />
         </div>
     );
 };

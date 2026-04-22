@@ -708,3 +708,64 @@
 .animate-reveal-left {
   animation: revealLeft 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
+
+/* Heart Celebration Keyframes (YouTube-style) */
+@keyframes heartMainPop {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.4); }
+  32% { transform: scale(1.2); }
+  45% { transform: scale(1.32); }
+  50% { transform: scale(1.25); }
+  85% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* YouTube-style heart flash */
+@keyframes heartFlash {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.animate-heart-flash { animation: heartFlash 0.4s ease-out forwards; }
+
+/* Tooltip animation */
+@keyframes savedTooltip {
+  0% { opacity: 0; transform: translate(-50%, 15px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+.animate-saved-tooltip { animation: savedTooltip 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+
+/* Particle paths - Enhanced for "Pop" */
+@keyframes heartDot-1 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(-50%,-240%) scale(1.1); opacity: 0; } }
+@keyframes heartDot-2 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(160%,-160%) scale(1.1); opacity: 0; } }
+@keyframes heartDot-3 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(190%,60%) scale(1.1); opacity: 0; } }
+@keyframes heartDot-4 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(-50%,190%) scale(1.1); opacity: 0; } }
+@keyframes heartDot-5 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(-280%,60%) scale(1.1); opacity: 0; } }
+@keyframes heartDot-6 { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 100% { transform: translate(-250%,-160%) scale(1.1); opacity: 0; } }
+
+@keyframes heartSparkle-1 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(60%,-220%) scale(1.3) rotate(90deg); opacity: 0; } }
+@keyframes heartSparkle-2 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(220%,-60%) scale(1.3) rotate(-90deg); opacity: 0; } }
+@keyframes heartSparkle-3 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(180%,180%) scale(1.3) rotate(45deg); opacity: 0; } }
+@keyframes heartSparkle-4 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(-180%,180%) scale(1.3) rotate(-45deg); opacity: 0; } }
+@keyframes heartSparkle-5 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(-300%,-60%) scale(1.3) rotate(90deg); opacity: 0; } }
+@keyframes heartSparkle-6 { 0% { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(-180%,-220%) scale(1.3) rotate(-90deg); opacity: 0; } }
+
+.heart-pop-active { animation: heartMainPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.heart-particle { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; opacity: 0; z-index: 60; filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.4)); }
+.heart-sparkle { clip-path: polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%); width: 10px; height: 10px; border-radius: 0; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)); }
+
+.heart-dot-active-1 { animation: heartDot-1 0.7s ease-out forwards; }
+.heart-dot-active-2 { animation: heartDot-2 0.7s ease-out forwards; }
+.heart-dot-active-3 { animation: heartDot-3 0.7s ease-out forwards; }
+.heart-dot-active-4 { animation: heartDot-4 0.7s ease-out forwards; }
+.heart-dot-active-5 { animation: heartDot-5 0.7s ease-out forwards; }
+.heart-dot-active-6 { animation: heartDot-6 0.7s ease-out forwards; }
+
+.heart-sparkle-active-1 { animation: heartSparkle-1 0.9s ease-out forwards; }
+.heart-sparkle-active-2 { animation: heartSparkle-2 0.9s ease-out forwards; }
+.heart-sparkle-active-3 { animation: heartSparkle-3 0.9s ease-out forwards; }
+.heart-sparkle-active-4 { animation: heartSparkle-4 0.9s ease-out forwards; }
+.heart-sparkle-active-5 { animation: heartSparkle-5 0.9s ease-out forwards; }
+.heart-sparkle-active-6 { animation: heartSparkle-6 0.9s ease-out forwards; }

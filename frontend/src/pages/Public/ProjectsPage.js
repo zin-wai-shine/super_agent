@@ -36,6 +36,7 @@ import {
     SparklesIcon,
     ArrowUpIcon,
     TagIcon,
+    MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { BsSearch } from 'react-icons/bs';
 
@@ -692,11 +693,9 @@ const ProjectsPage = () => {
                                 return (
                                     <span
                                         key={key}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''
-                                            }`}
-                                        style={isExiting ? { minWidth: 0, overflow: 'hidden' } : undefined}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-800 bg-white text-gray-900 text-[13px] font-medium transition-all duration-200 ease-out animate-fade-in ${isExiting ? 'opacity-0 scale-90 pointer-events-none' : ''}`}
                                     >
-                                        <span className="break-words max-w-[140px] min-w-0">{label}</span>
+                                        <span className="truncate max-w-[200px] min-w-0">{label}</span>
                                         <button
                                             type="button"
                                             onClick={handleRemove}
@@ -719,7 +718,7 @@ const ProjectsPage = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
                     placeholder="Keyword, location, property name..."
-                    className="w-full h-[58px] sm:h-[48px] px-6 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all mb-7"
+                    className="w-full h-[52px] sm:h-[48px] px-6 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all mb-7"
                 />
 
                 {/* Filter Sections */}
@@ -807,14 +806,14 @@ const ProjectsPage = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => setIsTransitModalOpen(true)}
-                                className="w-full flex items-center justify-between pl-4 pr-1.5 py-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
+                                className="w-full h-[52px] sm:h-[48px] flex items-center justify-between pl-5 pr-1.5 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full transition-all group hover:border-gray-400 dark:hover:border-white/30"
                             >
                                 <div className="flex items-center gap-3">
-                                    <BsSearch className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
+                                    <MagnifyingGlassIcon className="w-[22px] h-[22px] text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
                                     <span className="text-[13px] font-normal text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
                                 </div>
-                                <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 p-2 rounded-full active:scale-95 transition-all flex items-center justify-center">
-                                    <MapIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
+                                <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 w-[42px] h-[42px] sm:w-9 sm:h-9 rounded-full active:scale-95 transition-all flex items-center justify-center">
+                                    <MapIcon className="w-[20px] h-[20px] sm:w-5 sm:h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                                 </div>
                             </button>
 

@@ -630,56 +630,72 @@ const GoogleMapComponent = ({
 
             {/* CUSTOM CONTROLS — Liquid Glass Design restorative fix */}
             {!hideCustomControls && map && (
-                <div className="absolute bottom-6 right-6 z-20 flex flex-col items-center gap-3">
-                    {/* Zoom Pill */}
-                    {!hideControls && (
-                        <div className="bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex flex-col p-1 overflow-hidden">
-                            <button
-                                onClick={() => map.setZoom(map.getZoom() + 1)}
-                                className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
-                                aria-label="Zoom in"
-                            >
-                                <PlusIcon className="w-5 h-5 stroke-[2.5]" />
-                            </button>
-                            <div className="h-px bg-white/40 mx-2" />
-                            <button
-                                onClick={() => map.setZoom(map.getZoom() - 1)}
-                                className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-90"
-                                aria-label="Zoom out"
-                            >
-                                <MinusIcon className="w-5 h-5 stroke-[2.5]" />
-                            </button>
-                        </div>
-                    )}
+                <div className="absolute bottom-6 right-6 z-20">
+                    <div className="bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 dark:border-white/10 flex flex-col p-1 overflow-hidden transition-all duration-300">
+                        {/* Zoom In */}
+                        {!hideControls && (
+                            <>
+                                <button
+                                    onClick={() => map.setZoom(map.getZoom() + 1)}
+                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                    aria-label="Zoom in"
+                                    title="Zoom In"
+                                >
+                                    <PlusIcon className="w-5 h-5 stroke-[2.5]" />
+                                </button>
+                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
+                            </>
+                        )}
 
-                    {/* Sync Button */}
-                    <button
-                        onClick={() => {
-                            if (listingsWithCoords.length > 0) {
-                                const bounds = new window.google.maps.LatLngBounds();
-                                listingsWithCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
-                                map.fitBounds(bounds, effectivePadding);
-                            } else {
-                                map.setCenter(mapCenter);
-                                map.setZoom(effectiveZoom);
-                            }
-                        }}
-                        className="w-12 h-12 bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-95 group"
-                        aria-label="Sync map"
-                    >
-                        <ArrowPathIcon className="w-5 h-5 stroke-[2] group-active:rotate-180 transition-transform duration-500" />
-                    </button>
-
-                    {/* Expand Button */}
-                    {onExpandClick && !isExpanded && (
+                        {/* Sync/Reload Button - Always visible if custom controls are shown */}
                         <button
-                            onClick={onExpandClick}
-                            className="w-12 h-12 bg-white/70 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 flex items-center justify-center text-slate-700 hover:bg-white/30 transition-all active:scale-95"
-                            aria-label="Expand map"
+                            onClick={() => {
+                                if (listingsWithCoords.length > 0) {
+                                    const bounds = new window.google.maps.LatLngBounds();
+                                    listingsWithCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
+                                    map.fitBounds(bounds, effectivePadding);
+                                } else {
+                                    map.setCenter(mapCenter);
+                                    map.setZoom(effectiveZoom);
+                                }
+                            }}
+                            className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                            aria-label="Sync map"
+                            title="Sync Map"
                         >
-                            <ArrowsPointingOutIcon className="w-5 h-5 stroke-[2]" />
+                            <ArrowPathIcon className="w-5 h-5 stroke-[2] group-active:rotate-180 transition-transform duration-500" />
                         </button>
-                    )}
+
+                        {/* Zoom Out */}
+                        {!hideControls && (
+                            <>
+                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
+                                <button
+                                    onClick={() => map.setZoom(map.getZoom() - 1)}
+                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                    aria-label="Zoom out"
+                                    title="Zoom Out"
+                                >
+                                    <MinusIcon className="w-5 h-5 stroke-[2.5]" />
+                                </button>
+                            </>
+                        )}
+
+                        {/* Expand Button */}
+                        {onExpandClick && !isExpanded && (
+                            <>
+                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
+                                <button
+                                    onClick={onExpandClick}
+                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                    aria-label="Expand map"
+                                    title="Expand Map"
+                                >
+                                    <ArrowsPointingOutIcon className="w-5 h-5 stroke-[2]" />
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

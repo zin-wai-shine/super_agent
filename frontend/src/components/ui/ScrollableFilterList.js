@@ -71,13 +71,13 @@ const ScrollableFilterList = ({
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className={`w-full flex items-center justify-between h-[58px] sm:h-[48px] px-5 rounded-full border transition-all duration-300 ${selectedId
+                        className={`w-full flex items-center justify-between h-[52px] sm:h-[48px] px-5 rounded-full border transition-all duration-300 ${selectedId
                             ? 'border-gray-800 dark:border-white/40 bg-white dark:bg-dashboard-card'
                             : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card hover:border-gray-400 dark:hover:border-white/30'
                         }`}
                     >
-                        <div className="flex items-center gap-3">
-                            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                        <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+                            <MagnifyingGlassIcon className="w-[22px] h-[22px] text-gray-500 dark:text-gray-400 flex-shrink-0" />
                             <span className={`text-[14px] font-medium truncate ${selectedId ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                                 {selectedId ? displayLabel : placeholder}
                             </span>

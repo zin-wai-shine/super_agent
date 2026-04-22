@@ -5,7 +5,9 @@ import {
     XMarkIcon, 
     PhotoIcon, 
     CloudArrowUpIcon,
-    TrashIcon
+    TrashIcon,
+    MagnifyingGlassIcon,
+    FolderIcon
 } from '@heroicons/react/24/outline';
 import {
     DndContext, 

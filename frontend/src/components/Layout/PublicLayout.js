@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
-import { BsHeart, BsCalendar2Week, BsSearch } from 'react-icons/bs';
+import { BsCalendar2Week, BsSearch, BsHeart } from 'react-icons/bs';
+import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
 import { PiUser } from 'react-icons/pi';
 import {
     Bars3Icon,
@@ -923,10 +924,11 @@ const PublicLayout = () => {
                                             to="/saved-listings"
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
-                                            <BsHeart
-                                                className={`w-7 h-7 ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
-                                                    }`}
-                                            />
+                                            {isWishlistTabActive ? (
+                                                <HiHeart className="w-7 h-7 text-primary-600" />
+                                            ) : (
+                                                <HiOutlineHeart className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                                            )}
                                             <span
                                                 className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}

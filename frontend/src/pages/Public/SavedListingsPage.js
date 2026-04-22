@@ -7,7 +7,7 @@ import ListingCard from '../../components/Listings/ListingCard';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import FilterBar from '../../components/ui/FilterBar';
-import { BsHeart } from "react-icons/bs";
+import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
@@ -471,7 +471,7 @@ const SavedListingsPage = () => {
                     ) : (
                         /* Empty State */
                         <div className="text-center py-24 animate-fadeInUp">
-                            <BsHeart className="mx-auto h-20 w-20 text-gray-200" />
+                            <HiOutlineHeart className="mx-auto h-20 w-20 text-gray-200 dark:text-white/10" />
                             <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">No favorites yet</h2>
                             <p className="mt-2 text-gray-500 max-w-sm mx-auto">
                                 Save properties you like by clicking the heart icon, and they'll show up here.

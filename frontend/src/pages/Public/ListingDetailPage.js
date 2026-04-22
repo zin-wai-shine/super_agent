@@ -63,7 +63,6 @@ import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
 import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
-import { BsHeart, BsHeartFill } from "react-icons/bs";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine, RiFridgeLine } from "react-icons/ri";
 import { LuSofa, LuWind } from "react-icons/lu";
@@ -83,6 +82,8 @@ import {
 import { FaLine, FaWhatsapp, FaViber, FaTiktok } from "react-icons/fa";
 import {
     HiOutlineTv,
+    HiHeart,
+    HiOutlineHeart,
 } from "react-icons/hi2";
 import {
     MdOutlineKitchen,
@@ -125,6 +126,82 @@ const SOCIAL_PLATFORM_CONFIG = {
     'Twitter': { icon: FiTwitter, color: '#1DA1F2', bgColor: 'rgba(29, 161, 242, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://twitter.com/${v}` },
     'Website': { icon: FiGlobe, color: '#6366f1', bgColor: 'rgba(99, 102, 241, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://${v}` },
     'Other': { icon: FiExternalLink, color: '#64748b', bgColor: 'rgba(100, 116, 139, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://${v}` }
+};
+
+const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) => {
+    const [animate, setAnimate] = React.useState(false);
+    const [showSaved, setShowSaved] = React.useState(false);
+    const [isFlashing, setIsFlashing] = React.useState(false);
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (disabled) return;
+        
+        // Trigger animation only when saving
+        if (!isSaved) {
+            setAnimate(true);
+            setShowSaved(true);
+            setIsFlashing(true);
+            setTimeout(() => setAnimate(false), 850);
+            setTimeout(() => setShowSaved(false), 1200);
+            setTimeout(() => setIsFlashing(false), 400);
+        }
+        onClick(e);
+    };
+
+    return (
+        <button
+            onClick={handleClick}
+            disabled={disabled}
+            className={`relative flex items-center justify-center transition-all active:scale-90 hover:scale-105 ${className}`}
+        >
+            {/* Flash Effect */}
+            {isFlashing && (
+                <div className="absolute inset-[-4px] bg-rose-500/20 dark:bg-rose-500/30 rounded-full animate-heart-flash blur-sm" />
+            )}
+
+            {/* YouTube-style Saved Tooltip - Positioned UNDER for Detail Page */}
+            {showSaved && (
+                <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none z-[100] animate-saved-tooltip">
+                    <span className="bg-[#222222]/90 text-white text-[12px] px-2.5 py-1 rounded-full whitespace-nowrap shadow-xl font-medium border border-white/10">
+                        Saved
+                    </span>
+                </div>
+            )}
+
+            {/* Particles (Dots and Sparkles) */}
+            {animate && (
+                <>
+                    {/* Dots */}
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div 
+                            key={`dot-${i}`} 
+                            className={`heart-particle heart-dot-active-${i} ${i % 2 === 0 ? 'bg-rose-500' : 'bg-amber-400'}`} 
+                        />
+                    ))}
+                    {/* Sparkles */}
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div 
+                            key={`sparkle-${i}`} 
+                            className={`heart-particle heart-sparkle heart-sparkle-active-${i} ${i % 2 === 0 ? 'bg-pink-400' : 'bg-white'}`} 
+                        />
+                    ))}
+                </>
+            )}
+
+            <div className={animate ? 'heart-pop-active' : ''}>
+                {isSaved ? (
+                    <HiHeart className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
+                ) : (
+                    <HiOutlineHeart 
+                        className="text-gray-900 dark:text-white transition-colors duration-300" 
+                        style={{ width: iconSize, height: iconSize }} 
+                    />
+                )}
+            </div>
+        </button>
+    );
 };
 
 // Custom Icons for "cool" look
@@ -591,42 +668,46 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         return Math.max(containerWidth / MAP_WIDTH, containerHeight / MAP_HEIGHT);
     };
 
-    useEffect(() => {
-        if (activeMapTab === 'transit' && listing?.station_id && transitMapRef.current && transitWrapperRef.current) {
-            const t = setTimeout(() => {
-                const stationEl = transitMapRef.current?.querySelector(`[data-station-id="${listing.station_id}"]`);
-                if (stationEl) {
-                    const circles = stationEl.querySelectorAll('circle');
-                    const fallback = stationEl.querySelector('rect');
-                    let x = 0, y = 0;
-                    if (circles.length > 0) {
-                        circles.forEach(c => {
-                            x += parseFloat(c.getAttribute('cx') || 0);
-                            y += parseFloat(c.getAttribute('cy') || 0);
-                        });
-                        x /= circles.length;
-                        y /= circles.length;
-                    } else if (fallback) {
-                        x = parseFloat(fallback.getAttribute('x') || 0) + parseFloat(fallback.getAttribute('width') || 0) / 2;
-                        y = parseFloat(fallback.getAttribute('y') || 0) + parseFloat(fallback.getAttribute('height') || 0) / 2;
-                    }
-                    if (x && y) {
-                        const zoomToStation = 1.9;
-                        const w = transitWrapperRef.current?.clientWidth ?? 500;
-                        const h = transitWrapperRef.current?.clientHeight ?? 500;
-                        const rawPan = {
-                            x: -(x * zoomToStation) + w / 2,
-                            y: -(y * zoomToStation) + h / 2
-                        };
-                        setMapState(prev => ({
-                            ...prev,
-                            markerPos: { x, y },
-                            zoom: zoomToStation,
-                            pan: constrainPan(rawPan, zoomToStation)
-                        }));
-                    }
+    const handleTransitRecenter = () => {
+        if (listing?.station_id && transitMapRef.current && transitWrapperRef.current) {
+            const stationEl = transitMapRef.current?.querySelector(`[data-station-id="${listing.station_id}"]`);
+            if (stationEl) {
+                const circles = stationEl.querySelectorAll('circle');
+                const fallback = stationEl.querySelector('rect');
+                let x = 0, y = 0;
+                if (circles.length > 0) {
+                    circles.forEach(c => {
+                        x += parseFloat(c.getAttribute('cx') || 0);
+                        y += parseFloat(c.getAttribute('cy') || 0);
+                    });
+                    x /= circles.length;
+                    y /= circles.length;
+                } else if (fallback) {
+                    x = parseFloat(fallback.getAttribute('x') || 0) + parseFloat(fallback.getAttribute('width') || 0) / 2;
+                    y = parseFloat(fallback.getAttribute('y') || 0) + parseFloat(fallback.getAttribute('height') || 0) / 2;
                 }
-            }, 100);
+                if (x && y) {
+                    const zoomToStation = 1.9;
+                    const w = transitWrapperRef.current?.clientWidth ?? 500;
+                    const h = transitWrapperRef.current?.clientHeight ?? 500;
+                    const rawPan = {
+                        x: -(x * zoomToStation) + w / 2,
+                        y: -(y * zoomToStation) + h / 2
+                    };
+                    setMapState(prev => ({
+                        ...prev,
+                        markerPos: { x, y },
+                        zoom: zoomToStation,
+                        pan: constrainPan(rawPan, zoomToStation)
+                    }));
+                }
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (activeMapTab === 'transit') {
+            const t = setTimeout(handleTransitRecenter, 100);
             return () => clearTimeout(t);
         }
     }, [activeMapTab, listing?.station_id]);
@@ -1086,9 +1167,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     >
                         <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
-                                <BsHeartFill className="w-[16px] h-[16px] text-rose-500" />
+                                <HiHeart className="w-[20px] h-[20px] text-rose-500" />
                             ) : (
-                                <BsHeart className="w-[16px] h-[16px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" strokeWidth={0.5} />
+                                <HiOutlineHeart className="w-[20px] h-[20px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
                             )}
                         </div>
                         <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
@@ -1698,18 +1779,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 showLabel={false}
                                 iconClassName="w-7 h-7 text-gray-900 dark:text-white"
                             />
-                            <button
+                            <HeartButton
+                                isSaved={isSaved}
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] bg-white dark:bg-dashboard-card shadow-xl rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
-                                aria-label={isSaved ? 'Unsave' : 'Save'}
-                            >
-                                {isSaved ? (
-                                    <BsHeartFill className="w-[24px] h-[24px] text-rose-500" />
-                                ) : (
-                                    <BsHeart className="w-[24px] h-[24px] text-gray-900 dark:text-white" strokeWidth={0.5} />
-                                )}
-                            </button>
+                                className="min-w-[44px] min-h-[44px] bg-white dark:bg-dashboard-card shadow-xl rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
+                                iconSize={28}
+                            />
                         </div>
                     </div>
 
@@ -1834,9 +1910,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     >
                                                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
                                                             {isSaved ? (
-                                                                <BsHeartFill className="w-[18px] h-[18px] text-rose-500" />
+                                                                <HiHeart className="w-[20px] h-[20px] text-rose-500" />
                                                             ) : (
-                                                                <BsHeart className="w-[18px] h-[18px] text-gray-900 dark:text-white opacity-60" strokeWidth={0.5} />
+                                                                <HiOutlineHeart className="w-[20px] h-[20px] text-gray-900 dark:text-white opacity-60" />
                                                             )}
                                                         </div>
                                                         <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900 dark:text-white'}`}>
@@ -2301,8 +2377,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 ))}
                                                             </div>
 
-                                                            <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
-                                                                <div className="flex flex-col bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm rounded-full border border-gray-100 dark:border-white/10 shadow-lg p-1 overflow-hidden">
+                                                            <div className="absolute top-4 right-4 z-40">
+                                                                <div className="flex flex-col bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 dark:border-white/10 p-1 overflow-hidden transition-all duration-300">
                                                                     <button
                                                                         onClick={() => {
                                                                             const nextZoom = Math.min(mapState.zoom + 0.1, 2.0);
@@ -2312,11 +2388,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 pan: constrainPan(prev.pan, nextZoom)
                                                                             }));
                                                                         }}
-                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-white hover:text-primary-600 hover:bg-white dark:hover:bg-white/10 transition-all rounded-full"
+                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                                                        title="Zoom In"
                                                                     >
-                                                                        <span className="text-xl font-bold">+</span>
+                                                                        <span className="text-2xl font-light">+</span>
                                                                     </button>
-                                                                    <div className="h-px bg-gray-100 dark:bg-white/10 mx-1.5" />
+                                                                    <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
+                                                                    <button
+                                                                        onClick={handleTransitRecenter}
+                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                                                        title="Recenter Station"
+                                                                    >
+                                                                        <ArrowPathIcon className="w-5 h-5 stroke-[2] group-active:rotate-180 transition-transform duration-500" />
+                                                                    </button>
+                                                                    <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
                                                                     <button
                                                                         onClick={() => {
                                                                             const minZoom = getMinZoom();
@@ -2327,9 +2412,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 pan: constrainPan(prev.pan, nextZoom)
                                                                             }));
                                                                         }}
-                                                                        className="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-white hover:text-primary-600 hover:bg-white dark:hover:bg-white/10 transition-all rounded-full"
+                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                                                                        title="Zoom Out"
                                                                     >
-                                                                        <span className="text-xl font-bold">−</span>
+                                                                        <span className="text-2xl font-light">−</span>
                                                                     </button>
                                                                 </div>
                                                             </div>

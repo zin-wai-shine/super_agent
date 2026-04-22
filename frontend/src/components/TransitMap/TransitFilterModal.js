@@ -51,6 +51,24 @@ const TransitFilterModal = ({
         }
     };
 
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    // Handle scroll to expand modal on mobile
+    const handleModalScroll = (e) => {
+        if (window.innerWidth < 640) { // Only on mobile
+            if (e.target.scrollTop > 10) {
+                if (!isExpanded) setIsExpanded(true);
+            }
+        }
+    };
+
+    // Reset expansion state when modal opens/closes
+    useEffect(() => {
+        if (!isOpen) {
+            setIsExpanded(false);
+        }
+    }, [isOpen]);
+
     useEffect(() => {
         const fetchStations = async () => {
             try {
@@ -197,9 +215,8 @@ const TransitFilterModal = ({
             <ArrowLeftIcon className="w-7 h-7 text-gray-900 dark:text-white" />
         </button>
     ) : null;
-
     return createPortal(
-        <div className={`fixed inset-0 z-[2000] flex items-end sm:items-center justify-center transition-all duration-500 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-500 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
             {/* Backdrop */}
             <div 
                 className={`absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
@@ -220,56 +237,81 @@ const TransitFilterModal = ({
                 >
                     <XMarkIcon className="w-6 h-6 stroke-[2.5] transition-transform group-hover:rotate-90" />
                 </button>
-                {/* Mobile Decorative Header - Match Project Modal Design */}
-                <div className="absolute -top-10 inset-x-0 bottom-0 bg-primary-600/30 rounded-t-[24px] sm:hidden -z-10 blur-[1px]" />
-                <div className="absolute -top-8 inset-x-0 bottom-0 bg-primary-600 rounded-t-[20px] sm:hidden -z-10 flex flex-col items-center shadow-[0_-8px_30px_rgba(0,0,0,0.1)]">
-                    <div className="h-8 w-full flex flex-col items-center justify-center">
-                        <h2 className="text-[14px] font-bold text-white tracking-[0.05em] leading-none uppercase">Transit Selection</h2>
-                    </div>
-                </div>
-
                 {/* Main Box - Bottom-up animation container */}
-                <div className="relative w-full bg-white dark:bg-dashboard-card rounded-t-[32px] sm:rounded-[28px] overflow-hidden flex flex-col h-[85vh] sm:h-[85vh] sm:max-h-[85vh] shadow-2xl border border-white/10">
+                <div className={`relative w-full bg-white dark:bg-dashboard-card rounded-t-[20px] sm:rounded-[28px] overflow-hidden flex flex-col transition-all duration-500 ease-in-out shadow-2xl border border-white/10
+                    ${isExpanded || isSearchExpanded ? 'h-[92dvh]' : 'h-[75dvh]'} sm:h-[85vh] sm:max-h-[85vh]
+                `}>
+
                     
                     {/* Pull Handle (Mobile) */}
-                    <div className="flex justify-center pt-5 pb-1 sm:hidden flex-shrink-0">
-                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full" />
+                    <div className="flex justify-center pt-1.5 pb-0.5 sm:hidden flex-shrink-0">
+                        <div className="w-12 h-1 bg-gray-200 dark:bg-white/10 rounded-full" />
                     </div>
 
                     <div className="flex-1 flex flex-col overflow-hidden min-h-0 h-full">
-                        {/* Mobile Header: Unified Search + Toggle (ONLY visible on mobile) */}
-                        <div className="sm:hidden px-4 pt-6 pb-2 flex-shrink-0 bg-white dark:bg-dashboard-dark border-b border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-3 mb-3 mt-1">
-                                <div className="relative flex-1 min-w-0">
-                                    <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        {/* Mobile Header: Compact Title + (Search, Map, Close) Buttons */}
+                        <div className="sm:hidden px-4 pt-0 pb-1 flex-shrink-0 bg-white dark:bg-dashboard-card z-10 transition-all duration-300">
+                            <div className="flex items-center justify-between w-full h-10">
+                                <h2 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate pr-4">Transit Stations</h2>
+                                
+                                <div className="flex items-center gap-1.5">
+                                    {/* Search Toggle */}
+                                    <button 
+                                        onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                                        className={`w-9 h-9 flex items-center justify-center rounded-full active:scale-95 transition-all duration-300 ${isSearchExpanded ? 'bg-primary-600 text-white' : 'bg-gray-100/80 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}
+                                    >
+                                        <MagnifyingGlassIcon className="w-5 h-5" />
+                                    </button>
+
+                                    {/* Map View Toggle */}
+                                    <button 
+                                        onClick={() => setShowMapOnMobile(prev => !prev)}
+                                        className={`w-9 h-9 flex items-center justify-center rounded-full active:scale-95 transition-all duration-300 ${showMapOnMobile ? 'bg-primary-600 text-white' : 'bg-gray-100/80 dark:bg-white/5 text-gray-500 dark:text-gray-400'}`}
+                                        aria-label="Toggle Map"
+                                    >
+                                        {showMapOnMobile ? <ListBulletIcon className="w-5 h-5" /> : <MapIcon className="w-5 h-5" />}
+                                    </button>
+
+                                    {/* Right Close Button */}
+                                    <button 
+                                        onClick={onClose}
+                                        className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100/80 dark:bg-white/5 text-gray-500 dark:text-gray-400 active:scale-95 transition-all"
+                                        aria-label="Close"
+                                    >
+                                        <XMarkIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Collapsible Search Input */}
+                            <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isSearchExpanded ? 'max-h-20 opacity-100 mt-0.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+                                <div className="relative group w-full pb-1.5">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none h-[44px] z-10">
+                                        <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+                                    </div>
                                     <input
                                         type="text"
-                                        placeholder="Search BTS/MRT station..."
+                                        placeholder="Search stations..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full h-[58px] pl-14 pr-6 rounded-full border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:focus:ring-white/5 transition-all shadow-sm"
+                                        className="block w-full h-[44px] pl-11 pr-11 bg-gray-50/80 dark:bg-white/2 border border-gray-200 dark:border-white/10 focus:border-gray-800 dark:focus:border-white/60 transition-all outline-none rounded-full text-[14px] font-normal text-gray-900 dark:text-white"
                                     />
-                                </div>
-                                {/* View Toggle — Positions remain identical to eliminate cursor travel */}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowMapOnMobile(prev => !prev)}
-                                    className="flex-shrink-0 flex items-center justify-center w-[58px] h-[58px] bg-primary-600 border border-primary-600 text-white rounded-full active:scale-95 transition-all shadow-lg shadow-primary-600/20"
-                                    aria-label={showMapOnMobile ? 'Show station list' : 'Show transit map'}
-                                >
-                                    {showMapOnMobile ? (
-                                        <ListBulletIcon className="w-7 h-7" />
-                                    ) : (
-                                        <MapIcon className="w-7 h-7" />
+                                    {searchTerm && (
+                                        <button 
+                                            onClick={() => setSearchTerm('')}
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors h-[44px] z-20"
+                                        >
+                                            <XMarkIcon className="w-5 h-5 bg-gray-200/50 dark:bg-white/10 rounded-full p-0.5" />
+                                        </button>
                                     )}
-                                </button>
+                                </div>
                             </div>
                         </div>
 
                         {/* Content: list or map — footer stays below */}
                         <div className="flex-1 flex min-h-0 overflow-hidden flex-col sm:flex-row">
                             {/* Left Column: Map — shown on mobile when map icon tapped; min-h-0 so flex child can shrink and fill */}
-                            <div className={`${showMapOnMobile ? 'flex flex-col min-h-0' : 'hidden sm:flex flex-col min-h-0'} flex-1 sm:flex-none sm:w-[70%] sm:min-w-0 relative bg-white dark:bg-dashboard-card min-w-0 p-0 sm:p-4 sm:pr-2`}>
+                             <div className={`${showMapOnMobile ? 'flex flex-col' : 'hidden sm:flex flex-col'} flex-1 min-h-0 sm:flex-none sm:w-[70%] sm:min-w-0 relative bg-white dark:bg-dashboard-card min-w-0 p-0 sm:p-4 sm:pr-2`}>
                                 <div className="w-full h-full sm:rounded-[20px] overflow-hidden sm:border sm:border-gray-900/5 dark:sm:border-white/5 sm:shadow-sm">
                                     <TransitMapFilter
                                         hideHeader={true}
@@ -282,7 +324,7 @@ const TransitFilterModal = ({
                             </div>
 
                             {/* Right Column: List — hidden on mobile when map is shown */}
-                            <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} w-full sm:w-[30%] sm:min-w-0 flex-col bg-white dark:bg-dashboard-card min-h-0 flex-1 min-w-0 p-0 sm:p-4 sm:pl-2`}>
+                             <div className={`${showMapOnMobile ? 'hidden sm:flex' : 'flex'} flex-1 w-full sm:w-[30%] sm:min-w-0 flex-col bg-white dark:bg-dashboard-card min-h-0 min-w-0 p-0 sm:p-4 sm:pl-2`}>
                                 <div className="flex-1 min-h-0 w-full flex flex-col bg-white dark:bg-dashboard-card sm:rounded-[20px] overflow-hidden sm:border sm:border-gray-900/5 dark:sm:border-white/5 sm:shadow-sm">
                                     {/* Desktop Header: Transforming Search (ONLY visible on desktop) */}
                                     <div className="hidden sm:block pt-4 px-4 pb-2 flex-shrink-0 bg-white dark:bg-dashboard-card">
@@ -297,13 +339,13 @@ const TransitFilterModal = ({
 
                                             {/* Search Container: Absolute right, glides across to full width */}
                                             <div 
-                                                className={`absolute right-0 h-[48px] flex items-center rounded-full transition-all duration-600 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-[width,transform,background-color] ${isSearchExpanded ? 'w-full px-4 bg-gray-50/80 dark:bg-white/5 border border-gray-900/5 dark:border-white/10 shadow-sm' : 'w-12 bg-transparent border-transparent'}`}
+                                                className={`absolute right-0 h-[48px] flex items-center rounded-full transition-all duration-600 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-[width,transform,background-color] ${isSearchExpanded ? 'w-full px-4 bg-gray-50/40 dark:bg-white/5 border border-[#222222] dark:border-white/20' : 'w-12 bg-transparent border-transparent'}`}
                                             >
                                                 <button 
                                                     onClick={() => !isSearchExpanded && setIsSearchExpanded(true)}
-                                                    className={`flex items-center justify-center transition-all duration-300 ${isSearchExpanded ? 'text-primary-600 mr-3' : 'w-12 h-12 rounded-full bg-gray-50/50 dark:bg-white/5 text-gray-400 hover:text-gray-900 shadow-sm hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                                                    className={`flex items-center justify-center transition-all duration-300 ${isSearchExpanded ? 'text-[#222222] dark:text-white mr-3' : 'w-12 h-12 rounded-full bg-gray-50/50 dark:bg-white/5 text-gray-400 hover:text-gray-900 shadow-sm hover:bg-gray-100 dark:hover:bg-white/10'}`}
                                                 >
-                                                    <MagnifyingGlassIcon className={`${isSearchExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                                                    <MagnifyingGlassIcon className="w-6 h-6" />
                                                 </button>
 
                                                 {isSearchExpanded && (
@@ -397,7 +439,10 @@ const TransitFilterModal = ({
                                     )}
 
                                     {/* Content: Scrollable — mobile: match filter base (px-6 py-6); desktop: px-6 pb-4 */}
-                                    <div className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 pt-0 pb-6 bg-white dark:bg-dashboard-card">
+                                    <div 
+                                        onScroll={handleModalScroll}
+                                        className="modal-scrollable flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 md:px-6 pt-0 pb-6 bg-white dark:bg-dashboard-card"
+                                    >
                                         {loading ? (
                                             <div className="flex flex-col items-center justify-center py-20 gap-4">
                                                 <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
@@ -416,15 +461,19 @@ const TransitFilterModal = ({
                                                 const allSelected = lineIds.length > 0 && lineIds.every(id => selectedIds.includes(id));
 
                                                 return (
-                                                    <div key={group.name} className="sm:mt-2 first:mt-0 mt-4 mb-10 last:mb-20">
-                                                        <div className="flex items-center justify-between mb-0 sm:mb-4 bg-white dark:bg-dashboard-dark z-10 sticky top-0 pt-1 pb-1 sm:pt-2 sm:pb-2 md:-mx-6 lg:-mx-8 md:px-6 lg:px-8">
+                                                    <div 
+                                                        key={group.name} 
+                                                        className="sm:mt-2 first:mt-0 mt-4 mb-6 last:mb-20 p-3 sm:p-4 rounded-[16px] transition-all duration-300"
+                                                        style={{ backgroundColor: `${group.color}08` }} // 3% opacity for a very subtle tint
+                                                    >
+                                                        <div className="flex items-center justify-between mb-4 transition-all">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
+                                                                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: group.color }} />
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-[15px] sm:text-[13px] font-normal text-gray-900 dark:text-white">
+                                                                    <span className="text-[15px] sm:text-[13px] font-bold text-gray-900 dark:text-white">
                                                                         {group.name}
                                                                     </span>
-                                                                    <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                                                                    <span className="text-[12px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-white/50 dark:bg-white/5 px-2.5 py-0.5 rounded-full backdrop-blur-sm border border-gray-100 dark:border-white/5">
                                                                         {group.stations.length} stations
                                                                     </span>
                                                                 </div>
@@ -433,10 +482,10 @@ const TransitFilterModal = ({
                                                                 onClick={() => handleSelectLine(group.stations, allSelected)}
                                                                 className="flex items-center gap-1.5 transition-colors group"
                                                             >
-                                                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-600'}`}>
-                                                                    <CheckIcon className={`w-3 h-3 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
+                                                                <div className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all ${allSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 group-hover:border-primary-600'}`}>
+                                                                    <CheckIcon className={`w-3.5 h-3.5 text-white transition-opacity ${allSelected ? 'opacity-100' : 'opacity-0'}`} />
                                                                 </div>
-                                                                <span className={`text-[14px] sm:text-[12px] font-normal ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-600'}`}>
+                                                                <span className={`text-[14px] sm:text-[12px] font-medium ${allSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 underline-offset-4 decoration-1 group-hover:text-primary-600'}`}>
                                                                     Select all
                                                                 </span>
                                                             </button>

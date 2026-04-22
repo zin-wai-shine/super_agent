@@ -244,13 +244,13 @@ const TransitMapFilter = ({
         <div className="relative h-full min-h-0 flex flex-col flex-1">
             {/* Conditional Header with Integrated Search */}
             {!hideHeader && (showTitle || searchable) && (
-                <div className="h-16 px-4 pr-6 border-b border-primary-700/30 flex items-center bg-primary-600 dark:bg-dashboard-card shadow-md flex-shrink-0 z-[110] relative">
+                <div className="h-16 px-4 pr-6 border-b border-gray-100 dark:border-white/5 flex items-center bg-white dark:bg-dashboard-card flex-shrink-0 z-[110] relative">
                     {showTitle && (
                         <div className="flex items-center gap-3 flex-shrink-0">
-                            <div className="bg-white/20 p-2 rounded-full backdrop-blur-md">
-                                <MapIcon className="w-5 h-5 text-white" />
+                            <div className="bg-primary-50 dark:bg-primary-900/20 p-2 rounded-full shadow-sm">
+                                <MapIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                             </div>
-                            <h3 className="font-bold text-white whitespace-nowrap">Transit Explorer</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-white whitespace-nowrap">Transit Explorer</h3>
                         </div>
                     )}
 
@@ -258,7 +258,7 @@ const TransitMapFilter = ({
                         <div className={`${showTitle ? 'ml-6' : ''} flex-1 max-w-xl`} ref={searchRef}>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                                    <MagnifyingGlassIcon className="h-6 w-6 text-[#222222] dark:text-white transition-colors" />
                                 </div>
                                 <input
                                     type="text"
@@ -269,7 +269,7 @@ const TransitMapFilter = ({
                                     }}
                                     onFocus={() => setShowResults(true)}
                                     placeholder="Search transit station..."
-                                    className="block w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-[10px] text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
+                                    className="block w-full pl-12 pr-4 py-2.5 bg-gray-50/40 dark:bg-white/5 border border-[#222222] dark:border-white/20 rounded-full text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none transition-all shadow-sm"
                                 />
 
                                 {showResults && searchTerm && (
@@ -350,8 +350,8 @@ const TransitMapFilter = ({
 
             {/* Interactive Map Container */}
             <div className="relative bg-white dark:bg-dashboard-card overflow-hidden group flex-1">
-                {/* Zoom & Reset Controls - Bottom Right Vertical */}
-                <div className="absolute bottom-6 right-6 z-[90] flex flex-col items-center gap-3">
+                {/* Zoom & Reset Controls - Bottom Right Vertical (Hidden on Mobile) */}
+                <div className="absolute bottom-6 right-6 z-[90] hidden sm:flex flex-col items-center gap-3">
                     {/* Zoom Pill */}
                     <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex flex-col p-1 overflow-hidden">
                         <button

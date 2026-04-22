@@ -11,9 +11,14 @@ import {
     BuildingOfficeIcon as BuildingSolid,
     MapIcon as MapSolid,
     ListBulletIcon as ListSolid,
+    MagnifyingGlassIcon as SearchSolid,
 } from '@heroicons/react/24/solid';
-import { BsHeart, BsHeartFill, BsCalendar2Week, BsSearch } from 'react-icons/bs';
-import { PiUser } from 'react-icons/pi';
+import { BsCalendar2Week, BsSearch, BsPerson, BsHeart, BsHeartFill } from 'react-icons/bs';
+import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
+import { HiOutlineMagnifyingGlass, HiOutlineCalendarDays, HiOutlineUser } from "react-icons/hi2";
+import { PiUser, PiHeart, PiHeartFill } from 'react-icons/pi';
+import { FaRegHeart, FaHeart } from "react-icons/fa6";
+import { FiHeart, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -63,13 +68,13 @@ const MobileBottomNav = () => {
     };
 
     const navItems = isAuthenticated ? [
-        { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsHeartFill },
-        { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
-        { name: 'Profile', path: '/profile', icon: PiUser, activeIcon: PiUser },
+        { name: 'Search', path: '/search', icon: FiSearch, activeIcon: FiSearch },
+        { name: 'Favorites', path: '/saved-listings', icon: FiHeart, activeIcon: FiHeart },
+        { name: 'Viewings', path: '/my-bookings', icon: FiCalendar, activeIcon: FiCalendar },
+        { name: 'Profile', path: '/profile', icon: FiUser, activeIcon: FiUser },
     ] : [
-        { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Login', path: '/login', icon: PiUser, activeIcon: PiUser },
+        { name: 'Search', path: '/search', icon: FiSearch, activeIcon: FiSearch },
+        { name: 'Login', path: '/login', icon: FiUser, activeIcon: FiUser },
     ];
 
     const isSearchActive = location.pathname.startsWith('/search') || location.pathname.startsWith('/listings') || location.pathname === '/';
@@ -111,9 +116,13 @@ const MobileBottomNav = () => {
                     <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
                 )}
                 <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
-                    <Icon className={`w-7 h-7 transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    <Icon 
+                        size={item.name === 'Favorites' ? 31 : 27}
+                        strokeWidth={2.0}
+                        className={`transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} 
+                    />
                 </div>
-                <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 ${active ? 'text-primary-600 opacity-100' : 'text-gray-400 opacity-80'}`}>
+                <span className={`text-[10px] font-bold tracking-tight transition-all duration-300 ${active ? 'text-primary-600 opacity-100' : 'text-gray-400 opacity-80'}`}>
                     {item.name}
                 </span>
             </Link>
