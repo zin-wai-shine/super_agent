@@ -156,7 +156,7 @@ const SubscriptionPlans = () => {
                 cell: ({ row }) => (
                     <div className="font-medium text-gray-900 dark:text-white">
                         {formatPrice(row.original.price)}
-                        <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">/mo</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs ml-1">/ month</span>
                     </div>
                 ),
             },

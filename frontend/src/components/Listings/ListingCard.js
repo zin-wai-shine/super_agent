@@ -602,7 +602,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                     <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
                         <span className="text-[16.5px] md:text-[14.5px] font-semibold text-[#222222] dark:text-white">฿{formatPrice(price)}</span>
-                        <span className="text-[14.5px] md:text-[13px] text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ mo' : ''}</span>
+                        <span className="text-[14.5px] md:text-[13px] text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ month' : ''}</span>
                     </div>
                 </Link>
             </div>
@@ -692,7 +692,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         <div className="flex justify-between items-end">
                             <p className="text-[16.5px] font-semibold text-[#222222] dark:text-white">
                                 ฿{formatPrice(price)}
-                                <span className="text-[14.5px] font-normal text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/mo' : ''}</span>
+                                <span className="text-[14.5px] font-normal text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ month' : ''}</span>
                             </p>
                         </div>
                     </div>

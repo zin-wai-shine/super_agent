@@ -956,7 +956,7 @@ const AgentManagement = () => {
                                                     { value: '', label: 'Auto-assign by Domain Type' },
                                                     ...plans.map(plan => ({
                                                         value: plan.id,
-                                                        label: `${plan.plan_name || plan.name} (${plan.price} THB/mo)`
+                                                        label: `${plan.plan_name || plan.name} (${plan.price} THB/month)`
                                                     }))
                                                 ]}
                                                 placeholder="Select a plan..."

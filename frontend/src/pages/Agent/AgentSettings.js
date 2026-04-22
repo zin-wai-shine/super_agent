@@ -326,7 +326,7 @@ const AgentSettings = () => {
                                         <span className="flex flex-col">
                                             <span className="block text-sm font-medium text-gray-900 dark:text-white">Full Price</span>
                                             <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                e.g. 3,000 / mo
+                                                e.g. 3,000 / month
                                             </span>
                                         </span>
                                     </span>
@@ -347,7 +347,7 @@ const AgentSettings = () => {
                                         <span className="flex flex-col">
                                             <span className="block text-sm font-medium text-gray-900 dark:text-white">Short Price</span>
                                             <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                e.g. 3K / mo
+                                                e.g. 3K / month
                                             </span>
                                         </span>
                                     </span>

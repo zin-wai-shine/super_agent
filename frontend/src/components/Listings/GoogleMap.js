@@ -212,7 +212,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                                 {/* Price */}
                                 <div className="flex items-baseline gap-1.5 mt-auto pt-1">
                                     <span className="text-[17px] font-[600] text-slate-900 tracking-tight leading-none">฿{priceNumber}</span>
-                                    {listingType === 'rent' && <span className="text-[14px] font-[400] text-slate-500">/ mo</span>}
+                                    {listingType === 'rent' && <span className="text-[14px] font-[400] text-slate-500">/ month</span>}
                                 </div>
                             </div>
                         </>
