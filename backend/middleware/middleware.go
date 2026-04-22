@@ -150,87 +150,45 @@ func TenantMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		foundTenant := false
 
 		if !isMainDomain {
-			// Try extracting from subdomain if it matches patterns
-			subdomain := ""
-			mainDomainWithDot := "." + mainDomain
-
 			searchDomain := domain
 			if idx := strings.Index(domain, ":"); idx > 0 {
 				searchDomain = domain[:idx]
 			}
 
-			if strings.HasSuffix(searchDomain, mainDomainWithDot) {
-				subdomain = strings.TrimSuffix(searchDomain, mainDomainWithDot)
-			} else if strings.HasSuffix(searchDomain, ".srv1534108.hstgr.cloud") {
-				subdomain = strings.TrimSuffix(searchDomain, ".srv1534108.hstgr.cloud")
-			} else if strings.HasSuffix(searchDomain, ".superrealestate.localhost") {
-				subdomain = strings.TrimSuffix(searchDomain, ".superrealestate.localhost")
-			} else if strings.HasSuffix(searchDomain, ".superealestate.localhost") {
-				subdomain = strings.TrimSuffix(searchDomain, ".superealestate.localhost")
-			} else if strings.HasSuffix(searchDomain, ".localhost") {
-				subdomain = strings.TrimSuffix(searchDomain, ".localhost")
-			} else if strings.HasSuffix(domain, ".test") {
-				subdomain = strings.TrimSuffix(domain, ".test")
-			} else if strings.HasSuffix(domain, ".local") {
-				subdomain = strings.TrimSuffix(domain, ".local")
-			}
-
-			// Handle nested subdomains (e.g., staynert.srv1534108.hstgr.cloud -> staynert)
-			// If subdomain still contains dots, take only the first part
-			if idx := strings.Index(subdomain, "."); idx > 0 {
-				subdomain = subdomain[:idx]
-			}
-
-			subdomain = strings.ToLower(subdomain)
-
-			if subdomain != "" && subdomain != "www" && subdomain != "api" {
-				var agent models.Agent
-				if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subdomain, true, false).First(&agent).Error; err == nil {
-					tenantID = agent.ID
-					tenant = &agent
-					foundTenant = true
-					log.Printf("[TenantMiddleware] Resolved tenant from subdomain '%s': %s", subdomain, agent.Name)
-				} else {
-					log.Printf("[TenantMiddleware] Tenant resolution failed for subdomain '%s' on %s: %v", subdomain, domain, err)
+			// Extract subdomain by looking for the FIRST part
+			parts := strings.Split(searchDomain, ".")
+			if len(parts) >= 2 {
+				potentialSub := parts[0]
+				if potentialSub == "www" && len(parts) > 2 {
+					potentialSub = parts[1]
 				}
-			}
-
-			// 1b. Mobile / same network: subdomain.haizo.<IP> (e.g. staynert.haizo.192.168.1.5)
-			if !foundTenant {
-				mainDomainBase := cfg.MainDomain
-				if idx := strings.Index(cfg.MainDomain, "."); idx > 0 {
-					mainDomainBase = cfg.MainDomain[:idx]
-				}
-				prefix := "." + mainDomainBase + "."
-				if strings.Contains(domain, prefix) {
-					subRaw := strings.Split(domain, prefix)[0]
-					if subRaw != "" && subRaw != "www" && subRaw != "api" {
-						subRaw = strings.ToLower(subRaw)
-						var agent models.Agent
-						if err := db.Where("subdomain = ? AND is_active = ? AND is_suspended = ?", subRaw, true, false).First(&agent).Error; err == nil {
-							tenantID = agent.ID
-							tenant = &agent
-							foundTenant = true
-							log.Printf("[TenantMiddleware] Resolved tenant from IP prefix subdomain '%s': %s", subRaw, agent.Name)
-						}
+				
+				if potentialSub != "" && potentialSub != "api" {
+					potentialSub = strings.ToLower(potentialSub)
+					var agent models.Agent
+					// Try searching by subdomain OR custom domain
+					if err := db.Where("(subdomain = ? OR custom_domain = ?) AND is_active = ? AND is_suspended = ?", potentialSub, searchDomain, true, false).First(&agent).Error; err == nil {
+						tenantID = agent.ID
+						tenant = &agent
+						foundTenant = true
+						log.Printf("[TenantMiddleware] Resolved tenant '%s' for host '%s'", agent.Name, domain)
 					}
 				}
 			}
+		}
 
-			// 2. Try to resolve as a custom domain
-			if !foundTenant {
-				searchDomain := domain
-				if strings.HasPrefix(domain, "www.") {
-					searchDomain = strings.TrimPrefix(domain, "www.")
-				}
-
-				var agent models.Agent
-				if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", searchDomain, true, false).First(&agent).Error; err == nil {
-					tenantID = agent.ID
-					tenant = &agent
-					foundTenant = true
-					log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s' (searched '%s'): %s", domain, searchDomain, agent.Name)
-				}
+		if !foundTenant {
+			// Fallback: search by exact custom domain
+			searchDomain := domain
+			if idx := strings.Index(domain, ":"); idx > 0 {
+				searchDomain = domain[:idx]
+			}
+			var agent models.Agent
+			if err := db.Where("custom_domain = ? AND is_active = ? AND is_suspended = ?", searchDomain, true, false).First(&agent).Error; err == nil {
+				tenantID = agent.ID
+				tenant = &agent
+				foundTenant = true
+				log.Printf("[TenantMiddleware] Resolved tenant from custom domain '%s': %s", searchDomain, agent.Name)
 			}
 		}
 
