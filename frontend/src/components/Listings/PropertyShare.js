@@ -37,20 +37,8 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
         };
 
 
-        // Try to include image if supported
-        if (property.image && navigator.canShare && navigator.canShare({ files: [new File([], 'test.jpg', { type: 'image/jpeg' })] })) {
-            try {
-                const response = await fetch(property.image);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const file = new File([blob], 'property-image.jpg', { type: blob.type });
-                    shareData.files = [file];
-                }
-            } catch (err) {
-                console.warn('Image sharing skipped due to CORS or network error:', err);
-                // Continue with text-only share
-            }
-        }
+        // Removed the physical file attachment logic because it sends an extra raw image 
+        // alongside the link, which confuses the native sharing UI.
 
         if (navigator.share) {
             try {

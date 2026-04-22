@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@srv1534108.hstgr.cloud "docker exec super_nginx nginx -t"
+expect "password:"
+send -- "-4V2HOvVFF,q7Bx2\r"
+expect eof
