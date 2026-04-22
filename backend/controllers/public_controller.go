@@ -596,7 +596,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = listing.Agent.Logo
 	}
 
-	// Form absolute URL
+	// Form absolute image URL
 	scheme := "https"
 	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
 		scheme = proto
@@ -610,24 +610,43 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
 	}
 
-	html := fmt.Sprintf(`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>%s</title>
-    <!-- Social Preview Tags (Backend Rendered) -->
-    <meta property="og:title" content="%s" />
-    <meta property="og:description" content="%s" />
-    <meta property="og:image" content="%s" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="%s" />
-    <meta name="twitter:description" content="%s" />
-    <meta name="twitter:image" content="%s" />
-</head>
-<body>
-</body>
-</html>`, title, title, description, image, title, description, image)
+	// Fetch index.html from frontend
+	frontendURL := "http://frontend:3000"
+	if gin.Mode() == gin.ReleaseMode {
+		// In production, might be different, but docker-compose uses service name
+	}
+	
+	resp, err := http.Get(frontendURL + "/index.html")
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to fetch frontend template")
+		return
+	}
+	defer resp.Body.Close()
+	
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to read frontend template")
+		return
+	}
+	
+	html := string(body)
+	
+	// Replace meta tags
+	// Title
+	html = strings.ReplaceAll(html, "<title>Super Real Estate</title>", fmt.Sprintf("<title>%s</title>", title))
+	
+	// Open Graph Tags
+	html = strings.ReplaceAll(html, "<meta property=\"og:title\" content=\"Super Real Estate\" />", fmt.Sprintf("<meta property=\"og:title\" content=\"%s\" />", title))
+	html = strings.ReplaceAll(html, "<meta property=\"og:description\"\n    content=\"Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service.\" />", fmt.Sprintf("<meta property=\"og:description\" content=\"%s\" />", description))
+	html = strings.ReplaceAll(html, "<meta property=\"og:image\" content=\"/logo-super.png\" />", fmt.Sprintf("<meta property=\"og:image\" content=\"%s\" />", image))
+	
+	// Twitter Tags
+	html = strings.ReplaceAll(html, "<meta property=\"twitter:title\" content=\"Super Real Estate\" />", fmt.Sprintf("<meta property=\"twitter:title\" content=\"%s\" />", title))
+	html = strings.ReplaceAll(html, "<meta property=\"twitter:description\"\n    content=\"Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service.\" />", fmt.Sprintf("<meta property=\"twitter:description\" content=\"%s\" />", description))
+	html = strings.ReplaceAll(html, "<meta property=\"twitter:image\" content=\"/logo-super.png\" />", fmt.Sprintf("<meta property=\"twitter:image\" content=\"%s\" />", image))
+	
+	// General Description
+	html = strings.ReplaceAll(html, "<meta name=\"description\" content=\"Super Real Estate - Find your dream property near Bangkok's transit stations\" />", fmt.Sprintf("<meta name=\"description\" content=\"%s\" />", description))
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
