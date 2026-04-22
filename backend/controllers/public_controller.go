@@ -6,7 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"super_real_estate/config"
 	"super_real_estate/models"
+	"io"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,11 +17,12 @@ import (
 )
 
 type PublicController struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewPublicController(db *gorm.DB) *PublicController {
-	return &PublicController{db: db}
+func NewPublicController(db *gorm.DB, cfg *config.Config) *PublicController {
+	return &PublicController{db: db, cfg: cfg}
 }
 
 // GetListings returns published listings with optional filters
@@ -611,14 +615,15 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 	}
 
 	// Fetch index.html from frontend
-	frontendURL := "http://frontend:3000"
-	if gin.Mode() == gin.ReleaseMode {
-		// In production, might be different, but docker-compose uses service name
-	}
+	frontendURL := pc.cfg.FrontendURL
 	
 	resp, err := http.Get(frontendURL + "/index.html")
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to fetch frontend template")
+		fmt.Printf("[MetaInjection] Error fetching frontend template: %v. Falling back to basic HTML.\n", err)
+		// Fallback to basic HTML with OG tags if frontend is unreachable
+		fallbackHtml := fmt.Sprintf(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>%s</title><meta property="og:title" content="%s" /><meta property="og:description" content="%s" /><meta property="og:image" content="%s" /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="%s" /><meta name="twitter:description" content="%s" /><meta name="twitter:image" content="%s" /></head><body><script>window.location.href = "/listings/%s";</script></body></html>`, 
+			title, title, description, image, title, description, image, id)
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(fallbackHtml))
 		return
 	}
 	defer resp.Body.Close()

@@ -38,6 +38,7 @@ services:
       - UPLOAD_PATH=/app/uploads
       - GIN_MODE=debug
       - MAIN_DOMAIN=srv1534108.hstgr.cloud
+      - FRONTEND_URL=http://frontend:3000
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
