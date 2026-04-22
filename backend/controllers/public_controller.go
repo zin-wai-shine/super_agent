@@ -613,34 +613,12 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
 	}
 
-	// Attempt to read the real index.html and inject tags
-	indexPath := "index.html"
-	indexBytes, err := os.ReadFile(indexPath)
-	if err == nil {
-		content := string(indexBytes)
-
-		// Replace Titles
-		content = strings.ReplaceAll(content, "<title>Super Real Estate</title>", fmt.Sprintf("<title>%s</title>", title))
-		content = strings.ReplaceAll(content, "content=\"Super Real Estate\"", fmt.Sprintf("content=\"%s\"", title))
-
-		// Replace Descriptions
-		genericDesc := "Find your dream property near Bangkok's transit stations. High-quality listings, easy search, and professional service."
-		content = strings.ReplaceAll(content, genericDesc, description)
-
-		// Replace Images
-		content = strings.ReplaceAll(content, "content=\"/logo-super.png\"", fmt.Sprintf("content=\"%s\"", image))
-
-		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(content))
-		return
-	}
-
-	// Fallback to simple HTML if index.html is missing
 	html := fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <title>%s</title>
-    <!-- Social Preview Tags (Backend Rendered Fallback) -->
+    <!-- Social Preview Tags (Backend Rendered) -->
     <meta property="og:title" content="%s" />
     <meta property="og:description" content="%s" />
     <meta property="og:image" content="%s" />
@@ -651,7 +629,10 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
     <meta name="twitter:image" content="%s" />
 </head>
 <body>
-    <script>window.location.href = "/listings/%s";</script>
+    <p>Redirecting to property...</p>
+    <script>
+        window.location.href = "/listings/%s";
+    </script>
 </body>
 </html>`, title, title, description, image, title, description, image, id)
 
