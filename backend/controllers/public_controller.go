@@ -568,9 +568,14 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		priceStr = fmt.Sprintf("%.0fK", listing.Price/1000)
 	}
 
-	description := fmt.Sprintf("฿%s | %d Bed | %d Bath | %.0f sqm", priceStr, listing.Bedrooms, listing.Bathrooms, listing.Area)
+	// Format description: bed, bath, sqm
+	description := fmt.Sprintf("%d Bed | %d Bath | %.0f sqm", listing.Bedrooms, listing.Bathrooms, listing.Area)
+	
+	// Add price to description
+	priceDisplay := fmt.Sprintf("฿%s / month", priceStr)
+	fullDescription := fmt.Sprintf("%s | %s", description, priceDisplay)
+	
 	if listing.Description != "" {
-		// Basic HTML tag stripping
 		cleanDesc := listing.Description
 		for strings.Contains(cleanDesc, "<") && strings.Contains(cleanDesc, ">") {
 			start := strings.Index(cleanDesc, "<")
@@ -584,10 +589,10 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		cleanDesc = strings.ReplaceAll(cleanDesc, "\n", " ")
 		cleanDesc = strings.TrimSpace(cleanDesc)
 
-		if len(cleanDesc) > 150 {
-			cleanDesc = cleanDesc[:147] + "..."
+		if len(cleanDesc) > 100 {
+			cleanDesc = cleanDesc[:97] + "..."
 		}
-		description = description + " - " + cleanDesc
+		fullDescription = fullDescription + " - " + cleanDesc
 	}
 
 	image := ""
@@ -599,12 +604,12 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		image = listing.Agent.Logo
 	}
 
-	// Form absolute URL
+	// Form absolute URL for image
 	scheme := "https"
 	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
 		scheme = proto
 	}
-	host := c.GetHeader("X-Forwarded-Host")
+	host := c.GetHeader("Host")
 	if host == "" {
 		host = c.Request.Host
 	}
@@ -618,7 +623,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 <head>
     <meta charset="utf-8">
     <title>%s</title>
-    <!-- Social Preview Tags (Backend Rendered) -->
+    <meta property="og:site_name" content="Super Real Estate" />
     <meta property="og:title" content="%s" />
     <meta property="og:description" content="%s" />
     <meta property="og:image" content="%s" />
@@ -629,12 +634,12 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
     <meta name="twitter:image" content="%s" />
 </head>
 <body>
-    <p>Redirecting to property...</p>
+    <p>Redirecting to property: %s...</p>
     <script>
         window.location.href = "/listings/%s";
     </script>
 </body>
-</html>`, title, title, description, image, title, description, image, id)
+</html>`, title, title, fullDescription, image, title, fullDescription, image, title, id)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
