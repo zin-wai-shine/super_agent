@@ -116,9 +116,18 @@ const MobileBottomNav = () => {
                 {active && (
                     <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
                 )}
-                <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
+                <div 
+                    className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}
+                    style={{ 
+                        width: item.name === 'Favorites' ? '32px' : '28px',
+                        height: item.name === 'Favorites' ? '32px' : '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
                     <Icon 
-                        size={item.name === 'Favorites' ? 32 : 28}
+                        size="100%"
                         className={`transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} 
                     />
                 </div>
