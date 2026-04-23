@@ -19,6 +19,7 @@ import { HiOutlineMagnifyingGlass, HiOutlineCalendarDays, HiOutlineUser } from "
 import { PiUser, PiHeart, PiHeartFill } from 'react-icons/pi';
 import { FaRegHeart, FaHeart } from "react-icons/fa6";
 import { FiHeart, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
+import { GoHeart, GoHeartFill } from "react-icons/go";
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -69,7 +70,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: FiSearch, activeIcon: FiSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: FiHeart, activeIcon: BsHeartFill },
+        { name: 'Favorites', path: '/saved-listings', icon: GoHeart, activeIcon: GoHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: FiCalendar, activeIcon: FiCalendar },
         { name: 'Profile', path: '/profile', icon: FiUser, activeIcon: FiUser },
     ] : [
