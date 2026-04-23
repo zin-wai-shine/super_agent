@@ -39,6 +39,7 @@ import {
     CheckCircleIcon, // Added CheckCircleIcon to outline
     ClockIcon, // Moved ClockIcon to outline
     DocumentDuplicateIcon,
+    PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import {
     CheckBadgeIcon,
@@ -61,7 +62,7 @@ import FilterBar from '../../components/ui/FilterBar';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
-import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree } from "react-icons/tb";
+import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree, TbHammer } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine, RiFridgeLine } from "react-icons/ri";
@@ -355,6 +356,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     }), []);
 
     const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false);
+    const [isStatusOverlayOpen, setIsStatusOverlayOpen] = useState(false);
     const { lastMessage } = useWebSocket();
     const [isBookingOverlayOpen, setIsBookingOverlayOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -1334,7 +1336,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <button
                                                             key={opt.value}
                                                             type="button"
-                                                            className="py-2.5 px-5 rounded-full text-sm font-semibold transition-all border-2 border-primary-500 bg-transparent text-primary-500 shadow-none"
+                                                            className="py-2.5 px-5 rounded-full text-sm font-semibold transition-all bg-[#222222] text-white border-none shadow-none"
                                                         >
                                                             {opt.label}
                                                         </button>
@@ -1372,7 +1374,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                     const isPast = currentDay < today;
                                                     const horizon = new Date(today);
-                                                    horizon.setDate(today.getDate() + 14);
+                                                    horizon.setDate(today.getDate() + 30);
                                                     horizon.setHours(23, 59, 59, 999);
                                                     const isOutsideHorizon = currentDay > horizon;
                                                     const isDisabled = isPast || isOutsideHorizon;
@@ -1387,7 +1389,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             key={i}
                                                             disabled={isDisabled}
                                                             onClick={() => handleDateSelect(day)}
-                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none' : isDisabled ? 'text-gray-200 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                                                            className={`w-10 h-10 mx-auto rounded-full text-sm font-bold flex items-center justify-center transition-all ${isSelected ? 'bg-[#222222] text-white shadow-none' : isDisabled ? 'text-gray-200 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
                                                         >
                                                             {day}
                                                         </button>
@@ -1425,7 +1427,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none'
+                                                                    ? 'bg-[#222222] text-white shadow-none border-transparent'
                                                                     : disabled
                                                                         ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                                                                         : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
@@ -1457,7 +1459,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
                                                                 className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'border-2 border-primary-500 bg-transparent text-primary-500 shadow-none'
+                                                                    ? 'bg-[#222222] text-white shadow-none border-transparent'
                                                                     : disabled
                                                                         ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                                                                         : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
@@ -1559,13 +1561,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div
                                                     className="border-b pb-8 border-gray-100 dark:border-white/10"
                                                 >
-                                                    <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-1">
+                                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-1">
                                                         {listing.district}
                                                     </div>
-                                                    <div className="font-bold text-lg leading-tight mb-2 truncate text-gray-900 dark:text-white">
+                                                    <div className="font-bold text-xl leading-tight mb-2 truncate text-gray-900 dark:text-white">
                                                         {listing.title}
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-400">
+                                                    <div className="flex items-center gap-2 text-lg text-gray-700 dark:text-gray-400">
                                                         <MapPinIcon className="w-4 h-4" />
                                                         {listing.location || 'Bangkok'}
                                                     </div>
@@ -1573,18 +1575,18 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                 <div className="grid grid-cols-2 gap-8">
                                                     <div>
-                                                        <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-2">
+                                                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-2">
                                                             Preferred Date
                                                         </div>
-                                                        <div className="font-semibold text-base text-gray-900 dark:text-white">
+                                                        <div className="font-semibold text-lg text-gray-900 dark:text-white">
                                                             {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-base font-semibold text-gray-900 dark:text-gray-300 mb-2">
+                                                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-2">
                                                             Preferred Time
                                                         </div>
-                                                        <div className="font-semibold text-base text-gray-900 dark:text-white">
+                                                        <div className="font-semibold text-lg text-gray-900 dark:text-white">
                                                             {bookingForm.preferred_time || '---'}
                                                         </div>
                                                     </div>
@@ -1594,11 +1596,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     <div
                                                         className="pt-4 border-t border-gray-100 dark:border-white/10"
                                                     >
-                                                        <div className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+                                                        <div className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                                                             Your Message
                                                         </div>
                                                         <div
-                                                            className="text-base italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900 dark:text-gray-300 border-gray-200 dark:border-white/20"
+                                                            className="text-lg italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900 dark:text-gray-300 border-gray-200 dark:border-white/20"
                                                         >
                                                             "{bookingForm.message}"
                                                         </div>
@@ -1850,7 +1852,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                         {/* Image counter */}
                         {hasImages && images.length > 1 && (
-                            <div className="absolute bottom-28 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black/70 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest z-[50] pointer-events-none flex items-center justify-center min-w-[60px]">
+                            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black/70 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest z-[50] pointer-events-none flex items-center justify-center min-w-[60px]">
                                 {currentImageIndex + 1} / {images.length}
                             </div>
                         )}
@@ -1962,9 +1964,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     )}
 
                                     {/* Title & Info - same layout for listing and viewing-requested; viewing date/status inline when bookingId */}
-                                    <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-6 lg:pt-0">
+                                    <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-2 lg:pt-0">
                                         <div className="flex-1 min-w-0 w-full">
-                                            <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 dark:text-white leading-[1.2] mb-2 tracking-tight">
+                                            <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 dark:text-white leading-[1.2] mb-1 tracking-tight">
                                                 {listing.title}
                                             </h1>
 
@@ -1977,35 +1979,21 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </span>
                                                     {viewedBooking?.preferred_time && <><span className="text-gray-300 dark:text-gray-600">·</span><span className="text-gray-700 dark:text-gray-300">{viewedBooking.preferred_time}</span></>}
                                                     <span className="text-gray-300 dark:text-gray-600">·</span>
-                                                    <span className={`font-semibold ${viewedBooking?.status === 'confirmed' ? 'text-emerald-600' : viewedBooking?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                    <button
+                                                        onClick={() => setIsStatusOverlayOpen(true)}
+                                                        className="px-4 py-1.5 rounded-full text-[13px] font-bold transition-all bg-[#222222] text-white hover:bg-black active:scale-95 flex items-center gap-1.5 shadow-sm"
+                                                    >
+                                                        <LuCalendarCheck2 className="w-4 h-4 text-white" />
                                                         {viewedBooking?.status || 'Pending'}
-                                                    </span>
+                                                    </button>
                                                 </div>
                                             )}
 
-                                            <div className="flex items-center text-gray-800 dark:text-gray-300 text-[15px] pb-6">
-                                                <span>{listing.bedrooms || 0} bedroom{listing.bedrooms > 1 || !listing.bedrooms ? 's' : ''}</span>
-                                                <span className="mx-1.5 font-bold">·</span>
-                                                <span>{listing.bathrooms || 0} bath{listing.bathrooms > 1 || !listing.bathrooms ? 's' : ''}</span>
-                                                <span className="mx-1.5 font-bold">·</span>
-                                                <span>{listing.area ? `${listing.area} m²` : 'Spacious'}</span>
-                                            </div>
+
                                         </div>
 
                                     </div>
 
-
-                                    {!bookingId && (
-                                        <div className="px-4 md:px-0 lg:px-0 flex gap-4 mb-8">
-                                            <div className="mt-0.5">
-                                                <CheckBadgeIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-[16px] font-semibold text-gray-900 dark:text-white leading-tight mb-1">Confirmed available</h3>
-                                                <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-snug">This property recently verified its status and is available today.</p>
-                                            </div>
-                                        </div>
-                                    )}
 
                                     {/* Price for Mobile (Fixed styling) */}
                                     <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-baseline">
@@ -2014,6 +2002,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">/month</span>
                                         )}
                                     </div>
+
+                                    {!bookingId && (
+                                        <div className="px-0 md:px-0 lg:px-0 my-6">
+                                            <div className="flex md:inline-flex items-center justify-center md:justify-start gap-2 px-4 py-3 bg-emerald-600 text-white rounded-none md:rounded-lg w-full md:w-auto animate-shimmer">
+                                                <CheckBadgeIcon className="w-6 h-6 text-white" />
+                                                <span className="text-[14px] font-bold tracking-wide uppercase">
+                                                    {listing.availability_status || "Ready to move in"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
 
 
                                 {/* Image Gallery - Desktop Bento Grid */}
@@ -2124,49 +2123,50 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="px-4 md:px-0 lg:px-0">
                                     {/* Features */}
                                     {/* Features Grid */}
-                                    <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card" style={{ boxShadow: 'none' }}>
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5">
+                                    <div className="-mx-4 md:mx-0">
+                                        <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-0 md:border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card" style={{ boxShadow: 'none' }}>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 md:divide-x divide-gray-100 dark:divide-white/5">
                                             {/* Row 1 */}
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                                 <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t md:border-t-0 border-gray-100 dark:border-white/5">
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none md:border-t-0 border-gray-100 dark:border-white/5">
                                                 <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t lg:border-t-0 border-gray-100 dark:border-white/5">
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none lg:border-t-0 border-gray-100 dark:border-white/5">
                                                 <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.area || 0} m²</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.area || 0} m²</div>
                                                 </div>
                                             </div>
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t lg:border-t-0 border-gray-100 dark:border-white/5">
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none lg:border-t-0 border-gray-100 dark:border-white/5">
                                                 <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
                                                 </div>
                                             </div>
 
                                             {/* Additional Highlights */}
                                             {listing.year_built > 0 && (
-                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t border-gray-100 dark:border-white/5">
-                                                    <div className="text-xl md:text-2xl flex-shrink-0">🏗️</div>
+                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none border-gray-100 dark:border-white/5">
+                                                    <TbHammer className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                     <div>
-                                                        <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">Built in {listing.year_built}</div>
+                                                        <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">Built in {listing.year_built}</div>
                                                     </div>
                                                 </div>
                                             )}
 
                                             {listing.listing_type === 'sale' && (
-                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t border-gray-100 dark:border-white/5">
+                                                <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none border-gray-100 dark:border-white/5">
                                                     <TbCurrencyBaht className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                     <div>
-                                                        <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">
+                                                        <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">
                                                             {listing.price && listing.area
                                                                 ? `฿${Math.round(listing.price / listing.area).toLocaleString()}/sqm`
                                                                 : '-'}
@@ -2175,7 +2175,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                             )}
 
-                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-t col-span-1 md:col-span-2 border-gray-100 dark:border-white/5">
+                                            <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none col-span-2 md:col-span-2 border-gray-100 dark:border-white/5">
                                                 <span className="flex-shrink-0 md:flex md:items-center md:justify-center">
                                                     <MapPinIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white hidden md:block" />
                                                     <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0 md:hidden" />
@@ -2190,6 +2190,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             </div>
                                         </div>
                                     </Card>
+                                    </div>
 
 
                                     {/* Features & Amenities Section */}
@@ -2242,7 +2243,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             <div className="space-y-12 w-full col-span-1 md:col-span-2 lg:col-span-4">
                                                                 {amenities.length > 0 && (
                                                                     <div>
-                                                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                                                                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
                                                                             {(showAllAmenities ? amenities : amenities.slice(0, 4)).map(featureId => {
                                                                                 const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
                                                                                 return (
@@ -2250,7 +2251,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
                                                                                             {item.icon}
                                                                                         </div>
-                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[14px]">{item.label}</span>
+                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
                                                                                     </div>
                                                                                 );
                                                                             })}
@@ -2259,7 +2260,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 onClick={() => setShowAllAmenities(!showAllAmenities)}
-                                                                                className="mt-6 flex items-center text-primary-600 font-bold text-lg hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
+                                                                                className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
                                                                             >
                                                                                 {showAllAmenities ? (
                                                                                     <>
@@ -2286,7 +2287,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
                                                                                             {item.icon}
                                                                                         </div>
-                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[14px]">{item.label}</span>
+                                                                                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
                                                                                     </div>
                                                                                 );
                                                                             })}
@@ -2295,7 +2296,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 onClick={() => setShowAllFacilities(!showAllFacilities)}
-                                                                                className="mt-6 flex items-center text-primary-600 font-bold text-lg hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
+                                                                                className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
                                                                             >
                                                                                 {showAllFacilities ? (
                                                                                     <>
@@ -2505,72 +2506,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                             <div
                                                                 ref={transitWrapperRef}
-                                                                className="flex-1 overflow-hidden relative overscroll-contain touch-none"
-                                                                onMouseDown={(e) => {
-                                                                    const startX = e.pageX - mapState.pan.x;
-                                                                    const startY = e.pageY - mapState.pan.y;
-                                                                    const handleMouseMove = (mm) => {
-                                                                        const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
-                                                                        setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
-                                                                    };
-                                                                    const handleMouseUp = () => {
-                                                                        window.removeEventListener('mousemove', handleMouseMove);
-                                                                        window.removeEventListener('mouseup', handleMouseUp);
-                                                                    };
-                                                                    window.addEventListener('mousemove', handleMouseMove);
-                                                                    window.addEventListener('mouseup', handleMouseUp);
-                                                                }}
-                                                                onTouchStart={(e) => {
-                                                                    if (e.touches.length !== 2) return;
-                                                                    const t1 = e.touches[0];
-                                                                    const t2 = e.touches[1];
-                                                                    const middleX = (t1.pageX + t2.pageX) / 2;
-                                                                    const middleY = (t1.pageY + t2.pageY) / 2;
-                                                                    const startX = middleX - mapState.pan.x;
-                                                                    const startY = middleY - mapState.pan.y;
-                                                                    const startDist = Math.hypot(t1.pageX - t2.pageX, t1.pageY - t2.pageY);
-                                                                    const startZoom = mapState.zoom;
-                                                                    const handleTouchMove = (tm) => {
-                                                                        if (tm.touches.length !== 2) return;
-                                                                        tm.preventDefault();
-                                                                        const mt1 = tm.touches[0];
-                                                                        const mt2 = tm.touches[1];
-                                                                        const currentMiddleX = (mt1.pageX + mt2.pageX) / 2;
-                                                                        const currentMiddleY = (mt1.pageY + mt2.pageY) / 2;
-                                                                        const currentDist = Math.hypot(mt1.pageX - mt2.pageX, mt1.pageY - mt2.pageY);
-                                                                        const zoomFactor = currentDist / startDist;
-                                                                        const nextZoom = Math.max(getMinZoom(), Math.min(2.0, startZoom * zoomFactor));
-                                                                        const newPan = { x: currentMiddleX - startX, y: currentMiddleY - startY };
-                                                                        setMapState(prev => ({
-                                                                            ...prev,
-                                                                            zoom: nextZoom,
-                                                                            pan: constrainPan(newPan, nextZoom)
-                                                                        }));
-                                                                    };
-                                                                    const handleTouchEnd = () => {
-                                                                        window.removeEventListener('touchmove', handleTouchMove);
-                                                                        window.removeEventListener('touchend', handleTouchEnd);
-                                                                    };
-                                                                    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-                                                                    window.addEventListener('touchend', handleTouchEnd);
-                                                                }}
-                                                                onWheel={(e) => {
-                                                                    if (activeMapTab !== 'transit') return;
-                                                                    if (!e.ctrlKey) return;
-                                                                    e.preventDefault();
-                                                                    const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                                                                    const minZoom = getMinZoom();
-                                                                    const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
-                                                                    const rect = transitWrapperRef.current.getBoundingClientRect();
-                                                                    const mouseX = e.clientX - rect.left;
-                                                                    const mouseY = e.clientY - rect.top;
-                                                                    const zoomFactor = nextZoom / mapState.zoom;
-                                                                    const newPan = {
-                                                                        x: mouseX - (mouseX - mapState.pan.x) * zoomFactor,
-                                                                        y: mouseY - (mouseY - mapState.pan.y) * zoomFactor
-                                                                    };
-                                                                    setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
-                                                                }}
+                                                                className="flex-1 overflow-hidden relative"
                                                             >
                                                                 <div
                                                                     style={{
@@ -2634,7 +2570,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         )}
                                                     </div>
                                                     <a
-                                                        href={listing.map_url || `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}`}
+                                                        href={(listing.map_url && listing.map_url.startsWith('http')) ? listing.map_url : `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="px-5 py-2.5 rounded-full bg-white dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] flex items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/10"
@@ -2735,60 +2671,235 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </div>
                                 )}
 
-                                {/* Desktop Contact Modal */}
                                 {isDesktopView && (
-                                    <Modal
-                                        isOpen={isContactOverlayOpen}
-                                        onClose={() => setIsContactOverlayOpen(false)}
-                                        title="Let's Connect"
-                                        size="md"
-                                    >
-                                        <div className="p-8">
-                                            <p className="text-base text-gray-500 mb-8 font-medium">
-                                                Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home.
-                                            </p>
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {renderContactLinks(true)}
+                                    <>
+                                        <Modal
+                                            isOpen={isContactOverlayOpen}
+                                            onClose={() => setIsContactOverlayOpen(false)}
+                                            title="Let's Connect"
+                                            size="md"
+                                        >
+                                            <div className="p-8">
+                                                <p className="text-base text-gray-500 mb-8 font-medium">
+                                                    Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home.
+                                                </p>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {renderContactLinks(true)}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Modal>
+                                        </Modal>
+
+                                        <Modal
+                                            isOpen={isStatusOverlayOpen}
+                                            onClose={() => setIsStatusOverlayOpen(false)}
+                                            title="Request Details"
+                                            size="md"
+                                        >
+                                            <div className="p-8 space-y-8">
+                                                <div className="pb-6 border-b border-gray-100 dark:border-white/10 text-center">
+                                                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">{listing.title}</div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-8">
+                                                    <div>
+                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Status</div>
+                                                        <div className={`font-bold text-xl capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                            {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested On</div>
+                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
+                                                            {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-8">
+                                                    <div>
+                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Preferred Date</div>
+                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
+                                                            {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Preferred Time</div>
+                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
+                                                            {(viewedBooking || activeBooking)?.preferred_time || '---'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {(viewedBooking || activeBooking)?.message && (
+                                                    <div className="pt-6 border-t border-gray-100 dark:border-white/10">
+                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-3">Your Message</div>
+                                                        <div className="text-xl italic text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
+                                                            "{(viewedBooking || activeBooking).message}"
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Modal>
+                                    </>
                                 )}
 
-                                {/* Mobile Contact Sheet */}
+                                {/* Mobile Overlay Sheets (Contact & Status) */}
                                 {!isDesktopView && (
-                                    <div
-                                        className={`fixed inset-0 z-[200] ${isContactOverlayOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
-                                    >
-                                        {/* Backdrop */}
+                                    <>
+                                        {/* Mobile Contact Sheet */}
                                         <div
-                                            className={`absolute inset-0 bg-black/60 backdrop-blur-[4px] transition-opacity duration-[500ms] ${isContactOverlayOpen ? 'opacity-100' : 'opacity-0'}`}
-                                            onClick={() => setIsContactOverlayOpen(false)}
-                                        />
-
-                                        {/* The Sheet */}
-                                        <div
-                                            className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[60vh]
-                                                ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
+                                            className={`fixed inset-0 z-[200] ${isContactOverlayOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
                                         >
                                             <div
-                                                className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
+                                                className={`absolute inset-0 bg-black/60 backdrop-blur-[4px] transition-opacity duration-[500ms] ${isContactOverlayOpen ? 'opacity-100' : 'opacity-0'}`}
                                                 onClick={() => setIsContactOverlayOpen(false)}
+                                            />
+                                            <div
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[60vh]
+                                                    ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
-                                                <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
-                                            </div>
-                                            <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
-                                                {/* Header */}
-                                                <div className="w-full text-center mb-4">
-                                                    <h3 className="font-black text-gray-900 dark:text-white text-xl tracking-tighter mb-1">Let's Connect</h3>
-                                                    <p className="text-gray-400 dark:text-gray-500 font-bold text-[13px] tracking-wide uppercase">Connect with our team</p>
+                                                <div
+                                                    className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
+                                                    onClick={() => setIsContactOverlayOpen(false)}
+                                                >
+                                                    <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
                                                 </div>
-
-                                                <div className="w-full max-w-md mt-6 space-y-4">
-                                                    {renderContactLinks(false)}
+                                                <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
+                                                    <div className="w-full text-center mb-4">
+                                                        <h3 className="font-black text-gray-900 dark:text-white text-xl tracking-tighter mb-1">Let's Connect</h3>
+                                                        <p className="text-gray-400 dark:text-gray-500 font-bold text-[13px] tracking-wide uppercase">Connect with our team</p>
+                                                    </div>
+                                                    <div className="w-full max-w-md mt-6 space-y-4">
+                                                        {renderContactLinks(false)}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+
+                                        {/* Mobile Status Sheet */}
+                                        <div
+                                            className={`fixed inset-0 z-[200] ${isStatusOverlayOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                                        >
+                                            <div
+                                                className={`absolute inset-0 bg-black/60 backdrop-blur-[4px] transition-opacity duration-[500ms] ${isStatusOverlayOpen ? 'opacity-100' : 'opacity-0'}`}
+                                                onClick={() => setIsStatusOverlayOpen(false)}
+                                            />
+                                            <div
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-auto max-h-[85vh]
+                                                    ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
+                                            >
+                                                <div
+                                                    className="w-full flex justify-center py-3 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
+                                                    onClick={() => setIsStatusOverlayOpen(false)}
+                                                >
+                                                    <div className="w-12 h-1 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
+                                                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                                                        {(viewedBooking?.status?.toLowerCase() !== 'confirmed' && activeBooking?.status?.toLowerCase() !== 'confirmed') && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const booking = viewedBooking || activeBooking;
+                                                                    if (booking) {
+                                                                        const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
+                                                                        const today = new Date();
+                                                                        today.setHours(0, 0, 0, 0);
+                                                                        const isPastBooking = bookingDate && bookingDate < today;
+
+                                                                        setBookingForm({
+                                                                            full_name: booking.full_name || '',
+                                                                            email: booking.email || '',
+                                                                            phone: booking.phone || '',
+                                                                            preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
+                                                                            preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
+                                                                            purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
+                                                                            message: booking.message || '',
+                                                                        });
+                                                                        setConfirmedDateTime(!isPastBooking);
+                                                                        setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
+                                                                    }
+                                                                    setIsStatusOverlayOpen(false);
+                                                                    setIsBookingOverlayOpen(true);
+                                                                }}
+                                                                className="p-2 pl-3 pr-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-all flex items-center gap-1.5"
+                                                            >
+                                                                <PencilSquareIcon className="w-4 h-4" />
+                                                                <span className="text-[13px] font-bold">Edit</span>
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setIsStatusOverlayOpen(false);
+                                                            }}
+                                                            className="p-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-all"
+                                                        >
+                                                            <XMarkIcon className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full relative flex flex-col items-center p-6 pb-12 pt-2">
+                                                    <div className="w-full text-center mb-4">
+                                                        <h3 className="font-black text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
+                                                    </div>
+
+                                                    <div className="w-full space-y-8 text-left">
+                                                        <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
+                                                            <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">{listing.title}</div>
+                                                        </div>
+
+                                                        <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
+                                                            <div className="flex flex-col items-center text-center">
+                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4">Preferred Date</div>
+                                                                <span className="text-[84px] font-black leading-none text-gray-900 dark:text-white tracking-tighter">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
+                                                                </span>
+                                                                <span className="text-2xl font-black text-[#222222] dark:text-white/90 mt-2 flex items-center gap-3">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '---'}
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20" />
+                                                                    <span className="text-gray-500 dark:text-gray-400">
+                                                                        {(() => {
+                                                                            const time = (viewedBooking || activeBooking)?.preferred_time;
+                                                                            if (!time) return '---';
+                                                                            const [hours, minutes] = time.split(':');
+                                                                            let hour = parseInt(hours);
+                                                                            const ampm = hour >= 12 ? 'PM' : 'AM';
+                                                                            hour = hour % 12;
+                                                                            hour = hour ? hour : 12;
+                                                                            return `${hour}:${minutes} ${ampm}`;
+                                                                        })()}
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-4 pt-4">
+                                                            <div className="text-center border-r border-gray-100 dark:border-white/10">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                                                                <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                                    {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
+                                                                <div className="font-bold text-lg text-gray-900 dark:text-white">
+                                                                    {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {(viewedBooking || activeBooking)?.message && (
+                                                            <div className="pt-6 border-t border-gray-100 dark:border-white/10">
+                                                                <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-3">Your Message</div>
+                                                                <div className="text-xl italic text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
+                                                                    "{(viewedBooking || activeBooking).message}"
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </>
                         )}
@@ -2824,15 +2935,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </button>
 
                     {activeBooking ? (
-                        <div className={`flex items-center gap-1.5 font-bold text-[14px] whitespace-nowrap px-1 ${
-                            activeBooking.status === 'completed' ? 'text-emerald-600' : 
-                            activeBooking.status === 'confirmed' ? 'text-blue-600' : 
-                            activeBooking.status === 'cancelled' ? 'text-rose-600' : 
-                            'text-amber-600'
-                        }`}>
-                            <LuCalendarCheck2 className="w-5 h-5" />
+                        <button
+                            onClick={() => setIsStatusOverlayOpen(true)}
+                            className="bg-[#222222] active:bg-black active:scale-[0.98] transition-all text-white font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap gap-2"
+                        >
+                            <LuCalendarCheck2 className="w-5 h-5 text-white" />
                             <span className="capitalize">{activeBooking.status || 'Requested'}</span>
-                        </div>
+                        </button>
                     ) : (
                         <button
                             onClick={handleBookingClick}

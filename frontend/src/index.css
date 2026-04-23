@@ -185,12 +185,10 @@
 
   @keyframes shimmer {
     0% {
-      transform: translateX(-100%) skewX(-15deg);
+      transform: translateX(-150%) skewX(-25deg);
     }
-
-    50%,
     100% {
-      transform: translateX(100%) skewX(-15deg);
+      transform: translateX(150%) skewX(-25deg);
     }
   }
 
@@ -679,10 +677,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.25),
     transparent
   );
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes fillIn {
