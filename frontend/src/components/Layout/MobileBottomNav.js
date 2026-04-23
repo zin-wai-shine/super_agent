@@ -69,7 +69,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: FiSearch, activeIcon: FiSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: FiHeart, activeIcon: FiHeart },
+        { name: 'Favorites', path: '/saved-listings', icon: FiHeart, activeIcon: BsHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: FiCalendar, activeIcon: FiCalendar },
         { name: 'Profile', path: '/profile', icon: FiUser, activeIcon: FiUser },
     ] : [
@@ -117,7 +117,7 @@ const MobileBottomNav = () => {
                 )}
                 <div className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}>
                     <Icon 
-                        size={item.name === 'Favorites' ? 30 : 28}
+                        size={item.name === 'Favorites' ? 32 : 28}
                         strokeWidth={2.0}
                         className={`transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} 
                     />
