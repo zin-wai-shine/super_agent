@@ -70,7 +70,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsHeartFill },
+        { name: 'Favorites', path: '/saved-listings', icon: GoHeart, activeIcon: GoHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
         { name: 'Profile', path: '/profile', icon: BsPerson, activeIcon: BsPerson },
     ] : [
