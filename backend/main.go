@@ -13,6 +13,7 @@ import (
 	"super_real_estate/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
@@ -172,13 +173,14 @@ func seedInitialData(db *gorm.DB) {
 	}
 
 	specificAgents := []struct {
+		ID           string
 		Name         string
 		Subdomain    string
 		Email        string
 		CustomDomain string
 	}{
-		{Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.srv1534108.hstgr.cloud", CustomDomain: ""},
-		{Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.srv1534108.hstgr.cloud", CustomDomain: "bolthave.com"},
+		{ID: "0cccb54d-327e-40f5-8c82-e710de3d88d8", Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.srv1534108.hstgr.cloud", CustomDomain: "bolthave.com"},
+		{ID: "7d0c4b8e-c331-4f58-9b9b-3eb7ac0c5841", Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.srv1534108.hstgr.cloud", CustomDomain: ""},
 	}
 
 	for _, sa := range specificAgents {
@@ -190,7 +192,9 @@ func seedInitialData(db *gorm.DB) {
 			domainType = models.DomainTypeCustom
 		}
 
+		agentID, _ := uuid.Parse(sa.ID)
 		agent := models.Agent{
+			ID:             agentID,
 			Name:           sa.Name,
 			Subdomain:      sa.Subdomain,
 			DomainType:     domainType,

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"super_real_estate/models"
 
@@ -25,10 +26,13 @@ func NewPublicController(db *gorm.DB) *PublicController {
 func (pc *PublicController) GetListings(c *gin.Context) {
 	var listings []models.Listing
 	query := pc.db.Model(&models.Listing{}).
-		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station")
+		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
+		Where("is_published = ?", true)
 
-	if tenantID, exists := c.Get("tenant_id"); exists {
-		query = query.Where("agent_id = ?", tenantID)
+	tenantIDObj, hasTenant := c.Get("tenant_id")
+	var tenantID uuid.UUID
+	if hasTenant {
+		tenantID = tenantIDObj.(uuid.UUID)
 	}
 
 	collectionID := c.Query("collection_id")
@@ -115,11 +119,6 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		// If filtering by developer, we need to join with projects
 		query = query.Joins("JOIN projects ON projects.id = listings.project_id").
 			Where("projects.developer_id = ?", developerID)
-	}
-	if bedrooms := c.Query("bedrooms"); bedrooms != "" {
-		if beds, err := strconv.Atoi(bedrooms); err == nil {
-			query = query.Where("bedrooms >= ?", beds)
-		}
 	}
 
 	// Filter by area

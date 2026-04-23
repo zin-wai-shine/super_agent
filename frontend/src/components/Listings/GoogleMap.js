@@ -264,7 +264,8 @@ const GoogleMapComponent = ({
     onOpenedMarkerChange,
     onClick,
     disableMarkerExpansion = false,
-    markerType = 'price'
+    markerType = 'price',
+    hideSyncButton = false
 }) => {
     const isMobile = window.innerWidth < 768;
     const effectiveZoom = zoom !== undefined ? zoom : (isMobile ? DEFAULT_MOBILE_ZOOM : DEFAULT_ZOOM);
@@ -630,24 +631,21 @@ const GoogleMapComponent = ({
 
             {/* CUSTOM CONTROLS — Liquid Glass Design restorative fix */}
             {!hideCustomControls && map && (
-                <div className="absolute bottom-6 right-6 z-20">
-                    <div className="bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 dark:border-white/10 flex flex-col p-1 overflow-hidden transition-all duration-300">
-                        {/* Zoom In */}
-                        {!hideControls && (
-                            <>
-                                <button
-                                    onClick={() => map.setZoom(map.getZoom() + 1)}
-                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                    aria-label="Zoom in"
-                                    title="Zoom In"
-                                >
-                                    <PlusIcon className="w-5 h-5 stroke-[2.5]" />
-                                </button>
-                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
-                            </>
-                        )}
+                <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-3">
+                    {/* Zoom In */}
+                    {!hideControls && (
+                        <button
+                            onClick={() => map.setZoom(map.getZoom() + 1)}
+                            className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                            aria-label="Zoom in"
+                            title="Zoom In"
+                        >
+                            <PlusIcon className="w-5 h-5 stroke-[2.5]" />
+                        </button>
+                    )}
 
-                        {/* Sync/Reload Button - Always visible if custom controls are shown */}
+                    {/* Sync/Reload Button */}
+                    {!hideSyncButton && (
                         <button
                             onClick={() => {
                                 if (listingsWithCoords.length > 0) {
@@ -659,43 +657,37 @@ const GoogleMapComponent = ({
                                     map.setZoom(effectiveZoom);
                                 }
                             }}
-                            className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
+                            className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
                             aria-label="Sync map"
                             title="Sync Map"
                         >
                             <ArrowPathIcon className="w-5 h-5 stroke-[2] group-active:rotate-180 transition-transform duration-500" />
                         </button>
+                    )}
 
-                        {/* Zoom Out */}
-                        {!hideControls && (
-                            <>
-                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
-                                <button
-                                    onClick={() => map.setZoom(map.getZoom() - 1)}
-                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                    aria-label="Zoom out"
-                                    title="Zoom Out"
-                                >
-                                    <MinusIcon className="w-5 h-5 stroke-[2.5]" />
-                                </button>
-                            </>
-                        )}
+                    {/* Zoom Out */}
+                    {!hideControls && (
+                        <button
+                            onClick={() => map.setZoom(map.getZoom() - 1)}
+                            className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                            aria-label="Zoom out"
+                            title="Zoom Out"
+                        >
+                            <MinusIcon className="w-5 h-5 stroke-[2.5]" />
+                        </button>
+                    )}
 
-                        {/* Expand Button */}
-                        {onExpandClick && !isExpanded && (
-                            <>
-                                <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
-                                <button
-                                    onClick={onExpandClick}
-                                    className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                    aria-label="Expand map"
-                                    title="Expand Map"
-                                >
-                                    <ArrowsPointingOutIcon className="w-5 h-5 stroke-[2]" />
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    {/* Expand Button */}
+                    {onExpandClick && !isExpanded && (
+                        <button
+                            onClick={onExpandClick}
+                            className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                            aria-label="Expand map"
+                            title="Expand Map"
+                        >
+                            <ArrowsPointingOutIcon className="w-5 h-5 stroke-[2]" />
+                        </button>
+                    )}
                 </div>
             )}
         </div>

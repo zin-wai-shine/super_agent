@@ -294,6 +294,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const transitWrapperRef = useRef(null);
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
+    const [isNavPadExpanded, setIsNavPadExpanded] = useState(false);
     
     // Ensure we start at the top when the detail view/page is opened
     React.useLayoutEffect(() => {
@@ -319,6 +320,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         
         return () => clearTimeout(t);
     }, [id, isModal]);
+
+    // Isolate Transit Map Interactions (Stop browser zoom bleed)
+    useEffect(() => {
+        if (activeMapTab !== 'transit' || !transitWrapperRef.current) return;
+        const wrapper = transitWrapperRef.current;
+        const preventDefault = (e) => {
+            if (e.ctrlKey || e.metaKey || (e.type === 'touchmove' && e.touches.length === 2)) {
+                e.preventDefault();
+            }
+        };
+        wrapper.addEventListener('wheel', preventDefault, { passive: false });
+        wrapper.addEventListener('touchmove', preventDefault, { passive: false });
+        return () => {
+            wrapper.removeEventListener('wheel', preventDefault);
+            wrapper.removeEventListener('touchmove', preventDefault);
+        };
+    }, [activeMapTab]);
 
     const mapCenter = useMemo(() => {
         if (!listing?.latitude || !listing?.longitude) return undefined;
@@ -2327,27 +2345,27 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {(listing.latitude && listing.longitude) && (
                                         <>
                                             <div className="mt-12 px-2 md:px-0 lg:px-0">
-                                                <div className="border-b border-gray-100 dark:border-white/10 mb-8">
-                                                    <nav className="-mb-px flex space-x-10">
-                                                        <button
-                                                            onClick={() => setActiveMapTab('google')}
-                                                            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'google'
-                                                                ? 'border-primary-500 text-primary-600'
-                                                                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-200 dark:hover:border-white/20'
-                                                                }`}
-                                                        >
-                                                            Google Map
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setActiveMapTab('transit')}
-                                                            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-[14px] transition-all ${activeMapTab === 'transit'
-                                                                ? 'border-primary-500 text-primary-600'
-                                                                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-200 dark:hover:border-white/20'
-                                                                }`}
-                                                        >
-                                                            Transit Map
-                                                        </button>
-                                                    </nav>
+                                                <div className="mb-8 flex flex-wrap items-center gap-3">
+                                                    <button
+                                                        onClick={() => setActiveMapTab('google')}
+                                                        className={`px-6 py-2.5 rounded-full font-bold text-[14px] transition-all ${
+                                                            activeMapTab === 'google'
+                                                                ? 'bg-[#222222] text-white shadow-lg'
+                                                                : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                                                        }`}
+                                                    >
+                                                        Google Map
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setActiveMapTab('transit')}
+                                                        className={`px-6 py-2.5 rounded-full font-bold text-[14px] transition-all ${
+                                                            activeMapTab === 'transit'
+                                                                ? 'bg-[#222222] text-white shadow-lg'
+                                                                : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                                                        }`}
+                                                    >
+                                                        Transit Map
+                                                    </button>
                                                 </div>
 
                                                 <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden shadow-sm border border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card group">
@@ -2365,6 +2383,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disableMarkerExpansion={true}
                                                                 isVisible={true}
                                                                 hideControls
+                                                                hideSyncButton
                                                                 fitBoundsOnListingsChange={false}
                                                             />
                                                         </div>
@@ -2383,133 +2402,176 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 ))}
                                                             </div>
 
-                                                            <div className="absolute top-4 right-4 z-40">
-                                                                <div className="flex flex-col bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 dark:border-white/10 p-1 overflow-hidden transition-all duration-300">
+                                                            <div className="absolute bottom-6 right-6 z-40 flex items-end gap-8">
+                                                                {isNavPadExpanded && (
+                                                                    <div className="flex items-center gap-8 animate-in slide-in-from-right-4 fade-in duration-500">
+                                                                        <div className="grid grid-cols-3 gap-3">
+                                                                            <div />
+                                                                            <button
+                                                                                onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x, y: prev.pan.y + 100 }, prev.zoom) }))}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Pan Up"
+                                                                            >
+                                                                                <ChevronUpIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+                                                                            <div />
+
+                                                                            <button
+                                                                                onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x + 100, y: prev.pan.y }, prev.zoom) }))}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Pan Left"
+                                                                            >
+                                                                                <ChevronLeftIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={handleTransitRecenter}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-[#222222] text-white shadow-2xl rounded-full hover:bg-black transition-all active:scale-90 group"
+                                                                                title="Recenter Station"
+                                                                            >
+                                                                                <ArrowPathIcon className="w-5 h-5 stroke-[2.5] group-active:rotate-180 transition-transform duration-500" />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x - 100, y: prev.pan.y }, prev.zoom) }))}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Pan Right"
+                                                                            >
+                                                                                <ChevronRightIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+
+                                                                            <div />
+                                                                            <button
+                                                                                onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x, y: prev.pan.y - 100 }, prev.zoom) }))}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Pan Down"
+                                                                            >
+                                                                                <ChevronDownIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+                                                                            <div />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex flex-col gap-3">
+                                                                    {isNavPadExpanded && (
+                                                                        <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-4 fade-in duration-500">
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    const nextZoom = Math.min(mapState.zoom + 0.15, 2.0);
+                                                                                    const rect = transitWrapperRef.current.getBoundingClientRect();
+                                                                                    const centerX = rect.width / 2;
+                                                                                    const centerY = rect.height / 2;
+                                                                                    const zoomFactor = nextZoom / mapState.zoom;
+                                                                                    const newPan = {
+                                                                                        x: centerX - (centerX - mapState.pan.x) * zoomFactor,
+                                                                                        y: centerY - (centerY - mapState.pan.y) * zoomFactor
+                                                                                    };
+                                                                                    setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
+                                                                                }}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Zoom In"
+                                                                            >
+                                                                                <PlusIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    const minZoom = getMinZoom();
+                                                                                    const nextZoom = Math.max(mapState.zoom - 0.15, minZoom);
+                                                                                    const rect = transitWrapperRef.current.getBoundingClientRect();
+                                                                                    const centerX = rect.width / 2;
+                                                                                    const centerY = rect.height / 2;
+                                                                                    const zoomFactor = nextZoom / mapState.zoom;
+                                                                                    const newPan = {
+                                                                                        x: centerX - (centerX - mapState.pan.x) * zoomFactor,
+                                                                                        y: centerY - (centerY - mapState.pan.y) * zoomFactor
+                                                                                    };
+                                                                                    setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
+                                                                                }}
+                                                                                className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
+                                                                                title="Zoom Out"
+                                                                            >
+                                                                                <MinusIcon className="w-5 h-5 stroke-[2.5]" />
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
                                                                     <button
-                                                                        onClick={() => {
-                                                                            const nextZoom = Math.min(mapState.zoom + 0.1, 2.0);
-                                                                            setMapState(prev => ({
-                                                                                ...prev,
-                                                                                zoom: nextZoom,
-                                                                                pan: constrainPan(prev.pan, nextZoom)
-                                                                            }));
-                                                                        }}
-                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                                                        title="Zoom In"
+                                                                        onClick={() => setIsNavPadExpanded(!isNavPadExpanded)}
+                                                                        className={`w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group`}
+                                                                        title={isNavPadExpanded ? "Collapse Controls" : "Expand Controls"}
                                                                     >
-                                                                        <span className="text-2xl font-light">+</span>
-                                                                    </button>
-                                                                    <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
-                                                                    <button
-                                                                        onClick={handleTransitRecenter}
-                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                                                        title="Recenter Station"
-                                                                    >
-                                                                        <ArrowPathIcon className="w-5 h-5 stroke-[2] group-active:rotate-180 transition-transform duration-500" />
-                                                                    </button>
-                                                                    <div className="h-px bg-slate-200/50 dark:bg-white/10 mx-2" />
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const minZoom = getMinZoom();
-                                                                            const nextZoom = Math.max(mapState.zoom - 0.1, minZoom);
-                                                                            setMapState(prev => ({
-                                                                                ...prev,
-                                                                                zoom: nextZoom,
-                                                                                pan: constrainPan(prev.pan, nextZoom)
-                                                                            }));
-                                                                        }}
-                                                                        className="w-11 h-11 flex items-center justify-center text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-all active:scale-95 group"
-                                                                        title="Zoom Out"
-                                                                    >
-                                                                        <span className="text-2xl font-light">−</span>
+                                                                        <ArrowsPointingOutIcon className={`w-5 h-5 stroke-[2.5] transition-transform duration-500 ${isNavPadExpanded ? 'rotate-180 scale-90' : ''}`} />
                                                                     </button>
                                                                 </div>
                                                             </div>
 
-
-
-                                                                <div className="absolute bottom-4 left-4 z-40 px-5 py-2.5 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md rounded-full border border-gray-100 dark:border-white/10 shadow-lg text-[13px] font-bold text-gray-400 dark:text-gray-500 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-700">
-                                                                    <div className="flex items-center gap-2.5">
-                                                                        <div className="flex gap-0.5">
-                                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500/40 animate-pulse" />
-                                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500/40 animate-pulse delay-75" />
-                                                                        </div>
-                                                                        Use two fingers to move the map
-                                                                    </div>
-                                                                </div>
-
-                                                                <div
-                                                                    ref={transitWrapperRef}
-                                                                    className="flex-1 overflow-hidden relative"
-                                                                    onMouseDown={(e) => {
-                                                                        const startX = e.pageX - mapState.pan.x;
-                                                                        const startY = e.pageY - mapState.pan.y;
-                                                                        const handleMouseMove = (mm) => {
-                                                                            const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
-                                                                            setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
-                                                                        };
-                                                                        const handleMouseUp = () => {
-                                                                            window.removeEventListener('mousemove', handleMouseMove);
-                                                                            window.removeEventListener('mouseup', handleMouseUp);
-                                                                        };
-                                                                        window.addEventListener('mousemove', handleMouseMove);
-                                                                        window.addEventListener('mouseup', handleMouseUp);
-                                                                    }}
-                                                                    onTouchStart={(e) => {
-                                                                        // Only drag with two fingers to allow scrolling the page with one
-                                                                        if (e.touches.length !== 2) return;
-                                                                        
-                                                                        const t1 = e.touches[0];
-                                                                        const t2 = e.touches[1];
-                                                                        
-                                                                        const middleX = (t1.pageX + t2.pageX) / 2;
-                                                                        const middleY = (t1.pageY + t2.pageY) / 2;
-                                                                        
-                                                                        const startX = middleX - mapState.pan.x;
-                                                                        const startY = middleY - mapState.pan.y;
-
-                                                                        const startDist = Math.hypot(t1.pageX - t2.pageX, t1.pageY - t2.pageY);
-                                                                        const startZoom = mapState.zoom;
-
-                                                                        const handleTouchMove = (tm) => {
-                                                                            if (tm.touches.length !== 2) return;
-                                                                            tm.preventDefault();
-                                                                            
-                                                                            const mt1 = tm.touches[0];
-                                                                            const mt2 = tm.touches[1];
-                                                                            const currentMiddleX = (mt1.pageX + mt2.pageX) / 2;
-                                                                            const currentMiddleY = (mt1.pageY + mt2.pageY) / 2;
-                                                                            
-                                                                            const currentDist = Math.hypot(mt1.pageX - mt2.pageX, mt1.pageY - mt2.pageY);
-                                                                            const zoomFactor = currentDist / startDist;
-                                                                            const nextZoom = Math.max(getMinZoom(), Math.min(2.0, startZoom * zoomFactor));
-
-                                                                            const newPan = { x: currentMiddleX - startX, y: currentMiddleY - startY };
-                                                                            setMapState(prev => ({ 
-                                                                                ...prev, 
-                                                                                zoom: nextZoom,
-                                                                                pan: constrainPan(newPan, nextZoom) 
-                                                                            }));
-                                                                        };
-
-                                                                        const handleTouchEnd = () => {
-                                                                            window.removeEventListener('touchmove', handleTouchMove);
-                                                                            window.removeEventListener('touchend', handleTouchEnd);
-                                                                        };
-
-                                                                        window.addEventListener('touchmove', handleTouchMove, { passive: false });
-                                                                        window.addEventListener('touchend', handleTouchEnd);
-                                                                    }}
-                                                                    onWheel={(e) => {
-                                                                        if (activeMapTab !== 'transit') return;
-                                                                        if (!e.ctrlKey) return;
-                                                                        e.preventDefault();
-                                                                        const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                                                                        const minZoom = getMinZoom();
-                                                                        const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
-                                                                        setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(prev.pan, nextZoom) }));
-                                                                    }}
-                                                                >
+                                                            <div
+                                                                ref={transitWrapperRef}
+                                                                className="flex-1 overflow-hidden relative overscroll-contain touch-none"
+                                                                onMouseDown={(e) => {
+                                                                    const startX = e.pageX - mapState.pan.x;
+                                                                    const startY = e.pageY - mapState.pan.y;
+                                                                    const handleMouseMove = (mm) => {
+                                                                        const newPan = { x: mm.pageX - startX, y: mm.pageY - startY };
+                                                                        setMapState(prev => ({ ...prev, pan: constrainPan(newPan, prev.zoom) }));
+                                                                    };
+                                                                    const handleMouseUp = () => {
+                                                                        window.removeEventListener('mousemove', handleMouseMove);
+                                                                        window.removeEventListener('mouseup', handleMouseUp);
+                                                                    };
+                                                                    window.addEventListener('mousemove', handleMouseMove);
+                                                                    window.addEventListener('mouseup', handleMouseUp);
+                                                                }}
+                                                                onTouchStart={(e) => {
+                                                                    if (e.touches.length !== 2) return;
+                                                                    const t1 = e.touches[0];
+                                                                    const t2 = e.touches[1];
+                                                                    const middleX = (t1.pageX + t2.pageX) / 2;
+                                                                    const middleY = (t1.pageY + t2.pageY) / 2;
+                                                                    const startX = middleX - mapState.pan.x;
+                                                                    const startY = middleY - mapState.pan.y;
+                                                                    const startDist = Math.hypot(t1.pageX - t2.pageX, t1.pageY - t2.pageY);
+                                                                    const startZoom = mapState.zoom;
+                                                                    const handleTouchMove = (tm) => {
+                                                                        if (tm.touches.length !== 2) return;
+                                                                        tm.preventDefault();
+                                                                        const mt1 = tm.touches[0];
+                                                                        const mt2 = tm.touches[1];
+                                                                        const currentMiddleX = (mt1.pageX + mt2.pageX) / 2;
+                                                                        const currentMiddleY = (mt1.pageY + mt2.pageY) / 2;
+                                                                        const currentDist = Math.hypot(mt1.pageX - mt2.pageX, mt1.pageY - mt2.pageY);
+                                                                        const zoomFactor = currentDist / startDist;
+                                                                        const nextZoom = Math.max(getMinZoom(), Math.min(2.0, startZoom * zoomFactor));
+                                                                        const newPan = { x: currentMiddleX - startX, y: currentMiddleY - startY };
+                                                                        setMapState(prev => ({
+                                                                            ...prev,
+                                                                            zoom: nextZoom,
+                                                                            pan: constrainPan(newPan, nextZoom)
+                                                                        }));
+                                                                    };
+                                                                    const handleTouchEnd = () => {
+                                                                        window.removeEventListener('touchmove', handleTouchMove);
+                                                                        window.removeEventListener('touchend', handleTouchEnd);
+                                                                    };
+                                                                    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+                                                                    window.addEventListener('touchend', handleTouchEnd);
+                                                                }}
+                                                                onWheel={(e) => {
+                                                                    if (activeMapTab !== 'transit') return;
+                                                                    if (!e.ctrlKey) return;
+                                                                    e.preventDefault();
+                                                                    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                                                                    const minZoom = getMinZoom();
+                                                                    const nextZoom = Math.max(minZoom, Math.min(2.0, mapState.zoom + delta));
+                                                                    const rect = transitWrapperRef.current.getBoundingClientRect();
+                                                                    const mouseX = e.clientX - rect.left;
+                                                                    const mouseY = e.clientY - rect.top;
+                                                                    const zoomFactor = nextZoom / mapState.zoom;
+                                                                    const newPan = {
+                                                                        x: mouseX - (mouseX - mapState.pan.x) * zoomFactor,
+                                                                        y: mouseY - (mouseY - mapState.pan.y) * zoomFactor
+                                                                    };
+                                                                    setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
+                                                                }}
+                                                            >
                                                                 <div
                                                                     style={{
                                                                         width: '1368px',
