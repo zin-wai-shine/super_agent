@@ -1,0 +1,40 @@
+#!/usr/bin/expect -f
+set timeout 1200
+set password [lindex $argv 0]
+set host "root@srv1534108.hstgr.cloud"
+
+spawn ssh -o StrictHostKeyChecking=no $host
+expect {
+    "password:" {
+        send "$password\r"
+        expect -re "root@.*# "
+    }
+    -re "root@.*# " {
+        # Already logged in
+    }
+    timeout {
+        send_user "Timeout waiting for initial prompt\n"
+        exit 1
+    }
+}
+
+send "cd super_real_estate\r"
+expect -re "root@.*# "
+
+send "git fetch origin v1\r"
+expect -re "root@.*# "
+
+send "git checkout v1\r"
+expect -re "root@.*# "
+
+send "git pull origin v1\r"
+expect -re "root@.*# "
+
+send "docker compose up -d --build\r"
+expect -re "root@.*# "
+
+send "docker exec super_nginx nginx -s reload\r"
+expect -re "root@.*# "
+
+send "exit\r"
+expect eof

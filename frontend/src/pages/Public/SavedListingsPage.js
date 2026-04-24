@@ -7,7 +7,7 @@ import ListingCard from '../../components/Listings/ListingCard';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import FilterBar from '../../components/ui/FilterBar';
-import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
+import { BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';

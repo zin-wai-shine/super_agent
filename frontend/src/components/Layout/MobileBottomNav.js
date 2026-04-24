@@ -13,13 +13,9 @@ import {
     ListBulletIcon as ListSolid,
     MagnifyingGlassIcon as SearchSolid,
 } from '@heroicons/react/24/solid';
-import { BsCalendar2Week, BsSearch, BsPerson, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
+import { BsCalendar2Week, BsSearch, BsPerson, BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import { HiOutlineMagnifyingGlass, HiOutlineCalendarDays, HiOutlineUser } from "react-icons/hi2";
-import { PiUser, PiHeart, PiHeartFill } from 'react-icons/pi';
-import { FaRegHeart, FaHeart } from "react-icons/fa6";
-import { FiHeart, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
-import { GoHeart, GoHeartFill } from "react-icons/go";
+import { PiUser } from 'react-icons/pi';
 
 const MobileBottomNav = () => {
     const location = useLocation();
@@ -70,7 +66,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: FaRegHeart, activeIcon: FaHeart },
+        { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsFillHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
         { name: 'Profile', path: '/profile', icon: BsPerson, activeIcon: BsPerson },
     ] : [

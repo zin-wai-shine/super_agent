@@ -81,11 +81,8 @@ import {
     FiTwitter
 } from "react-icons/fi";
 import { FaLine, FaWhatsapp, FaViber, FaTiktok } from "react-icons/fa";
-import {
-    HiOutlineTv,
-    HiHeart,
-    HiOutlineHeart,
-} from "react-icons/hi2";
+import { HiOutlineTv } from "react-icons/hi2";
+import { BsHeart, BsFillHeartFill } from "react-icons/bs";
 import {
     MdOutlineKitchen,
     MdOutlineLocalParking,
@@ -193,9 +190,9 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) =
 
             <div className={animate ? 'heart-pop-active' : ''}>
                 {isSaved ? (
-                    <HiHeart className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
+                    <BsFillHeartFill className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
                 ) : (
-                    <HiOutlineHeart 
+                    <BsHeart 
                         className="text-gray-900 dark:text-white transition-colors duration-300" 
                         style={{ width: iconSize, height: iconSize }} 
                     />
@@ -1187,9 +1184,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     >
                         <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
                             {isSaved ? (
-                                <HiHeart className="w-[20px] h-[20px] text-rose-500" />
+                                <BsFillHeartFill className="w-[20px] h-[20px] text-rose-500" />
                             ) : (
-                                <HiOutlineHeart className="w-[20px] h-[20px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
+                                <BsHeart className="w-[20px] h-[20px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
                             )}
                         </div>
                         <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
@@ -1936,9 +1933,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     >
                                                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
                                                             {isSaved ? (
-                                                                <HiHeart className="w-[20px] h-[20px] text-rose-500" />
+                                                                <BsFillHeartFill className="w-[20px] h-[20px] text-rose-500" />
                                                             ) : (
-                                                                <HiOutlineHeart className="w-[20px] h-[20px] text-gray-900 dark:text-white opacity-60" />
+                                                                <BsHeart className="w-[20px] h-[20px] text-gray-900 dark:text-white opacity-60" />
                                                             )}
                                                         </div>
                                                         <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900 dark:text-white'}`}>

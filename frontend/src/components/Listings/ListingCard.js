@@ -17,7 +17,7 @@ import {
     GlobeAltIcon
 } from '@heroicons/react/24/solid';
 import { SiLine, SiFacebook, SiInstagram, SiLinkedin } from 'react-icons/si';
-import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
+import { BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
@@ -91,9 +91,9 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) =
 
             <div className={animate ? 'heart-pop-active' : ''}>
                 {isSaved ? (
-                    <HiHeart className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
+                    <BsFillHeartFill className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
                 ) : (
-                    <HiOutlineHeart 
+                    <BsHeart 
                         className="text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300" 
                         style={{ width: iconSize, height: iconSize }} 
                     />
