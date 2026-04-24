@@ -4,8 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
-import { BsCalendar2Week, BsSearch, BsHeart } from 'react-icons/bs';
+import { BsCalendar2Week, BsSearch, BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { PiUser } from 'react-icons/pi';
 import {
     Bars3Icon,
@@ -925,9 +926,9 @@ const PublicLayout = () => {
                                             className="flex-1 flex flex-col items-center justify-center py-2"
                                         >
                                             {isWishlistTabActive ? (
-                                                <HiHeart className="w-7 h-7 text-primary-600" />
+                                                <BsFillHeartFill className="w-7 h-7 text-primary-600" />
                                             ) : (
-                                                <HiOutlineHeart className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                                                <BsHeart className="w-7 h-7 text-gray-400 dark:text-gray-500" />
                                             )}
                                             <span
                                                 className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
@@ -1070,6 +1071,12 @@ const PublicLayout = () => {
                                     <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Products</Link>
                                     <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Privacy</Link>
                                     <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Terms</Link>
+                                    <button 
+                                        onClick={() => window.dispatchEvent(new Event('open-cookie-settings'))}
+                                        className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                                    >
+                                        Cookie Settings
+                                    </button>
                                 </div>
                                 <div className="text-sm font-medium text-gray-400 dark:text-gray-500">
                                     {theme.footerText || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`}

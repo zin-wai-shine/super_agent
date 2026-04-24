@@ -124,7 +124,7 @@ const Modal = ({
                 >
                     {hasHeader && (
                         <div className={`sticky top-0 z-[60] bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
-                            <div className="relative flex items-center justify-between px-4 md:px-8 lg:px-20 py-4 w-full max-w-[1440px] mx-auto min-h-[64px]">
+                            <div className={`relative flex items-center justify-between py-4 w-full max-w-[1440px] mx-auto min-h-[64px] ${fullBleedDesktop ? 'px-4 md:px-8 lg:px-20' : 'px-5 md:px-6'}`}>
                                 <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
                                     {useBackButton && (
                                         <button

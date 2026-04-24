@@ -284,7 +284,7 @@ const TransitFilterModal = ({
                             </div>
 
                             {/* Collapsible Search Input */}
-                            <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isSearchExpanded ? 'max-h-20 opacity-100 mt-0.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+                            <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isSearchExpanded ? 'max-h-20 opacity-100 mt-3' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                                 <div className="relative group w-full pb-1.5">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none h-[44px] z-10">
                                         <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
@@ -542,7 +542,7 @@ const TransitFilterModal = ({
                                         </div>
                                         <button
                                             onClick={handleApply}
-                                            className="px-8 py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] font-normal hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[40px]"
+                                            className="px-8 py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[40px]"
                                         >
                                             Done
                                         </button>
@@ -578,7 +578,7 @@ const TransitFilterModal = ({
                     <div className="flex items-center gap-3 sm:gap-4">
                         <button
                             onClick={handleApply}
-                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-3.5 md:px-5 md:py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] md:text-[13px] font-normal hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[48px] md:min-h-[40px]"
+                            className="flex-1 min-w-[140px] sm:min-w-[160px] px-8 py-3.5 md:px-5 md:py-2.5 rounded-full bg-gray-900 dark:bg-white border border-gray-900 dark:border-white text-white dark:text-gray-900 text-[14px] md:text-[13px] font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all active:scale-95 min-h-[48px] md:min-h-[40px]"
                         >
                             Done
                         </button>

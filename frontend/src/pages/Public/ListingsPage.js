@@ -1705,7 +1705,7 @@ const ListingsPage = () => {
                             )}
                             <button
                                 onClick={() => applyFilters()}
-                                className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
+                                className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[14px] md:text-[13px] font-bold transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
                             >
                                 <span>Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}</span>
                             </button>
@@ -1794,7 +1794,7 @@ const ListingsPage = () => {
                                 <div className="flex-shrink-0 p-6 border-t border-gray-50 bg-white flex flex-row flex-nowrap items-center justify-center gap-3">
                                     <button
                                         onClick={() => applyFilters()}
-                                        className="px-6 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
+                                        className="px-6 py-2.5 rounded-full text-[14px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
                                     >
                                         Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}
                                     </button>

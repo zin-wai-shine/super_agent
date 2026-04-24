@@ -70,7 +70,7 @@ const MobileBottomNav = () => {
 
     const navItems = isAuthenticated ? [
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
-        { name: 'Favorites', path: '/saved-listings', icon: GoHeart, activeIcon: GoHeartFill },
+        { name: 'Favorites', path: '/saved-listings', icon: FaRegHeart, activeIcon: FaHeart },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
         { name: 'Profile', path: '/profile', icon: BsPerson, activeIcon: BsPerson },
     ] : [
@@ -116,19 +116,19 @@ const MobileBottomNav = () => {
                 {active && (
                     <div className="absolute inset-x-2 inset-y-3 bg-primary-50/50 rounded-2xl -z-10 animate-in fade-in zoom-in duration-300" />
                 )}
-                <div 
+                <div
                     className={`relative z-10 mb-0.5 transition-all duration-300 ${active ? 'scale-110 -translate-y-0.5' : 'scale-100 group-active:scale-90'}`}
-                    style={{ 
-                        width: item.name === 'Favorites' ? '32px' : '28px',
-                        height: item.name === 'Favorites' ? '32px' : '28px',
+                    style={{
+                        width: '40px',
+                        height: '40px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
                 >
-                    <Icon 
-                        size="100%"
-                        className={`transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} 
+                    <Icon
+                        size={item.name === 'Favorites' ? 36 : 28}
+                        className={`transition-colors duration-300 ${active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`}
                     />
                 </div>
                 <span className={`text-[11px] font-black tracking-tight transition-all duration-300 ${active ? 'text-primary-600 opacity-100' : 'text-gray-400 opacity-80'}`}>

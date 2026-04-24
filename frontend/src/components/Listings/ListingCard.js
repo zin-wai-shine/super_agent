@@ -22,7 +22,7 @@ import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
-import { TbTrain } from "react-icons/tb";
+import { TbTrain, TbHandFinger } from "react-icons/tb";
 import { MdOutlineDirectionsTransit } from "react-icons/md";
 
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
@@ -103,10 +103,38 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) =
     );
 };
 
-export const ListingImageSlider = ({ images, title, cardLink }) => {
-    const [currentIndex, setCurrentIndex] = React.useState(0);
+export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3', initialIndex = 0, onImageClick, isGalleryMode = false }) => {
+    const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
+    const [showIndicator, setShowIndicator] = React.useState(() => {
+        return !localStorage.getItem('has_experienced_swipe');
+    });
     const scrollRef = React.useRef(null);
     const isManualScrolling = React.useRef(false);
+
+    const markAsExperienced = () => {
+        if (!localStorage.getItem('has_experienced_swipe')) {
+            localStorage.setItem('has_experienced_swipe', 'true');
+            window.dispatchEvent(new CustomEvent('listing:swiped'));
+        }
+    };
+
+    React.useEffect(() => {
+        const handleGlobalSwipe = () => setShowIndicator(false);
+        window.addEventListener('listing:swiped', handleGlobalSwipe);
+        
+        // Initial scroll to index if provided
+        if (initialIndex > 0 && scrollRef.current) {
+            const timeout = setTimeout(() => {
+                scrollToImage(initialIndex);
+            }, 50);
+            return () => {
+                clearTimeout(timeout);
+                window.removeEventListener('listing:swiped', handleGlobalSwipe);
+            };
+        }
+
+        return () => window.removeEventListener('listing:swiped', handleGlobalSwipe);
+    }, [initialIndex]);
 
     const handleScroll = () => {
         if (!scrollRef.current || isManualScrolling.current) return;
@@ -115,6 +143,7 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
         const newIndex = Math.round(scrollLeft / width);
         if (newIndex !== currentIndex) {
             setCurrentIndex(newIndex);
+            markAsExperienced();
         }
     };
 
@@ -139,24 +168,26 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
     const nextImage = (e) => {
         if (currentIndex < images.length - 1) {
             scrollToImage(currentIndex + 1, e);
+            markAsExperienced();
         }
     };
 
     const prevImage = (e) => {
         if (currentIndex > 0) {
             scrollToImage(currentIndex - 1, e);
+            markAsExperienced();
         }
     };
 
     if (!images || images.length === 0) return null;
 
     return (
-        <div className="w-full h-full group/slider relative overflow-hidden">
+        <div className={`w-full h-full group/slider relative overflow-hidden ${isGalleryMode ? 'bg-black' : ''}`}>
             {/* Scroll Container */}
             <div
                 ref={scrollRef}
                 onScroll={handleScroll}
-                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain"
+                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain no-scrollbar"
                 style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
@@ -165,26 +196,56 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
             >
                 <style dangerouslySetInnerHTML={{
                     __html: `
-                    .group\\/slider .flex::-webkit-scrollbar { display: none; }
+                    .no-scrollbar::-webkit-scrollbar { display: none; }
                 `}} />
                 {images.map((img, i) => (
                     <div
                         key={i}
-                        className="w-full h-full flex-shrink-0 snap-center relative"
+                        className="w-full h-full flex-shrink-0 snap-center relative flex items-center justify-center"
                     >
                         <Link
-                            to={cardLink}
-                            className="block w-full h-full"
+                            to={onImageClick || isGalleryMode ? '#' : cardLink}
+                            className={`block w-full h-full cursor-pointer ${isGalleryMode ? 'p-2 md:p-8' : ''}`}
+                            onClick={(e) => {
+                                if (onImageClick) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onImageClick(i);
+                                } else if (isGalleryMode) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }
+                            }}
                         >
                             <img
                                 src={img}
                                 alt={`${title} - image ${i + 1}`}
-                                className="w-full h-full object-cover select-none"
+                                className={`w-full h-full select-none pointer-events-none transition-all duration-300 ${isGalleryMode ? 'object-contain' : 'object-cover'}`}
                             />
                         </Link>
                     </div>
                 ))}
             </div>
+            
+            {/* Swipe Tutorial Indicator Overlay */}
+            {showIndicator && images.length > 1 && (
+                <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
+                    <div className="relative">
+                        {/* Hand Gesture Icon & Arrow */}
+                        <div className="relative flex items-center justify-center">
+                             {/* Arrow with flick animation */}
+                             <div className="absolute -left-12 animate-swipe-arrow-flick">
+                                 <ChevronLeftIcon className="w-8 h-8 text-white" strokeWidth={2.5} />
+                             </div>
+
+                             {/* The Hand with rotation loop */}
+                             <div className="relative text-white drop-shadow-2xl animate-swipe-hand-loop origin-center">
+                                 <TbHandFinger size={52} strokeWidth={1.2} />
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Dots */}
             {images.length > 1 && (() => {
@@ -194,7 +255,7 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
                 let end = total;
 
                 if (total > maxDots) {
-                    if (currentIndex <= 2) {
+                    if (currentIndex < 3) {
                         start = 0;
                         end = maxDots;
                     } else if (currentIndex >= total - 3) {
@@ -207,7 +268,7 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
                 }
 
                 return (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20">
+                    <div className={`absolute ${isGalleryMode ? 'bottom-12' : 'bottom-3'} left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20 transition-all duration-300`}>
                         {images.map((_, i) => {
                             if (i < start || i >= end) return null;
                             return (
@@ -229,19 +290,19 @@ export const ListingImageSlider = ({ images, title, cardLink }) => {
                     {currentIndex > 0 && (
                         <button
                             onClick={prevImage}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg"
+                            className={`absolute left-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white flex items-center justify-center text-gray-900 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Previous image"
                         >
-                            <ChevronLeftIcon className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />
+                            <ChevronLeftIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={nextImage}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 dark:bg-[#1A1D21]/80 backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg"
+                            className={`absolute right-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white flex items-center justify-center text-gray-900 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Next image"
                         >
-                            <ChevronRightIcon className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />
+                            <ChevronRightIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                 </>

@@ -388,7 +388,7 @@ const CollectionBar = ({
                                         onClick={() => setIsAllCategoriesOpen(true)}
                                         className="flex-shrink-0 group cursor-pointer"
                                     >
-                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-md">
+                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-none">
                                             <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
                                                 <FiGrid className="w-5 h-5" />
                                             </div>

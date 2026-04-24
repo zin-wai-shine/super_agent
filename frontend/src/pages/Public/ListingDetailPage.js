@@ -164,7 +164,7 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) =
 
             {/* YouTube-style Saved Tooltip - Positioned UNDER for Detail Page */}
             {showSaved && (
-                <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none z-[100] animate-saved-tooltip">
+                <div className="absolute top-[54px] left-1/2 -translate-x-1/2 pointer-events-none z-[100] animate-saved-tooltip">
                     <span className="bg-[#222222]/90 text-white text-[12px] px-2.5 py-1 rounded-full whitespace-nowrap shadow-xl font-medium border border-white/10">
                         Saved
                     </span>
@@ -2005,9 +2005,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {!bookingId && (
                                         <div className="px-0 md:px-0 lg:px-0 my-6">
-                                            <div className="flex md:inline-flex items-center justify-center md:justify-start gap-2 px-4 py-3 bg-emerald-600 text-white rounded-none md:rounded-lg w-full md:w-auto animate-shimmer">
+                                            <div className="flex md:inline-flex items-center justify-start gap-2 px-4 py-3 bg-emerald-600 text-white rounded-r-full md:rounded-lg w-[55%] md:w-auto animate-shimmer">
                                                 <CheckBadgeIcon className="w-6 h-6 text-white" />
-                                                <span className="text-[14px] font-bold tracking-wide uppercase">
+                                                <span className="text-[14px] font-bold tracking-wide uppercase whitespace-nowrap">
                                                     {listing.availability_status || "Ready to move in"}
                                                 </span>
                                             </div>
@@ -2763,6 +2763,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     onClick={() => setIsContactOverlayOpen(false)}
                                                 >
                                                     <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setIsContactOverlayOpen(false);
+                                                        }}
+                                                        className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-all"
+                                                    >
+                                                        <XMarkIcon className="w-5 h-5" />
+                                                    </button>
                                                 </div>
                                                 <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
                                                     <div className="w-full text-center mb-4">
@@ -2937,7 +2946,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {activeBooking ? (
                         <button
                             onClick={() => setIsStatusOverlayOpen(true)}
-                            className="bg-[#222222] active:bg-black active:scale-[0.98] transition-all text-white font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap gap-2"
+                            className={`${
+                                activeBooking.status === 'confirmed' ? 'bg-emerald-600' : 
+                                activeBooking.status === 'cancelled' ? 'bg-rose-600' : 
+                                'bg-amber-600'
+                            } active:opacity-90 active:scale-[0.98] transition-all text-white font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap gap-2 shadow-none`}
                         >
                             <LuCalendarCheck2 className="w-5 h-5 text-white" />
                             <span className="capitalize">{activeBooking.status || 'Requested'}</span>
