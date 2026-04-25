@@ -250,7 +250,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const focusedImage = flatImages[focusedImageIndex ?? 0];
     const focusedSectionTitle = focusedImage ? getSectionTitleForImage(focusedImage) : '';
 
-    if (isFocusedView && focusedImage) {
+    const renderFocusedView = () => {
         const currentIdx = focusedImageIndex ?? 0;
         const total = flatImages.length;
 
@@ -272,69 +272,40 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
         const focusedViewContent = (
             <div className="h-full min-h-0 flex flex-col bg-black overflow-hidden relative">
-                {/* Header: Desktop has "Back to list" and "Share" text buttons; Mobile remains as-is */}
+                {/* Header */}
                 <header className="relative flex-none border-b border-white/10 z-10 bg-black">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-20">
-                        {isDesktop ? (
-                            <button
-                                type="button"
-                                onClick={() => setFocusedImageIndex(null)}
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all group"
-                                aria-label="Back to list"
-                            >
-                                <ArrowLeftIcon className="w-5 h-5 text-current stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
-                            </button>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => setFocusedImageIndex(null)}
-                                className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all rounded-full group"
-                            >
-                                <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => setFocusedImageIndex(null)}
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all group"
+                        >
+                            <ArrowLeftIcon className={`${isDesktop ? 'w-5 h-5' : 'w-7 h-7 md:w-6 md:h-6'} text-current stroke-[2] group-hover:-translate-x-0.5 transition-transform`} />
+                        </button>
 
                         <span className={`absolute left-1/2 -translate-x-1/2 ${isDesktop ? 'text-base font-normal' : 'text-lg md:text-base font-semibold'} text-white truncate max-w-[50vw] pointer-events-none`}>
                             {focusedSectionTitle}
                         </span>
 
-                        {isDesktop ? (
-                            <button
-                                type="button"
-                                onClick={handleShare}
-                                className="flex items-center justify-center w-10 h-10 text-white bg-transparent dark:bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200"
-                                aria-label="Share"
-                            >
-                                <ShareIcon className="w-5 h-5 text-current stroke-[2]" />
-                            </button>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleShare}
-                                className="flex items-center justify-center w-10 h-10 rounded-full text-white bg-transparent dark:bg-white/10 hover:bg-white/20 active:scale-95 transition-all duration-200"
-                                aria-label="Share"
-                            >
-                                <ShareIcon className="w-7 h-7 md:w-6 md:h-6" />
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={handleShare}
+                            className="flex items-center justify-center w-10 h-10 text-white bg-transparent dark:bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200"
+                        >
+                            <ShareIcon className={`${isDesktop ? 'w-5 h-5' : 'w-7 h-7 md:w-6 md:h-6'} text-current stroke-[2]`} />
+                        </button>
                     </div>
                 </header>
+
                 <div className="relative flex-1 min-h-0 flex items-center justify-center p-0">
                     <div className="w-full h-full mx-auto relative overflow-hidden">
                         <div
                             ref={focusedScrollRef}
                             onScroll={handleFocusedScroll}
                             className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none no-scrollbar"
-                            style={{
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none',
-                                WebkitOverflowScrolling: 'touch'
-                            }}
+                            style={{ WebkitOverflowScrolling: 'touch' }}
                         >
-                            <style dangerouslySetInnerHTML={{
-                                __html: `
-                                .no-scrollbar::-webkit-scrollbar { display: none; }
-                            `}} />
+                            <style dangerouslySetInnerHTML={{ __html: `.no-scrollbar::-webkit-scrollbar { display: none; }` }} />
                             {flatImages.map((img, i) => (
                                 <div
                                     key={i}
@@ -345,7 +316,6 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         src={getMediaUrl(img.url)}
                                         alt=""
                                         className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none"
-                                        style={{ maxHeight: '100%' }}
                                         draggable={false}
                                     />
                                 </div>
@@ -357,7 +327,6 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
                                     className="hidden md:flex absolute left-4 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 items-center justify-center active:scale-95 transition-all"
-                                    aria-label="Previous image"
                                 >
                                     <ChevronLeftIcon className="w-6 h-6" />
                                 </button>
@@ -365,7 +334,6 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); goNextImage(); }}
                                     className="hidden md:flex absolute right-4 lg:right-20 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 items-center justify-center active:scale-95 transition-all"
-                                    aria-label="Next image"
                                 >
                                     <ChevronRightIcon className="w-6 h-6" />
                                 </button>
@@ -373,21 +341,17 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         )}
                     </div>
                 </div>
+
                 {total > 1 && (
                     <div className="flex-none min-h-[72px] pt-2 pb-4 flex flex-col justify-center items-center pointer-events-none bg-black">
                         <div className="flex items-center justify-center gap-2 mb-4 px-4 overflow-x-auto max-w-full no-scrollbar">
-                            {Array.from({ length: total }, (_, i) => {
-                                const isActive = i === currentIdx;
-                                return (
-                                    <button
-                                        key={i}
-                                        onClick={(e) => scrollToImage(i, e)}
-                                        className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out pointer-events-auto ${isActive ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
-                                            }`}
-                                        aria-label={`Go to image ${i + 1}`}
-                                    />
-                                );
-                            })}
+                            {Array.from({ length: total }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={(e) => scrollToImage(i, e)}
+                                    className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out pointer-events-auto ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}
@@ -396,21 +360,15 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
         if (isDesktop) {
             return (
-                <Modal
-                    isOpen={true}
-                    onClose={() => setFocusedImageIndex(null)}
-                    size="full"
-                    hideHeader
-                    fullBleedDesktop={true}
-                    contentClassName="bg-black"
-                    overlayZIndex={11000}
-                >
+                <Modal isOpen onClose={() => setFocusedImageIndex(null)} size="full" hideHeader fullBleedDesktop contentClassName="bg-black" overlayZIndex={11000}>
                     {focusedViewContent}
                 </Modal>
             );
         }
         return focusedViewContent;
-    }
+    };
+
+    if (isFocusedView && focusedImage) return renderFocusedView();
 
     let globalIndex = 0;
 
@@ -419,192 +377,112 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
             {!isDesktop && (
                 <header className="relative flex-none border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark shrink-0 z-20">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all rounded-full -ml-2 group"
-                        >
-                            <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                        <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 rounded-full group">
+                            <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                         <span className="absolute left-1/2 -translate-x-1/2 text-lg md:text-base font-semibold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none">
                             {activeSectionTitle || 'Photo tour'}
                         </span>
-                        <button
-                            type="button"
-                            onClick={handleShare}
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all duration-200"
-                            aria-label="Share"
-                        >
-                            <ShareIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white" />
+                        <button type="button" onClick={handleShare} className="flex items-center justify-center w-10 h-10 rounded-full text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20">
+                            <ShareIcon className="w-7 h-7 md:w-6 md:h-6" />
                         </button>
                     </div>
                 </header>
             )}
 
-            <div
-                ref={scrollRef}
-                className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`}
-                style={{ WebkitOverflowScrolling: 'touch' }}
-            >
+            <div ref={scrollRef} className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`} style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">
                     {isLoading ? (
                         <AllPhotosSkeleton isDesktop={isDesktop} />
                     ) : (
                         <div className="min-h-full md:flex md:flex-col">
-                        <div className="md:flex-shrink-0 md:min-h-[30%]">
-                            <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between relative">
-                                {isDesktop && (
-                                    <button
-                                        type="button"
-                                        onClick={onClose}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
-                                    >
-                                        <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
-                                    </button>
-                                )}
-                                {!isDesktop && (
-                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                                        Photo tour
-                                    </h1>
-                                )}
-                                {isDesktop && (
-                                    <button
-                                        type="button"
-                                        onClick={handleShare}
-                                        className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10"
-                                    >
-                                        <ShareIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Horizontal strip: one layer card per section (not per image) */}
-                            <div className="pb-4 md:py-4">
-                                <div
-                                    className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2"
-                                    style={{ WebkitOverflowScrolling: 'touch' }}
-                                >
-                                    {sections.map((section) => {
-                                        const firstIdx = flatImages.findIndex(
-                                            (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
-                                        );
-                                        return (
-                                            <LayerCard
-                                                key={section.title}
-                                                section={section}
-                                                firstFlatIndex={firstIdx >= 0 ? firstIdx : 0}
-                                                onTap={scrollToIndex}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Main content: 70% on desktop */}
-                        <div className="flex flex-col gap-8 pb-8 md:flex-1 md:min-h-0">
-                            {sections.map((section) => {
-                                const firstFlatIndex = flatImages.findIndex(
-                                    (im) => im === section.images[0] || (im.id && im.id === section.images[0]?.id)
-                                );
-                                const firstIdx = firstFlatIndex >= 0 ? firstFlatIndex : 0;
-                                return (
-                                    <div
-                                        key={section.title}
-                                        ref={(el) => { sectionRefs.current[section.title] = el; }}
-                                        className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 px-0 md:px-8 lg:px-20"
-                                    >
-                                        {/* First column (desktop): images — 70% (left); on mobile appears below title via order */}
-                                        <div className="flex-1 min-w-0 md:w-[70%] order-2 md:order-1">
-                                            {/* One big, two small, one big, two small… */}
-                                            <div className="flex flex-col gap-4">
-                                                {(() => {
-                                                    const rows = [];
-                                                    let i = 0;
-                                                    while (i < section.images.length) {
-                                                        const img1 = section.images[i];
-                                                        const idx1 = globalIndex++;
-                                                        rows.push(
-                                                            <div
-                                                                key={img1.id || idx1}
-                                                                role="button"
-                                                                tabIndex={0}
-                                                                data-photo-index={idx1}
-                                                                className="shrink-0 cursor-pointer"
-                                                                onClick={() => openFocusedView(idx1)}
-                                                                onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx1)}
-                                                            >
-                                                                <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden md:rounded-[24px]">
-                                                                    <img src={getMediaUrl(img1.url)} alt="" className="w-full h-full object-cover block" />
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                        if (i + 1 < section.images.length) {
-                                                            const img2 = section.images[i + 1];
-                                                            const img3 = section.images[i + 2];
-                                                            const idx2 = globalIndex++;
-                                                            const idx3 = img3 ? globalIndex++ : null;
-                                                            rows.push(
-                                                                <div key={img2.id || `row-${idx2}`} className="grid grid-cols-2 gap-3 shrink-0">
-                                                                    <div
-                                                                        role="button"
-                                                                        tabIndex={0}
-                                                                        data-photo-index={idx2}
-                                                                        className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
-                                                                        onClick={() => openFocusedView(idx2)}
-                                                                        onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx2)}
-                                                                    >
-                                                                        <img src={getMediaUrl(img2.url)} alt="" className="w-full h-full object-cover block" />
-                                                                    </div>
-                                                                    {img3 ? (
-                                                                        <div
-                                                                            role="button"
-                                                                            tabIndex={0}
-                                                                            data-photo-index={idx3}
-                                                                            className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]"
-                                                                            onClick={() => openFocusedView(idx3)}
-                                                                            onKeyDown={(e) => e.key === 'Enter' && openFocusedView(idx3)}
-                                                                        >
-                                                                            <img src={getMediaUrl(img3.url)} alt="" className="w-full h-full object-cover block" />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="aspect-[4/3] bg-gray-100 md:rounded-[24px]" />
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        }
-                                                        i += 3;
-                                                    }
-                                                    return rows;
-                                                })()}
-                                            </div>
-                                        </div>
-                                        {/* Second column (desktop): section title only — 30% (right); on mobile appears first via order; text left-aligned */}
-                                        <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left md:sticky md:top-32 self-start">
-                                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{section.title}</h2>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Subdomain-style watermark logo — centered, low opacity */}
-                        {isMainDomain && (
-                            <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
-                                <div className="flex flex-col items-center gap-2">
-                                    <div
-                                        className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                        style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                    >
-                                        {!theme?.logoUrl && (
-                                            <Logo className="w-56 h-56 text-primary-500" />
-                                        )}
-                                    </div>
-                                    {!theme?.logoUrl && (
-                                        <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>
+                            <div className="md:flex-shrink-0 md:min-h-[30%]">
+                                <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between relative">
+                                    {isDesktop && (
+                                        <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 group">
+                                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                                        </button>
+                                    )}
+                                    {!isDesktop && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Photo tour</h1>}
+                                    {isDesktop && (
+                                        <button type="button" onClick={handleShare} className="flex items-center justify-center w-10 h-10 rounded-full text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20">
+                                            <ShareIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                                        </button>
                                     )}
                                 </div>
+                                <div className="pb-4 md:py-4">
+                                    <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                        {sections.map((section) => {
+                                            const firstIdx = flatImages.findIndex(im => im === section.images[0] || (im.id && im.id === section.images[0]?.id));
+                                            return <LayerCard key={section.title} section={section} firstFlatIndex={firstIdx >= 0 ? firstIdx : 0} onTap={scrollToIndex} />;
+                                        })}
+                                    </div>
+                                </div>
                             </div>
+
+                            <div className="flex flex-col gap-8 pb-8 md:flex-1 md:min-h-0">
+                                {sections.map((section) => {
+                                    const firstFlatIndex = flatImages.findIndex(im => im === section.images[0] || (im.id && im.id === section.images[0]?.id));
+                                    const firstIdx = firstFlatIndex >= 0 ? firstFlatIndex : 0;
+                                    return (
+                                        <div key={section.title} ref={el => { sectionRefs.current[section.title] = el; }} className="shrink-0 flex flex-col md:flex-row md:items-start md:gap-6 px-0 md:px-8 lg:px-20">
+                                            <div className="flex-1 min-w-0 md:w-[70%] order-2 md:order-1">
+                                                <div className="flex flex-col gap-4">
+                                                    {(() => {
+                                                        const rows = [];
+                                                        let i = 0;
+                                                        while (i < section.images.length) {
+                                                            const img1 = section.images[i];
+                                                            const idx1 = globalIndex++;
+                                                            rows.push(
+                                                                <div key={img1.id || idx1} role="button" tabIndex={0} data-photo-index={idx1} className="shrink-0 cursor-pointer" onClick={() => openFocusedView(idx1)}>
+                                                                    <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden md:rounded-[24px]">
+                                                                        <img src={getMediaUrl(img1.url)} alt="" className="w-full h-full object-cover block" />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                            if (i + 1 < section.images.length) {
+                                                                const img2 = section.images[i + 1];
+                                                                const img3 = section.images[i + 2];
+                                                                const idx2 = globalIndex++;
+                                                                const idx3 = img3 ? globalIndex++ : null;
+                                                                rows.push(
+                                                                    <div key={img2.id || `row-${idx2}`} className="grid grid-cols-2 gap-3 shrink-0">
+                                                                        <div role="button" tabIndex={0} data-photo-index={idx2} className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]" onClick={() => openFocusedView(idx2)}>
+                                                                            <img src={getMediaUrl(img2.url)} alt="" className="w-full h-full object-cover block" />
+                                                                        </div>
+                                                                        {img3 ? (
+                                                                            <div role="button" tabIndex={0} data-photo-index={idx3} className="aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer md:rounded-[24px]" onClick={() => openFocusedView(idx3)}>
+                                                                                <img src={getMediaUrl(img3.url)} alt="" className="w-full h-full object-cover block" />
+                                                                            </div>
+                                                                        ) : <div className="aspect-[4/3] bg-gray-100 md:rounded-[24px]" />}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            i += 3;
+                                                        }
+                                                        return rows;
+                                                    })()}
+                                                </div>
+                                            </div>
+                                            <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left md:sticky md:top-32 self-start">
+                                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{section.title}</h2>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {isMainDomain && (
+                                <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center" style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}>
+                                            {!theme?.logoUrl && <Logo className="w-56 h-56 text-primary-500" />}
+                                        </div>
+                                        {!theme?.logoUrl && <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">StayNest</span>}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
