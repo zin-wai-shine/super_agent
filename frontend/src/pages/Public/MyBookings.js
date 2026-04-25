@@ -222,7 +222,7 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-[23px] animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-[23px] animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
                                     >
                                         <div className="flex-1 flex flex-col pl-6 pr-6 pt-5 md:pt-6 pb-4">
                                             {/* Status pill + ID */}
