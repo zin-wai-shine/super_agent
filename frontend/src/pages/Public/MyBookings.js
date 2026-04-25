@@ -251,7 +251,7 @@ const MyBookings = () => {
                                             {/* Date Section - NEW DESIGN */}
                                             <div className="flex items-center gap-6">
                                                 <div className="flex items-center gap-4">
-                                                    <span className="text-5xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none">
+                                                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none">
                                                         {date.getDate()}
                                                     </span>
                                                     <div className="flex flex-col -gap-0.5">
@@ -277,7 +277,7 @@ const MyBookings = () => {
                                         <div className="px-5 pb-5 pt-0 flex justify-end mt-auto">
                                             <button
                                                 onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
-                                                className="px-8 py-3.5 bg-[#222] hover:bg-black text-white text-[15px] font-semibold rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
+                                                className="px-6 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-medium rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
                                             >
                                                 View Details
                                                 <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
