@@ -219,14 +219,13 @@ const MyBookings = () => {
                                 const isPast = date < new Date();
 
                                 return (
-                                    <Link
+                                    <div
                                         key={appointment.id}
-                                        to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-[23px] animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 transition-all duration-300 overflow-hidden rounded-[23px] animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
                                     >
-                                        <div className="flex-1 flex flex-col pl-6 pr-6 pt-5 md:pt-6 pb-4">
+                                        <div className="flex-1 flex flex-col pl-6 pr-6 pt-5 md:pt-6 pb-6">
                                             {/* Status pill + ID */}
-                                            <div className="flex items-center justify-between gap-3 mb-4">
+                                            <div className="flex items-center justify-between gap-3 mb-5">
                                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${appointment.status === 'confirmed' ? 'bg-blue-50 text-blue-700' :
                                                     appointment.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
                                                         appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
@@ -245,27 +244,45 @@ const MyBookings = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-1.5">
+                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-6">
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
-
+                                            {/* Date Section - NEW DESIGN */}
+                                            <div className="flex items-center gap-5">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none">
+                                                        {date.getDate()}
+                                                    </span>
+                                                    <div className="flex flex-col -gap-0.5">
+                                                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 leading-tight">
+                                                            {date.toLocaleDateString('en-US', { month: 'short' })}
+                                                        </span>
+                                                        <span className="text-[11px] font-bold text-slate-900 dark:text-gray-300 leading-tight">
+                                                            {date.getFullYear()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-px h-8 bg-slate-100 dark:bg-white/10" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Time</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <ClockIcon className="w-3.5 h-3.5 text-slate-400" />
+                                                        <span className="text-sm font-bold text-slate-800 dark:text-white">{appointment.preferred_time}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        {/* Date & time — clear, scannable row */}
-                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-4 rounded-b-[23px]">
-                                            <div className="flex items-center gap-2">
-                                                <BsCalendar2Week className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">
-                                                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <ClockIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">{appointment.preferred_time}</span>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                        {/* View Details Button at Base */}
+                                        <button
+                                            onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
+                                            className="w-full py-4 bg-[#222] hover:bg-black text-white text-[13px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn"
+                                        >
+                                            View Details
+                                            <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                                        </button>
+                                    </div>
                                 );
                             })}
                         </div>
