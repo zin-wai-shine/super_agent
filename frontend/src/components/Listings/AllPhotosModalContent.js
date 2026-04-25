@@ -68,7 +68,7 @@ function AllPhotosSkeleton({ isDesktop }) {
                 <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between">
                     <div className="h-8 md:h-10 w-48 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
                 </div>
-                <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-6">
+                <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-6 no-scrollbar">
                     {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="flex-shrink-0 w-[140px] md:w-[200px] flex flex-col items-center gap-3">
                             <div className="w-full h-[100px] md:h-[150px] bg-gray-100 dark:bg-white/5 rounded-[12px] animate-pulse" />
@@ -305,7 +305,6 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                             className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none no-scrollbar"
                             style={{ WebkitOverflowScrolling: 'touch' }}
                         >
-                            <style dangerouslySetInnerHTML={{ __html: `.no-scrollbar::-webkit-scrollbar { display: none; }` }} />
                             {flatImages.map((img, i) => (
                                 <div
                                     key={i}
@@ -374,6 +373,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
     return (
         <div className={`flex flex-col bg-white dark:bg-dashboard-dark ${isDesktop ? '' : 'h-full overflow-hidden'}`}>
+            <style dangerouslySetInnerHTML={{ __html: `.no-scrollbar::-webkit-scrollbar { display: none; }` }} />
             {!isDesktop && (
                 <header className="relative flex-none border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark shrink-0 z-20">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4">
@@ -411,7 +411,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     )}
                                 </div>
                                 <div className="pb-4 md:py-4">
-                                    <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                    <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
                                         {sections.map((section) => {
                                             const firstIdx = flatImages.findIndex(im => im === section.images[0] || (im.id && im.id === section.images[0]?.id));
                                             return <LayerCard key={section.title} section={section} firstFlatIndex={firstIdx >= 0 ? firstIdx : 0} onTap={scrollToIndex} />;
