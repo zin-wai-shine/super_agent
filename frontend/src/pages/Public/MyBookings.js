@@ -249,11 +249,7 @@ const MyBookings = () => {
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
-                                            {/* Location */}
-                                            <div className="flex items-center gap-1.5 text-slate-500 text-sm font-medium">
-                                                <MapPinIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <span className="truncate">{appointment.listing?.district || 'Location unavailable'}</span>
-                                            </div>
+
                                         </div>
 
                                         {/* Date & time — clear, scannable row */}
