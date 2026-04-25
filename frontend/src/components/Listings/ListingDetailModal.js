@@ -1,8 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Modal from '../ui/Modal';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import AllPhotosModalContent from './AllPhotosModalContent';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import ListingSkeleton from '../ui/ListingSkeleton';
 
 const ListingDetailView = lazy(() => import('../../pages/Public/ListingDetailPage').then(module => ({
     default: module.ListingDetailView
@@ -12,8 +13,10 @@ const MODAL_SIZE_CLASS = '!p-0 !m-0 w-full h-[100dvh] sm:h-full sm:w-full !max-w
 
 const ListingDetailModal = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
     const listingId = searchParams.get('detail');
     const bookingId = searchParams.get('bookingId');
+    const status = searchParams.get('status') || location.state?.status;
     const isOpen = !!listingId;
 
     const handleClose = () => {
@@ -78,11 +81,8 @@ const ListingDetailModal = () => {
                 <div className="h-full relative bg-white dark:bg-dashboard-dark">
                     <div className="h-full overflow-y-auto modal-scrollable">
                         <Suspense fallback={
-                            <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
-                                    <p className="text-gray-400 dark:text-gray-500 font-bold text-sm">Loading property details...</p>
-                                </div>
+                            <div className="h-full bg-white dark:bg-dashboard-dark">
+                                <ListingSkeleton viewMode="detail" status={status} />
                             </div>
                         }>
                             <ListingDetailView

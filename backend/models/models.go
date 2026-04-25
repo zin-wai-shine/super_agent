@@ -204,9 +204,10 @@ type Listing struct {
 	YearBuilt          int            `gorm:"default:0" json:"year_built"`
 	Station            *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
 	Features           string         `gorm:"type:text" json:"features,omitempty"` // JSON array
-	IsPublished        bool           `gorm:"default:false" json:"is_published"`
-	IsFeatured         bool           `gorm:"default:false" json:"is_featured"`
-	ViewCount          int            `gorm:"default:0" json:"view_count"`
+	IsPublished          bool           `gorm:"default:false" json:"is_published"`
+	IsFeatured           bool           `gorm:"default:false" json:"is_featured"`
+	AllowViewingRequests bool           `gorm:"default:true" json:"allow_viewing_requests"`
+	ViewCount            int            `gorm:"default:0" json:"view_count"`
 	Media              []Media        `gorm:"foreignKey:ListingID" json:"media,omitempty"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`

@@ -21,6 +21,12 @@ expect {
 send "cd super_real_estate\r"
 expect -re "root@.*# "
 
+send "git reset --hard\r"
+expect -re "root@.*# "
+
+send "git clean -fd\r"
+expect -re "root@.*# "
+
 send "git fetch origin v1\r"
 expect -re "root@.*# "
 

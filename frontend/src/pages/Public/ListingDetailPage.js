@@ -78,7 +78,8 @@ import {
     FiPhone,
     FiMessageCircle,
     FiExternalLink,
-    FiTwitter
+    FiTwitter,
+    FiClock
 } from "react-icons/fi";
 import { FaLine, FaWhatsapp, FaViber, FaTiktok } from "react-icons/fa";
 import { HiOutlineTv } from "react-icons/hi2";
@@ -274,6 +275,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const { isDarkMode } = usePublicDarkTheme();
     const { isMainDomain, agent } = useTenant();
     const [copiedPhone, setCopiedPhone] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [listing, setListing] = useState(null);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get('bookingId');
@@ -645,6 +647,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             return;
         }
 
+        if (listing && listing.allow_viewing_requests === false) {
+            setIsContactOverlayOpen(true);
+            return;
+        }
+
         setIsBookingOverlayOpen(!isBookingOverlayOpen);
     };
 
@@ -742,7 +749,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         const fetchListingData = async () => {
             try {
                 // Fetch basic listing details
-                const response = await publicApi.getListing(id, { signal: controller.signal });
+                const [response] = await Promise.all([
+                    publicApi.getListing(id, { signal: controller.signal }),
+                    new Promise(resolve => setTimeout(resolve, 1000)) // Force skeleton for 1s
+                ]);
                 const fetchedListing = response.data;
                 
                 if (!fetchedListing) {
@@ -754,11 +764,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                 // Fetch user-specific stuff if logged in
                 if (isAuthenticated) {
-                    // Start sub-fetches in parallel
-                    Promise.allSettled([
-                        checkIfSaved(id),
-                        appointmentApi.getMyAppointments()
-                    ]).then(([savedRes, bookingsRes]) => {
+                    try {
+                        const [savedRes, bookingsRes] = await Promise.allSettled([
+                            checkIfSaved(id),
+                            appointmentApi.getMyAppointments()
+                        ]);
+
                         if (savedRes.status === 'fulfilled') {
                             setIsSaved(savedRes.value.saved);
                         }
@@ -775,7 +786,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 setViewedBooking(specific || null);
                             }
                         }
-                    });
+                    } catch (error) {
+                        console.error('Failed to fetch user-specific listing data:', error);
+                    }
                 }
 
                 // Fetch related listings
@@ -1055,36 +1068,40 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     };
 
     if (loading) {
+        const statusFromState = location.state?.status;
+        const statusFromUrl = searchParams.get('status');
+        const currentStatus = statusFromState || statusFromUrl;
+
         return (
             <div className="min-h-screen bg-white dark:bg-dashboard-dark">
-                <ListingSkeleton viewMode="detail" />
+                <ListingSkeleton viewMode="detail" status={currentStatus} />
             </div>
         );
     }
 
     if (error || !listing) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark">
-                <div className="text-center p-6 bg-white dark:bg-dashboard-card rounded-3xl shadow-xl max-w-sm mx-auto animate-fillIn">
-                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <XMarkIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark p-6">
+                <div className="text-center p-8 md:p-10 bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-xl border border-white/50 dark:border-white/5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] max-w-sm mx-auto animate-fade-up">
+                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center mx-auto mb-8 transform -rotate-6">
+                        <XMarkIcon className="w-10 h-10 text-rose-600 dark:text-rose-400" />
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
                         {error || 'Property not found'}
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                    <p className="text-gray-500 dark:text-gray-400 mb-10 text-sm leading-relaxed">
                         {error === 'Property not found' 
                             ? 'The listing you are looking for may have been removed or is currently unavailable.'
                             : 'We encountered an error while loading the property details. Please try again or go back.'}
                     </p>
                     <div className="flex flex-col gap-3">
                         {error !== 'Property not found' && (
-                            <Button onClick={() => window.location.reload()} variant="primary" fullWidth>
+                            <Button onClick={() => window.location.reload()} variant="primary" fullWidth className="rounded-full py-4 text-base shadow-lg shadow-primary-500/20">
                                 Retry Connection
                             </Button>
                         )}
                         <Link to="/listings" className="w-full">
-                            <Button variant={error === 'Property not found' ? 'primary' : 'outline'} fullWidth>
+                            <Button variant={error === 'Property not found' ? 'primary' : 'outline'} fullWidth className="rounded-full py-4 text-base shadow-sm">
                                 Back to Listings
                             </Button>
                         </Link>
@@ -1169,8 +1186,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             onClick={handleBookingClick}
                             className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
                         >
-                            <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                            <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Book Viewing</span>
+                            {listing?.allow_viewing_requests === false ? (
+                                <>
+                                    <ChatBubbleOvalLeftEllipsisIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Direct Message</span>
+                                </>
+                            ) : (
+                                <>
+                                    <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
+                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Book Viewing</span>
+                                </>
+                            )}
                         </button>
                     )}
                 </div>
@@ -1725,10 +1751,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex flex-col flex-1">
-                            <span className="font-bold text-[15px] text-gray-900 dark:text-white leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                            <span className="font-bold text-base text-gray-900 dark:text-white leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
                                 {isCall ? 'Call Us Now' : `Chat on ${link.platform}`}
                             </span>
-                            <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium mt-1">
+                            <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium mt-1">
                                 {isCall ? link.value : `Join us on ${link.platform}`}
                             </span>
                         </div>
@@ -1754,8 +1780,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         <Icon className="w-5 h-5" style={{ color: config.color }} />
                     </div>
                     <div className="flex flex-col flex-1">
-                        <span className="font-bold text-gray-900 dark:text-white text-[15px] tracking-tight">{link.platform}</span>
-                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400 leading-none mt-0.5">
+                        <span className="font-bold text-gray-900 dark:text-white text-base tracking-tight">{link.platform}</span>
+                        <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400 mt-1">
                             {isCall ? link.value : `Connect on ${link.platform}`}
                         </span>
                     </div>
@@ -1784,7 +1810,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     >
                         <button
                             onClick={() => onClose ? onClose() : navigate(-1)}
-                            className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto ring-1 ring-black/5 dark:ring-white/5"
+                            className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto"
                             aria-label="Back"
                         >
                             <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -1798,7 +1824,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
                                     url: window.location.href
                                 }}
-                                className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
+                                className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all"
                                 showLabel={false}
                                 iconClassName="w-6 h-6 text-gray-900 dark:text-white"
                             />
@@ -1806,8 +1832,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 isSaved={isSaved}
                                 onClick={handleToggleSave}
                                 disabled={savingListing}
-                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-lg rounded-full text-gray-900 dark:text-white active:scale-90 transition-all ring-1 ring-black/5 dark:ring-white/5"
-                                iconSize={26}
+                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all flex items-center justify-center"
+                                iconSize={24}
                             />
                         </div>
                     </div>
@@ -1919,8 +1945,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             onClick={handleBookingClick}
                                                             className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
                                                         >
-                                                            <CalendarDaysIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
-                                                            <span className="text-[13px] font-normal text-gray-900 dark:text-white">Book Viewing</span>
+                                                            {listing?.allow_viewing_requests === false ? (
+                                                                <>
+                                                                    <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
+                                                                    <span className="text-[13px] font-normal text-gray-900 dark:text-white">Direct Message</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <CalendarDaysIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
+                                                                    <span className="text-[13px] font-normal text-gray-900 dark:text-white">Book Viewing</span>
+                                                                </>
+                                                            )}
                                                         </button>
                                                     )}
                                                 </div>
@@ -1967,24 +2002,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 {listing.title}
                                             </h1>
 
-                                            {bookingId && (
-                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3 text-[14px]">
-                                                    <span className="text-gray-500 dark:text-gray-400">Viewing requested</span>
-                                                    <span className="text-gray-300 dark:text-gray-600">·</span>
-                                                    <span className="font-medium text-gray-800 dark:text-gray-200">
-                                                        {viewedBooking?.preferred_date ? new Date(viewedBooking.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
-                                                    </span>
-                                                    {viewedBooking?.preferred_time && <><span className="text-gray-300 dark:text-gray-600">·</span><span className="text-gray-700 dark:text-gray-300">{viewedBooking.preferred_time}</span></>}
-                                                    <span className="text-gray-300 dark:text-gray-600">·</span>
-                                                    <button
-                                                        onClick={() => setIsStatusOverlayOpen(true)}
-                                                        className="px-4 py-1.5 rounded-full text-[13px] font-bold transition-all bg-[#222222] text-white hover:bg-black active:scale-95 flex items-center gap-1.5 shadow-sm"
-                                                    >
-                                                        <LuCalendarCheck2 className="w-4 h-4 text-white" />
-                                                        {viewedBooking?.status || 'Pending'}
-                                                    </button>
-                                                </div>
-                                            )}
+
 
 
                                         </div>
@@ -2000,16 +2018,31 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         )}
                                     </div>
 
-                                    {!bookingId && (
-                                        <div className="px-0 md:px-0 lg:px-0 my-6">
-                                            <div className="flex md:inline-flex items-center justify-start gap-2 px-4 py-3 bg-emerald-600 text-white rounded-r-full md:rounded-lg w-[55%] md:w-auto animate-shimmer">
+                                    <div className="px-0 md:px-0 lg:px-0 my-6">
+                                        <div className={`flex md:inline-flex items-center justify-start gap-2 px-4 py-3 text-white rounded-r-full md:rounded-lg w-[55%] md:w-auto animate-shimmer ${
+                                            (listing.availability_status || "Ready to move in").toLowerCase() === "ready to move in" ? 'bg-emerald-600' : 'bg-amber-600'
+                                        }`}>
+                                            {(listing.availability_status || "Ready to move in").toLowerCase() === "ready to move in" ? (
                                                 <CheckBadgeIcon className="w-6 h-6 text-white" />
-                                                <span className="text-[14px] font-bold tracking-wide uppercase whitespace-nowrap">
-                                                    {listing.availability_status || "Ready to move in"}
-                                                </span>
-                                            </div>
+                                            ) : (
+                                                <FiClock className="w-6 h-6 text-white" />
+                                            )}
+                                            <span className="text-[14px] font-bold tracking-wide uppercase whitespace-nowrap">
+                                                {(() => {
+                                                    const status = listing.availability_status || "Ready to move in";
+                                                    if (status.toLowerCase().startsWith('unavailable until')) {
+                                                        const datePart = status.substring(17).trim();
+                                                        return (
+                                                            <>
+                                                                <span className="font-medium opacity-90">Available</span> <span className="font-black">{datePart}</span>
+                                                            </>
+                                                        );
+                                                    }
+                                                    return status;
+                                                })()}
+                                            </span>
                                         </div>
-                                    )}
+                                    </div>
 
 
                                 {/* Image Gallery - Desktop Bento Grid */}
@@ -2673,16 +2706,43 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         <Modal
                                             isOpen={isContactOverlayOpen}
                                             onClose={() => setIsContactOverlayOpen(false)}
-                                            title="Let's Connect"
+                                            title={listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
                                             size="md"
                                         >
                                             <div className="p-8">
-                                                <p className="text-base text-gray-500 mb-8 font-medium">
-                                                    Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home.
+                                                <p className={`mb-8 font-medium ${listing?.allow_viewing_requests === false ? 'text-[#222222] dark:text-gray-300 text-[17px]' : 'text-[15px] text-gray-500'}`}>
+                                                    {listing?.allow_viewing_requests === false 
+                                                        ? "Please contact the agent directly to get viewing room"
+                                                        : "Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home."
+                                                    }
                                                 </p>
                                                 <div className="grid grid-cols-1 gap-4">
                                                     {renderContactLinks(true)}
                                                 </div>
+                                                {listing?.allow_viewing_requests === false && (
+                                                    <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(window.location.href);
+                                                                setLinkCopied(true);
+                                                                setTimeout(() => setLinkCopied(false), 2000);
+                                                            }}
+                                                            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium text-[15px] transition-colors"
+                                                        >
+                                                            {linkCopied ? (
+                                                                <>
+                                                                    <SolidCheckCircleIcon className="w-5 h-5 text-emerald-500" />
+                                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <DocumentDuplicateIcon className="w-5 h-5" />
+                                                                    Copy Property Link
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </Modal>
 
@@ -2772,12 +2832,40 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                                 <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
                                                     <div className="w-full text-center mb-4">
-                                                        <h3 className="font-black text-gray-900 dark:text-white text-xl tracking-tighter mb-1">Let's Connect</h3>
-                                                        <p className="text-gray-400 dark:text-gray-500 font-bold text-[13px] tracking-wide uppercase">Connect with our team</p>
+                                                        <h3 className="font-bold text-gray-900 dark:text-white text-[22px] tracking-tight mb-2">
+                                                            {listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
+                                                        </h3>
+                                                        <p className={`font-medium ${listing?.allow_viewing_requests === false ? 'text-[#222222] dark:text-gray-300 text-[15px]' : 'text-gray-500 dark:text-gray-400 text-[14px]'}`}>
+                                                            {listing?.allow_viewing_requests === false ? "Please contact the agent directly to get viewing room" : "Connect with our team"}
+                                                        </p>
                                                     </div>
                                                     <div className="w-full max-w-md mt-6 space-y-4">
                                                         {renderContactLinks(false)}
                                                     </div>
+                                                    {listing?.allow_viewing_requests === false && (
+                                                        <div className="w-full max-w-md mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(window.location.href);
+                                                                    setLinkCopied(true);
+                                                                    setTimeout(() => setLinkCopied(false), 2000);
+                                                                }}
+                                                                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium text-[15px] transition-colors"
+                                                            >
+                                                                {linkCopied ? (
+                                                                    <>
+                                                                        <SolidCheckCircleIcon className="w-5 h-5 text-emerald-500" />
+                                                                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <DocumentDuplicateIcon className="w-5 h-5" />
+                                                                        Copy Property Link
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -2845,24 +2933,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
                                                 <div className="w-full relative flex flex-col items-center p-6 pb-12 pt-2">
                                                     <div className="w-full text-center mb-4">
-                                                        <h3 className="font-black text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
+                                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
                                                     </div>
 
                                                     <div className="w-full space-y-8 text-left">
                                                         <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
-                                                            <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">{listing.title}</div>
+                                                            <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{listing.title}</div>
                                                         </div>
 
                                                         <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
                                                             <div className="flex flex-col items-center text-center">
-                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4">Preferred Date</div>
-                                                                <span className="text-[84px] font-black leading-none text-gray-900 dark:text-white tracking-tighter">
+                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4">Preferred Date</div>
+                                                                <span className="text-[84px] font-black leading-none text-gray-900/80 dark:text-white tracking-tighter">
                                                                     {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
                                                                 </span>
-                                                                <span className="text-2xl font-black text-[#222222] dark:text-white/90 mt-2 flex items-center gap-3">
+                                                                <span className="text-2xl font-black text-[#222222]/80 dark:text-white/80 mt-2 flex items-center gap-3">
                                                                     {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '---'}
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20" />
-                                                                    <span className="text-gray-500 dark:text-gray-400">
+                                                                    <span className="text-gray-500/80 dark:text-gray-400/80">
                                                                         {(() => {
                                                                             const time = (viewedBooking || activeBooking)?.preferred_time;
                                                                             if (!time) return '---';
@@ -2895,8 +2983,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                         {(viewedBooking || activeBooking)?.message && (
                                                             <div className="pt-6 border-t border-gray-100 dark:border-white/10">
-                                                                <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-3">Your Message</div>
-                                                                <div className="text-xl italic text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
+                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3">Your Message</div>
+                                                                <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
                                                                     "{(viewedBooking || activeBooking).message}"
                                                                 </div>
                                                             </div>
@@ -2957,7 +3045,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             onClick={handleBookingClick}
                             className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[14px] px-4 py-3 rounded-full min-h-[48px] whitespace-nowrap"
                         >
-                            Book Viewing
+                            {listing?.allow_viewing_requests === false ? 'Direct Message' : 'Book Viewing'}
                         </button>
                     )}
                 </div>

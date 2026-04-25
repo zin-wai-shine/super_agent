@@ -22,6 +22,8 @@ import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
+import BookingSkeleton from '../../components/ui/BookingSkeleton';
+
 const BookAppointment = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -100,6 +102,8 @@ const BookAppointment = () => {
                 if (window.location.hostname.includes('localhost') && user?.agent_id) {
                     params.agent_id = user.agent_id;
                 }
+                // Simulate delay as requested for "smooth animation like other page"
+                await new Promise(resolve => setTimeout(resolve, 800));
                 const response = await publicApi.getListing(id, params);
                 const listingData = response.data;
                 setListing(listingData);
@@ -237,7 +241,7 @@ const BookAppointment = () => {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div></div>;
+    if (loading) return <BookingSkeleton />;
     if (!listing) return <div className="p-10 text-center">Listing not found</div>;
 
     const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });

@@ -59,6 +59,45 @@ function LayerCard({ section, onTap, firstFlatIndex }) {
     );
 }
 
+// Skeleton Components for AllPhotos
+function AllPhotosSkeleton({ isDesktop }) {
+    return (
+        <div className="flex flex-col gap-8 pb-8 animate-in fade-in duration-500">
+            {/* Category Strip Skeleton */}
+            <div className="md:flex-shrink-0 md:min-h-[30%]">
+                <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between">
+                    <div className="h-8 md:h-10 w-48 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                </div>
+                <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex-shrink-0 w-[140px] md:w-[200px] flex flex-col items-center gap-3">
+                            <div className="w-full h-[100px] md:h-[150px] bg-gray-100 dark:bg-white/5 rounded-[12px] animate-pulse" />
+                            <div className="h-4 w-24 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                            <div className="h-3 w-16 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse opacity-60" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Content Sections Skeleton */}
+            <div className="flex flex-col gap-12 px-4 md:px-8 lg:px-20">
+                {[1, 2].map((s) => (
+                    <div key={s} className="flex flex-col gap-6">
+                        <div className="h-8 w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse" />
+                        <div className="flex flex-col gap-4">
+                            <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-white/5 md:rounded-[24px] animate-pulse" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="aspect-[4/3] bg-gray-100 dark:bg-white/5 md:rounded-[24px] animate-pulse" />
+                                <div className="aspect-[4/3] bg-gray-100 dark:bg-white/5 md:rounded-[24px] animate-pulse" />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // Section title for a flat image index (from room_type)
 function getSectionTitleForImage(img) {
     const rt = img?.room_type?.trim();
@@ -69,6 +108,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const scrollRef = useRef(null);
     const sectionRefs = useRef({});
     const [activeSectionTitle, setActiveSectionTitle] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const { theme } = useTheme();
     const { isMainDomain } = useTenant();
     const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
@@ -78,6 +118,12 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const lastTapTimeRef = useRef(0);
     const lastTapXRef = useRef(0);
     const DOUBLE_TAP_MS = 350;
+
+    useEffect(() => {
+        // Show skeleton briefly for smooth transition
+        const timer = setTimeout(() => setIsLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, []);
 
     const scrollToImage = useCallback((index, smooth = true) => {
         if (!focusedScrollRef.current) return;
@@ -401,8 +447,10 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
                 <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">
-                    {/* Desktop: 30% top block (Photo tour + strip), 70% sections below */}
-                    <div className="min-h-full md:flex md:flex-col">
+                    {isLoading ? (
+                        <AllPhotosSkeleton isDesktop={isDesktop} />
+                    ) : (
+                        <div className="min-h-full md:flex md:flex-col">
                         <div className="md:flex-shrink-0 md:min-h-[30%]">
                             <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between relative">
                                 {isDesktop && (
@@ -557,9 +605,8 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     )}
                                 </div>
                             </div>
-                        )}
-
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

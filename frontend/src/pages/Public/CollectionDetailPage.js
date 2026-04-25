@@ -18,6 +18,8 @@ const CollectionDetailPage = () => {
     const [scrolled, setScrolled] = useState(false);
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
+    const [visibleCount, setVisibleCount] = useState(3);
+    const observerTarget = React.useRef(null);
 
     useEffect(() => {
         fetchCollectionData();
@@ -29,12 +31,29 @@ const CollectionDetailPage = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [id]);
 
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && !loading && visibleCount < listings.length) {
+                    // Simulate a small delay for "lazy loading" feel as requested
+                    setTimeout(() => {
+                        setVisibleCount(prev => prev + 3);
+                    }, 800);
+                }
+            },
+            { threshold: 0.1, rootMargin: '100px' }
+        );
+        if (observerTarget.current) observer.observe(observerTarget.current);
+        return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
+    }, [loading, listings.length, visibleCount]);
+
     const fetchCollectionData = async () => {
         setLoading(true);
         try {
             const [colRes, listRes] = await Promise.all([
                 collectionApi.getPublicCollection(id),
-                publicApi.getListings({ collection_id: id, limit: 100 })
+                publicApi.getListings({ collection_id: id, limit: 100 }),
+                new Promise(resolve => setTimeout(resolve, 1000)) // Force skeleton visibility for 1s
             ]);
             
             setCollection(colRes.data || null);
@@ -61,7 +80,7 @@ const CollectionDetailPage = () => {
             {/* --- MOBILE ONLY: Immersive UX --- */}
             <div className="lg:hidden">
                 {/* 1. Fixed Hero Header (Background) */}
-                <div className="fixed top-0 left-0 right-0 w-full h-[45vh] md:h-[50vh] overflow-hidden bg-gray-200 dark:bg-gray-800 z-0">
+                <div className="fixed top-0 left-0 right-0 w-full h-[55vh] md:h-[60vh] overflow-hidden bg-gray-200 dark:bg-gray-800 z-0">
                     {!loading && heroImages.length > 0 ? (
                         <div className="w-full h-full">
                             <ListingImageSlider 
@@ -85,30 +104,49 @@ const CollectionDetailPage = () => {
                     <div className="flex items-center gap-4 pointer-events-auto">
                         <button
                             onClick={() => navigate(-1)}
-                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 shadow-lg active:scale-95 ${scrolled ? 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white' : 'bg-white text-gray-900 hover:bg-gray-50'}`}
+                            disabled={loading}
+                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${loading ? 'bg-white dark:bg-white/20 shadow-sm animate-pulse' : scrolled ? 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white shadow-none active:scale-95' : 'bg-white text-gray-900 hover:bg-gray-50 shadow-sm active:scale-95'}`}
                         >
-                            <ArrowLeftIcon className="w-6 h-6 transition-transform group-hover:-translate-x-0.5" />
+                            {loading ? (
+                                <div className={`w-5 h-0.5 rounded-full ${scrolled ? 'bg-gray-300' : 'bg-gray-200 dark:bg-white/10'}`} />
+                            ) : (
+                                <ArrowLeftIcon className="w-6 h-6 transition-transform group-hover:-translate-x-0.5" />
+                            )}
                         </button>
                     </div>
 
                     <div className="flex flex-col items-center pointer-events-none text-center">
                         <h1 className={`text-[17px] font-bold tracking-tight truncate max-w-[50vw] transition-all duration-300 ${scrolled ? 'text-gray-900 dark:text-white opacity-100' : 'text-white drop-shadow-md'}`}>
-                            {loading ? '...' : collection?.name}
+                            {loading ? (
+                                <div className={`h-5 w-32 rounded-[100px] animate-pulse backdrop-blur-sm ${scrolled ? 'bg-gray-200 dark:bg-white/10' : 'bg-white/30'}`} />
+                            ) : (
+                                collection?.name
+                            )}
                         </h1>
                     </div>
 
-                    <div className={`transition-all duration-300 px-4 py-2 rounded-full text-[13px] font-bold whitespace-nowrap shadow-lg pointer-events-auto ${scrolled ? 'bg-primary-600 text-white' : 'bg-white text-gray-900 border border-gray-100'}`}>
-                        {loading ? '...' : `${listings.length} properties`}
+                    <div className={`transition-all duration-300 px-4 py-2 rounded-full text-[13px] font-bold whitespace-nowrap pointer-events-auto flex items-center justify-center min-h-[36px] ${loading ? 'bg-white dark:bg-white/20 shadow-sm animate-pulse' : scrolled ? 'bg-[#222222] text-white shadow-none' : 'bg-white text-gray-900 border border-gray-100 shadow-sm'}`}>
+                        {loading ? (
+                            <div className={`h-1.5 w-16 rounded-[100px] ${scrolled ? 'bg-gray-700' : 'bg-gray-200 dark:bg-white/10'}`} />
+                        ) : (
+                            `${listings.length} properties`
+                        )}
                     </div>
                 </div>
 
                 {/* 3. Overlapping Content Container */}
                 <div className="relative z-10 pointer-events-none">
-                    <div className="h-[45vh] md:h-[50vh] w-full" />
+                    <div className="h-[55vh] md:h-[60vh] w-full" />
                     <div className="relative z-40 -mt-12 bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[40px] px-6 pt-2 pb-32 shadow-[0_-12px_40px_-15px_rgba(0,0,0,0.25)] min-h-screen pointer-events-auto">
                         <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/10 rounded-full mx-auto mb-2 opacity-50 mt-1" />
                         <div className="relative min-h-[400px]">
-                            <ListingsGrid loading={loading} listings={listings} navigate={navigate} />
+                            <ListingsGrid 
+                                loading={loading} 
+                                listings={listings} 
+                                visibleCount={visibleCount}
+                                navigate={navigate} 
+                                observerTarget={observerTarget}
+                            />
                         </div>
                     </div>
                 </div>
@@ -158,7 +196,13 @@ const CollectionDetailPage = () => {
 
                 {/* Desktop Content Grid */}
                 <div className="max-w-[1440px] mx-auto px-12 py-16">
-                    <ListingsGrid loading={loading} listings={listings} navigate={navigate} />
+                    <ListingsGrid 
+                        loading={loading} 
+                        listings={listings} 
+                        visibleCount={visibleCount}
+                        navigate={navigate} 
+                        observerTarget={observerTarget}
+                    />
                 </div>
             </div>
 
@@ -175,42 +219,61 @@ const CollectionDetailPage = () => {
 };
 
 // Sub-components for cleaner code
-const ListingsGrid = ({ loading, listings, navigate }) => (
-    <div className="relative min-h-[400px]">
-        {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-                {[...Array(4)].map((_, i) => (
-                    <ListingSkeleton key={i} viewMode="grid" />
-                ))}
-            </div>
-        ) : listings.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 animate-fadeInUp">
-                {listings.map((listing) => (
-                    <ListingCard
-                        key={listing.id}
-                        listing={listing}
-                        viewMode="grid"
-                        showSave={true}
-                    />
-                ))}
-            </div>
-        ) : (
-            <div className="text-center py-24 animate-fadeInUp">
-                <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <FiHome className="h-10 w-10 text-gray-300" />
+const ListingsGrid = ({ loading, listings, visibleCount, navigate, observerTarget }) => {
+    const visibleListings = listings.slice(0, visibleCount);
+    const hasMore = visibleCount < listings.length;
+
+    return (
+        <div className="relative min-h-[400px]">
+            {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+                    {[...Array(3)].map((_, i) => (
+                        <ListingSkeleton key={i} viewMode="grid" index={i} />
+                    ))}
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">This collection is empty</h2>
-                <p className="mt-2 text-gray-500 dark:text-gray-400">No properties have been added to this group yet.</p>
-                <button
-                    onClick={() => navigate('/listings')}
-                    className="mt-8 inline-flex items-center px-10 py-4 rounded-full text-white bg-[#222222] dark:bg-white dark:text-dashboard-dark hover:scale-[1.02] active:scale-95 font-bold transition-all shadow-xl"
-                >
-                    Browse All properties
-                </button>
-            </div>
-        )}
-    </div>
-);
+            ) : listings.length > 0 ? (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+                        {visibleListings.map((listing, idx) => (
+                            <div key={listing.id} className="animate-fadeInUp" style={{ animationDelay: `${(idx % 3) * 100}ms` }}>
+                                <ListingCard
+                                    listing={listing}
+                                    viewMode="grid"
+                                    showSave={true}
+                                />
+                            </div>
+                        ))}
+                        
+                        {/* Loading Skeletons for additional cards while scrolling */}
+                        {hasMore && (
+                            [...Array(3)].map((_, i) => (
+                                <div key={`skeleton-${i}`} ref={i === 0 ? observerTarget : null}>
+                                    <ListingSkeleton viewMode="grid" index={i} />
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    {/* Intersection Observer Target */}
+                    {!hasMore && <div className="h-20" />}
+                </>
+            ) : (
+                <div className="text-center py-24 animate-fadeInUp">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <FiHome className="h-10 w-10 text-gray-300" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">This collection is empty</h2>
+                    <p className="mt-2 text-gray-500 dark:text-gray-400">No properties have been added to this group yet.</p>
+                    <button
+                        onClick={() => navigate('/listings')}
+                        className="mt-8 inline-flex items-center px-10 py-4 rounded-full text-white bg-[#222222] dark:bg-white dark:text-dashboard-dark hover:scale-[1.02] active:scale-95 font-bold transition-all shadow-xl"
+                    >
+                        Browse All properties
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, galleryIndex }) => {
     if (!galleryOpen) return null;

@@ -340,15 +340,28 @@ const SavedListingsPage = () => {
                                                     newParams.delete('group');
                                                     setSearchParams(newParams);
                                                 }}
-                                                className="flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
+                                                disabled={initialLoading}
+                                                className={`flex items-center justify-center min-w-[42px] min-h-[42px] -ml-2 rounded-full text-gray-900 dark:text-white transition-all ${initialLoading || !activeGroup ? 'bg-white dark:bg-dashboard-card shadow-sm animate-pulse' : 'bg-white dark:bg-dashboard-card shadow-sm hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95'}`}
                                             >
-                                                <ArrowLeftIcon className="w-7 h-7 text-gray-900 dark:text-white" />
+                                                {initialLoading || !activeGroup ? (
+                                                    <div className="w-5 h-0.5 bg-gray-200 dark:bg-white/10 rounded-full" />
+                                                ) : (
+                                                    <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                                                )}
                                             </button>
                                             <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
+                                                {initialLoading || !activeGroup ? (
+                                                    <div className="h-5 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                ) : (
+                                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
+                                                )}
                                             </div>
                                             <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap -mr-1">
-                                                {activeGroup?.items.length || 0} places
+                                                {initialLoading || !activeGroup ? (
+                                                    <div className="h-4 w-12 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                ) : (
+                                                    <>{activeGroup?.items.length || 0} places</>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

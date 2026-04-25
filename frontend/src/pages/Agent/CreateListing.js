@@ -76,6 +76,7 @@ const CreateListing = () => {
             property_type: propertyTypeOptions[0],
             listing_type: listingTypeOptions[1], // Default to Rent
             availability_status: 'Ready to Move In',
+            allow_viewing_requests: true,
         }
     });
     const fieldValues = watch();
@@ -154,6 +155,7 @@ const CreateListing = () => {
                     ...(data.project_facilities || [])
                 ]),
                 is_published: true,
+                allow_viewing_requests: data.allow_viewing_requests,
             });
 
             toast.success('Listing created successfully!');
@@ -205,7 +207,8 @@ const CreateListing = () => {
                 building_features: [],
                 project_facilities: [],
                 project_id: null,
-                station_id: null
+                station_id: null,
+                allow_viewing_requests: true
             });
             setImageSections(initialImageSections());
             setWalkingTime('');
@@ -706,6 +709,33 @@ const CreateListing = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Viewing Request Toggle */}
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-gray-900 dark:text-white">Enable Viewing Requests</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">If on, users can book a viewing. If off, they will see a contact option.</span>
+                                </div>
+                                <Controller
+                                    name="allow_viewing_requests"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <button
+                                            type="button"
+                                            onClick={() => field.onChange(!field.value)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${field.value ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                                                }`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${field.value ? 'translate-x-6' : 'translate-x-1'
+                                                    }`}
+                                            />
+                                        </button>
+                                    )}
+                                />
                             </div>
                         </div>
 

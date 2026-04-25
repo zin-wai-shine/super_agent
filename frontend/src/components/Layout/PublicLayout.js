@@ -1071,7 +1071,7 @@ const PublicLayout = () => {
                                     <Link to="/products" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Products</Link>
                                     <Link to="/privacy" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Privacy</Link>
                                     <Link to="/terms" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Terms</Link>
-                                    <button 
+                                    <button
                                         onClick={() => window.dispatchEvent(new Event('open-cookie-settings'))}
                                         className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                                     >

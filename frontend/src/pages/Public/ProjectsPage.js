@@ -712,14 +712,25 @@ const ProjectsPage = () => {
                 )}
 
                 {/* Text Search */}
-                <input
-                    type="text"
-                    value={searchTerm || ''}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
-                    placeholder="Keyword, location, property name..."
-                    className="w-full h-[52px] sm:h-[48px] px-6 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all mb-7"
-                />
+                <div className="relative mb-7">
+                    <input
+                        type="text"
+                        value={searchTerm || ''}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
+                        placeholder="Keyword, location, property name..."
+                        className="w-full h-[52px] sm:h-[48px] pl-6 pr-12 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all"
+                    />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => { setSearchTerm(''); }}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                        >
+                            <XMarkIcon className="w-5 h-5 stroke-[2.5]" />
+                        </button>
+                    )}
+                </div>
 
                 {/* Filter Sections */}
                 <div className="space-y-10">
@@ -976,14 +987,14 @@ const ProjectsPage = () => {
                             {hasActiveFilters && (
                                 <button
                                     onClick={clearFilters}
-                                    className="order-1 px-6 py-3.5 md:px-5 md:py-2.5 min-h-[48px] md:min-h-[40px] rounded-full text-[13px] font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300 flex items-center justify-center"
+                                    className="order-1 px-6 py-3.5 md:px-5 md:py-2.5 min-h-[48px] md:min-h-[40px] rounded-full text-[13px] md:text-[12px] font-bold text-red-600 dark:text-red-500 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
                                 >
                                     Clear all
                                 </button>
                             )}
                             <button
                                 onClick={applyFilters}
-                                className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-normal transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
+                                className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
                                 <span>Show {total} {total === 1 ? 'project' : 'projects'}</span>
                             </button>
@@ -1014,12 +1025,12 @@ const ProjectsPage = () => {
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all bg-white dark:bg-white/5 shadow-sm border-none`}
+                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all bg-white dark:bg-white/5 shadow-sm ${activeFiltersList.length > 0 ? 'border border-gray-200 dark:border-white/10' : 'border border-transparent'}`}
                             aria-label="Open filters"
                         >
-                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[26px] h-[26px]' : 'w-8 h-8'}`} />
                             {activeFiltersList.length > 0 && (
-                                <span className="absolute -top-[4px] -right-[4px] min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-semibold border-2 border-white shadow-md leading-none">
+                                <span className="absolute -top-[2px] -right-[2px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[12px] font-bold border border-gray-200 dark:border-white/10 leading-none">
                                     {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
                                 </span>
                             )}
@@ -1074,9 +1085,9 @@ const ProjectsPage = () => {
                                     <button
                                         onClick={clearFilters}
                                         disabled={!hasActiveFilters}
-                                        className={`px-3 py-2 rounded text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
-                                            ? 'bg-transparent border-none text-red-600 hover:text-red-700'
-                                            : 'bg-transparent border-none text-gray-400 cursor-not-allowed'
+                                        className={`px-4 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 ${hasActiveFilters
+                                            ? 'bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-500'
+                                            : 'bg-gray-50 dark:bg-white/5 text-gray-400 cursor-not-allowed'
                                             }`}
                                     >
                                         Clear all
