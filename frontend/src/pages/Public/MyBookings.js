@@ -274,14 +274,15 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* View Details Button at Base */}
-                                        <button
-                                            onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
-                                            className="w-full py-4 bg-[#222] hover:bg-black text-white text-[13px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn"
-                                        >
-                                            View Details
-                                            <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                                        </button>
+                                        <div className="px-6 pb-6 pt-0 flex justify-end mt-auto">
+                                            <button
+                                                onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
+                                                className="px-6 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-medium rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
+                                            >
+                                                View Details
+                                                <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                                            </button>
+                                        </div>
                                     </div>
                                 );
                             })}
