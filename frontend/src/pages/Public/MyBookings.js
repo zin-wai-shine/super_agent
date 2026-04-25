@@ -222,7 +222,7 @@ const MyBookings = () => {
                                     <Link
                                         key={appointment.id}
                                         to={`/listings/${appointment.listing_id}?bookingId=${appointment.id}`}
-                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-2xl animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
+                                        className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-lg hover:border-slate-300/80 dark:hover:border-white/20 transition-all duration-300 overflow-hidden rounded-3xl animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
                                     >
                                         <div className="flex-1 flex flex-col pl-6 pr-6 pt-5 md:pt-6 pb-4">
                                             {/* Status pill + ID */}
@@ -253,7 +253,7 @@ const MyBookings = () => {
                                         </div>
 
                                         {/* Date & time — clear, scannable row */}
-                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-4 rounded-b-2xl">
+                                        <div className="px-5 py-4 md:py-4 bg-slate-50/80 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-4 rounded-b-3xl">
                                             <div className="flex items-center gap-2">
                                                 <BsCalendar2Week className="w-4 h-4 text-slate-400 shrink-0" />
                                                 <span className="text-sm font-semibold text-slate-800 dark:text-gray-200">
