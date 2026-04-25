@@ -244,7 +244,7 @@ const MyBookings = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 mb-6">
+                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2 mb-6">
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
