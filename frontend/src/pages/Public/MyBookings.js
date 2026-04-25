@@ -223,9 +223,9 @@ const MyBookings = () => {
                                         key={appointment.id}
                                         className={`w-full md:flex-[0_0_calc((100%-3rem)/3)] min-w-0 flex flex-col group bg-white dark:bg-dashboard-card border border-slate-200/70 dark:border-white/10 transition-all duration-300 overflow-hidden rounded-[23px] animate-fill-med relative ${isPast ? 'opacity-85' : ''}`}
                                     >
-                                        <div className="flex-1 flex flex-col pl-6 pr-6 pt-5 md:pt-6 pb-6">
+                                        <div className="flex-1 flex flex-col px-5 pt-5 pb-4">
                                             {/* Status pill + ID */}
-                                            <div className="flex items-center justify-between gap-3 mb-5">
+                                            <div className="flex items-center justify-between gap-3 mb-3">
                                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${appointment.status === 'confirmed' ? 'bg-blue-50 text-blue-700' :
                                                     appointment.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
                                                         appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-600' :
@@ -244,7 +244,7 @@ const MyBookings = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2 mb-6">
+                                            <h3 className="text-[15px] font-bold md:text-[17px] md:font-semibold text-slate-800 dark:text-white leading-snug line-clamp-2 mb-4">
                                                 {appointment.listing?.title || 'Unknown Property'}
                                             </h3>
 
@@ -274,7 +274,7 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        <div className="px-6 pb-6 pt-0 flex justify-end mt-auto">
+                                        <div className="px-5 pb-5 pt-0 flex justify-end mt-auto">
                                             <button
                                                 onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
                                                 className="px-6 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-medium rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
