@@ -249,26 +249,26 @@ const MyBookings = () => {
                                             </h3>
 
                                             {/* Date Section - NEW DESIGN */}
-                                            <div className="flex items-center gap-5">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none">
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="text-5xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none">
                                                         {date.getDate()}
                                                     </span>
                                                     <div className="flex flex-col -gap-0.5">
-                                                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 leading-tight">
+                                                        <span className="text-[13px] font-black uppercase tracking-wider text-slate-400 leading-tight">
                                                             {date.toLocaleDateString('en-US', { month: 'short' })}
                                                         </span>
-                                                        <span className="text-[11px] font-bold text-slate-900 dark:text-gray-300 leading-tight">
+                                                        <span className="text-[12px] font-bold text-slate-900 dark:text-gray-300 leading-tight">
                                                             {date.getFullYear()}
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="w-px h-8 bg-slate-100 dark:bg-white/10" />
+                                                <div className="w-px h-10 bg-slate-100 dark:bg-white/10" />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Time</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Time</span>
                                                     <div className="flex items-center gap-1.5">
-                                                        <ClockIcon className="w-3.5 h-3.5 text-slate-400" />
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-white">{appointment.preferred_time}</span>
+                                                        <ClockIcon className="w-4 h-4 text-slate-400" />
+                                                        <span className="text-[15px] font-bold text-slate-800 dark:text-white">{appointment.preferred_time}</span>
                                                     </div>
                                                 </div>
                                             </div>
