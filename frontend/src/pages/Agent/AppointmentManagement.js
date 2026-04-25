@@ -653,7 +653,18 @@ const AppointmentManagement = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <StatusBadge status={appointment.status} />
+                                                <div className="flex items-center gap-2">
+                                                    <StatusBadge status={appointment.status} />
+                                                    {appointment.status === 'cancelled' && appointment.cancellation_reason && (
+                                                        <button 
+                                                            onClick={() => openDetailModal(appointment)}
+                                                            className="text-red-500 hover:text-red-600 transition-colors"
+                                                            title={`Reason: ${appointment.cancellation_reason}`}
+                                                        >
+                                                            <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <StatusActions appointment={appointment} />
@@ -756,6 +767,19 @@ const AppointmentManagement = () => {
                                 <StatusBadge status={selectedAppointment.status} />
                                 <StatusActions appointment={selectedAppointment} />
                             </div>
+
+                            {/* Cancellation Reason */}
+                            {selectedAppointment.status === 'cancelled' && selectedAppointment.cancellation_reason && (
+                                <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <h4 className="text-xs font-bold text-rose-500 mb-2 flex items-center gap-2">
+                                        <ExclamationTriangleIcon className="w-4 h-4" />
+                                        Cancellation Reason
+                                    </h4>
+                                    <p className="text-sm text-rose-800 dark:text-rose-300 font-medium italic leading-relaxed">
+                                        "{selectedAppointment.cancellation_reason}"
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Visitor Info */}
                             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-3">

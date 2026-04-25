@@ -361,6 +361,7 @@ func (ac *AppointmentController) isSlotAvailable(listingID uuid.UUID, date time.
 	return true
 }
 
+
 // GetAppointments returns appointments for the agent's listings (agent-protected)
 func (ac *AppointmentController) GetAppointments(c *gin.Context) {
 	agentID, ok := middleware.GetAgentID(c)
@@ -713,5 +714,77 @@ func (ac *AppointmentController) GetMyAppointments(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"appointments": appointments,
+	})
+}
+
+// CancelAppointment handles a user cancelling their own appointment with a reason
+func (ac *AppointmentController) CancelAppointment(c *gin.Context) {
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User email not found in context"})
+		return
+	}
+
+	userEmail := strings.TrimSpace(strings.ToLower(email.(string)))
+	id := c.Param("id")
+
+	var input struct {
+		Reason string `json:"reason" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cancellation reason is required"})
+		return
+	}
+
+	var appointment models.Appointment
+	if err := ac.db.Preload("Listing").Where("id = ? AND TRIM(LOWER(email)) = ?", id, userEmail).First(&appointment).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Appointment not found"})
+		return
+	}
+
+	if appointment.Status == models.AppointmentCancelled {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Appointment is already cancelled"})
+		return
+	}
+
+	// Handle late cancellation warning logic (if it was confirmed)
+	if appointment.Status == models.AppointmentConfirmed {
+		var user models.User
+		if err := ac.db.Where("TRIM(LOWER(email)) = ?", userEmail).First(&user).Error; err == nil {
+			ac.db.Model(&user).Update("late_cancellation_count", user.LateCancellationCount+1)
+		}
+	}
+
+	appointment.Status = models.AppointmentCancelled
+	appointment.CancellationReason = input.Reason
+
+	if err := ac.db.Save(&appointment).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel appointment"})
+		return
+	}
+
+	// Notify the agent about the cancellation
+	notification := models.Notification{
+		Title:         "Appointment Cancelled by User",
+		Message:       fmt.Sprintf("%s cancelled the viewing for %s. Reason: %s", appointment.FullName, appointment.Listing.Title, input.Reason),
+		SenderID:      uuid.Nil, // System/User
+		ReceiverID:    &appointment.AgentID,
+		TargetAgentID: &appointment.AgentID,
+		Type:          "warning",
+	}
+	ac.db.Create(&notification)
+	ac.ws.BroadcastToUser(appointment.AgentID, gin.H{
+		"type":    "notification",
+		"payload": notification,
+	})
+	ac.ws.BroadcastToUser(appointment.AgentID, gin.H{
+		"type":    "appointment_updated",
+		"payload": appointment,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Appointment cancelled successfully",
+		"appointment": appointment,
 	})
 }

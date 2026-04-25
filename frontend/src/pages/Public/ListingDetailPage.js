@@ -509,8 +509,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         const shouldLock = isContactOverlayOpen || (isBookingOverlayOpen && !isDesktopInlineBooking);
 
         if (shouldLock) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.overflow = 'hidden';
-            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
 
             // Also lock the inner modal scrollable if we're in modal mode
             if (isModal) {
@@ -523,8 +524,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 });
             }
         } else {
-            document.body.style.overflow = 'unset';
-            document.body.style.paddingRight = '0px';
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
             if (isModal) {
                 const containers = document.querySelectorAll('.modal-scrollable');
                 containers.forEach(container => {
@@ -533,14 +534,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             }
         }
         return () => {
-            document.body.style.overflow = 'unset';
-            document.body.style.paddingRight = '0px';
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
             const containers = document.querySelectorAll('.modal-scrollable');
             containers.forEach(container => {
                 container.style.overflow = '';
             });
         };
-    }, [isContactOverlayOpen, isBookingOverlayOpen, isModal]);
+    }, [isBookingOverlayOpen, isContactOverlayOpen, isModal]);
 
     // Scroll Contact modal to top when it opens
     useEffect(() => {
@@ -777,7 +778,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             const userBookings = bookingsRes.value.data.appointments || [];
                             const active = userBookings.find(
                                 app => String(app.listing_id) === String(id) &&
-                                    ['pending', 'confirmed', 'completed', 'cancelled'].includes(app.status)
+                                    ['pending', 'confirmed', 'completed'].includes(app.status)
                             );
                             setActiveBooking(active || null);
 
@@ -839,7 +840,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     if (lastMessage.type === 'appointment_updated' && lastMessage.payload) {
                         const appt = lastMessage.payload;
                         if (String(appt.listing_id) === String(id)) {
-                            setActiveBooking(appt);
+                            // If it's cancelled, we clear activeBooking to allow re-booking
+                            if (appt.status === 'cancelled') {
+                                setActiveBooking(null);
+                            } else {
+                                setActiveBooking(appt);
+                            }
                             return;
                         }
                     }
@@ -849,7 +855,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     const userBookings = bookingsRes.data.appointments || [];
                     const active = userBookings.find(
                         app => String(app.listing_id) === String(id) &&
-                            (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed' || app.status === 'cancelled')
+                            (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed')
                     );
                     if (active) setActiveBooking(active);
                     else setActiveBooking(null);
@@ -1509,8 +1515,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     type="text"
                                                     value={bookingForm.full_name}
                                                     onChange={e => { setBookingForm({ ...bookingForm, full_name: e.target.value }); if (bookingErrors.full_name) setBookingErrors(prev => ({ ...prev, full_name: null })); }}
-                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
-                                                    style={{ borderRadius: 'var(--card-radius)' }}
+                                                    className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base rounded-[20px] ${bookingErrors.full_name ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                     placeholder="John Doe"
                                                 />
                                                 {bookingErrors.full_name && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.full_name}</p>}
@@ -1522,8 +1527,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         type="text"
                                                         value={bookingForm.phone}
                                                         onChange={e => { setBookingForm({ ...bookingForm, phone: e.target.value }); if (bookingErrors.phone) setBookingErrors(prev => ({ ...prev, phone: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
-                                                        style={{ borderRadius: 'var(--card-radius)' }}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base rounded-[20px] ${bookingErrors.phone ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
                                                         placeholder="+66..."
                                                     />
                                                     {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.phone}</p>}
@@ -1534,9 +1538,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         type="text"
                                                         value={bookingForm.email}
                                                         onChange={e => { setBookingForm({ ...bookingForm, email: e.target.value }); if (bookingErrors.email) setBookingErrors(prev => ({ ...prev, email: null })); }}
-                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'}`}
-                                                        style={{ borderRadius: 'var(--card-radius)' }}
+                                                        className={`w-full px-5 py-3 min-h-[48px] bg-gray-50 dark:bg-transparent border focus:bg-white dark:focus:bg-white/5 focus:ring-1 transition-all font-normal text-gray-900 dark:text-white text-base rounded-[20px] ${bookingErrors.email ? 'border-red-400' : 'border-gray-100 dark:border-white/10 focus:ring-gray-200'} ${isAuthenticated ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                         placeholder="john@example.com"
+                                                        readOnly={isAuthenticated}
                                                     />
                                                     {bookingErrors.email && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.email}</p>}
                                                 </div>
@@ -1551,13 +1555,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 value={bookingForm.message}
                                                 onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })}
                                                 rows={5}
-                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 dark:bg-transparent border border-gray-100 dark:border-white/10 focus:bg-white dark:focus:bg-white/5 focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 dark:text-white text-base resize-none"
-                                                style={{ borderRadius: 'var(--card-radius)' }}
+                                                className="w-full px-5 py-3 min-h-[120px] bg-gray-50 dark:bg-transparent border border-gray-100 dark:border-white/10 focus:bg-white dark:focus:bg-white/5 focus:ring-1 focus:ring-gray-200 transition-all font-normal text-gray-900 dark:text-white text-base resize-none rounded-[20px]"
                                             />
                                         </div>
                                     </div>
                                     {bookingErrors.submit && (
-                                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-medium flex items-center" style={{ borderRadius: 'var(--card-radius)' }}>
+                                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-medium flex items-center rounded-[20px]">
                                             <span className="mr-2">⚠️</span> {bookingErrors.submit}
                                         </div>
                                     )}
@@ -1584,15 +1587,21 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div
                                                     className="border-b pb-8 border-gray-100 dark:border-white/10"
                                                 >
-                                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-1">
-                                                        {listing.district}
-                                                    </div>
-                                                    <div className="font-bold text-xl leading-tight mb-2 truncate text-gray-900 dark:text-white">
+                                                    <div className="font-bold text-xl leading-tight mb-3 truncate text-gray-900 dark:text-white">
                                                         {listing.title}
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-lg text-gray-700 dark:text-gray-400">
-                                                        <MapPinIcon className="w-4 h-4" />
-                                                        {listing.location || 'Bangkok'}
+                                                    <div className="flex flex-col gap-2">
+                                                        <div className="text-[17px] text-gray-600 dark:text-gray-400 font-medium flex items-center gap-2">
+                                                            <span>{listing.bedrooms} bed</span>
+                                                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                                                            <span>{listing.bathrooms} bath</span>
+                                                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                                                            <span>{listing.sqm} sqm</span>
+                                                        </div>
+                                                        <div className="text-lg text-gray-900 dark:text-white font-black">
+                                                            ฿{listing.price?.toLocaleString()}
+                                                            <span className="text-gray-500 font-medium text-base ml-1">/ month</span>
+                                                        </div>
                                                     </div>
                                                 </div>
 

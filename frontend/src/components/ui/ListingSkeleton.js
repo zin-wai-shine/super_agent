@@ -116,7 +116,7 @@ const DetailSkeleton = ({ status }) => {
     };
 
     return (
-        <div className="w-full flex flex-col min-h-screen bg-gray-50 dark:bg-dashboard-dark" style={skeletonStyle}>
+        <div className="w-full flex flex-col min-h-screen bg-white dark:bg-dashboard-dark" style={skeletonStyle}>
             <div className="hidden lg:flex items-center justify-between px-20 py-8 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark">
                 <div className="h-10 w-10 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-fast" />
                 <div className="h-6 w-32 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-med" />

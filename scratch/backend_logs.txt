@@ -1,0 +1,1487 @@
+spawn ssh -o StrictHostKeyChecking=no root@srv1534108.hstgr.cloud docker logs super_backend
+
+  __    _   ___  
+ / /\  | | | |_) 
+/_/--\ |_| |_| \_ v1.61.5, built with Go go1.24.13
+
+watching .
+watching config
+watching controllers
+watching middleware
+watching models
+watching routes
+!exclude tmp
+!exclude uploads
+watching utils
+building...
+running...
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[11.411ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[14.292ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'subscriptions' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.403ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'subscriptions'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[4.686ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.757ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.644ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'duration') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.487ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'max_listings') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.512ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'max_sub_agents') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.569ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_custom_domain') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.446ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_appointments') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.538ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_theme') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.426ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'features') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.447ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[8.191ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'agents'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.336ms] [34;1m[rows:-][0m SELECT * FROM "agents" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[11.575ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'agents' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.791ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'agents'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.581ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m
+2026/04/25 18:30:55 [32m
+[0m[33m[10.866ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'agents'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[1.073ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'agents' AND indexname = 'idx_agents_subdomain' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.433ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'domain') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.483ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.521ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'mission') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.514ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'instagram') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.422ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'line') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.493ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'max_price_limit') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.405ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'price_format') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.625ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'subscription_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.546ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.447ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.017ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'agents' AND indexname = 'idx_agents_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[9.603ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'users' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[10.249ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'users'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.484ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[19.134ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.269ms] [34;1m[rows:-][0m SELECT * FROM "subscriptions" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[11.692ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'subscriptions'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.838ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'plan_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.915ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'domain_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.768ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'price') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.456ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_sub_agents') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.464ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_notifications') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.474ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'allow_banners') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.495ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'is_active') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.405ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'start_date') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.416ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'end_date') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.417ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.508ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'subscriptions' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'subscriptions' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[3.024ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'subscriptions' AND indexname = 'idx_subscriptions_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.129ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.236ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[10.607ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'agents'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.845ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.151ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m
+[0m[33m[6.959ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'agents'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.284ms] [34;1m[rows:-][0m SELECT * FROM "agents" LIMIT 1
+
+2026/04/25 18:30:55 [32m
+[0m[33m[10.616ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'agents' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.779ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'agents'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[3.751ms] [34;1m[rows:0][0m ALTER TABLE "agents" ALTER COLUMN "subdomain" TYPE varchar(100) USING "subdomain"::varchar(100)
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.551ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'subdomain') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.437ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'domain_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.571ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'custom_domain') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.461ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'logo') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.444ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'vision') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.509ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'phone') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.449ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'email') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.449ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'address') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.419ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'facebook') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.430ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'linkedin') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.479ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'social_links') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.482ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'min_price_limit') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.432ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'is_active') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.694ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'is_suspended') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.445ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'agents' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.218ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'agents' AND constraint_name = 'fk_agents_subscription'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.030ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'agents' AND indexname = 'idx_agents_subdomain' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.879ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.159ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[6.364ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'users'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.978ms] [34;1m[rows:-][0m SELECT * FROM "users" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.680ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'users'
+
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.111ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m
+[0m[33m[6.022ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'users'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.215ms] [34;1m[rows:-][0m SELECT * FROM "users" LIMIT 1
+
+2026/04/25 18:30:55 [32m
+[0m[33m[10.433ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'users' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[10.719ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'users'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.760ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'users'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[1.121ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'users' AND indexname = 'idx_users_email' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.586ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'email') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.788ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'first_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.416ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'last_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.435ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'role') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.517ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.435ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.034ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'users' AND indexname = 'idx_users_email' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.492ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.444ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'password_hash') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.439ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'is_active') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.608ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'late_cancellation_count') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.563ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.416ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'users' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.762ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND constraint_name = 'fk_agents_users'
+[0m[33m[0.269ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'users' AND indexname = 'idx_users_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.901ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.103ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[7.581ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'themes'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[9.825ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'themes'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.553ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m
+[0m[33m[3.786ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'themes'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.289ms] [34;1m[rows:-][0m SELECT * FROM "themes" LIMIT 1
+
+2026/04/25 18:30:55 [32m
+[0m[33m[2.017ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'themes' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.200ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'themes'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.623ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'primary_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.553ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'secondary_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.453ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'text_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.624ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'logo_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.690ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'favicon_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.495ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'header_text') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.495ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_radius') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.472ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_gradient') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.508ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_gradient_color2') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.495ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_gradient_style') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.414ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_style') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.458ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_x') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.595ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_y') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.563ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_blur') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.578ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_spread') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.532ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'custom_css') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.904ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND constraint_name = 'fk_agents_theme'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.170ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.273ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'developers' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.290ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'developers'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.276ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'developers'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.519ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.492ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.529ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'logo') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.531ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'website') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.451ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.622ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.459ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.272ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'developers' AND indexname = 'idx_developers_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.257ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'developers' AND indexname = 'idx_developers_agent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.839ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.162ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.879ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'projects'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.418ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'projects' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.713ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'projects'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.483ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.494ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'developer_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[1.258ms] [34;1m[rows:-][0m SELECT * FROM "themes" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[9.306ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'themes' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.617ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'themes'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.131ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m
+[0m[33m[1.966ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'themes'
+
+2026/04/25 18:30:55 [32m
+[0m[33m[0.282ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'themes' AND indexname = 'idx_themes_agent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.547ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.479ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'background_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.549ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'font_family') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.556ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'share_preview_image') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.475ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'footer_text') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.498ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'card_radius') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.540ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'menu_radius') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.554ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'menu_background_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.481ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.486ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'shadow_opacity') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.523ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_x') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.523ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_y') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.430ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_blur') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.512ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_spread') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.404ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.432ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'button_shadow_opacity') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.419ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'navbar_logo_height') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.609ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.433ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'themes' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'themes' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.305ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'themes' AND indexname = 'idx_themes_agent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.934ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.803ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'developers'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.702ms] [34;1m[rows:-][0m SELECT * FROM "developers" LIMIT 1
+		WHERE a.attnum > 0 -- hide internal columns
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.550ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'developers' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'developers' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.859ms] [34;1m[rows:-][0m SELECT * FROM "projects" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.218ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'projects'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.446ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.456ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.414ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.492ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.538ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'project_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.478ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'district') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.537ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'station_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.470ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'latitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.486ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'cover_image') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.543ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.407ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.401ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.247ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND constraint_name = 'fk_developers_projects'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.261ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'projects' AND indexname = 'idx_projects_agent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.449ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'projects' AND column_name = 'longitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'projects' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.295ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.155ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.716ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'stations'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.545ms] [34;1m[rows:-][0m SELECT * FROM "stations" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.343ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'stations' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.108ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'stations'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.441ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.467ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'line_color') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.477ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.497ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'latitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.405ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'longitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.204ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.078ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+[0m[33m[3.000ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'listings' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.977ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.205ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+
+[0m[33m[0.481ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.547ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'created_by') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.527ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'project_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.480ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'title') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.434ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.386ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'listing_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.429ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'price') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.518ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'price_unit') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.404ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'bedrooms') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.431ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'area') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.394ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'road') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.477ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'district') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.452ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'province') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.470ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'postal_code') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.550ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'map_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.450ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'station_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.555ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'distance_to_station') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.450ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'year_built') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.548ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'is_featured') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.410ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'allow_viewing_requests') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.541ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'view_count') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.579ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.537ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.623ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[2.023ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND constraint_name = 'fk_listings_project'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.851ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND constraint_name = 'fk_listings_station'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.321ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND constraint_name = 'fk_agents_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.246ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'listings' AND indexname = 'idx_listings_project_id' AND schemaname = CURRENT_SCHEMA()
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.158ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+[0m[33m[1.084ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'media' AND constraint_type = 'UNIQUE'2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+	WHERE a.attnum > 0 -- hide internal columns
+		
+		AND b.relname = 'media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.473ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.392ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'listing_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.521ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.659ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.578ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'thumbnail') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))2026/04/25 18:30:55 [32m/app/main.go:41[0m[33m[0.196ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.167ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41[0m[33m[2.209ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'notifications'2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.869ms] [34;1m[rows:-][0m SELECT * FROM "notifications" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.631ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'message') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.608ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'sender_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.546ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'receiver_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.555ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'target_role') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.470ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'is_read') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.452ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.167ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.812ms] [34;1m[rows:-][0m SELECT * FROM "banners" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.497ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.569ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'title') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41[0m[33m[0.515ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'image_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.535ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'link_url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.526ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'owner_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.548ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'target_role') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.794ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.385ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'is_active') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.495ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'start_date') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.329ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'projects' AND indexname = 'idx_projects_station_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.280ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'projects' AND indexname = 'idx_projects_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.191ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'stations'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.548ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'name_en') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.628ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'name_th') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.639ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'stations' AND column_name = 'line_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'stations' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41[0m[33m[2.589ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.363ms] [34;1m[rows:-][0m SELECT * FROM "listings" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+		AND b.relname = 'listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.416ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.384ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'property_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.419ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'bathrooms') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.410ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'floor') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.512ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'address') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.466ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'latitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.635ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'longitude') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.422ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'station_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.503ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'availability_status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.391ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'features') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.512ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'listings' AND column_name = 'is_published') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.197ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'listings' AND indexname = 'idx_listings_station_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.234ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'listings' AND indexname = 'idx_listings_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.187ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND table_type = 'BASE TABLE'
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.571ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.638ms] [34;1m[rows:-][0m SELECT * FROM "media" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+
+[0m[33m[1.009ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'media'[0m[33m[0.222ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+	AND NOT a.attisdropped -- hide deleted columns
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.582ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'caption') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.507ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'room_type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.493ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'sort_order') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.587ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.312ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'media' AND constraint_name = 'fk_listings_media'
+
+
+
+
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.481ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'notifications' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.673ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'notifications'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.223ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'notifications'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.654ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+[0m[33m[0.529ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'title') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.450ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'target_agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.535ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.556ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.588ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'notifications' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.451ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND constraint_name = 'fk_notifications_sender'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.415ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'notifications' AND constraint_name = 'fk_notifications_receiver'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.376ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'notifications' AND indexname = 'idx_notifications_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.257ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.803ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'banners'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.270ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'banners' AND constraint_type = 'UNIQUE'
+[0m[33m[1.192ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'banners'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.273ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'banners'
+
+
+[0m[33m[0.557ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'description') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.484ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'end_date') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.493ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.491ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.519ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'banners' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'banners' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.306ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'banners' AND indexname = 'idx_banners_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.142ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.859ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'appointments'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.959ms] [34;1m[rows:-][0m SELECT * FROM "appointments" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.537ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.286ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND table_type = 'BASE TABLE'
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.604ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'appointments' AND constraint_type = 'UNIQUE'
+[0m[33m[1.463ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'appointments'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.245ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'appointments'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.523ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.523ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'listing_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.443ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'full_name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.449ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'email') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.439ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'phone') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.552ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'preferred_date') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.548ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'purpose') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.546ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'message') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.496ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'agent_notes') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.522ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.484ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.524ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.409ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND constraint_name = 'fk_appointments_listing'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.420ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND constraint_name = 'fk_appointments_agent'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.117ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.355ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.690ms] [34;1m[rows:-][0m SELECT * FROM "saved_listings" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.925ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'saved_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.232ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'saved_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.467ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND column_name = 'listing_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'saved_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.569ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'collections'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.911ms] [34;1m[rows:-][0m SELECT * FROM "collections" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.061ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collections' AND constraint_type = 'UNIQUE'
+[0m[33m[1.263ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collections'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.229ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'collections'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.428ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'parent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.422ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'name') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.400ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'created_by') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.432ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.440ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.307ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND constraint_name = 'fk_collections_sub_collections'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.234ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'collections' AND indexname = 'idx_collections_agent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.096ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+[0m[33m[1.074ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'collection_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.491ms] [34;1m[rows:-][0m SELECT * FROM "collection_listings" LIMIT 1
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.125ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+[0m[33m[1.339ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'super_real_estate' AND table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.583ms] [34;1m[rows:-][0m SELECT * FROM "collection_media" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.541ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.564ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'collection_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.481ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.302ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND constraint_name = 'fk_collections_media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.315ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'collection_media' AND indexname = 'idx_collection_media_collection_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:149
+[0m[33m[0.262ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE "subscriptions"."plan_name" = 'Enterprise' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:164
+[0m[33m[0.890ms] [34;1m[rows:1][0m SELECT * FROM "users" WHERE email = 'admin@srv1534108.hstgr.cloud' AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:188
+[0m[33m[0.496ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE plan_name = 'Professional' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:216
+[0m[33m[0.718ms] [34;1m[rows:0][0m SELECT * FROM "agents" WHERE "agents"."subdomain" = 'bolthaven' AND "agents"."deleted_at" IS NULL AND "agents"."id" = '0cccb54d-327e-40f5-8c82-e710de3d88d8' ORDER BY "agents"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:188
+[0m[33m[0.417ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE plan_name = 'Professional' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:248
+[0m[33m[0.382ms] [34;1m[rows:1][0m SELECT count(*) FROM "stations"
+2026/04/25 18:30:55 Initial data seeded successfully
+2026/04/25 18:30:55 [32m/app/main.go:447
+[0m[33m[0.308ms] [34;1m[rows:1][0m SELECT count(*) FROM "developers" WHERE "developers"."deleted_at" IS NULL
+
+2026/04/25 18:30:55 [32m/app/utils/seeder.go:20
+[0m[33m[0.361ms] [34;1m[rows:1][0m SELECT count(*) FROM "listings" WHERE "listings"."deleted_at" IS NULL
+2026/04/25 18:30:55 Listings already exist, skipping fake data seeding.
+[GIN-debug] POST   /api/auth/register        --> super_real_estate/controllers.(*AuthController).Register-fm (6 handlers)
+[GIN-debug] POST   /api/auth/refresh         --> super_real_estate/controllers.(*AuthController).RefreshToken-fm (6 handlers)
+[GIN-debug] GET    /api/auth/google          --> super_real_estate/controllers.(*GoogleAuthController).GoogleLogin-fm (6 handlers)
+[GIN-debug] GET    /api/auth/google/callback --> super_real_estate/controllers.(*GoogleAuthController).GoogleCallback-fm (6 handlers)
+[GIN-debug] GET    /api/public/projects      --> super_real_estate/controllers.(*PublicController).GetProjects-fm (6 handlers)
+[GIN-debug] GET    /api/public/listings      --> super_real_estate/controllers.(*PublicController).GetListings-fm (6 handlers)
+[GIN-debug] GET    /api/public/listings/:id  --> super_real_estate/controllers.(*PublicController).GetListing-fm (6 handlers)
+[GIN-debug] GET    /api/public/stations      --> super_real_estate/controllers.(*PublicController).GetStations-fm (6 handlers)
+[GIN-debug] GET    /api/public/developers    --> super_real_estate/controllers.(*PublicController).GetDevelopers-fm (6 handlers)
+[GIN-debug] GET    /api/public/listings/by-station/:stationId --> super_real_estate/controllers.(*PublicController).GetListingsByStation-fm (6 handlers)
+[GIN-debug] GET    /api/public/agent/info    --> super_real_estate/controllers.(*PublicController).GetAgentInfo-fm (6 handlers)
+[GIN-debug] GET    /api/public/tenant/config --> super_real_estate/controllers.(*PublicController).GetTenantConfig-fm (6 handlers)
+[GIN-debug] PUT    /api/me                   --> super_real_estate/controllers.(*AuthController).UpdateProfile-fm (7 handlers)
+[GIN-debug] GET    /api/ws                   --> super_real_estate/routes.SetupRoutes.func2 (7 handlers)
+[GIN-debug] GET    /api/admin/agents/:id     --> super_real_estate/controllers.(*SuperAdminController).GetAgent-fm (8 handlers)
+[GIN-debug] PUT    /api/admin/agents/:id     --> super_real_estate/controllers.(*SuperAdminController).UpdateAgent-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/agents/:id     --> super_real_estate/controllers.(*SuperAdminController).DeleteAgent-fm (8 handlers)
+[GIN-debug] POST   /api/admin/agents/:id/suspend --> super_real_estate/controllers.(*SuperAdminController).SuspendAgent-fm (8 handlers)
+[GIN-debug] POST   /api/admin/agents/:id/activate --> super_real_estate/controllers.(*SuperAdminController).ActivateAgent-fm (8 handlers)
+[GIN-debug] GET    /api/admin/plans          --> super_real_estate/controllers.(*SuperAdminController).GetPlans-fm (8 handlers)[GIN-debug] POST   /api/admin/plans          --> super_real_estate/controllers.(*SuperAdminController).CreatePlan-fm (8 handlers)
+[GIN-debug] PUT    /api/admin/plans/:id      --> super_real_estate/controllers.(*SuperAdminController).UpdatePlan-fm (8 handlers)
+[GIN-debug] DELETE /api/admin/plans/:id      --> super_real_estate/controllers.(*SuperAdminController).DeletePlan-fm (8 handlers)
+[GIN-debug] GET    /api/admin/users          --> super_real_estate/controllers.(*SuperAdminController).GetUsers-fm (8 handlers)
+[GIN-debug] GET    /api/admin/stats          --> super_real_estate/controllers.(*SuperAdminController).GetDashboardStats-fm (8 handlers)
+[GIN-debug] GET    /api/admin/appointments   --> super_real_estate/controllers.(*AppointmentController).GetAllAppointments-fm (8 handlers)
+[GIN-debug] GET    /api/admin/appointment-stats --> super_real_estate/controllers.(*AppointmentController).GetAppointmentStats-fm (8 handlers)
+[GIN-debug] GET    /api/agent/listings       --> super_real_estate/controllers.(*AgentController).GetListings-fm (8 handlers)
+[GIN-debug] POST   /api/agent/listings       --> super_real_estate/controllers.(*AgentController).CreateListing-fm (8 handlers)
+[GIN-debug] GET    /api/agent/listings/:id   --> super_real_estate/controllers.(*AgentController).GetListing-fm (8 handlers)
+[GIN-debug] PUT    /api/agent/listings/:id   --> super_real_estate/controllers.(*AgentController).UpdateListing-fm (8 handlers)
+[GIN-debug] DELETE /api/agent/listings/:id   --> super_real_estate/controllers.(*AgentController).DeleteListing-fm (8 handlers)
+[GIN-debug] POST   /api/agent/listings/:id/publish --> super_real_estate/controllers.(*AgentController).PublishListing-fm (8 handlers)
+[GIN-debug] POST   /api/agent/listings/:id/unpublish --> super_real_estate/controllers.(*AgentController).UnpublishListing-fm (8 handlers)
+[GIN-debug] GET    /api/agent/sub-agents     --> super_real_estate/controllers.(*AgentController).GetSubAgents-fm (10 handlers)
+[GIN-debug] POST   /api/agent/sub-agents     --> super_real_estate/controllers.(*AgentController).CreateSubAgent-fm (10 handlers)
+[GIN-debug] PUT    /api/agent/sub-agents/:id --> super_real_estate/controllers.(*AgentController).UpdateSubAgent-fm (10 handlers)
+[GIN-debug] DELETE /api/agent/sub-agents/:id --> super_real_estate/controllers.(*AgentController).DeleteSubAgent-fm (10 handlers)
+[GIN-debug] GET    /api/agent/theme          --> super_real_estate/controllers.(*AgentController).GetTheme-fm (9 handlers)
+[GIN-debug] PUT    /api/agent/theme          --> super_real_estate/controllers.(*AgentController).UpdateTheme-fm (10 handlers)
+[GIN-debug] GET    /api/agent/settings       --> super_real_estate/controllers.(*AgentController).GetSettings-fm (8 handlers)
+[GIN-debug] PUT    /api/agent/settings       --> super_real_estate/controllers.(*AgentController).UpdateSettings-fm (9 handlers)
+[GIN-debug] GET    /api/agent/dashboard      --> super_real_estate/controllers.(*AgentController).GetDashboard-fm (8 handlers)
+[GIN-debug] GET    /api/agent/appointments   --> super_real_estate/controllers.(*AppointmentController).GetAppointments-fm (9 handlers)
+[GIN-debug] GET    /api/agent/appointments/:id --> super_real_estate/controllers.(*AppointmentController).GetAppointment-fm (9 handlers)
+[GIN-debug] PUT    /api/agent/appointments/:id --> super_real_estate/controllers.(*AppointmentController).UpdateAppointmentStatus-fm (9 handlers)
+[GIN-debug] DELETE /api/agent/appointments/:id --> super_real_estate/controllers.(*AppointmentController).DeleteAppointment-fm (9 handlers)
+[GIN-debug] GET    /api/agent/users          --> super_real_estate/controllers.(*AgentController).GetUsers-fm (9 handlers)
+[GIN-debug] PUT    /api/agent/users/:id/toggle --> super_real_estate/controllers.(*AgentController).ToggleUserStatus-fm (9 handlers)
+[GIN-debug] DELETE /api/agent/users/:id      --> super_real_estate/controllers.(*AgentController).DeleteUser-fm (8 handlers)
+[GIN-debug] GET    /api/agent/developers     --> super_real_estate/controllers.(*DeveloperController).GetDevelopers-fm (9 handlers)
+[GIN-debug] POST   /api/agent/developers     --> super_real_estate/controllers.(*DeveloperController).CreateDeveloper-fm (9 handlers)
+[GIN-debug] PUT    /api/agent/developers/:id --> super_real_estate/controllers.(*DeveloperController).UpdateDeveloper-fm (9 handlers)
+[GIN-debug] DELETE /api/agent/developers/:id --> super_real_estate/controllers.(*DeveloperController).DeleteDeveloper-fm (9 handlers)
+[GIN-debug] GET    /api/agent/projects       --> super_real_estate/controllers.(*DeveloperController).GetProjects-fm (9 handlers)
+[GIN-debug] POST   /api/agent/projects       --> super_real_estate/controllers.(*DeveloperController).CreateProject-fm (9 handlers)
+[GIN-debug] PUT    /api/agent/projects/:id   --> super_real_estate/controllers.(*DeveloperController).UpdateProject-fm (9 handlers)
+[GIN-debug] DELETE /api/agent/projects/:id   --> super_real_estate/controllers.(*DeveloperController).DeleteProject-fm (9 handlers)
+[GIN-debug] GET    /api/agent/collections    --> super_real_estate/controllers.(*CollectionController).GetCollections-fm (8 handlers)
+[GIN-debug] POST   /api/agent/collections    --> super_real_estate/controllers.(*CollectionController).CreateCollection-fm (8 handlers)
+[GIN-debug] GET    /api/agent/collections/:id --> super_real_estate/controllers.(*CollectionController).GetCollection-fm (8 handlers)
+[GIN-debug] PUT    /api/agent/collections/:id --> super_real_estate/controllers.(*CollectionController).UpdateCollection-fm (8 handlers)
+[GIN-debug] DELETE /api/agent/collections/:id --> super_real_estate/controllers.(*CollectionController).DeleteCollection-fm (8 handlers)
+[GIN-debug] POST   /api/agent/collections/:id/listings/:listingId --> super_real_estate/controllers.(*CollectionController).AddListingToCollection-fm (8 handlers)
+[GIN-debug] DELETE /api/agent/collections/:id/listings/:listingId --> super_real_estate/controllers.(*CollectionController).RemoveListingFromCollection-fm (8 handlers)
+[GIN-debug] POST   /api/upload/image         --> super_real_estate/controllers.(*UploadController).UploadImage-fm (7 handlers)
+[GIN-debug] POST   /api/upload/video         --> super_real_estate/controllers.(*UploadController).UploadVideo-fm (7 handlers)
+[GIN-debug] POST   /api/upload/logo          --> super_real_estate/controllers.(*UploadController).UploadLogo-fm (7 handlers)
+[GIN-debug] POST   /api/upload/banner        --> super_real_estate/controllers.(*UploadController).UploadBanner-fm (7 handlers)
+[GIN-debug] POST   /api/upload/collection-image --> super_real_estate/controllers.(*UploadController).UploadCollectionImage-fm (7 handlers)
+[GIN-debug] PATCH  /api/upload/:id           --> super_real_estate/controllers.(*UploadController).UpdateMedia-fm (7 handlers)
+
+[GIN-debug] GET    /api/public/banners       --> super_real_estate/controllers.(*BannerController).GetBanners-fm (6 handlers)
+[GIN-debug] GET    /api/public/banners/:id   --> super_real_estate/controllers.(*BannerController).GetBanner-fm (6 handlers)
+2026/04/25 18:30:55 Server starting on port 8080
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.449ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'preferred_time') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.527ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'status') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.494ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'appointments' AND column_name = 'expires_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'appointments' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.293ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'appointments' AND indexname = 'idx_appointments_agent_id' AND schemaname = CURRENT_SCHEMA()
+[0m[33m[0.359ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'appointments' AND indexname = 'idx_appointments_deleted_at' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.269ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.014ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'saved_listings' AND constraint_type = 'UNIQUE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.498ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'saved_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.475ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND column_name = 'user_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'saved_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.456ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'saved_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.309ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND constraint_name = 'fk_saved_listings_user'
+[0m[33m[0.293ms] [34;1m[rows:1][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'saved_listings' AND constraint_name = 'fk_saved_listings_listing'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.245ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'saved_listings' AND indexname = 'idx_saved_listings_listing_id' AND schemaname = CURRENT_SCHEMA()
+[0m[33m[0.226ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'saved_listings' AND indexname = 'idx_saved_listings_user_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.209ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND table_type = 'BASE TABLE'
+[0m[33m[0.096ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.429ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.443ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'agent_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.404ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'icon') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.401ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collections' AND column_name = 'updated_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collections' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.214ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'collections' AND indexname = 'idx_collections_parent_id' AND schemaname = CURRENT_SCHEMA()
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.233ms] [34;1m[rows:1][0m SELECT count(*) FROM pg_indexes WHERE tablename = 'collections' AND indexname = 'idx_collections_deleted_at' AND schemaname = CURRENT_SCHEMA()
+[0m[33m[0.218ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_listings' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.868ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collection_listings' AND constraint_type = 'UNIQUE'
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.895ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collection_listings'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.180ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'collection_listings'
+[0m[33m[0.466ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_listings' AND column_name = 'collection_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.457ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_listings' AND column_name = 'listing_id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+[0m[33m[0.451ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_listings' AND column_name = 'created_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_listings' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.251ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND table_type = 'BASE TABLE'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[1.046ms] [34;1m[rows:-][0m SELECT constraint_name FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collection_media' AND constraint_type = 'UNIQUE'
+[0m[33m[0.884ms] [34;1m[rows:-][0m SELECT c.column_name, constraint_name, constraint_type FROM information_schema.table_constraints tc JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_catalog, table_name, constraint_name) JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name WHERE constraint_type IN ('PRIMARY KEY', 'UNIQUE') AND c.table_catalog = 'super_real_estate' AND c.table_schema = CURRENT_SCHEMA() AND c.table_name = 'collection_media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.240ms] [34;1m[rows:-][0m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'collection_media'
+
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.443ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'type') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.480ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'url') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+2026/04/25 18:30:55 [32m/app/main.go:41
+[0m[33m[0.536ms] [34;1m[rows:0][0m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'collection_media' AND column_name = 'sort_order') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'collection_media' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))
+
+2026/04/25 18:30:55 Database migration completed successfully
+2026/04/25 18:30:55 Seeding initial data...
+
+2026/04/25 18:30:55 [32m/app/main.go:149
+[0m[33m[1.496ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE "subscriptions"."plan_name" = 'Free' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+[0m[33m[0.317ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE "subscriptions"."plan_name" = 'Starter' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:149
+[0m[33m[0.349ms] [34;1m[rows:1][0m SELECT * FROM "subscriptions" WHERE "subscriptions"."plan_name" = 'Professional' AND "subscriptions"."deleted_at" IS NULL ORDER BY "subscriptions"."id" LIMIT 1
+
+2026/04/25 18:30:55 [32m/app/main.go:149
+
+2026/04/25 18:30:55 [32m/app/main.go:166
+[0m[33m[1.667ms] [34;1m[rows:1][0m UPDATE "users" SET "is_active"=true,"password_hash"='$2a$10$Aqn44KPZZ3vxl9tLCv43yOIUf6Z2uzGtocy30uMD/bYnBkOoxTZf6',"role"='super_admin',"updated_at"='2026-04-25 18:30:55.819' WHERE "users"."deleted_at" IS NULL AND "id" = 'c14e5742-482f-48d7-ba69-6ff29858d26c'
+
+2026/04/25 18:30:55 [31;1m/app/main.go:216 [35;1mERROR: duplicate key value violates unique constraint "agents_pkey" (SQLSTATE 23505)
+[0m[33m[1.198ms] [34;1m[rows:0][0m INSERT INTO "agents" ("name","subdomain","domain_type","custom_domain","domain","logo","description","vision","mission","phone","email","address","facebook","instagram","linkedin","line","social_links","min_price_limit","max_price_limit","price_format","is_active","is_suspended","subscription_id","created_at","updated_at","deleted_at","id") VALUES ('Bolt Haven Realty','bolthaven','custom','bolthave.com','','','','','','','contact@bolthaven.srv1534108.hstgr.cloud','','','','','','',0,0,'full',true,false,'7d600f2a-8845-4fcd-8c92-5f5f158199e9','2026-04-25 18:30:55.822','2026-04-25 18:30:55.822',NULL,'0cccb54d-327e-40f5-8c82-e710de3d88d8') RETURNING "id"
+2026/04/25 18:30:55 Failed to seed/update specific agent bolthaven: ERROR: duplicate key value violates unique constraint "agents_pkey" (SQLSTATE 23505)
+
+2026/04/25 18:30:55 [32m/app/main.go:216
+[0m[33m[0.284ms] [34;1m[rows:0][0m SELECT * FROM "agents" WHERE "agents"."subdomain" = 'staynert' AND "agents"."deleted_at" IS NULL AND "agents"."id" = '7d0c4b8e-c331-4f58-9b9b-3eb7ac0c5841' ORDER BY "agents"."id" LIMIT 1
+
+2026/04/25 18:30:55 [31;1m/app/main.go:216 [35;1mERROR: duplicate key value violates unique constraint "idx_agents_subdomain" (SQLSTATE 23505)
+[0m[33m[0.766ms] [34;1m[rows:0][0m INSERT INTO "agents" ("name","subdomain","domain_type","custom_domain","domain","logo","description","vision","mission","phone","email","address","facebook","instagram","linkedin","line","social_links","min_price_limit","max_price_limit","price_format","is_active","is_suspended","subscription_id","created_at","updated_at","deleted_at","id") VALUES ('Staynert Realty','staynert','subdomain','','','','','','','','contact@staynert.srv1534108.hstgr.cloud','','','','','','',0,0,'full',true,false,'7d600f2a-8845-4fcd-8c92-5f5f158199e9','2026-04-25 18:30:55.824','2026-04-25 18:30:55.824',NULL,'7d0c4b8e-c331-4f58-9b9b-3eb7ac0c5841') RETURNING "id"
+2026/04/25 18:30:55 Failed to seed/update specific agent staynert: ERROR: duplicate key value violates unique constraint "idx_agents_subdomain" (SQLSTATE 23505)
+
+[Startup] Seeding completed successfully
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+2026/04/25 18:30:55 Initializing Google Auth with ClientID: 5519289591... (len: 72), SecretLen: 35, RedirectURL: https://bolthave.com/api/auth/google/callback
+[GIN-debug] GET    /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+[GIN-debug] HEAD   /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+[GIN-debug] GET    /api/health               --> super_real_estate/routes.SetupRoutes.func1 (6 handlers)
+
+[GIN-debug] POST   /api/auth/login           --> super_real_estate/controllers.(*AuthController).Login-fm (6 handlers)[GIN-debug] GET    /api/public/plans         --> super_real_estate/controllers.(*PublicController).GetPlans-fm (6 handlers)
+[GIN-debug] GET    /api/public/appointments/slots --> super_real_estate/controllers.(*AppointmentController).GetAvailableSlots-fm (6 handlers)
+[GIN-debug] POST   /api/public/appointments/lock --> super_real_estate/controllers.(*AppointmentController).SoftLockSlot-fm (6 handlers)
+[GIN-debug] POST   /api/public/appointments  --> super_real_estate/controllers.(*AppointmentController).CreateAppointment-fm (6 handlers)
+[GIN-debug] GET    /api/public/collections   --> super_real_estate/controllers.(*CollectionController).GetCollections-fm (6 handlers)
+[GIN-debug] GET    /api/public/collections/:id --> super_real_estate/controllers.(*CollectionController).GetCollection-fm (6 handlers)
+[GIN-debug] GET    /api/public/share/listing/:id --> super_real_estate/controllers.(*PublicController).ServeListingMeta-fm (6 handlers)
+[GIN-debug] GET    /api/public/share/agent   --> super_real_estate/controllers.(*PublicController).ServeAgentMeta-fm (6 handlers)
+[GIN-debug] GET    /api/me                   --> super_real_estate/controllers.(*AuthController).GetProfile-fm (7 handlers)
+
+[GIN-debug] PUT    /api/me/password          --> super_real_estate/controllers.(*AuthController).ChangePassword-fm (7 handlers)
+[GIN-debug] GET    /api/appointments/my      --> super_real_estate/controllers.(*AppointmentController).GetMyAppointments-fm (7 handlers)[GIN-debug] GET    /api/admin/agents         --> super_real_estate/controllers.(*SuperAdminController).GetAgents-fm (8 handlers)
+[GIN-debug] POST   /api/admin/agents         --> super_real_estate/controllers.(*SuperAdminController).CreateAgent-fm (8 handlers)
+
+[GIN-debug] DELETE /api/upload/:id           --> super_real_estate/controllers.(*UploadController).DeleteMedia-fm (7 handlers)
+[GIN-debug] GET    /api/notifications        --> super_real_estate/controllers.(*NotificationController).GetMyNotifications-fm (7 handlers)
+[GIN-debug] GET    /api/notifications/sent   --> super_real_estate/controllers.(*NotificationController).GetSentNotifications-fm (7 handlers)
+[GIN-debug] POST   /api/notifications        --> super_real_estate/controllers.(*NotificationController).CreateNotification-fm (8 handlers)
+[GIN-debug] POST   /api/notifications/:id/read --> super_real_estate/controllers.(*NotificationController).MarkRead-fm (7 handlers)
+[GIN-debug] GET    /api/banners              --> super_real_estate/controllers.(*BannerController).GetBanners-fm (8 handlers)
+[GIN-debug] GET    /api/banners/:id          --> super_real_estate/controllers.(*BannerController).GetBanner-fm (8 handlers)
+[GIN-debug] POST   /api/banners              --> super_real_estate/controllers.(*BannerController).CreateBanner-fm (8 handlers)
+[GIN-debug] PUT    /api/banners/:id          --> super_real_estate/controllers.(*BannerController).UpdateBanner-fm (8 handlers)
+[GIN-debug] DELETE /api/banners/:id          --> super_real_estate/controllers.(*BannerController).DeleteBanner-fm (8 handlers)
+[GIN-debug] POST   /api/saved-listings       --> super_real_estate/controllers.(*SavedListingsController).SaveListing-fm (7 handlers)
+[GIN-debug] DELETE /api/saved-listings/:listingId --> super_real_estate/controllers.(*SavedListingsController).UnsaveListing-fm (7 handlers)
+[GIN-debug] GET    /api/saved-listings       --> super_real_estate/controllers.(*SavedListingsController).GetSavedListings-fm (7 handlers)

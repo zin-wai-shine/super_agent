@@ -608,8 +608,16 @@ const ListingsPage = () => {
         // Only lock body scroll for the sidebar/filters drawer, NOT for the map view
         // because map view uses unified window scroll for the bottom sheet effect.
         const shouldLock = isSidebarOpen;
-        document.body.style.overflow = shouldLock ? 'hidden' : '';
-        document.documentElement.style.overflow = shouldLock ? 'hidden' : '';
+        if (shouldLock) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
 
         // Handle mobile nav visibility: hide on entry to map, but let scroll handle it thereafter
         if (isGoogleMapOpen && window.innerWidth < 1024) {

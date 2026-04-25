@@ -14,7 +14,8 @@ import {
     XCircleIcon,
     ArrowRightIcon,
     AdjustmentsHorizontalIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 import { BsCalendar2Week } from 'react-icons/bs';
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
@@ -38,6 +39,7 @@ const MyBookings = () => {
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('all');
     const [bookingsSearchTerm, setBookingsSearchTerm] = useState('');
+    const [cancellationModal, setCancellationModal] = useState({ open: false, appointmentId: null, reason: '', submitting: false });
 
     useEffect(() => {
         fetchAppointments();
@@ -49,6 +51,22 @@ const MyBookings = () => {
             localStorage.setItem('bookings_count', appointments.length.toString());
         }
     }, [appointments.length, initialLoading]);
+
+    // Prevent body scroll and layout shift when modal is open
+    useEffect(() => {
+        if (cancellationModal.open) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+        };
+    }, [cancellationModal.open]);
 
     const fetchAppointments = async () => {
         try {
@@ -77,13 +95,36 @@ const MyBookings = () => {
         }
     };
 
+    const handleCancelSubmit = async () => {
+        if (!cancellationModal.reason.trim()) return;
+        
+        try {
+            setCancellationModal(prev => ({ ...prev, submitting: true }));
+            await appointmentApi.cancelAppointment(cancellationModal.appointmentId, { reason: cancellationModal.reason });
+            
+            // Update local state
+            setAppointments(prev => prev.map(app => 
+                app.id === cancellationModal.appointmentId 
+                    ? { ...app, status: 'cancelled', cancellation_reason: cancellationModal.reason }
+                    : app
+            ));
+            
+            setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false });
+        } catch (err) {
+            console.error('Failed to cancel appointment:', err);
+            alert('Failed to cancel appointment. Please try again.');
+            setCancellationModal(prev => ({ ...prev, submitting: false }));
+        }
+    };
+
     const filteredAppointments = appointments.filter(app => {
         if (filter === 'all') return true;
         return app.status === filter;
     });
 
     return (
-        <div className="pt-10 pb-24 lg:pb-20 bg-white dark:bg-dashboard-dark min-h-screen">
+        <>
+            <div className="pt-10 pb-24 lg:pb-20 bg-white dark:bg-dashboard-dark min-h-screen">
             {/* Filter bar (desktop only): same as Favorites page; search/filters navigate to list page */}
             {filterBarSlot && createPortal(
                 <div className="hidden lg:block w-full">
@@ -274,7 +315,18 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        <div className="px-5 pb-5 pt-0 flex justify-end mt-auto">
+                                        <div className="px-5 pb-5 pt-0 flex justify-end items-center gap-2 mt-auto">
+                                            {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCancellationModal({ open: true, appointmentId: appointment.id, reason: '', submitting: false });
+                                                    }}
+                                                    className="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-sm font-bold rounded-full transition-all duration-300"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
                                                 className="px-5 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-bold rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
@@ -291,6 +343,85 @@ const MyBookings = () => {
                 </div>
             </div>
         </div>
+
+        {/* Cancellation Reason Modal - Mobile Bottom Sheet Style (Matches Contact Modal Animation) */}
+        {createPortal(
+            <div className={`fixed inset-0 z-[300] transition-all duration-500 ${cancellationModal.open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                {/* Backdrop */}
+                <div 
+                    className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-500 ${cancellationModal.open ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => !cancellationModal.submitting && setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false })}
+                />
+                
+                {/* Modal Content - Sliding from Bottom */}
+                <div className={`absolute bottom-0 left-0 right-0 sm:left-1/2 sm:right-auto sm:top-1/2 sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 w-full max-w-lg bg-white dark:bg-dashboard-card rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl transition-all duration-[600ms] cubic-bezier(0.32,0.72,0,1) will-change-transform
+                    ${cancellationModal.open ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-[120%] opacity-0'}`}>
+                    
+                    {/* Close Button - Desktop Only */}
+                    <button 
+                        onClick={() => !cancellationModal.submitting && setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false })}
+                        className="absolute top-6 right-6 p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 hidden sm:flex items-center justify-center group"
+                    >
+                        <XMarkIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    </button>
+                    
+                    {/* Handle for mobile */}
+                    <div className="flex justify-center pt-4 pb-2 sm:hidden">
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full" />
+                    </div>
+
+                    <div className="px-8 pt-6 sm:pt-10 pb-10">
+                        <h3 className="text-[26px] sm:text-[22px] font-black text-slate-900 dark:text-white mb-2 leading-tight">Cancel Viewing?</h3>
+                        <p className="text-[17px] sm:text-[15px] text-slate-500 dark:text-gray-400 font-medium mb-8 leading-relaxed max-w-[90%] sm:max-w-full">
+                            Please let us know why you need to cancel this appointment.
+                        </p>
+
+                        <div className="space-y-6">
+                            <div className="relative">
+                                <label className="block text-[15px] sm:text-[14px] font-bold text-slate-600 dark:text-gray-300 mb-3 ml-1">
+                                    Reason for cancellation
+                                </label>
+                                <textarea
+                                    autoFocus={cancellationModal.open}
+                                    value={cancellationModal.reason}
+                                    onChange={(e) => setCancellationModal(prev => ({ ...prev, reason: e.target.value }))}
+                                    placeholder="e.g., Change of plans, found another property..."
+                                    rows={4}
+                                    className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-[24px] px-6 py-5 text-[16px] sm:text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-rose-500/20 transition-all resize-none font-medium"
+                                />
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                <button
+                                    disabled={cancellationModal.submitting}
+                                    onClick={() => setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false })}
+                                    className="flex-1 px-5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 font-bold rounded-full transition-all duration-300 active:scale-95 text-sm"
+                                >
+                                    Go Back
+                                </button>
+                                <button
+                                    disabled={!cancellationModal.reason.trim() || cancellationModal.submitting}
+                                    onClick={handleCancelSubmit}
+                                    className={`flex-1 px-5 py-3.5 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 text-sm ${
+                                        !cancellationModal.reason.trim() || cancellationModal.submitting
+                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 active:scale-[0.98]'
+                                    }`}
+                                >
+                                    {cancellationModal.submitting ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        'Confirm Cancellation'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>,
+            document.body
+        )}
+        </>
     );
 };
 

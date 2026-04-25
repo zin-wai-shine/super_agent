@@ -310,8 +310,16 @@ const ProjectsPage = () => {
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
         const shouldLock = isGoogleMapOpen || isSidebarOpen;
-        document.body.style.overflow = shouldLock ? 'hidden' : '';
-        document.documentElement.style.overflow = shouldLock ? 'hidden' : '';
+        if (shouldLock) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
         
         return () => { 
             document.body.style.overflow = ''; 

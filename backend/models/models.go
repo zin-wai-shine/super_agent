@@ -309,6 +309,7 @@ type Appointment struct {
 	Purpose               string         `gorm:"size:20;not null" json:"purpose"`        // rent, buy
 	Message               string         `gorm:"type:text" json:"message,omitempty"`
 	Status                string         `gorm:"size:20;not null;default:'pending'" json:"status"`
+	CancellationReason    string         `gorm:"type:text" json:"cancellation_reason,omitempty"`
 	AgentNotes            string         `gorm:"type:text" json:"agent_notes,omitempty"`
 	ExpiresAt             *time.Time     `json:"expires_at,omitempty"`
 	LateCancellationCount int            `gorm:"-" json:"late_cancellation_count"`

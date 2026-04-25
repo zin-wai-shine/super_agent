@@ -313,9 +313,9 @@ const FilterBar = ({
                                             onClick={onOpenFilters}
                                             className="h-[38px] min-w-[90px] lg:min-w-0 lg:w-[26px] lg:justify-center xl:min-w-[90px] xl:px-1 xl:gap-2 flex items-center gap-1.5 pl-1 pr-1 rounded-full flex-shrink-0
                                               transition-all duration-200 ease-out
-                                              bg-gray-100 dark:bg-dashboard-card
-                                              hover:bg-gray-200 dark:hover:bg-dashboard-hover
-                                              border border-transparent dark:border-dashboard-border shadow-sm
+                                              bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80
+                                              hover:bg-gray-50 dark:hover:bg-dashboard-hover sm:hover:bg-gray-100
+                                              border border-gray-200 dark:border-white/10 sm:border-primary-500/30 shadow-sm
                                               active:scale-[0.98]
                                               focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2
                                               relative group"
@@ -335,7 +335,7 @@ const FilterBar = ({
 
                                     {/* Map View switch — moved after Filters; hidden on mobile */}
                                     {showMapToggle && onToggleMapView && (
-                                        <div className="hidden md:flex h-[38px] items-center justify-between gap-2.5 pl-3 pr-1.5 lg:pl-1 lg:pr-1 xl:pl-3 xl:pr-1.5 lg:min-w-0 py-1 rounded-full bg-gray-100 dark:bg-dashboard-card border border-transparent dark:border-dashboard-border shadow-sm hover:dark:bg-dashboard-hover transition-all duration-300 flex-shrink-0 ml-3">
+                                        <div className="hidden md:flex h-[38px] items-center justify-between gap-2.5 pl-3 pr-1.5 lg:pl-1 lg:pr-1 xl:pl-3 xl:pr-1.5 lg:min-w-0 py-1 rounded-full bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80 border border-gray-200 dark:border-white/10 sm:border-primary-500/30 shadow-sm hover:bg-gray-50 hover:dark:bg-dashboard-hover sm:hover:bg-gray-100 transition-all duration-300 flex-shrink-0 ml-3">
                                                 <div className="flex items-center gap-1.5 lg:gap-1 xl:gap-1.5">
                                                     <div className="flex items-center justify-center flex-shrink-0">
                                                         <MapIcon className={`w-5 h-5 text-gray-800 dark:text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />

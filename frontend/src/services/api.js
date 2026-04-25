@@ -277,6 +277,7 @@ export const appointmentApi = {
     createAppointment: (data) => api.post('/public/appointments', data),
     // Protected (User)
     getMyAppointments: () => api.get('/appointments/my'),
+    cancelAppointment: (id, data) => api.post(`/appointments/${id}/cancel`, data),
     // Agent
     getAppointments: (params) => api.get('/agent/appointments', { params }),
     getAppointment: (id) => api.get(`/agent/appointments/${id}`),

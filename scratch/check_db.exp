@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password [lindex $argv 0]
+set host "root@srv1534108.hstgr.cloud"
+
+spawn ssh -o StrictHostKeyChecking=no $host
+expect {
+    "password:" {
+        send -- "$password\r"
+        expect -re "root@.*# "
+    }
+    -re "root@.*# " {
+        # Already logged in
+    }
+}
+
+send "docker exec super_db psql -U super_admin -d super_real_estate -c '\\d appointments'\r"
+expect -re "root@.*# "
+
+send "docker logs super_backend --tail 100\r"
+expect -re "root@.*# "
+
+send "exit\r"
+expect eof

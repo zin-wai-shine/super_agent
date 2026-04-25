@@ -59,6 +59,9 @@ func main() {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
+	// Ensure missing columns are added (fallback for AutoMigrate quirks)
+	db.Exec("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS cancellation_reason TEXT")
+
 	log.Println("Database migration completed successfully")
 
 	// Seed initial data
