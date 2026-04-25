@@ -277,7 +277,7 @@ const MyBookings = () => {
                                         <div className="px-5 pb-5 pt-0 flex justify-end mt-auto">
                                             <button
                                                 onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
-                                                className="px-6 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-medium rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
+                                                className="px-10 py-4 bg-[#222] hover:bg-black text-white text-[16px] font-bold rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
                                             >
                                                 View Details
                                                 <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />

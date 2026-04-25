@@ -46,7 +46,7 @@ const BookingSkeleton = ({ index, isExiting }) => {
 
                 {/* Footer Button Section */}
                 <div className="px-5 pb-5 pt-0 flex justify-end mt-auto">
-                    <div className="w-32 h-10 bg-slate-900/10 dark:bg-white/10 rounded-full animate-pulse" />
+                    <div className="w-40 h-14 bg-slate-900/10 dark:bg-white/10 rounded-full animate-pulse" />
                 </div>
             </div>
         );
