@@ -180,8 +180,8 @@ func seedInitialData(db *gorm.DB) {
 		Email        string
 		CustomDomain string
 	}{
-		{ID: "0cccb54d-327e-40f5-8c82-e710de3d88d8", Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.srv1534108.hstgr.cloud", CustomDomain: "bolthave.com"},
-		{ID: "7d0c4b8e-c331-4f58-9b9b-3eb7ac0c5841", Name: "Staynert Realty", Subdomain: "staynert", Email: "contact@staynert.srv1534108.hstgr.cloud", CustomDomain: ""},
+		{ID: "7d0c4b8e-c331-4f58-9b9b-3eb7ac0c5841", Name: "Bolt Haven Realty", Subdomain: "bolthaven", Email: "contact@bolthaven.srv1534108.hstgr.cloud", CustomDomain: "bolthaveproperty.com"},
+		// Staynert removed — only Bolt Haven is the active agent
 	}
 
 	for _, sa := range specificAgents {
