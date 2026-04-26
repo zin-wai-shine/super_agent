@@ -18,7 +18,8 @@ import {
     MagnifyingGlassIcon,
     MapIcon,
     TagIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import { PiUser } from 'react-icons/pi';
 import StyledSelect from '../../components/Form/StyledSelect';
@@ -29,6 +30,8 @@ import ModernColorPicker from '../../components/ui/ModernColorPicker';
 import ModernSwitch from '../../components/ui/ModernSwitch';
 import ModernCornerRadiusInput from '../../components/ui/ModernCornerRadiusInput';
 import ModernShadowPicker from '../../components/ui/ModernShadowPicker';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../../utils/cropImage';
 
 const ThemeSettings = () => {
     const { user } = useAuth();
@@ -41,6 +44,18 @@ const ThemeSettings = () => {
     const logoInputRef = useRef(null);
     const faviconInputRef = useRef(null);
     const sharePreviewInputRef = useRef(null);
+
+    // Cropper States
+    const [tempImage, setTempImage] = useState(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [isCropping, setIsCropping] = useState(false);
+    const [cropTarget, setCropTarget] = useState(null);
+
+    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
 
     const { register, control, handleSubmit, reset, setValue } = useForm({
         mode: 'onChange'
@@ -196,51 +211,63 @@ const ThemeSettings = () => {
         }
     };
 
-    const handleLogoUpload = async (e) => {
-        const file = e.target.files[0];
+    const openCropper = (e, target) => {
+        const file = e.target.files?.[0];
         if (!file) return;
 
-        setUploadingLogo(true);
-        try {
-            const response = await agentApi.uploadLogo(file);
-            setValue('logo_url', response.data.url);
-            toast.success('Logo uploaded!');
-        } catch (error) {
-            toast.error('Failed to upload logo');
-        } finally {
-            setUploadingLogo(false);
-        }
+        // Check if file is PNG
+        const isPng = file.type === 'image/png';
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            setTempImage(reader.result);
+            setCropTarget({ field: target, isPng });
+            setCrop({ x: 0, y: 0 });
+            setZoom(1);
+            setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
+        e.target.value = ''; // Reset input
     };
 
-    const handleFaviconUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const handleLogoUpload = (e) => openCropper(e, 'logo_url');
+    const handleFaviconUpload = (e) => openCropper(e, 'favicon_url');
+    const handleSharePreviewUpload = (e) => openCropper(e, 'share_preview_image');
 
-        setUploadingFavicon(true);
+    const handleCropSave = async () => {
+        if (!cropTarget || !tempImage || !croppedAreaPixels) return;
+        
+        const targetField = cropTarget.field;
+        
         try {
-            const response = await agentApi.uploadLogo(file);
-            setValue('favicon_url', response.data.url);
-            toast.success('Favicon uploaded!');
-        } catch (error) {
-            toast.error('Failed to upload favicon');
-        } finally {
-            setUploadingFavicon(false);
-        }
-    };
+            toast.loading('Processing image...', { id: 'imageUpload' });
+            
+            // Pass imageType to preserve PNG transparency if original was PNG
+            const imageType = cropTarget.isPng ? 'image/png' : 'image/jpeg';
+            const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels, imageType);
+            
+            if (!croppedImageBlob) throw new Error('Failed to crop image');
 
-    const handleSharePreviewUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+            if (targetField === 'logo_url') setUploadingLogo(true);
+            if (targetField === 'favicon_url') setUploadingFavicon(true);
+            if (targetField === 'share_preview_image') setUploadingSharePreview(true);
 
-        setUploadingSharePreview(true);
-        try {
-            const response = await agentApi.uploadLogo(file);
-            setValue('share_preview_image', response.data.url);
-            toast.success('Share preview image uploaded!');
+            const extension = cropTarget.isPng ? 'png' : 'jpg';
+            const croppedFile = new File([croppedImageBlob], `${targetField}.${extension}`, { type: imageType });
+            
+            const response = await agentApi.uploadLogo(croppedFile);
+            setValue(targetField, response.data.url);
+            
+            setIsCropping(false);
+            setTempImage(null);
+            setCropTarget(null);
+            toast.success('Image uploaded successfully!', { id: 'imageUpload' });
         } catch (error) {
-            toast.error('Failed to upload share preview image');
+            console.error('Upload error:', error);
+            toast.error('Failed to upload image', { id: 'imageUpload' });
         } finally {
-            setUploadingSharePreview(false);
+            if (targetField === 'logo_url') setUploadingLogo(false);
+            if (targetField === 'favicon_url') setUploadingFavicon(false);
+            if (targetField === 'share_preview_image') setUploadingSharePreview(false);
         }
     };
 
@@ -277,6 +304,7 @@ const ThemeSettings = () => {
     ];
 
     return (
+        <>
         <div className="max-w-7xl mx-auto space-y-6 pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -602,6 +630,72 @@ const ThemeSettings = () => {
                 </div>
             </div>
         </div>
+        
+            {/* ── Immersive Cropper Modal ───────────────────────────── */}
+            {isCropping && (
+                <div className="fixed inset-0 z-[1000] bg-black flex flex-col animate-fade-in">
+                    {/* Header */}
+                    <div className="p-6 flex items-center justify-between border-b border-white/5 bg-black z-10">
+                        <button 
+                            onClick={() => setIsCropping(false)}
+                            className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all lg:hidden"
+                        >
+                            <ArrowLeftIcon className="w-6 h-6" />
+                        </button>
+                        <h3 className="text-white font-bold text-[15px] flex-1 text-center uppercase tracking-widest">
+                            Adjust Image
+                        </h3>
+                        <div className="w-10 lg:hidden" /> {/* Spacer */}
+                    </div>
+
+                    {/* Cropper Area */}
+                    <div className="relative flex-1 bg-[#111111]">
+                        <Cropper
+                            image={tempImage}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={cropTarget?.field === 'share_preview_image' ? 1200 / 630 : undefined}
+                            showGrid={false}
+                            onCropChange={setCrop}
+                            onCropComplete={onCropComplete}
+                            onZoomChange={setZoom}
+                        />
+                    </div>
+
+                    {/* Controls & Footer */}
+                    <div className="p-8 pb-12 bg-black border-t border-white/5 z-10">
+                        <div className="mb-8 flex justify-center">
+                            <input
+                                type="range"
+                                value={zoom}
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                aria-labelledby="Zoom"
+                                onChange={(e) => setZoom(e.target.value)}
+                                className="w-full lg:w-1/2 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                            />
+                        </div>
+                        
+                        <div className="flex justify-center gap-4 items-center">
+                            <button 
+                                onClick={() => setIsCropping(false)}
+                                className="w-fit py-4 px-8 rounded-full bg-white/10 text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleCropSave}
+                                style={{ backgroundColor: preview.primary_color || '#2D8A56' }}
+                                className="w-fit py-4 px-12 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-95 transition-all whitespace-nowrap"
+                            >
+                                Apply Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

@@ -7,7 +7,7 @@ export const createImage = (url) =>
         image.src = url;
     });
 
-export default async function getCroppedImg(imageSrc, pixelCrop) {
+export default async function getCroppedImg(imageSrc, pixelCrop, imageType = 'image/jpeg') {
     const image = await createImage(imageSrc);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -40,8 +40,9 @@ export default async function getCroppedImg(imageSrc, pixelCrop) {
                 console.error('Canvas is empty');
                 return;
             }
-            blob.name = 'cropped_avatar.jpeg';
+            const extension = imageType === 'image/png' ? 'png' : 'jpeg';
+            blob.name = `cropped_image.${extension}`;
             resolve(blob);
-        }, 'image/jpeg');
+        }, imageType);
     });
 }
