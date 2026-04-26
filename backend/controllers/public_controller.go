@@ -340,8 +340,25 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 		return
 	}
 
-	// Increment view count
-	pc.db.Model(&listing).Update("view_count", gorm.Expr("view_count + 1"))
+	// Increment view count if unique
+	ip := c.ClientIP()
+	ua := c.GetHeader("User-Agent")
+	fingerprint := fmt.Sprintf("%s-%s", ip, ua)
+	if len(fingerprint) > 255 {
+		fingerprint = fingerprint[:255]
+	}
+
+	var uniqueView models.UniqueView
+	if err := pc.db.Where("listing_id = ? AND fingerprint = ?", listing.ID, fingerprint).First(&uniqueView).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// New unique view
+			pc.db.Create(&models.UniqueView{
+				ListingID:   listing.ID,
+				Fingerprint: fingerprint,
+			})
+			pc.db.Model(&listing).Update("view_count", gorm.Expr("view_count + 1"))
+		}
+	}
 
 	c.JSON(http.StatusOK, listing)
 }

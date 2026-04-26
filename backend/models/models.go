@@ -372,3 +372,11 @@ type CollectionListing struct {
 	ListingID    uuid.UUID `gorm:"type:uuid;primaryKey" json:"listing_id"`
 	CreatedAt    time.Time `json:"created_at"`
 }
+
+// UniqueView tracks unique views per listing per user fingerprint
+type UniqueView struct {
+	ListingID   uuid.UUID `gorm:"type:uuid;primaryKey;index"`
+	Fingerprint string    `gorm:"size:255;primaryKey;index"` // Hash or combined IP + UA
+	CreatedAt   time.Time
+}
+
