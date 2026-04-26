@@ -68,7 +68,7 @@ const MobileBottomNav = () => {
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
         { name: 'Favorites', path: '/saved-listings', icon: BsHeart, activeIcon: BsFillHeartFill },
         { name: 'Viewings', path: '/my-bookings', icon: BsCalendar2Week, activeIcon: BsCalendar2Week },
-        { name: 'Profile', path: '/profile', icon: BsPerson, activeIcon: BsPerson },
+        { name: 'Account', path: '/profile', icon: BsPerson, activeIcon: BsPerson },
     ] : [
         { name: 'Search', path: '/search', icon: BsSearch, activeIcon: BsSearch },
         { name: 'Login', path: '/login', icon: BsPerson, activeIcon: BsPerson },

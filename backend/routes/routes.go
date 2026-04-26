@@ -217,6 +217,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				upload.POST("/logo", uploadController.UploadLogo)
 				upload.POST("/banner", uploadController.UploadBanner)
 				upload.POST("/collection-image", uploadController.UploadCollectionImage)
+				upload.POST("/avatar", uploadController.UploadAvatar)
 				upload.PATCH("/:id", uploadController.UpdateMedia)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}

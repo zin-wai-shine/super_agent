@@ -10,12 +10,15 @@ import {
     PhoneIcon,
     ArrowLeftIcon,
     CheckIcon,
+    CameraIcon,
 } from '@heroicons/react/24/outline';
 import { PiUser } from 'react-icons/pi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
+import { uploadApi } from '../../services/api';
+import toast from 'react-hot-toast';
 
 /* ── Social platform icon helper ─────────────────────────────── */
 const SocialIcon = ({ platform, className = 'w-5 h-5' }) => {
@@ -123,6 +126,47 @@ const UserProfile = () => {
     // states: 'menu', 'about', 'contact'
     const [mobileView, setMobileView] = useState('menu');
 
+    const { updateProfile } = useAuth();
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [profileForm, setProfileForm] = useState({
+        first_name: user?.first_name || '',
+        last_name: user?.last_name || '',
+        phone: user?.phone || '',
+        line: user?.line || '',
+        whatsapp: user?.whatsapp || '',
+        viber: user?.viber || '',
+        avatar: user?.avatar || ''
+    });
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        setIsSavingProfile(true);
+        const { success, error } = await updateProfile(profileForm);
+        setIsSavingProfile(false);
+        if (success) {
+            toast.success('Profile updated successfully');
+        } else {
+            toast.error(error || 'Failed to update profile');
+        }
+    };
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            toast.loading('Uploading avatar...', { id: 'avatarUpload' });
+            const response = await uploadApi.uploadAvatar(file);
+            const avatarUrl = response.data.url;
+            setProfileForm(prev => ({ ...prev, avatar: avatarUrl }));
+            // Also immediately save
+            await updateProfile({ ...profileForm, avatar: avatarUrl });
+            toast.success('Avatar updated', { id: 'avatarUpload' });
+        } catch (err) {
+            toast.error('Failed to upload avatar', { id: 'avatarUpload' });
+        }
+    };
+
     useEffect(() => {
         const t = setTimeout(() => setLoading(false), 350);
         return () => clearTimeout(t);
@@ -147,6 +191,7 @@ const UserProfile = () => {
 
     // Desktop sidebar nav
     const navItems = [
+        { id: 'profile', label: 'Profile', icon: <PiUser className="w-5 h-5" /> },
         { id: 'about', label: 'About', icon: <InformationCircleIcon className="w-5 h-5" /> },
         { id: 'contact', label: 'Contact', icon: <PhoneIcon className="w-5 h-5" /> },
         ...(isAgent ? [
@@ -166,6 +211,48 @@ const UserProfile = () => {
 
     // Shared icon-only hover button style for internal menu rows
     const menuRowClass = 'flex items-center gap-3 group py-3 px-2 rounded-xl transition-colors duration-200 w-full';
+
+    /* ── Render Profile Content ──────────────────────────────── */
+    const renderProfile = (isMobile = false) => (
+        <div className="animate-fade-in-up">
+            {isMobile && (
+                <div className="sticky top-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 z-20 -mx-6 mb-6 px-4 py-2">
+                    <div className="max-w-[1200px] mx-auto w-full flex items-center justify-between relative">
+                        <button
+                            onClick={() => setMobileView('menu')}
+                            className="flex items-center justify-center min-w-[40px] min-h-[40px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
+                        >
+                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                        </button>
+                        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                            <h2 className="text-[17px] font-bold text-gray-900 dark:text-white">Profile</h2>
+                        </div>
+                        <div className="min-w-[40px]" />
+                    </div>
+                </div>
+            )}
+
+            <div className="relative mb-12">
+                <div className="relative">
+                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">PERSONAL INFORMATION</h4>
+                    <div className="space-y-6 bg-slate-50/50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100/50 dark:border-white/10">
+                         <div>
+                             <p className="text-[12px] text-slate-400 font-medium mb-1">First Name</p>
+                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.first_name}</p>
+                         </div>
+                         <div>
+                             <p className="text-[12px] text-slate-400 font-medium mb-1">Last Name</p>
+                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.last_name}</p>
+                         </div>
+                         <div>
+                             <p className="text-[12px] text-slate-400 font-medium mb-1">Email Address</p>
+                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.email}</p>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
     /* ── Render About Content ────────────────────────────────── */
     const renderAbout = (isMobile = false) => (
@@ -353,7 +440,7 @@ const UserProfile = () => {
 
                 {/* ── Desktop sidebar ── */}
                 <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
-                    <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Profile</h1>
+                    <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Account</h1>
                     <nav className="space-y-1">
                         {navItems.map(item => (
                             <button
@@ -384,6 +471,7 @@ const UserProfile = () => {
                         <div className="flex items-center mb-8">
                             <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white capitalize">{activeSection}</h2>
                         </div>
+                        {activeSection === 'profile' && renderProfile()}
                         {activeSection === 'about' && renderAbout()}
                         {activeSection === 'contact' && renderContact()}
                     </div>
@@ -392,34 +480,39 @@ const UserProfile = () => {
                     <div className="lg:hidden">
                         {mobileView === 'menu' && (
                             <div className="animate-fade-in-up pt-10">
-                                <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Profile</h1>
+                                <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Account</h1>
 
-                                {/* Profile Card */}
-                                <div className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-2xl border border-white/90 dark:border-white/10 rounded-full p-4 pr-6 flex flex-row items-center gap-4 mb-8 shadow-[0_4px_40px_rgba(0,0,0,0.10)] relative">
+                                {/* Profile Header */}
+                                <div className="flex flex-col items-center mb-10 pt-4 relative">
                                     {/* Avatar */}
-                                    <div className="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/30 border-[3px] border-white dark:border-dashboard-card flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                                    <div className="w-28 h-28 rounded-full bg-primary-50 dark:bg-primary-900/30 border-4 border-white dark:border-dashboard-card flex items-center justify-center flex-shrink-0 overflow-hidden mb-5">
                                         {googlePicture ? (
                                             <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                                         ) : (
-                                            <span className="text-2xl font-bold text-primary-600">{initial}</span>
+                                            <span className="text-[44px] font-bold text-primary-600">{initial}</span>
                                         )}
                                     </div>
                                     {/* Text */}
-                                    <div className="min-w-0">
-                                        <h3 className="text-[15px] font-semibold text-slate-900 dark:text-white leading-tight truncate">
+                                    <div className="flex flex-col items-center text-center px-4 w-full">
+                                        <h3 className="text-[18px] font-semibold text-slate-900 dark:text-white leading-tight truncate w-full">
                                             {user?.first_name} {user?.last_name}
                                         </h3>
-                                        <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-600 text-[11px] font-medium capitalize">
-                                            {roleLabel}
-                                        </span>
-                                        {user?.email && (
-                                            <p className="text-[12px] text-slate-400 mt-1 truncate">{user.email}</p>
-                                        )}
                                     </div>
                                 </div>
 
                                 {/* Menu List */}
                                 <div className="space-y-4">
+                                    {/* Profile Row */}
+                                    <button onClick={() => setMobileView('profile')} className={menuRowClass}>
+                                        <div className="w-9 h-9 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900 group-hover:dark:bg-white/10">
+                                            <PiUser className="w-5 h-5 text-slate-600 group-hover:text-white" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Profile</p>
+                                        </div>
+                                        <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                                    </button>
+
                                     {/* About Row */}
                                     <button onClick={() => setMobileView('about')} className={menuRowClass}>
                                         <div className="w-9 h-9 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900 group-hover:dark:bg-white/10">
@@ -427,7 +520,6 @@ const UserProfile = () => {
                                         </div>
                                         <div className="text-left">
                                             <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">About</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">Agent bio and agency info</p>
                                         </div>
                                         <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
                                     </button>
@@ -439,7 +531,6 @@ const UserProfile = () => {
                                         </div>
                                         <div className="text-left">
                                             <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Contact</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">Social media and phone number</p>
                                         </div>
                                         <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
                                     </button>
@@ -456,7 +547,6 @@ const UserProfile = () => {
                                                 </div>
                                                 <div className="text-left">
                                                     <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Dashboard</p>
-                                                    <p className="text-xs text-gray-400 mt-0.5">Manage listings and bookings</p>
                                                 </div>
                                                 <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
                                             </button>
@@ -471,7 +561,6 @@ const UserProfile = () => {
                                             </div>
                                             <div className="text-left">
                                                 <p className="font-semibold text-[15px] leading-tight">Log out</p>
-                                                <p className="text-xs text-rose-400 mt-0.5">End your current session</p>
                                             </div>
                                             <ChevronRightIcon className="w-4 h-4 text-rose-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
                                         </button>
@@ -480,6 +569,7 @@ const UserProfile = () => {
                             </div>
                         )}
 
+                        {mobileView === 'profile' && renderProfile(true)}
                         {mobileView === 'about' && renderAbout(true)}
                         {mobileView === 'contact' && renderContact(true)}
                     </div>

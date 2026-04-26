@@ -28,7 +28,7 @@ import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
-const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) => {
+const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w-[32px] h-[32px] md:w-[26px] md:h-[26px]" }) => {
     const [animate, setAnimate] = React.useState(false);
     const [showSaved, setShowSaved] = React.useState(false);
     const [isFlashing, setIsFlashing] = React.useState(false);
@@ -91,11 +91,10 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconSize = 28 }) =
 
             <div className={animate ? 'heart-pop-active' : ''}>
                 {isSaved ? (
-                    <BsFillHeartFill className="text-rose-500 drop-shadow-md transition-colors duration-300" style={{ width: iconSize, height: iconSize }} />
+                    <BsFillHeartFill className={`text-rose-500 drop-shadow-md transition-colors duration-300 ${iconClassName}`} />
                 ) : (
                     <BsHeart 
-                        className="text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300" 
-                        style={{ width: iconSize, height: iconSize }} 
+                        className={`text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300 ${iconClassName}`} 
                     />
                 )}
             </div>
@@ -557,7 +556,6 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                     onClick={handleToggleSave}
                                     disabled={savingListing}
                                     className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
-                                    iconSize={32}
                                 />
                             </div>
                         )}
@@ -633,7 +631,6 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                         onClick={handleToggleSave}
                                         disabled={savingListing}
                                         className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
-                                        iconSize={32}
                                     />
                                 </div>
                             )}
@@ -694,7 +691,6 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                             onClick={handleToggleSave}
                                             disabled={savingListing}
                                             className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
-                                            iconSize={32}
                                         />
                                     </div>
                                 )}

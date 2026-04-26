@@ -466,3 +466,54 @@ func (uc *UploadController) UploadCollectionImage(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, media)
 }
+
+// UploadAvatar handles user avatar uploads
+func (uc *UploadController) UploadAvatar(c *gin.Context) {
+	// Need to get user_id for path
+	userID, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Get file
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+	defer file.Close()
+
+	// Check file size (max 5MB for avatar)
+	if header.Size > 5*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Avatar too large. Maximum 5MB allowed"})
+		return
+	}
+
+	// Check file type
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if !allowedImageTypes[ext] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, webp"})
+		return
+	}
+
+	// Create directory structure
+	uploadDir := filepath.Join(uc.cfg.UploadPath, "avatars", userID.(uuid.UUID).String())
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
+		return
+	}
+
+	// Generate unique filename
+	filename := fmt.Sprintf("avatar_%s%s", uuid.New().String()[:8], ext)
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Save file
+	if err := c.SaveUploadedFile(header, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save avatar"})
+		return
+	}
+
+	avatarURL := fmt.Sprintf("/uploads/avatars/%s/%s", userID.(uuid.UUID).String(), filename)
+	c.JSON(http.StatusOK, gin.H{"url": avatarURL})
+}

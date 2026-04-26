@@ -25,6 +25,11 @@ type User struct {
 	Role                  string         `gorm:"size:20;not null;default:'public'" json:"role"`
 	AgentID               *uuid.UUID     `gorm:"type:uuid" json:"agent_id,omitempty"`
 	Agent                 *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	Phone                 string         `gorm:"size:50" json:"phone,omitempty"`
+	Line                  string         `gorm:"size:255" json:"line,omitempty"`
+	Whatsapp              string         `gorm:"size:255" json:"whatsapp,omitempty"`
+	Viber                 string         `gorm:"size:255" json:"viber,omitempty"`
+	Avatar                string         `gorm:"size:500" json:"avatar,omitempty"`
 	IsActive              bool           `gorm:"default:true" json:"is_active"`
 	LateCancellationCount int            `gorm:"default:0" json:"late_cancellation_count"`
 	CreatedAt             time.Time      `json:"created_at"`

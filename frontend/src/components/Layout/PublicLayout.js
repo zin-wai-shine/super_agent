@@ -738,7 +738,7 @@ const PublicLayout = () => {
                                                                     </Link>
                                                                     <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
                                                                         <PiUser className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                        Profile
+                                                                        Account
                                                                     </Link>
                                                                     {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
                                                                         <Link
@@ -981,7 +981,7 @@ const PublicLayout = () => {
                                                 className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
-                                                Profile
+                                                Account
                                             </span>
                                         </Link>
                                     </>

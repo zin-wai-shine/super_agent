@@ -225,6 +225,10 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 		FirstName string `json:"first_name"`
 		LastName  string `json:"last_name"`
 		Phone     string `json:"phone"`
+		Line      string `json:"line"`
+		Whatsapp  string `json:"whatsapp"`
+		Viber     string `json:"viber"`
+		Avatar    string `json:"avatar"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -234,6 +238,11 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 	updates := map[string]interface{}{
 		"first_name": req.FirstName,
 		"last_name":  req.LastName,
+		"phone":      req.Phone,
+		"line":       req.Line,
+		"whatsapp":   req.Whatsapp,
+		"viber":      req.Viber,
+		"avatar":     req.Avatar,
 	}
 
 	if err := ac.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
