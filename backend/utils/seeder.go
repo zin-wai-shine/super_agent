@@ -15,7 +15,11 @@ import (
 )
 
 // SeedFakeData generates fake agents and listings if none exist
+// NOTE: Disabled for production — fake seeding is permanently turned off.
 func SeedFakeData(db *gorm.DB) {
+	log.Println("Fake data seeding is disabled in production.")
+	return
+
 	var listingCount int64
 	db.Model(&models.Listing{}).Count(&listingCount)
 
