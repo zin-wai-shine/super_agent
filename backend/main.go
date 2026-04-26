@@ -67,6 +67,9 @@ func main() {
 	// Seed initial data (subscription plans, admin user, default agents, transit stations)
 	seedInitialData(db)
 
+	// Seed Master Developer and Projects list
+	utils.SeedMasterDevelopersAndProjects(db)
+
 	// NOTE: Developer/project seeding and fake data seeding are disabled for production.
 	// seedDevelopersAndProjects(db)
 	// utils.SeedFakeData(db)
