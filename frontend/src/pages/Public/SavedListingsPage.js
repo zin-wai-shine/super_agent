@@ -8,6 +8,7 @@ import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import FilterBar from '../../components/ui/FilterBar';
 import { BsHeart, BsFillHeartFill } from 'react-icons/bs';
+import { HiOutlineHeart } from 'react-icons/hi';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
