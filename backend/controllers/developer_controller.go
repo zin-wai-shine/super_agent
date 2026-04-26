@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"super_real_estate/middleware"
 	"super_real_estate/models"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,11 @@ func NewDeveloperController(db *gorm.DB) *DeveloperController {
 // ==================== DEVELOPERS ====================
 
 func (dc *DeveloperController) GetDevelopers(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 
 	var developers []models.Developer
 	dc.db.Where("agent_id = ?", agentID).
@@ -32,7 +37,11 @@ func (dc *DeveloperController) GetDevelopers(c *gin.Context) {
 }
 
 func (dc *DeveloperController) CreateDeveloper(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 
 	var input struct {
 		Name    string `json:"name" binding:"required"`
@@ -46,7 +55,7 @@ func (dc *DeveloperController) CreateDeveloper(c *gin.Context) {
 	}
 
 	developer := models.Developer{
-		AgentID: agentID.(uuid.UUID),
+		AgentID: agentID,
 		Name:    input.Name,
 		Logo:    input.Logo,
 		Website: input.Website,
@@ -61,7 +70,11 @@ func (dc *DeveloperController) CreateDeveloper(c *gin.Context) {
 }
 
 func (dc *DeveloperController) UpdateDeveloper(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 	id := c.Param("id")
 
 	var developer models.Developer
@@ -92,7 +105,11 @@ func (dc *DeveloperController) UpdateDeveloper(c *gin.Context) {
 }
 
 func (dc *DeveloperController) DeleteDeveloper(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 	id := c.Param("id")
 
 	// Check if any projects exist for this developer
@@ -115,7 +132,11 @@ func (dc *DeveloperController) DeleteDeveloper(c *gin.Context) {
 // ==================== PROJECTS ====================
 
 func (dc *DeveloperController) GetProjects(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 	developerID := c.Query("developer_id")
 
 	query := dc.db.Where("projects.agent_id = ?", agentID).Preload("Developer").Order("projects.name ASC")
@@ -131,7 +152,11 @@ func (dc *DeveloperController) GetProjects(c *gin.Context) {
 }
 
 func (dc *DeveloperController) CreateProject(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 
 	var input struct {
 		Name        string  `json:"name" binding:"required"`
@@ -165,7 +190,7 @@ func (dc *DeveloperController) CreateProject(c *gin.Context) {
 	}
 
 	project := models.Project{
-		AgentID:     agentID.(uuid.UUID),
+		AgentID:     agentID,
 		DeveloperID: devID,
 		Name:        input.Name,
 		Description: input.Description,
@@ -190,7 +215,11 @@ func (dc *DeveloperController) CreateProject(c *gin.Context) {
 }
 
 func (dc *DeveloperController) UpdateProject(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 	id := c.Param("id")
 
 	var project models.Project
@@ -270,7 +299,11 @@ func (dc *DeveloperController) UpdateProject(c *gin.Context) {
 }
 
 func (dc *DeveloperController) DeleteProject(c *gin.Context) {
-	agentID, _ := c.Get("agent_id")
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
 	id := c.Param("id")
 
 	// Check if any listings reference this project

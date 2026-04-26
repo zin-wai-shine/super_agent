@@ -533,22 +533,14 @@ const ProjectsPage = () => {
                 }
 
                 // Map-pan fetch: minimal delay to keep it responsive
-                const response = isBoundsTriggeredFetch
-                    ? (await Promise.all([
-                        publicApi.getProjects(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 300))
-                    ]))[0]
-                    : (await Promise.all([
-                        publicApi.getProjects(params, { signal: controller.signal }),
-                        new Promise(resolve => setTimeout(resolve, 100))
-                    ]))[0];
+                const response = await publicApi.getProjects(params, { signal: controller.signal });
 
                 const data = response.data;
 
                 if (page === 1) {
                     if (initialLoading) {
                         setIsExiting(true);
-                        await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
+                        await new Promise(resolve => setTimeout(resolve, 200)); // matches CSS exit duration (reduced for speed)
                         setIsExiting(false);
                     }
 

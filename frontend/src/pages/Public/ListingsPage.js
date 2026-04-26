@@ -1083,7 +1083,7 @@ const ListingsPage = () => {
                     // Trigger exit animation for skeletons to fade out before revealing cards
                     if (initialLoading) {
                         setIsExiting(true);
-                        await new Promise(resolve => setTimeout(resolve, 600)); // matches CSS exit duration
+                        await new Promise(resolve => setTimeout(resolve, 200)); // matches CSS exit duration (reduced for speed)
                         setIsExiting(false);
                     }
                     

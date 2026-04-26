@@ -203,6 +203,31 @@ func (ac *AgentController) UnpublishListing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Listing unpublished successfully"})
 }
 
+// ToggleViewingRequests toggles the allow_viewing_requests status of a listing
+func (ac *AgentController) ToggleViewingRequests(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+
+	var listing models.Listing
+	if err := ac.db.Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
+		return
+	}
+
+	listing.AllowViewingRequests = !listing.AllowViewingRequests
+	if err := ac.db.Save(&listing).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to toggle viewing requests"})
+		return
+	}
+
+	c.JSON(http.StatusOK, listing)
+}
+
 // GetSubAgents returns sub-agents for the agent
 func (ac *AgentController) GetSubAgents(c *gin.Context) {
 	agentID, ok := middleware.GetAgentID(c)

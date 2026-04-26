@@ -151,6 +151,7 @@ export const agentApi = {
     deleteListing: (id) => api.delete(`/agent/listings/${id}`),
     publishListing: (id) => api.post(`/agent/listings/${id}/publish`),
     unpublishListing: (id) => api.post(`/agent/listings/${id}/unpublish`),
+    toggleViewingRequests: (id) => api.put(`/agent/listings/${id}/toggle-viewing`),
     getSubAgents: () => api.get('/agent/sub-agents'),
     createSubAgent: (data) => api.post('/agent/sub-agents', data),
     updateSubAgent: (id, data) => api.put(`/agent/sub-agents/${id}`, data),

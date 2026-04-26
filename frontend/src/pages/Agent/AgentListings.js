@@ -146,6 +146,16 @@ const AgentListings = () => {
         }
     };
 
+    const handleToggleViewing = async (id, currentStatus) => {
+        try {
+            await agentApi.toggleViewingRequests(id);
+            toast.success(currentStatus ? 'Viewing requests disabled' : 'Viewing requests enabled');
+            fetchListings();
+        } catch (error) {
+            toast.error('Failed to update viewing status');
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this listing?')) return;
 
@@ -318,6 +328,34 @@ const AgentListings = () => {
             header: 'Views',
             accessorKey: 'view_count',
             cell: ({ getValue }) => <span className="text-gray-600 dark:text-gray-400">{getValue() || 0}</span>
+        },
+        {
+            header: 'Book Viewing',
+            accessorKey: 'allow_viewing_requests',
+            cell: ({ row }) => {
+                const listing = row.original;
+                const checked = listing.allow_viewing_requests;
+                return (
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={checked}
+                        onClick={() => handleToggleViewing(listing.id, checked)}
+                        className={`
+                            relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ring-0
+                            ${checked ? 'bg-primary-600 dark:bg-primary-500' : 'bg-gray-200 dark:bg-zinc-600'}
+                        `}
+                    >
+                        <span
+                            aria-hidden="true"
+                            className={`
+                                pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+                                ${checked ? 'translate-x-4' : 'translate-x-0'}
+                            `}
+                        />
+                    </button>
+                );
+            }
         },
         {
             header: 'Actions',

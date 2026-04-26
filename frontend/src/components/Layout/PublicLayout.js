@@ -304,8 +304,8 @@ const PublicLayout = () => {
     const [filterBarSlot, setFilterBarSlot] = useState(null);
 
     React.useEffect(() => {
-        // Match the ListingsPage 800ms delay
-        const timer = setTimeout(() => setIsNavLoading(false), 800);
+        // Reduced from 800ms for faster feel
+        const timer = setTimeout(() => setIsNavLoading(false), 300);
 
         return () => {
             clearTimeout(timer);

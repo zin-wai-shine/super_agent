@@ -48,7 +48,19 @@ func (gc *GoogleAuthController) GoogleLogin(c *gin.Context) {
 	if state == "" {
 		state = c.Request.Host
 	}
-	url := gc.oauth2.AuthCodeURL(state)
+
+	// Use dynamic redirect URL based on current host to support custom domains
+	scheme := "https"
+	if c.Request.Header.Get("X-Forwarded-Proto") == "http" || (c.Request.TLS == nil && c.Request.Header.Get("X-Forwarded-Proto") == "") {
+		scheme = "http"
+	}
+	redirectURL := fmt.Sprintf("%s://%s/api/auth/google/callback", scheme, c.Request.Host)
+
+	// Create a temporary config with the dynamic redirect URL
+	conf := *gc.oauth2
+	conf.RedirectURL = redirectURL
+
+	url := conf.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -61,7 +73,17 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	token, err := gc.oauth2.Exchange(context.Background(), code)
+	// Use the same dynamic redirect URL used in GoogleLogin
+	scheme := "https"
+	if c.Request.Header.Get("X-Forwarded-Proto") == "http" || (c.Request.TLS == nil && c.Request.Header.Get("X-Forwarded-Proto") == "") {
+		scheme = "http"
+	}
+	redirectURL := fmt.Sprintf("%s://%s/api/auth/google/callback", scheme, c.Request.Host)
+
+	conf := *gc.oauth2
+	conf.RedirectURL = redirectURL
+
+	token, err := conf.Exchange(context.Background(), code)
 	if err != nil {
 		log.Printf("Google OAuth Exchange Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -69,7 +91,7 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 			"debug": gin.H{
 				"client_id_prefix": gc.oauth2.ClientID[:10],
 				"secret_len":       len(gc.oauth2.ClientSecret),
-				"redirect_url":     gc.oauth2.RedirectURL,
+				"redirect_url":     redirectURL,
 			},
 		})
 		return
@@ -156,7 +178,7 @@ func (gc *GoogleAuthController) GoogleCallback(c *gin.Context) {
 	// Redirect back to frontend with tokens
 	// The state contains the original host
 	// Use https for production domains, http for localhost
-	scheme := "https"
+	scheme = "https"
 	if state == "localhost" || state == "localhost:3000" || state == "127.0.0.1" {
 		scheme = "http"
 	}

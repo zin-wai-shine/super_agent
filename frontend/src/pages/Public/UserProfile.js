@@ -11,14 +11,18 @@ import {
     ArrowLeftIcon,
     CheckIcon,
     CameraIcon,
+    UserIcon,
+    PlusIcon,
+    EnvelopeIcon,
 } from '@heroicons/react/24/outline';
-import { PiUser } from 'react-icons/pi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
 import { uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../../utils/cropImage';
 
 /* ── Social platform icon helper ─────────────────────────────── */
 const SocialIcon = ({ platform, className = 'w-5 h-5' }) => {
@@ -74,37 +78,62 @@ const getSocialUrl = (platform, value) => {
 
 /* ─── Skeleton ─────────────────────────────────────────────── */
 const ProfileSkeleton = () => (
-    <div className="min-h-screen bg-white dark:bg-dashboard-dark flex flex-col">
-        <div className="flex-1 max-w-[1200px] mx-auto w-full px-6 md:px-12 lg:px-20 pt-10 pb-6 flex flex-col lg:flex-row lg:gap-16">
-            {/* Left sidebar skeleton  — desktop only */}
+    <div className="min-h-screen bg-white dark:bg-dashboard-dark flex flex-col animate-pulse">
+        <div className="flex-1 max-w-[1200px] mx-auto w-full px-8 md:px-12 lg:px-20 pt-10 pb-24 flex flex-col lg:flex-row lg:gap-16">
+            
+            {/* Desktop Sidebar Skeleton */}
             <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
-                <div className="h-8 w-24 bg-gray-200 rounded-lg animate-pulse mb-8" />
-                <div className="space-y-2">
-                    {[1, 2].map(i => (
+                <div className="space-y-1">
+                    {[1, 2, 3].map(i => (
                         <div key={i} className="flex items-center gap-3 py-3 px-3">
-                            <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
-                            <div className="h-4 w-24 bg-gray-200 rounded-lg animate-pulse" />
+                            <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/5" />
+                            <div className="h-4 w-24 bg-gray-100 dark:bg-white/5 rounded-full" />
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Divider */}
-            <div className="hidden lg:block lg:w-px bg-gray-100 self-stretch flex-shrink-0" />
+            <div className="hidden lg:block w-px bg-gray-100 self-stretch flex-shrink-0" />
 
-            {/* Right content skeleton */}
-            <div className="flex-1">
-                <div className="h-7 w-32 bg-gray-200 rounded-lg animate-pulse mb-8" />
-                <div className="bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 rounded-[24px] p-6 flex items-center gap-6 mb-8"
-                    style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 2px 24px rgba(0,0,0,0.06)' }}>
-                    <div className="w-20 h-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
-                    <div className="flex flex-col gap-2">
-                        <div className="h-6 w-36 bg-gray-200 rounded-lg animate-pulse" />
-                        <div className="h-4 w-20 bg-gray-100 rounded-lg animate-pulse" />
+            {/* Main Content Skeleton */}
+            <div className="flex-1 min-w-0">
+                {/* Mobile View Skeleton */}
+                <div className="lg:hidden">
+                    <div className="flex flex-col items-center mb-10 pt-4 relative">
+                        {/* Avatar Skeleton */}
+                        <div className="w-32 h-32 rounded-full bg-gray-100 dark:bg-white/5 mb-5 shadow-sm border border-gray-100 dark:border-white/10" />
+                        {/* Name Skeleton */}
+                        <div className="h-6 w-48 bg-gray-100 dark:bg-white/5 rounded-full" />
+                    </div>
+
+                    {/* Menu List Skeleton */}
+                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex items-center gap-5 py-5 w-full">
+                                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/5" />
+                                <div className="h-5 w-32 bg-gray-100 dark:bg-white/5 rounded-full" />
+                                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/5 ml-auto" />
+                            </div>
+                        ))}
                     </div>
                 </div>
-                <div className="h-px bg-gray-100 mb-6" />
-                <div className="h-4 w-32 bg-gray-100 rounded-lg animate-pulse" />
+
+                {/* Desktop Content Skeleton */}
+                <div className="hidden lg:block">
+                    <div className="h-7 w-48 bg-gray-100 dark:bg-white/5 rounded-full mb-8" />
+                    <div className="flex flex-col items-center mb-12 pt-4">
+                        <div className="w-32 h-32 rounded-full bg-gray-100 dark:bg-white/5 mb-6" />
+                    </div>
+                    <div className="space-y-8">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="flex items-center gap-5">
+                                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/5" />
+                                <div className="flex-1 h-5 bg-gray-100 dark:bg-white/5 rounded-full max-w-sm" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -128,42 +157,84 @@ const UserProfile = () => {
 
     const { updateProfile } = useAuth();
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [editingField, setEditingField] = useState(null); // 'name', 'email', 'phone'
     const [profileForm, setProfileForm] = useState({
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
         phone: user?.phone || '',
         line: user?.line || '',
+        line_phone: user?.line_phone || '',
         whatsapp: user?.whatsapp || '',
         viber: user?.viber || '',
         avatar: user?.avatar || ''
     });
 
+    /* ── Avatar Cropping States ───────────────────────────────── */
+    const [tempImage, setTempImage] = useState(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [isCropping, setIsCropping] = useState(false);
+
+    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
     const handleProfileSubmit = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         setIsSavingProfile(true);
         const { success, error } = await updateProfile(profileForm);
         setIsSavingProfile(false);
         if (success) {
             toast.success('Profile updated successfully');
+            setEditingField(null); // Return to list view
         } else {
             toast.error(error || 'Failed to update profile');
         }
     };
 
-    const handleAvatarChange = async (e) => {
+    const handleAvatarChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            setTempImage(reader.result);
+            setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
+    };
+
+    const handleCropSave = async () => {
         try {
-            toast.loading('Uploading avatar...', { id: 'avatarUpload' });
-            const response = await uploadApi.uploadAvatar(file);
+            toast.loading('Processing image...', { id: 'avatarUpload' });
+            const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels);
+            
+            if (!croppedImageBlob) {
+                throw new Error('Failed to crop image');
+            }
+
+            // Create a File from the Blob so the backend identifies it correctly
+            const croppedFile = new File([croppedImageBlob], 'avatar.jpg', { type: 'image/jpeg' });
+            
+            const response = await uploadApi.uploadAvatar(croppedFile);
             const avatarUrl = response.data.url;
-            setProfileForm(prev => ({ ...prev, avatar: avatarUrl }));
-            // Also immediately save
-            await updateProfile({ ...profileForm, avatar: avatarUrl });
-            toast.success('Avatar updated', { id: 'avatarUpload' });
+            
+            const updatedProfile = { ...profileForm, avatar: avatarUrl };
+            setProfileForm(updatedProfile);
+            
+            const { success, error } = await updateProfile(updatedProfile);
+            
+            if (success) {
+                setIsCropping(false);
+                setTempImage(null);
+                toast.success('Avatar updated', { id: 'avatarUpload' });
+            } else {
+                throw new Error(error || 'Failed to update profile');
+            }
         } catch (err) {
-            toast.error('Failed to upload avatar', { id: 'avatarUpload' });
+            console.error('Crop save error:', err);
+            toast.error(err.message || 'Failed to update avatar', { id: 'avatarUpload' });
         }
     };
 
@@ -191,11 +262,9 @@ const UserProfile = () => {
 
     // Desktop sidebar nav
     const navItems = [
-        { id: 'profile', label: 'Profile', icon: <PiUser className="w-5 h-5" /> },
-        { id: 'about', label: 'About', icon: <InformationCircleIcon className="w-5 h-5" /> },
-        { id: 'contact', label: 'Contact', icon: <PhoneIcon className="w-5 h-5" /> },
+        { id: 'profile', label: 'Profile', icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
         ...(isAgent ? [
-            { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-5 h-5" /> },
+            { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-6 h-6" strokeWidth={2.5} /> },
         ] : []),
     ];
 
@@ -209,50 +278,385 @@ const UserProfile = () => {
         }
     };
 
-    // Shared icon-only hover button style for internal menu rows
-    const menuRowClass = 'flex items-center gap-3 group py-3 px-2 rounded-xl transition-colors duration-200 w-full';
+    // Shared icon-only hover button style for internal menu rows (Premium Minimalist)
+    const menuRowClass = 'flex items-center gap-5 group py-5 px-0 border-b border-gray-50 dark:border-white/5 transition-all duration-300 w-full active:opacity-70';
 
     /* ── Render Profile Content ──────────────────────────────── */
-    const renderProfile = (isMobile = false) => (
-        <div className="animate-fade-in-up">
-            {isMobile && (
-                <div className="sticky top-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 z-20 -mx-6 mb-6 px-4 py-2">
-                    <div className="max-w-[1200px] mx-auto w-full flex items-center justify-between relative">
-                        <button
-                            onClick={() => setMobileView('menu')}
-                            className="flex items-center justify-center min-w-[40px] min-h-[40px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                        </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                            <h2 className="text-[17px] font-bold text-gray-900 dark:text-white">Profile</h2>
+    const renderProfile = (isMobile = false) => {
+        // ── Sub-view: Edit Name ──────────────────────────────────
+        if (isMobile && editingField === 'name') {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Update your name</h2>
                         </div>
-                        <div className="min-w-[40px]" />
+
+                        <p className="text-[14px] text-gray-500 mb-8">Please enter your name as it appears on your ID or passport.</p>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">First name</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                    <input 
+                                        type="text"
+                                        value={profileForm.first_name}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
+                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Last name</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                    <input 
+                                        type="text"
+                                        value={profileForm.last_name}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
+                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                        <button 
+                            onClick={handleProfileSubmit}
+                            disabled={isSavingProfile}
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSavingProfile ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : 'Save'}
+                        </button>
                     </div>
                 </div>
-            )}
+            );
+        }
 
-            <div className="relative mb-12">
-                <div className="relative">
-                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">PERSONAL INFORMATION</h4>
-                    <div className="space-y-6 bg-slate-50/50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100/50 dark:border-white/10">
-                         <div>
-                             <p className="text-[12px] text-slate-400 font-medium mb-1">First Name</p>
-                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.first_name}</p>
-                         </div>
-                         <div>
-                             <p className="text-[12px] text-slate-400 font-medium mb-1">Last Name</p>
-                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.last_name}</p>
-                         </div>
-                         <div>
-                             <p className="text-[12px] text-slate-400 font-medium mb-1">Email Address</p>
-                             <p className="text-[16px] font-semibold text-slate-900 dark:text-white">{user?.email}</p>
-                         </div>
+        // ── Sub-view: Edit Email ─────────────────────────────────
+        if (isMobile && editingField === 'email') {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Your email</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Email address</label>
+                                <div 
+                                    style={{ borderColor: theme?.primaryColor || '#2D8A56' }}
+                                    className="relative bg-white dark:bg-white/5 border rounded-full px-8 py-4 transition-all"
+                                >
+                                    <input 
+                                        type="email"
+                                        value={user?.email}
+                                        readOnly
+                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                    />
+                                    <div className="absolute right-8 top-1/2 -translate-y-1/2 cursor-pointer" onClick={() => setEditingField(null)}>
+                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-[13px] text-gray-400 px-5">Email address cannot be changed directly for security. Please contact support if needed.</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                        <button 
+                            onClick={() => setEditingField(null)}
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className="w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Sub-view: Edit Phone ─────────────────────────────────
+        if (isMobile && editingField === 'phone') {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Phone number</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Mobile Number</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                    <input 
+                                        type="tel"
+                                        value={profileForm.phone}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        placeholder="+66..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                        <button 
+                            onClick={handleProfileSubmit}
+                            disabled={isSavingProfile}
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSavingProfile ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Sub-view: Edit Line ──────────────────────────────────
+        if (isMobile && editingField === 'line') {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Line</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Line ID or Phone</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                    <input 
+                                        type="text"
+                                        value={profileForm.line}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, line: e.target.value }))}
+                                        className="w-full bg-transparent border-none p-0 text-[18px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        placeholder="Enter your Line ID or Phone"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                        <button 
+                            onClick={handleProfileSubmit}
+                            disabled={isSavingProfile}
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSavingProfile ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Sub-view: Edit WhatsApp ───────────────────────────────
+        if (isMobile && editingField === 'whatsapp') {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">WhatsApp</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">WhatsApp Number</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                    <input 
+                                        type="tel"
+                                        value={profileForm.whatsapp}
+                                        onChange={(e) => setProfileForm(prev => ({ ...prev, whatsapp: e.target.value }))}
+                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        placeholder="+66..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                        <button 
+                            onClick={handleProfileSubmit}
+                            disabled={isSavingProfile}
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSavingProfile ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Main Profile View ───────────────────────────────────
+        return (
+            <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                {/* Mobile Header with Back Button */}
+                <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                    <button
+                        onClick={() => setMobileView('menu')}
+                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    >
+                        <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                    </button>
+                    <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
+                </div>
+
+                <div className="flex-1 px-8 py-6">
+                    <div className="relative mb-12">
+                        <div className="flex flex-col items-center mb-10 pt-4 relative">
+                             {/* Avatar with Edit Button */}
+                             <div className="relative group">
+                                <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
+                                    {(profileForm.avatar || user?.avatar) ? (
+                                        <img 
+                                            src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                            alt="Avatar" 
+                                            className="w-full h-full object-cover" 
+                                        />
+                                    ) : googlePicture ? (
+                                        <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
+                                            {initial}
+                                        </div>
+                                    )}
+                                </div>
+                                <label 
+                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                    className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
+                                >
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                                    <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
+                                </label>
+                             </div>
+                        </div>
+
+                        <div className="relative">
+                            <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                            
+                            <div className="divide-y divide-gray-50 dark:divide-white/5">
+                                {/* Name Row */}
+                                <div className="flex items-center gap-5 py-5 group">
+                                    <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                    <div className="flex-1">
+                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setEditingField('name')} 
+                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                        className="text-[14px] font-bold hover:underline px-2"
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+
+                                {/* Phone Row */}
+                                <div className="flex items-center gap-5 py-5 group">
+                                    <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                    <div className="flex-1">
+                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setEditingField('phone')} 
+                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                        className="text-[14px] font-bold hover:underline px-2"
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+
+                                {/* Line Row */}
+                                <div className="flex items-center gap-5 py-5 group">
+                                    <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                    <div className="flex-1">
+                                        <label className="block text-[12px] text-gray-400 font-medium">Line</label>
+                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setEditingField('line')} 
+                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                        className="text-[14px] font-bold hover:underline px-2"
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+
+                                {/* WhatsApp Row */}
+                                <div className="flex items-center gap-5 py-5 group">
+                                    <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                    <div className="flex-1">
+                                        <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
+                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setEditingField('whatsapp')} 
+                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                        className="text-[14px] font-bold hover:underline px-2"
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+
+                                {/* Email Row (Read Only) */}
+                                <div className="flex items-center gap-5 py-5 group">
+                                    <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                    <div className="flex-1 min-w-0">
+                                        <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     /* ── Render About Content ────────────────────────────────── */
     const renderAbout = (isMobile = false) => (
@@ -312,7 +716,7 @@ const UserProfile = () => {
                                         <path d="M6.2 0C10.2 0 12.4 3.5 12.4 6.5C12.4 11.5 8.2 21.5 6.2 21.5C4.2 21.5 0 11.5 0 6.5C0 3.5 2.2 0 6.2 0ZM21.8 0C25.8 0 28 3.5 28 6.5C28 11.5 23.8 21.5 21.8 21.5C19.8 21.5 15.6 11.5 15.6 6.5C15.6 3.5 17.8 0 21.8 0Z" />
                                     </svg>
                                 </div>
-                                <p className="text-[18px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium">
+                                <p className="text-[15px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium">
                                     "{agent.vision}"
                                 </p>
                             </div>
@@ -425,11 +829,10 @@ const UserProfile = () => {
 
     return (
         <div className="bg-white dark:bg-dashboard-dark flex flex-col w-full overflow-x-hidden">
-            <div className="flex-1 max-w-[1200px] mx-auto w-full px-6 md:px-12 lg:px-20 pt-0 lg:pt-10 pb-24 lg:pb-6 flex flex-col lg:flex-row lg:gap-16 overflow-x-hidden">
+            <div className="flex-1 max-w-[1200px] mx-auto w-full px-8 md:px-12 lg:px-20 pt-0 lg:pt-10 pb-24 lg:pb-6 flex flex-col lg:flex-row lg:gap-16 overflow-x-hidden">
 
                 {/* ── Desktop sidebar ── */}
                 <div className="hidden lg:block lg:w-[260px] lg:flex-shrink-0">
-                    <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Account</h1>
                     <nav className="space-y-1">
                         {navItems.map(item => (
                             <button
@@ -439,10 +842,10 @@ const UserProfile = () => {
                                 className={`flex items-center gap-3 group w-full py-3 px-3 rounded-xl text-left text-[15px] font-medium transition-colors duration-200
                                     ${activeSection === item.id ? 'text-gray-900 dark:text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
                             >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200
+                                <div className={`w-9 h-9 flex items-center justify-center flex-shrink-0 transition-all duration-200
                                     ${activeSection === item.id
-                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-dashboard-dark'
-                                        : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 group-hover:bg-slate-900 group-hover:dark:bg-white/10 group-hover:text-white group-hover:dark:text-white'}`}>
+                                        ? 'text-[#222222] dark:text-white'
+                                        : 'text-gray-400 group-hover:text-[#222222] dark:group-hover:text-white'}`}>
                                     {item.icon}
                                 </div>
                                 {item.label}
@@ -469,91 +872,64 @@ const UserProfile = () => {
                     <div className="lg:hidden">
                         {mobileView === 'menu' && (
                             <div className="animate-fade-in-up pt-10">
-                                <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight mb-8">Account</h1>
 
                                 {/* Profile Header */}
                                 <div className="flex flex-col items-center mb-10 pt-4 relative">
                                     {/* Avatar */}
-                                    <div className="w-28 h-28 rounded-full bg-primary-50 dark:bg-primary-900/30 border-4 border-white dark:border-dashboard-card flex items-center justify-center flex-shrink-0 overflow-hidden mb-5">
-                                        {googlePicture ? (
+                                    <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden mb-5 shadow-sm border border-gray-100 dark:border-white/10">
+                                        {(profileForm.avatar || user?.avatar) ? (
+                                            <img 
+                                                src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover rounded-full" 
+                                            />
+                                        ) : googlePicture ? (
                                             <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                                         ) : (
-                                            <span className="text-[44px] font-bold text-primary-600">{initial}</span>
+                                            <span className="text-[36px] font-bold text-[#222222] dark:text-white">{initial}</span>
                                         )}
                                     </div>
                                     {/* Text */}
                                     <div className="flex flex-col items-center text-center px-4 w-full">
-                                        <h3 className="text-[18px] font-semibold text-slate-900 dark:text-white leading-tight truncate w-full">
+                                        <h3 className="text-[18px] font-bold text-[#222222] dark:text-white leading-tight">
                                             {user?.first_name} {user?.last_name}
                                         </h3>
                                     </div>
                                 </div>
 
                                 {/* Menu List */}
-                                <div className="space-y-4">
+                                <div className="divide-y divide-gray-50 dark:divide-white/5">
                                     {/* Profile Row */}
-                                    <button onClick={() => setMobileView('profile')} className={menuRowClass}>
-                                        <div className="w-9 h-9 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900 group-hover:dark:bg-white/10">
-                                            <PiUser className="w-5 h-5 text-slate-600 group-hover:text-white" />
-                                        </div>
+                                    <button onClick={() => setMobileView('profile')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                        <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                         <div className="text-left">
-                                            <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Profile</p>
+                                            <p className="font-medium text-[16px] text-[#222222] dark:text-white">Personal profile</p>
                                         </div>
-                                        <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
-                                    </button>
-
-                                    {/* About Row */}
-                                    <button onClick={() => setMobileView('about')} className={menuRowClass}>
-                                        <div className="w-9 h-9 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900 group-hover:dark:bg-white/10">
-                                            <InformationCircleIcon className="w-5 h-5 text-slate-600 group-hover:text-white" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">About</p>
-                                        </div>
-                                        <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
-                                    </button>
-
-                                    {/* Contact Row */}
-                                    <button onClick={() => setMobileView('contact')} className={menuRowClass}>
-                                        <div className="w-9 h-9 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900 group-hover:dark:bg-white/10">
-                                            <PhoneIcon className="w-5 h-5 text-slate-600 group-hover:text-white" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Contact</p>
-                                        </div>
-                                        <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                                        <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                     </button>
 
                                     {/* Dashboard Row */}
                                     {isAgent && (
-                                        <div className="pt-2">
-                                            <button
-                                                onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
-                                                className={menuRowClass}
-                                            >
-                                                <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-slate-900">
-                                                    <Squares2X2Icon className="w-5 h-5 text-slate-600 group-hover:text-white" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="font-semibold text-[15px] leading-tight text-gray-900 dark:text-white">Dashboard</p>
-                                                </div>
-                                                <ChevronRightIcon className="w-4 h-4 text-gray-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
+                                            className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group"
+                                        >
+                                            <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                            </div>
+                                            <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
                                     )}
 
-                                    {/* Logout */}
-                                    <div className="border-t border-gray-100 dark:border-white/10 pt-5 mt-2">
-                                        <button onClick={logout} className={`${menuRowClass} text-rose-600`}>
-                                            <div className="w-9 h-9 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:bg-rose-600">
-                                                <ArrowLeftOnRectangleIcon className="w-5 h-5 text-rose-500 group-hover:text-white" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-semibold text-[15px] leading-tight">Log out</p>
-                                            </div>
-                                            <ChevronRightIcon className="w-4 h-4 text-rose-300 ml-auto group-hover:translate-x-0.5 transition-transform" />
-                                        </button>
-                                    </div>
+                                    {/* Logout Row */}
+                                    <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                        <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
+                                        <div className="text-left">
+                                            <p className="font-medium text-[16px] text-rose-600">Log out</p>
+                                        </div>
+                                        <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -579,6 +955,69 @@ const UserProfile = () => {
                     )}
                 </div>
             </div>
+            {/* ── Immersive Cropper Modal ───────────────────────────── */}
+            {isCropping && (
+                <div className="fixed inset-0 z-[1000] bg-black flex flex-col animate-fade-in">
+                    {/* Header */}
+                    <div className="p-6 flex items-center justify-between z-10">
+                        <button 
+                            onClick={() => setIsCropping(false)}
+                            className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                        >
+                            <ArrowLeftIcon className="w-6 h-6" />
+                        </button>
+                        <h3 className="text-white font-bold text-[15px]">Edit Profile Image</h3>
+                        <div className="w-10" /> {/* Spacer */}
+                    </div>
+
+                    {/* Cropper Area */}
+                    <div className="relative flex-1 bg-[#111111]">
+                        <Cropper
+                            image={tempImage}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            cropShape="round"
+                            showGrid={false}
+                            onCropChange={setCrop}
+                            onCropComplete={onCropComplete}
+                            onZoomChange={setZoom}
+                        />
+                    </div>
+
+                    {/* Controls & Footer */}
+                    <div className="p-8 pb-12 bg-black border-t border-white/5 z-10">
+                        <div className="mb-8">
+                            <input
+                                type="range"
+                                value={zoom}
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                aria-labelledby="Zoom"
+                                onChange={(e) => setZoom(e.target.value)}
+                                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                            />
+                        </div>
+                        
+                        <div className="flex gap-4 items-center">
+                            <button 
+                                onClick={() => setIsCropping(false)}
+                                className="flex-1 py-4 px-6 rounded-full bg-white/10 text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleCropSave}
+                                style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                className="flex-[2.5] py-4 px-8 rounded-full text-white font-bold text-[15px] shadow-lg shadow-primary-500/20 active:scale-95 transition-all whitespace-nowrap"
+                            >
+                                Apply Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

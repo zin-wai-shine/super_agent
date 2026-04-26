@@ -120,6 +120,35 @@ const CreateListing = () => {
         fetchProjects();
     }, []);
 
+    const handleLocationChange = (value) => {
+        if (!value) return;
+
+        // Check if it's a URL
+        const isUrl = value.includes('http') || value.includes('maps.google.com') || value.includes('maps.app.goo.gl');
+        
+        if (isUrl) {
+            setValue('map_url', value);
+        }
+
+        // Robust extraction from various formats
+        const patterns = [
+            /@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng
+            /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng
+            /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng
+            /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng
+            /(-?\d+\.\d+),\s*(-?\d+\.\d+)/, // Plain lat, lng (anywhere)
+        ];
+
+        for (const pattern of patterns) {
+            const match = value.match(pattern);
+            if (match) {
+                setValue('latitude', match[1]);
+                setValue('longitude', match[2]);
+                break;
+            }
+        }
+    };
+
     const onError = (errors) => {
         console.error('Form errors:', errors);
         toast.error('Please check the required fields');
@@ -832,21 +861,23 @@ const CreateListing = () => {
                             <div>
                                 <label className="input-label">Latitude</label>
                                 <input
-                                    type="number"
-                                    step="any"
+                                    type="text"
                                     className="input-field"
                                     placeholder="e.g., 13.7563"
-                                    {...register('latitude')}
+                                    {...register('latitude', {
+                                        onChange: (e) => handleLocationChange(e.target.value)
+                                    })}
                                 />
                             </div>
                             <div>
                                 <label className="input-label">Longitude</label>
                                 <input
-                                    type="number"
-                                    step="any"
+                                    type="text"
                                     className="input-field"
                                     placeholder="e.g., 100.5018"
-                                    {...register('longitude')}
+                                    {...register('longitude', {
+                                        onChange: (e) => handleLocationChange(e.target.value)
+                                    })}
                                 />
                             </div>
                         </div>
@@ -858,28 +889,7 @@ const CreateListing = () => {
                                 className="input-field"
                                 placeholder="Paste Google Maps link or Coordinates (e.g., 13.75, 100.5)"
                                 {...register('map_url', {
-                                    onChange: (e) => {
-                                        const url = e.target.value;
-                                        if (!url) return;
-
-                                        // Robust extraction from various formats
-                                        const patterns = [
-                                            /@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng
-                                            /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng
-                                            /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng
-                                            /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng
-                                            /(-?\d+\.\d+),\s*(-?\d+\.\d+)/, // Plain lat, lng (anywhere)
-                                        ];
-
-                                        for (const pattern of patterns) {
-                                            const match = url.match(pattern);
-                                            if (match) {
-                                                setValue('latitude', match[1]);
-                                                setValue('longitude', match[2]);
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    onChange: (e) => handleLocationChange(e.target.value)
                                 })}
                             />
                             <p className="mt-1 text-xs text-gray-500 italic">

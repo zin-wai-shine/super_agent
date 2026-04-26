@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -343,10 +345,9 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 	// Increment view count if unique
 	ip := c.ClientIP()
 	ua := c.GetHeader("User-Agent")
-	fingerprint := fmt.Sprintf("%s-%s", ip, ua)
-	if len(fingerprint) > 255 {
-		fingerprint = fingerprint[:255]
-	}
+	rawFingerprint := fmt.Sprintf("%s-%s", ip, ua)
+	hash := md5.Sum([]byte(rawFingerprint))
+	fingerprint := hex.EncodeToString(hash[:])
 
 	var uniqueView models.UniqueView
 	if err := pc.db.Where("listing_id = ? AND fingerprint = ?", listing.ID, fingerprint).First(&uniqueView).Error; err != nil {

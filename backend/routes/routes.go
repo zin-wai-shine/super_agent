@@ -131,6 +131,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.DELETE("/listings/:id", agentController.DeleteListing)
 				agent.POST("/listings/:id/publish", agentController.PublishListing)
 				agent.POST("/listings/:id/unpublish", agentController.UnpublishListing)
+				agent.PUT("/listings/:id/toggle-viewing", agentController.ToggleViewingRequests)
 
 				// Sub-agent management (Agent only)
 				subAgents := agent.Group("/sub-agents")
