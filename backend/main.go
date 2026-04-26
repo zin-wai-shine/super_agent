@@ -220,19 +220,27 @@ func seedInitialData(db *gorm.DB) {
 		}
 
 		// Create or Update user for this agent
+		// NOTE: Only set password on initial creation — do NOT overwrite existing passwords
 		agentPassword, _ := utils.HashPassword("password123")
 		var user models.User
-		if err := db.Where(models.User{Email: sa.Email}).Assign(models.User{
-			PasswordHash: agentPassword,
-			FirstName:    strings.Split(sa.Name, " ")[0],
-			LastName:     "Agent",
-			Role:         models.RoleAgent,
-			AgentID:      &agent.ID,
-			IsActive:     true,
-		}).FirstOrCreate(&user).Error; err != nil {
-			log.Printf("Failed to seed/update specific agent user %s: %v", sa.Email, err)
+		if err := db.Where(models.User{Email: sa.Email}).First(&user).Error; err != nil {
+			// User doesn't exist, create with default password
+			user = models.User{
+				Email:        sa.Email,
+				PasswordHash: agentPassword,
+				FirstName:    strings.Split(sa.Name, " ")[0],
+				LastName:     "Agent",
+				Role:         models.RoleAgent,
+				AgentID:      &agent.ID,
+				IsActive:     true,
+			}
+			if err := db.Create(&user).Error; err != nil {
+				log.Printf("Failed to create agent user %s: %v", sa.Email, err)
+			} else {
+				fmt.Printf("[Startup] Created agent user: %s (%s)\n", sa.Name, sa.Subdomain)
+			}
 		} else {
-			fmt.Printf("[Startup] Verified/Updated agent: %s (%s)\n", sa.Name, sa.Subdomain)
+			fmt.Printf("[Startup] Agent user already exists: %s (%s)\n", sa.Name, sa.Subdomain)
 		}
 	}
 
