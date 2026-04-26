@@ -64,14 +64,12 @@ func main() {
 
 	log.Println("Database migration completed successfully")
 
-	// Seed initial data
+	// Seed initial data (subscription plans, admin user, default agents, transit stations)
 	seedInitialData(db)
 
-	// Seed developers and projects
-	seedDevelopersAndProjects(db)
-
-	// Seed fake data (agents and listings) if needed
-	utils.SeedFakeData(db)
+	// NOTE: Developer/project seeding and fake data seeding are disabled for production.
+	// seedDevelopersAndProjects(db)
+	// utils.SeedFakeData(db)
 
 	// Create uploads directory
 	if err := os.MkdirAll(cfg.UploadPath, os.ModePerm); err != nil {
