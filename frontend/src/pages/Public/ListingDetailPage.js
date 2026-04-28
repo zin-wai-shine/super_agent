@@ -2920,7 +2920,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 }}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[50vh]
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[50vh] flex flex-col overflow-hidden
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
@@ -2945,7 +2945,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 </div>
 
-                                                <div className="w-full relative flex flex-col items-center p-6 pb-12 pt-2">
+                                                <div className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2">
                                                     {!isCancelModalOpen ? (
                                                         <div className="w-full animate-fade-in">
                                                             <div className="w-full text-center mb-4">
@@ -3005,51 +3005,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         </div>
                                                                     </div>
                                                                 )}
-
-                                                                {/* Mobile Status Sheet Footer Actions */}
-                                                                {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
-                                                                    <div className="w-full flex flex-row gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                const booking = viewedBooking || activeBooking;
-                                                                                if (booking) {
-                                                                                    const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
-                                                                                    const today = new Date();
-                                                                                    today.setHours(0, 0, 0, 0);
-                                                                                    const isPastBooking = bookingDate && bookingDate < today;
-
-                                                                                    setBookingForm({
-                                                                                        full_name: booking.full_name || '',
-                                                                                        email: booking.email || '',
-                                                                                        phone: booking.phone || '',
-                                                                                        preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
-                                                                                        preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
-                                                                                        purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
-                                                                                        message: booking.message || '',
-                                                                                    });
-                                                                                    setConfirmedDateTime(!isPastBooking);
-                                                                                    setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
-                                                                                }
-                                                                                setIsStatusOverlayOpen(false);
-                                                                                setIsBookingOverlayOpen(true);
-                                                                            }}
-                                                                            className="flex-1 py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2"
-                                                                        >
-                                                                            <PencilSquareIcon className="w-4 h-4" />
-                                                                            Edit
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setIsCancelModalOpen(true);
-                                                                            }}
-                                                                            className="flex-1 py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[14px] active:scale-95 transition-all"
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         </div>
                                                     ) : (
@@ -3068,25 +3023,76 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     className="w-full h-32 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400"
                                                                 />
                                                             </div>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                            <div className="flex flex-row gap-3">
-                                                                <button
-                                                                    onClick={() => setIsCancelModalOpen(false)}
-                                                                    disabled={cancelling}
-                                                                    className="flex-1 py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] active:scale-95 transition-all"
-                                                                >
-                                                                    Go Back
-                                                                </button>
-                                                                <button
-                                                                    onClick={handleCancelAppointment}
-                                                                    disabled={cancelling}
-                                                                    className={`flex-1 py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
-                                                                >
-                                                                    {cancelling ? (
-                                                                        <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                                                                    ) : 'Confirm'}
-                                                                </button>
-                                                            </div>
+                                                {/* Sticky Footer Actions */}
+                                                <div className="shrink-0 sticky bottom-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md p-6 border-t border-gray-100 dark:border-white/10 safe-area-bottom">
+                                                    {!isCancelModalOpen ? (
+                                                        <>
+                                                            {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
+                                                                <div className="w-full flex flex-row gap-3">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const booking = viewedBooking || activeBooking;
+                                                                            if (booking) {
+                                                                                const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
+                                                                                const today = new Date();
+                                                                                today.setHours(0, 0, 0, 0);
+                                                                                const isPastBooking = bookingDate && bookingDate < today;
+
+                                                                                setBookingForm({
+                                                                                    full_name: booking.full_name || '',
+                                                                                    email: booking.email || '',
+                                                                                    phone: booking.phone || '',
+                                                                                    preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
+                                                                                    preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
+                                                                                    purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
+                                                                                    message: booking.message || '',
+                                                                                });
+                                                                                setConfirmedDateTime(!isPastBooking);
+                                                                                setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
+                                                                            }
+                                                                            setIsStatusOverlayOpen(false);
+                                                                            setIsBookingOverlayOpen(true);
+                                                                        }}
+                                                                        className="flex-1 py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <PencilSquareIcon className="w-4 h-4" />
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setIsCancelModalOpen(true);
+                                                                        }}
+                                                                        className="flex-1 py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[14px] active:scale-95 transition-all"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex flex-row gap-3">
+                                                            <button
+                                                                onClick={() => setIsCancelModalOpen(false)}
+                                                                disabled={cancelling}
+                                                                className="flex-1 py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] active:scale-95 transition-all"
+                                                            >
+                                                                Go Back
+                                                            </button>
+                                                            <button
+                                                                onClick={handleCancelAppointment}
+                                                                disabled={cancelling}
+                                                                className={`flex-1 py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
+                                                            >
+                                                                {cancelling ? (
+                                                                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                                                                ) : 'Confirm'}
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </div>
