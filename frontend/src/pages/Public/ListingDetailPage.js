@@ -3040,7 +3040,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                                 {/* Mobile Status Sheet Footer Actions */}
                                                                 {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
-                                                                    <div className="w-full flex flex-col gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                                    <div className="w-full flex flex-row gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
                                                                         <button
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
@@ -3066,19 +3066,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                 setIsStatusOverlayOpen(false);
                                                                                 setIsBookingOverlayOpen(true);
                                                                             }}
-                                                                            className="w-full py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                                            className="flex-1 py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2"
                                                                         >
-                                                                            <PencilSquareIcon className="w-5 h-5" />
-                                                                            Edit Appointment
+                                                                            <PencilSquareIcon className="w-4 h-4" />
+                                                                            Edit
                                                                         </button>
                                                                         <button
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
                                                                                 setIsCancelModalOpen(true);
                                                                             }}
-                                                                            className="w-full py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[15px] active:scale-95 transition-all"
+                                                                            className="flex-1 py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[14px] active:scale-95 transition-all"
                                                                         >
-                                                                            Cancel Viewing
+                                                                            Cancel
                                                                         </button>
                                                                     </div>
                                                                 )}
@@ -3101,22 +3101,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 />
                                                             </div>
 
-                                                            <div className="space-y-3">
+                                                            <div className="flex flex-row gap-3">
                                                                 <button
                                                                     onClick={() => setIsCancelModalOpen(false)}
                                                                     disabled={cancelling}
-                                                                    className="w-full py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[15px] active:scale-95 transition-all"
+                                                                    className="flex-1 py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] active:scale-95 transition-all"
                                                                 >
                                                                     Go Back
                                                                 </button>
                                                                 <button
                                                                     onClick={handleCancelAppointment}
                                                                     disabled={cancelling}
-                                                                    className={`w-full py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
+                                                                    className={`flex-1 py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
                                                                 >
                                                                     {cancelling ? (
                                                                         <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                                                                    ) : 'Confirm Cancellation'}
+                                                                    ) : 'Confirm'}
                                                                 </button>
                                                             </div>
                                                         </div>
