@@ -2849,7 +2849,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 onClick={() => setIsContactOverlayOpen(false)}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[85vh] flex flex-col overflow-hidden
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[90vh] flex flex-col overflow-hidden
                                                     ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
@@ -2920,7 +2920,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 }}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[85vh] flex flex-col overflow-hidden
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[90vh] flex flex-col overflow-hidden
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
