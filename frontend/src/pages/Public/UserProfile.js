@@ -1242,7 +1242,7 @@ const UserProfile = () => {
 
                                 {/* Profile Header Card */}
                                 <div 
-                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-[48px] shadow-xl relative overflow-hidden mb-12"
+                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-[32px] relative overflow-hidden mb-12"
                                     style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
                                 >
                                     {/* Decorative subtle circles */}
