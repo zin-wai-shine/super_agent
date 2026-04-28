@@ -18,8 +18,6 @@ import {
     KeyIcon,
     EyeIcon,
     EyeSlashIcon,
-    ChatBubbleLeftRightIcon,
-    ChatBubbleOvalLeftEllipsisIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -661,13 +659,13 @@ const UserProfile = () => {
 
                                         {/* Line Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
                                             <div className="flex-1">
                                                 <label className="block text-[12px] text-gray-400 font-medium">Line</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line_id || 'Not provided'}</p>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
                                             </div>
                                             <button 
-                                                onClick={() => setEditingField('line_id')} 
+                                                onClick={() => setEditingField('line')} 
                                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                                 className="text-[14px] font-bold hover:underline px-2"
                                             >
@@ -677,7 +675,7 @@ const UserProfile = () => {
 
                                         {/* WhatsApp Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
                                             <div className="flex-1">
                                                 <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
                                                 <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
@@ -1236,50 +1234,31 @@ const UserProfile = () => {
                     </div>
 
                     {/* Mobile Content (Centered Menu) */}
-                        <div className="lg:hidden flex flex-col flex-1">
-                            {mobileView === 'menu' && (
-                                <div className="animate-fade-in-up flex flex-col flex-1">
+                    <div className="lg:hidden flex flex-col flex-1">
+                        {mobileView === 'menu' && (
+                            <div className="animate-fade-in-up pt-10 flex flex-col flex-1">
 
-                                {/* Profile Header Card (Full Width Glass Design) */}
-                                <div 
-                                    className="w-full px-8 py-14 rounded-b-[32px] relative overflow-hidden mb-12 border-b border-gray-100 dark:border-white/10 backdrop-blur-xl"
-                                    style={{ 
-                                        backgroundColor: theme?.primaryColor ? `${theme.primaryColor}15` : 'rgba(45, 138, 86, 0.08)',
-                                    }}
-                                >
-                                    <div className="flex flex-col items-center relative z-10">
-                                        {/* Avatar */}
-                                        <div 
-                                            className="w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mb-6 shadow-sm border-2"
-                                            style={{ borderColor: theme?.primaryColor || '#2D8A56', backgroundColor: theme?.primaryColor ? `${theme.primaryColor}20` : 'rgba(45, 138, 86, 0.1)' }}
-                                        >
-                                            {(profileForm.avatar || user?.avatar) ? (
-                                                <img 
-                                                    src={getMediaUrl(profileForm.avatar || user?.avatar)} 
-                                                    alt="Profile" 
-                                                    className="w-full h-full object-cover rounded-full" 
-                                                />
-                                            ) : googlePicture ? (
-                                                <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
-                                            ) : (
-                                                <span 
-                                                    className="text-[36px] font-bold"
-                                                    style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                                >
-                                                    {initial}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {/* Text */}
-                                        <div className="flex flex-col items-center text-center px-4 w-full">
-                                            <h3 
-                                                className="text-[22px] font-bold leading-tight"
-                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                            >
-                                                {user?.first_name} {user?.last_name}
-                                            </h3>
-                                            <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-1 font-medium">{user?.email}</p>
-                                        </div>
+                                {/* Profile Header */}
+                                <div className="flex flex-col items-center mb-10 pt-4 relative">
+                                    {/* Avatar */}
+                                    <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden mb-5 shadow-sm border border-gray-100 dark:border-white/10">
+                                        {(profileForm.avatar || user?.avatar) ? (
+                                            <img 
+                                                src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover rounded-full" 
+                                            />
+                                        ) : googlePicture ? (
+                                            <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                                        ) : (
+                                            <span className="text-[36px] font-bold text-[#222222] dark:text-white">{initial}</span>
+                                        )}
+                                    </div>
+                                    {/* Text */}
+                                    <div className="flex flex-col items-center text-center px-4 w-full">
+                                        <h3 className="text-[18px] font-bold text-[#222222] dark:text-white leading-tight">
+                                            {user?.first_name} {user?.last_name}
+                                        </h3>
                                     </div>
                                 </div>
 
@@ -1321,31 +1300,32 @@ const UserProfile = () => {
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                         </button>
-                                    </div>
 
-                                    <div className="mt-auto divide-y divide-gray-50 dark:divide-white/5 border-t border-gray-50 dark:border-white/5">
-                                        {/* Dashboard Row */}
-                                        {isAgent && (
-                                            <button
-                                                onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
-                                                className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group"
-                                            >
-                                                <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                        {/* Separated Section */}
+                                        <div className="pt-10 space-y-0 divide-y divide-gray-50 dark:divide-white/5 border-t border-gray-50 dark:border-white/5">
+                                            {/* Dashboard Row */}
+                                            {isAgent && (
+                                                <button
+                                                    onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
+                                                    className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group"
+                                                >
+                                                    <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                                    <div className="text-left">
+                                                        <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                                    </div>
+                                                    <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                                </button>
+                                            )}
+
+                                            {/* Logout Row */}
+                                            <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                                <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
                                                 <div className="text-left">
-                                                    <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                                    <p className="font-medium text-[16px] text-rose-600">Log out</p>
                                                 </div>
-                                                <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                                <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
                                             </button>
-                                        )}
-
-                                        {/* Logout Row */}
-                                        <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
-                                            <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
-                                            <div className="text-left">
-                                                <p className="font-medium text-[16px] text-rose-600">Log out</p>
-                                            </div>
-                                            <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
-                                        </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
