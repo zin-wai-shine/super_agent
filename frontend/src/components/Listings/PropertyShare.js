@@ -31,8 +31,6 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
             .substring(0, 200);      // Truncate to a reasonable length
 
         const shareData = {
-            title: property.title,
-            text: cleanDescription,
             url: `${window.location.origin}/p/${property.id}`,
         };
 

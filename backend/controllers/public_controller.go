@@ -617,6 +617,13 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 	image := ""
 	if len(listing.Media) > 0 {
 		image = listing.Media[0].URL
+		// Try to find a bedroom image first as requested
+		for _, m := range listing.Media {
+			if strings.EqualFold(m.RoomType, models.RoomTypeBedroom) || strings.EqualFold(m.RoomType, "Bedroom") {
+				image = m.URL
+				break
+			}
+		}
 	} else if listing.Agent.Theme != nil && listing.Agent.Theme.SharePreviewImage != "" {
 		image = listing.Agent.Theme.SharePreviewImage
 	} else if listing.Agent.Logo != "" {

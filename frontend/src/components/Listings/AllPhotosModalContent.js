@@ -228,9 +228,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         if (typeof navigator !== 'undefined' && navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Property photos',
-                    url: window.location.href,
-                    text: 'Check out these property photos'
+                    url: window.location.href
                 });
             } catch (e) {
                 if (e.name !== 'AbortError') {
