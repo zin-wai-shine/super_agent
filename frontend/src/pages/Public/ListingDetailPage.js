@@ -3096,7 +3096,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </>
 
                                 )}
-                                </div>
                             </>
                         )}
                 </div>
