@@ -40,14 +40,14 @@ const CollectionCard = ({
                 {/* Image Section: Slides left-to-right INSIDE the container */}
                 {firstImage ? (
                     <div 
-                        className={`w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 ${animateEntrance ? 'opacity-0 animate-reveal-left' : ''}`} 
+                        className={`w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 ${animateEntrance ? 'opacity-0 animate-fade-in' : ''}`} 
                         style={{ 
                             backgroundImage: `url(${getMediaUrl(firstImage)})`,
                             animationDelay: animateEntrance ? delay : '0ms'
                         }}
                     />
                 ) : (
-                    <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 text-gray-300 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
+                    <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 text-gray-300 ${animateEntrance ? 'opacity-0 animate-fade-in' : ''}`}
                          style={animateEntrance ? { animationDelay: delay } : {}}>
                         <FolderIcon className="w-12 h-12" />
                     </div>
@@ -70,7 +70,7 @@ const CollectionCard = ({
             </div>
 
             {/* Text Content */}
-            <div className={`px-1 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
+            <div className={`px-1 ${animateEntrance ? 'opacity-0 animate-fade-in' : ''}`}
                  style={animateEntrance ? { animationDelay: delay } : {}}>
                 <p className="text-[13px] text-gray-500 font-medium">
                     {collection.listings_count || 0} properties
