@@ -1,0 +1,1 @@
+with open('/Users/zinwaishine/Desktop/super_real_estate/frontend/src/pages/Public/ListingDetailPage.js', 'r') as f: lines = f.readlines(); print(''.join(lines[2830:2845]))
