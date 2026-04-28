@@ -1240,18 +1240,19 @@ const UserProfile = () => {
                         {mobileView === 'menu' && (
                             <div className="animate-fade-in-up pt-10 flex flex-col flex-1">
 
-                                {/* Profile Header Card */}
+                                {/* Profile Header Card (Glass Design) */}
                                 <div 
-                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-[32px] relative overflow-hidden mb-12"
-                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-[32px] relative overflow-hidden mb-12 border border-gray-100 dark:border-white/10 backdrop-blur-xl"
+                                    style={{ 
+                                        backgroundColor: theme?.primaryColor ? `${theme.primaryColor}15` : 'rgba(45, 138, 86, 0.08)',
+                                    }}
                                 >
-                                    {/* Decorative subtle circles */}
-                                    <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-                                    <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/10 blur-3xl pointer-events-none" />
-
                                     <div className="flex flex-col items-center relative z-10">
                                         {/* Avatar */}
-                                        <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden mb-6 shadow-sm border-2 border-white/30">
+                                        <div 
+                                            className="w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mb-6 shadow-sm border-2"
+                                            style={{ borderColor: theme?.primaryColor || '#2D8A56', backgroundColor: theme?.primaryColor ? `${theme.primaryColor}20` : 'rgba(45, 138, 86, 0.1)' }}
+                                        >
                                             {(profileForm.avatar || user?.avatar) ? (
                                                 <img 
                                                     src={getMediaUrl(profileForm.avatar || user?.avatar)} 
@@ -1261,15 +1262,23 @@ const UserProfile = () => {
                                             ) : googlePicture ? (
                                                 <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                                             ) : (
-                                                <span className="text-[36px] font-bold text-white">{initial}</span>
+                                                <span 
+                                                    className="text-[36px] font-bold"
+                                                    style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                >
+                                                    {initial}
+                                                </span>
                                             )}
                                         </div>
                                         {/* Text */}
                                         <div className="flex flex-col items-center text-center px-4 w-full">
-                                            <h3 className="text-[22px] font-bold text-white leading-tight">
+                                            <h3 
+                                                className="text-[22px] font-bold leading-tight"
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                            >
                                                 {user?.first_name} {user?.last_name}
                                             </h3>
-                                            <p className="text-white/70 text-[14px] mt-1 font-medium">{user?.email}</p>
+                                            <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-1 font-medium">{user?.email}</p>
                                         </div>
                                     </div>
                                 </div>
