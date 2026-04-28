@@ -2779,8 +2779,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </Modal>
+                                            </Modal>
 
                                         <Modal
                                             isOpen={isStatusOverlayOpen}
@@ -2903,9 +2902,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Mobile Status Sheet */}
                                         {/* Mobile Status Sheet */}
                                         <div
                                             className={`fixed inset-0 z-[200] ${isStatusOverlayOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
@@ -3154,7 +3151,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     )}
                 </div>
             </div>
-        </div >
+            </div>
+        </div>
     );
 };
 
