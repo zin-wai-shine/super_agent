@@ -823,16 +823,16 @@ const UserProfile = () => {
         const title = hasPassword ? 'Change Password' : 'Account Security';
 
         const content = (
-            <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[500px]">
+            <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[500px] animate-fade-in-up">
                 <div className="py-2">
-                    <div className="flex items-center gap-4 mb-8">
-                        {!isMobile && (
+                    {!isMobile && (
+                        <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setActiveSection('profile')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                        )}
-                        <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{title}</h2>
-                    </div>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{title}</h2>
+                        </div>
+                    )}
 
                     {!hasPassword && (
                         <div className="mb-10 bg-slate-50/50 dark:bg-white/5 rounded-[24px] p-6 border border-slate-100 dark:border-white/10">
@@ -943,7 +943,7 @@ const UserProfile = () => {
 
         if (isMobile) {
             return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
                     <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
                         <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setMobileView('menu')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
