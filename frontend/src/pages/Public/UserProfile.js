@@ -583,7 +583,7 @@ const UserProfile = () => {
                 <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
                     <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
                         {/* Mobile Header with Back Button */}
-                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center">
                             <button
                                 onClick={() => setMobileView('menu')}
                                 className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
@@ -1035,7 +1035,7 @@ const UserProfile = () => {
                 <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
                     <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
                         {/* Mobile Header with Back Button */}
-                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center">
                             <button
                                 onClick={() => setMobileView('menu')}
                                 className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
@@ -1122,7 +1122,7 @@ const UserProfile = () => {
                 <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
                     <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
                         {/* Mobile Header with Back Button */}
-                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center">
                             <button
                                 onClick={() => setMobileView('menu')}
                                 className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
@@ -1168,7 +1168,7 @@ const UserProfile = () => {
                 <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
                     <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
                         {/* Mobile Header with Back Button */}
-                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center">
                             <button
                                 onClick={() => setMobileView('menu')}
                                 className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
