@@ -309,23 +309,37 @@ const ProjectsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        const shouldLock = isGoogleMapOpen || isSidebarOpen;
-        if (shouldLock) {
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            document.body.style.paddingRight = `${scrollbarWidth}px`;
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
+        
+        if (isGoogleMapOpen || isSidebarOpen) {
+            document.body.classList.add('filter-open');
         } else {
-            document.body.style.paddingRight = '';
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
+            document.body.classList.remove('filter-open');
         }
         
         return () => { 
-            document.body.style.overflow = ''; 
-            document.documentElement.style.overflow = '';
+            document.body.classList.remove('filter-open');
+            document.body.style.paddingRight = '';
         };
     }, [isGoogleMapOpen, isSidebarOpen]);
+
+    // Non-passive scroll blocking — React onWheel is passive in modern browsers,
+    // so preventDefault() silently fails. Attach directly with { passive: false }.
+    useEffect(() => {
+        if (!isSidebarOpen) return;
+
+        const preventBackgroundScroll = (e) => {
+            if (e.target && e.target.closest && e.target.closest('aside[role="dialog"]')) return;
+            e.preventDefault();
+        };
+
+        document.addEventListener('wheel', preventBackgroundScroll, { passive: false });
+        document.addEventListener('touchmove', preventBackgroundScroll, { passive: false });
+
+        return () => {
+            document.removeEventListener('wheel', preventBackgroundScroll);
+            document.removeEventListener('touchmove', preventBackgroundScroll);
+        };
+    }, [isSidebarOpen]);
 
     const toggleMapView = (isOpen) => {
         if (isOpen === isGoogleMapOpen || isMapTransitioning) return;
@@ -971,7 +985,7 @@ const ProjectsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable overscroll-contain">
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}

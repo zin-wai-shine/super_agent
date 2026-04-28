@@ -165,16 +165,25 @@ export const agentApi = {
     updateSettings: (data) => api.put('/agent/settings', data),
     uploadLogo: (file) => {
         const formData = new FormData();
-        formData.append('file', file);
+        // If it's a blob from the cropper, append with a filename
+        if (file instanceof Blob && !(file instanceof File)) {
+            formData.append('file', file, 'logo.png');
+        } else {
+            formData.append('file', file);
+        }
         return api.post('/upload/logo', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
     uploadBanner: (file) => {
         const formData = new FormData();
-        formData.append('file', file);
+        if (file instanceof Blob && !(file instanceof File)) {
+            formData.append('file', file, 'banner.jpg');
+        } else {
+            formData.append('file', file);
+        }
         return api.post('/upload/banner', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
 };
@@ -229,7 +238,7 @@ export const uploadApi = {
         formData.append('caption', caption);
         formData.append('room_type', roomType);
         return api.post('/upload/image', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
     uploadCollectionImage: (collectionId, file) => {
@@ -237,7 +246,7 @@ export const uploadApi = {
         formData.append('collection_id', collectionId);
         formData.append('file', file);
         return api.post('/upload/collection-image', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
     uploadVideo: (listingId, file, caption = '') => {
@@ -246,7 +255,7 @@ export const uploadApi = {
         formData.append('file', file);
         formData.append('caption', caption);
         return api.post('/upload/video', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
     updateMedia: (id, data) => api.patch(`/upload/${id}`, data),
@@ -255,7 +264,7 @@ export const uploadApi = {
         const formData = new FormData();
         formData.append('file', file);
         return api.post('/upload/avatar', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
 };

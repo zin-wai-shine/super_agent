@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../../components/Common/Logo';
 import {
     ArrowLeftOnRectangleIcon,
@@ -148,8 +148,10 @@ const UserProfile = () => {
     const isAgent = user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin';
     const [loading, setLoading] = useState(true);
 
+    const location = useLocation();
+
     // activeSection is used for DESKTOP sidebar switching
-    const [activeSection, setActiveSection] = useState('about');
+    const [activeSection, setActiveSection] = useState('profile');
 
     // mobileView handles the "page" transitions on MOBILE
     // states: 'menu', 'about', 'contact'
@@ -238,6 +240,13 @@ const UserProfile = () => {
         }
     };
 
+    // Reset view when navigating to profile from outside or re-clicking Account
+    useEffect(() => {
+        setEditingField(null);
+        setMobileView('menu');
+        setActiveSection('profile');
+    }, [location.pathname]);
+
     useEffect(() => {
         const t = setTimeout(() => setLoading(false), 350);
         return () => clearTimeout(t);
@@ -262,7 +271,7 @@ const UserProfile = () => {
 
     // Desktop sidebar nav
     const navItems = [
-        { id: 'profile', label: 'Profile', icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'profile', label: 'Personal profile', icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
         ...(isAgent ? [
             { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-6 h-6" strokeWidth={2.5} /> },
         ] : []),
@@ -284,10 +293,10 @@ const UserProfile = () => {
     /* ── Render Profile Content ──────────────────────────────── */
     const renderProfile = (isMobile = false) => {
         // ── Sub-view: Edit Name ──────────────────────────────────
-        if (isMobile && editingField === 'name') {
-            return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
-                    <div className="p-8">
+        if (editingField === 'name') {
+            const nameContent = (
+                <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[500px]">
+                    <div className="py-2">
                         <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -295,40 +304,43 @@ const UserProfile = () => {
                             <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Update your name</h2>
                         </div>
 
-                        <p className="text-[14px] text-gray-500 mb-8">Please enter your name as it appears on your ID or passport.</p>
-
                         <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">First name</label>
-                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
-                                    <input 
-                                        type="text"
-                                        value={profileForm.first_name}
-                                        onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
-                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
-                                    />
+                            <p className="text-[15px] text-gray-500 leading-relaxed px-4">
+                                Please enter your name as it appears on your ID or passport.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">First name</label>
+                                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
+                                        <input 
+                                            type="text"
+                                            value={profileForm.first_name}
+                                            onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
+                                            className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Last name</label>
-                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
-                                    <input 
-                                        type="text"
-                                        value={profileForm.last_name}
-                                        onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
-                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
-                                    />
+                                <div className="space-y-2">
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">Last name</label>
+                                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
+                                        <input 
+                                            type="text"
+                                            value={profileForm.last_name}
+                                            onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
+                                            className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                    <div className="mt-12 pt-8 border-t border-gray-50 dark:border-white/5 flex justify-center">
                         <button 
                             onClick={handleProfileSubmit}
                             disabled={isSavingProfile}
                             style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-fit min-w-[200px] px-12 py-4 sm:py-3 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {isSavingProfile ? (
                                 <>
@@ -340,62 +352,24 @@ const UserProfile = () => {
                     </div>
                 </div>
             );
-        }
 
-        // ── Sub-view: Edit Email ─────────────────────────────────
-        if (isMobile && editingField === 'email') {
-            return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
-                    <div className="p-8">
-                        <div className="flex items-center gap-4 mb-8">
-                            <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                            </button>
-                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Your email</h2>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Email address</label>
-                                <div 
-                                    style={{ borderColor: theme?.primaryColor || '#2D8A56' }}
-                                    className="relative bg-white dark:bg-white/5 border rounded-full px-8 py-4 transition-all"
-                                >
-                                    <input 
-                                        type="email"
-                                        value={user?.email}
-                                        readOnly
-                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
-                                    />
-                                    <div className="absolute right-8 top-1/2 -translate-y-1/2 cursor-pointer" onClick={() => setEditingField(null)}>
-                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-[13px] text-gray-400 px-5">Email address cannot be changed directly for security. Please contact support if needed.</p>
+            if (isMobile) {
+                return (
+                    <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                        <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
+                            {nameContent}
                         </div>
                     </div>
-
-                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
-                        <button 
-                            onClick={() => setEditingField(null)}
-                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            className="w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            );
+                );
+            }
+            return <div className="animate-fade-in-right">{nameContent}</div>;
         }
 
         // ── Sub-view: Edit Phone ─────────────────────────────────
-        if (isMobile && editingField === 'phone') {
-            return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
-                    <div className="p-8">
+        if (editingField === 'phone') {
+            const phoneContent = (
+                <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[400px]">
+                    <div className="py-2">
                         <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -405,13 +379,13 @@ const UserProfile = () => {
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Mobile Number</label>
-                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Contact number</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="tel"
                                         value={profileForm.phone}
                                         onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
-                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
                                         placeholder="+66..."
                                     />
                                 </div>
@@ -419,12 +393,12 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                    <div className="mt-12 pt-8 border-t border-gray-50 dark:border-white/5 flex justify-center">
                         <button 
                             onClick={handleProfileSubmit}
                             disabled={isSavingProfile}
                             style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-fit min-w-[200px] px-12 py-4 sm:py-3 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {isSavingProfile ? (
                                 <>
@@ -436,13 +410,24 @@ const UserProfile = () => {
                     </div>
                 </div>
             );
+
+            if (isMobile) {
+                return (
+                    <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                        <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
+                            {phoneContent}
+                        </div>
+                    </div>
+                );
+            }
+            return <div className="animate-fade-in-right">{phoneContent}</div>;
         }
 
         // ── Sub-view: Edit Line ──────────────────────────────────
-        if (isMobile && editingField === 'line') {
-            return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
-                    <div className="p-8">
+        if (editingField === 'line') {
+            const lineContent = (
+                <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[400px]">
+                    <div className="py-2">
                         <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -453,12 +438,12 @@ const UserProfile = () => {
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="block text-[15px] text-gray-500 font-medium px-4">Line ID or Phone</label>
-                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="text"
                                         value={profileForm.line}
                                         onChange={(e) => setProfileForm(prev => ({ ...prev, line: e.target.value }))}
-                                        className="w-full bg-transparent border-none p-0 text-[18px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
                                         placeholder="Enter your Line ID or Phone"
                                     />
                                 </div>
@@ -466,12 +451,12 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                    <div className="mt-12 pt-8 border-t border-gray-50 dark:border-white/5 flex justify-center">
                         <button 
                             onClick={handleProfileSubmit}
                             disabled={isSavingProfile}
                             style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-fit min-w-[200px] px-12 py-4 sm:py-3 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {isSavingProfile ? (
                                 <>
@@ -483,13 +468,24 @@ const UserProfile = () => {
                     </div>
                 </div>
             );
+
+            if (isMobile) {
+                return (
+                    <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                        <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
+                            {lineContent}
+                        </div>
+                    </div>
+                );
+            }
+            return <div className="animate-fade-in-right">{lineContent}</div>;
         }
 
         // ── Sub-view: Edit WhatsApp ───────────────────────────────
-        if (isMobile && editingField === 'whatsapp') {
-            return (
-                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right">
-                    <div className="p-8">
+        if (editingField === 'whatsapp') {
+            const whatsappContent = (
+                <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[400px]">
+                    <div className="py-2">
                         <div className="flex items-center gap-4 mb-8">
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
@@ -500,12 +496,12 @@ const UserProfile = () => {
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="block text-[15px] text-gray-500 font-medium px-4">WhatsApp Number</label>
-                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-4 transition-all focus-within:border-slate-400">
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="tel"
                                         value={profileForm.whatsapp}
                                         onChange={(e) => setProfileForm(prev => ({ ...prev, whatsapp: e.target.value }))}
-                                        className="w-full bg-transparent border-none p-0 text-[15px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
                                         placeholder="+66..."
                                     />
                                 </div>
@@ -513,12 +509,12 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    <div className="mt-auto p-8 pb-12 border-t border-gray-50 dark:border-white/5">
+                    <div className="mt-12 pt-8 border-t border-gray-50 dark:border-white/5 flex justify-center">
                         <button 
                             onClick={handleProfileSubmit}
                             disabled={isSavingProfile}
                             style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            className={`w-full py-4 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-fit min-w-[200px] px-12 py-4 sm:py-3 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${isSavingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {isSavingProfile ? (
                                 <>
@@ -530,126 +526,251 @@ const UserProfile = () => {
                     </div>
                 </div>
             );
+
+            if (isMobile) {
+                return (
+                    <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                        <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
+                            {whatsappContent}
+                        </div>
+                    </div>
+                );
+            }
+            return <div className="animate-fade-in-right">{whatsappContent}</div>;
         }
 
         // ── Main Profile View ───────────────────────────────────
-        return (
-            <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
-                {/* Mobile Header with Back Button */}
-                <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
-                    <button
-                        onClick={() => setMobileView('menu')}
-                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                    >
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                    </button>
-                    <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
-                </div>
-
-                <div className="flex-1 px-8 py-6">
-                    <div className="relative mb-12">
-                        <div className="flex flex-col items-center mb-10 pt-4 relative">
-                             {/* Avatar with Edit Button */}
-                             <div className="relative group">
-                                <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
-                                    {(profileForm.avatar || user?.avatar) ? (
-                                        <img 
-                                            src={getMediaUrl(profileForm.avatar || user?.avatar)} 
-                                            alt="Avatar" 
-                                            className="w-full h-full object-cover" 
-                                        />
-                                    ) : googlePicture ? (
-                                        <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
-                                            {initial}
-                                        </div>
-                                    )}
-                                </div>
-                                <label 
-                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                                    className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
-                                >
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                                    <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
-                                </label>
-                             </div>
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
+                        {/* Mobile Header with Back Button */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                            <button
+                                onClick={() => setMobileView('menu')}
+                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
                         </div>
 
-                        <div className="relative">
-                            <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
-                            
-                            <div className="divide-y divide-gray-50 dark:divide-white/5">
-                                {/* Name Row */}
-                                <div className="flex items-center gap-5 py-5 group">
-                                    <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
-                                    <div className="flex-1">
-                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
-                                    </div>
-                                    <button 
-                                        onClick={() => setEditingField('name')} 
-                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                        className="text-[14px] font-bold hover:underline px-2"
-                                    >
-                                        Edit
-                                    </button>
+                        <div className="flex-1 px-8 py-6">
+                            <div className="relative mb-12">
+                                <div className="flex flex-col items-center mb-10 pt-4 relative">
+                                     {/* Avatar with Edit Button */}
+                                     <div className="relative group">
+                                        <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
+                                            {(profileForm.avatar || user?.avatar) ? (
+                                                <img 
+                                                    src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                                    alt="Avatar" 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                            ) : googlePicture ? (
+                                                <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
+                                                    {initial}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <label 
+                                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
+                                        >
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                                            <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
+                                        </label>
+                                     </div>
                                 </div>
 
-                                {/* Phone Row */}
-                                <div className="flex items-center gap-5 py-5 group">
-                                    <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
-                                    <div className="flex-1">
-                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
-                                    </div>
-                                    <button 
-                                        onClick={() => setEditingField('phone')} 
-                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                        className="text-[14px] font-bold hover:underline px-2"
-                                    >
-                                        Edit
-                                    </button>
-                                </div>
+                                <div className="relative">
+                                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                                    
+                                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                                        {/* Name Row */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="flex-1">
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setEditingField('name')} 
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
 
-                                {/* Line Row */}
-                                <div className="flex items-center gap-5 py-5 group">
-                                    <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
-                                    <div className="flex-1">
-                                        <label className="block text-[12px] text-gray-400 font-medium">Line</label>
-                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
-                                    </div>
-                                    <button 
-                                        onClick={() => setEditingField('line')} 
-                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                        className="text-[14px] font-bold hover:underline px-2"
-                                    >
-                                        Edit
-                                    </button>
-                                </div>
+                                        {/* Phone Row */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="flex-1">
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setEditingField('phone')} 
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
 
-                                {/* WhatsApp Row */}
-                                <div className="flex items-center gap-5 py-5 group">
-                                    <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
-                                    <div className="flex-1">
-                                        <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
-                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
-                                    </div>
-                                    <button 
-                                        onClick={() => setEditingField('whatsapp')} 
-                                        style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                        className="text-[14px] font-bold hover:underline px-2"
-                                    >
-                                        Edit
-                                    </button>
-                                </div>
+                                        {/* Line Row */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                            <div className="flex-1">
+                                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setEditingField('line')} 
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
 
-                                {/* Email Row (Read Only) */}
-                                <div className="flex items-center gap-5 py-5 group">
-                                    <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
-                                    <div className="flex-1 min-w-0">
-                                        <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
-                                        <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
+                                        {/* WhatsApp Row */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                            <div className="flex-1">
+                                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setEditingField('whatsapp')} 
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+
+                                        {/* Email Row (Read Only) */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="flex-1 min-w-0">
+                                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Default Desktop Inline View ─────────────────────────
+        return (
+            <div className="max-w-[800px]">
+                <div className="flex flex-col items-center mb-10 pt-4 relative">
+                     {/* Avatar with Edit Button */}
+                     <div className="relative group">
+                        <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
+                            {(profileForm.avatar || user?.avatar) ? (
+                                <img 
+                                    src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                    alt="Avatar" 
+                                    className="w-full h-full object-cover" 
+                                />
+                            ) : googlePicture ? (
+                                <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
+                                    {initial}
+                                </div>
+                            )}
+                        </div>
+                        <label 
+                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
+                        >
+                            <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                            <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
+                        </label>
+                     </div>
+                </div>
+
+                <div className="relative">
+                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                    
+                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                        {/* Name Row */}
+                        <div className="flex items-center gap-5 py-5 group">
+                            <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                            <div className="flex-1">
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
+                            </div>
+                            <button 
+                                onClick={() => setEditingField('name')} 
+                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                className="text-[14px] font-bold hover:underline px-2"
+                            >
+                                Edit
+                            </button>
+                        </div>
+
+                        {/* Phone Row */}
+                        <div className="flex items-center gap-5 py-5 group">
+                            <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                            <div className="flex-1">
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                            </div>
+                            <button 
+                                onClick={() => setEditingField('phone')} 
+                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                className="text-[14px] font-bold hover:underline px-2"
+                            >
+                                Edit
+                            </button>
+                        </div>
+
+                        {/* Line Row */}
+                        <div className="flex items-center gap-5 py-5 group">
+                            <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
+                            <div className="flex-1">
+                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                            </div>
+                            <button 
+                                onClick={() => setEditingField('line')} 
+                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                className="text-[14px] font-bold hover:underline px-2"
+                            >
+                                Edit
+                            </button>
+                        </div>
+
+                        {/* WhatsApp Row */}
+                        <div className="flex items-center gap-5 py-5 group">
+                            <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
+                            <div className="flex-1">
+                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                            </div>
+                            <button 
+                                onClick={() => setEditingField('whatsapp')} 
+                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                className="text-[14px] font-bold hover:underline px-2"
+                            >
+                                Edit
+                            </button>
+                        </div>
+
+                        {/* Email Row (Read Only) */}
+                        <div className="flex items-center gap-5 py-5 group">
+                            <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                            <div className="flex-1 min-w-0">
+                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
                             </div>
                         </div>
                     </div>
@@ -659,115 +780,105 @@ const UserProfile = () => {
     };
 
     /* ── Render About Content ────────────────────────────────── */
-    const renderAbout = (isMobile = false) => (
-        <div className="animate-fade-in-up">
-            {/* Mobile Header with Back Button */}
-            {isMobile && (
-                <div className="sticky top-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 z-20 -mx-6 mb-6 px-4 py-2">
-                    <div className="max-w-[1200px] mx-auto w-full flex items-center justify-between relative">
-                        <button
-                            onClick={() => setMobileView('menu')}
-                            className="flex items-center justify-center min-w-[40px] min-h-[40px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                        </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                            <h2 className="text-[17px] font-bold text-gray-900 dark:text-white">About</h2>
+    const renderAbout = (isMobile = false) => {
+        const content = (
+            <div className="animate-fade-in-up pb-20">
+                <div className="relative mb-12">
+                    <div className="relative">
+                        <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR BIO</h4>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
+                            {agent?.agency_name || agent?.name || 'Authorized Agent'}
+                        </h1>
+                        <div className="mb-4">
+                            <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
+                                <path d="M6.2 0C10.2 0 12.4 3.5 12.4 6.5C12.4 11.5 8.2 21.5 6.2 21.5C4.2 21.5 0 11.5 0 6.5C0 3.5 2.2 0 6.2 0ZM21.8 0C25.8 0 28 3.5 28 6.5C28 11.5 23.8 21.5 21.8 21.5C19.8 21.5 15.6 11.5 15.6 6.5C15.6 3.5 17.8 0 21.8 0Z" />
+                            </svg>
                         </div>
-                        <div className="min-w-[40px]" />
-                    </div>
-                </div>
-            )}
-
-            <div className="relative mb-12">
-                <div className="relative">
-                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR BIO</h4>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                        {agent?.agency_name || agent?.name || 'Authorized Agent'}
-                    </h1>
-                    <div className="mb-4">
-                        <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
-                            <path d="M6.2 0C10.2 0 12.4 3.5 12.4 6.5C12.4 11.5 8.2 21.5 6.2 21.5C4.2 21.5 0 11.5 0 6.5C0 3.5 2.2 0 6.2 0ZM21.8 0C25.8 0 28 3.5 28 6.5C28 11.5 23.8 21.5 21.8 21.5C19.8 21.5 15.6 11.5 15.6 6.5C15.6 3.5 17.8 0 21.8 0Z" />
-                        </svg>
-                    </div>
-                    {agent?.description ? (
-                        <div className="space-y-6">
-                            <p className="text-[16px] sm:text-[17px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium whitespace-pre-line">
-                                {agent.description}
-                            </p>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-slate-400 italic">No bio information available.</p>
-                    )}
-                </div>
-            </div>
-
-            {(agent?.vision || agent?.mission) && (
-                <div className="space-y-6">
-                    {agent?.vision && (
-                        <div className="relative mb-12">
-                            <div className="relative">
-                                <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR VISION</h4>
-                                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                                    {agent?.agency_name || agent?.name || 'Authorized Agent'}
-                                </h1>
-                                <div className="mb-4">
-                                    <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
-                                        <path d="M6.2 0C10.2 0 12.4 3.5 12.4 6.5C12.4 11.5 8.2 21.5 6.2 21.5C4.2 21.5 0 11.5 0 6.5C0 3.5 2.2 0 6.2 0ZM21.8 0C25.8 0 28 3.5 28 6.5C28 11.5 23.8 21.5 21.8 21.5C19.8 21.5 15.6 11.5 15.6 6.5C15.6 3.5 17.8 0 21.8 0Z" />
-                                    </svg>
-                                </div>
-                                <p className="text-[15px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium">
-                                    "{agent.vision}"
+                        {agent?.description ? (
+                            <div className="space-y-6">
+                                <p className="text-[16px] sm:text-[17px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium whitespace-pre-line">
+                                    {agent.description}
                                 </p>
                             </div>
-                        </div>
-                    )}
-                    {agent?.mission && (
-                        <div className="relative mb-12">
-                            <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">ABOUT OUR MISSION</h4>
-                            <p className="text-[16px] text-slate-700 dark:text-gray-300 leading-relaxed pl-2 font-medium">{agent.mission}</p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Official Agent Logo Container */}
-            <div className="flex flex-col items-center justify-center mt-8 mb-12">
-                <div
-                    className="w-64 sm:w-72 h-28 sm:h-32 opacity-[0.12] grayscale pointer-events-none select-none"
-                    style={{
-                        backgroundImage: `url(${getMediaUrl(theme?.logoUrl || agent?.logo)})`,
-                        backgroundSize: 'contain',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat'
-                    }}
-                />
-            </div>
-        </div>
-    );
-
-    /* ── Render Contact Content ──────────────────────────────── */
-    const renderContact = (isMobile = false) => (
-        <div className="animate-fade-in-up">
-            {/* Mobile Header with Back Button */}
-            {isMobile && (
-                <div className="sticky top-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 z-20 -mx-6 mb-6 px-4 py-2">
-                    <div className="max-w-[1200px] mx-auto w-full flex items-center justify-between relative">
-                        <button
-                            onClick={() => setMobileView('menu')}
-                            className="flex items-center justify-center min-w-[40px] min-h-[40px] -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                        </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                            <h2 className="text-[17px] font-medium text-gray-900 dark:text-white">Contact</h2>
-                        </div>
-                        <div className="min-w-[40px]" />
+                        ) : (
+                            <p className="text-sm text-slate-400 italic">No bio information available.</p>
+                        )}
                     </div>
                 </div>
-            )}
 
-            <div className="space-y-6">
+                {(agent?.vision || agent?.mission) && (
+                    <div className="space-y-6">
+                        {agent?.vision && (
+                            <div className="relative mb-12">
+                                <div className="relative">
+                                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR VISION</h4>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
+                                        {agent?.agency_name || agent?.name || 'Authorized Agent'}
+                                    </h1>
+                                    <div className="mb-4">
+                                        <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
+                                            <path d="M6.2 0C10.2 0 12.4 3.5 12.4 6.5C12.4 11.5 8.2 21.5 6.2 21.5C4.2 21.5 0 11.5 0 6.5C0 3.5 2.2 0 6.2 0ZM21.8 0C25.8 0 28 3.5 28 6.5C28 11.5 23.8 21.5 21.8 21.5C19.8 21.5 15.6 11.5 15.6 6.5C15.6 3.5 17.8 0 21.8 0Z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-[15px] text-slate-600 dark:text-gray-400 leading-relaxed italic font-medium">
+                                        "{agent.vision}"
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        {agent?.mission && (
+                            <div className="relative mb-12">
+                                <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">ABOUT OUR MISSION</h4>
+                                <p className="text-[16px] text-slate-700 dark:text-gray-300 leading-relaxed pl-2 font-medium">{agent.mission}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Official Agent Logo Container */}
+                <div className="flex flex-col items-center justify-center mt-8 mb-12">
+                    <div
+                        className="w-64 sm:w-72 h-28 sm:h-32 opacity-[0.12] grayscale pointer-events-none select-none"
+                        style={{
+                            backgroundImage: `url(${getMediaUrl(theme?.logoUrl || agent?.logo)})`,
+                            backgroundSize: 'contain',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+                </div>
+            </div>
+        );
+
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
+                        {/* Mobile Header with Back Button */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                            <button
+                                onClick={() => setMobileView('menu')}
+                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">About</h2>
+                        </div>
+                        <div className="p-8">
+                            {content}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return content;
+    };
+
+    /* ── Render Contact Content ──────────────────────────────── */
+    const renderContact = (isMobile = false) => {
+        const content = (
+            <div className="animate-fade-in-up space-y-6 pb-20">
                 {/* Phone & Email card */}
                 {(agent?.phone || agent?.email) && (
                     <div className="relative">
@@ -824,11 +935,35 @@ const UserProfile = () => {
                     </div>
                 )}
             </div>
-        </div>
-    );
+        );
+
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
+                        {/* Mobile Header with Back Button */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                            <button
+                                onClick={() => setMobileView('menu')}
+                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Contact</h2>
+                        </div>
+                        <div className="p-8">
+                            {content}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return content;
+    };
 
     return (
-        <div className="bg-white dark:bg-dashboard-dark flex flex-col w-full overflow-x-hidden">
+        <div className="bg-white dark:bg-dashboard-dark flex flex-col w-full overflow-x-hidden min-h-screen">
             <div className="flex-1 max-w-[1200px] mx-auto w-full px-8 md:px-12 lg:px-20 pt-0 lg:pt-10 pb-24 lg:pb-6 flex flex-col lg:flex-row lg:gap-16 overflow-x-hidden">
 
                 {/* ── Desktop sidebar ── */}
@@ -854,21 +989,23 @@ const UserProfile = () => {
                     </nav>
                 </div>
 
-                <div className="hidden lg:block w-px bg-gray-100 self-stretch flex-shrink-0" />
+                <div className="hidden lg:block w-px bg-gray-100 self-stretch flex-shrink-0 dark:bg-white/5" />
 
                 {/* ── Main Content Area ── */}
                 <div className="flex-1 min-w-0">
                     {/* Desktop Content */}
                     <div className="hidden lg:block">
                         <div className="flex items-center mb-8">
-                            <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white capitalize">{activeSection}</h2>
+                            <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white">
+                                {navItems.find(n => n.id === activeSection)?.label || activeSection}
+                            </h2>
                         </div>
                         {activeSection === 'profile' && renderProfile()}
                         {activeSection === 'about' && renderAbout()}
                         {activeSection === 'contact' && renderContact()}
                     </div>
 
-                    {/* Mobile Content */}
+                    {/* Mobile Content (Centered Menu) */}
                     <div className="lg:hidden">
                         {mobileView === 'menu' && (
                             <div className="animate-fade-in-up pt-10">
@@ -939,9 +1076,9 @@ const UserProfile = () => {
                         {mobileView === 'contact' && renderContact(true)}
                     </div>
 
-                    {/* Footer Logo */}
+                    {/* Footer Logo (Mobile only in unified layout) */}
                     {isMainDomain && mobileView === 'menu' && (
-                        <div className="lg:hidden flex flex-col items-center justify-center pt-20 pb-4 opacity-10">
+                        <div className="lg:hidden flex flex-col items-center justify-center pt-24 pb-8 opacity-10">
                             <Link to="/" className="flex flex-col items-center gap-3">
                                 <div
                                     className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
@@ -959,15 +1096,15 @@ const UserProfile = () => {
             {isCropping && (
                 <div className="fixed inset-0 z-[1000] bg-black flex flex-col animate-fade-in">
                     {/* Header */}
-                    <div className="p-6 flex items-center justify-between z-10">
+                    <div className="p-6 flex items-center justify-between border-b border-white/5 bg-black z-10">
                         <button 
                             onClick={() => setIsCropping(false)}
-                            className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                            className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all lg:hidden"
                         >
                             <ArrowLeftIcon className="w-6 h-6" />
                         </button>
-                        <h3 className="text-white font-bold text-[15px]">Edit Profile Image</h3>
-                        <div className="w-10" /> {/* Spacer */}
+                        <h3 className="text-white font-bold text-[15px] flex-1 text-center">Edit Profile Image</h3>
+                        <div className="w-10 lg:hidden" /> {/* Spacer */}
                     </div>
 
                     {/* Cropper Area */}
@@ -987,7 +1124,7 @@ const UserProfile = () => {
 
                     {/* Controls & Footer */}
                     <div className="p-8 pb-12 bg-black border-t border-white/5 z-10">
-                        <div className="mb-8">
+                        <div className="mb-8 flex justify-center">
                             <input
                                 type="range"
                                 value={zoom}
@@ -996,21 +1133,21 @@ const UserProfile = () => {
                                 step={0.1}
                                 aria-labelledby="Zoom"
                                 onChange={(e) => setZoom(e.target.value)}
-                                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                                className="w-full lg:w-1/2 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
                             />
                         </div>
                         
-                        <div className="flex gap-4 items-center">
+                        <div className="flex justify-center gap-4 items-center">
                             <button 
                                 onClick={() => setIsCropping(false)}
-                                className="flex-1 py-4 px-6 rounded-full bg-white/10 text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
+                                className="w-fit py-4 px-8 rounded-full bg-white/10 text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleCropSave}
                                 style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                                className="flex-[2.5] py-4 px-8 rounded-full text-white font-bold text-[15px] shadow-lg shadow-primary-500/20 active:scale-95 transition-all whitespace-nowrap"
+                                className="w-fit py-4 px-12 rounded-full text-white font-bold text-[15px] shadow-lg shadow-primary-500/20 active:scale-95 transition-all whitespace-nowrap"
                             >
                                 Apply Changes
                             </button>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import BrandLoading from '../components/Common/BrandLoading';
 
 const TenantContext = createContext(null);
 
@@ -12,12 +13,20 @@ export const useTenant = () => {
 };
 
 export const TenantProvider = ({ children }) => {
-    const [tenantConfig, setTenantConfig] = useState(null);
+    const [tenantConfig, setTenantConfig] = useState(() => {
+        const hostname = window.location.hostname;
+        const cacheKey = `tenantConfig_${hostname}`;
+        const cached = sessionStorage.getItem(cacheKey);
+        return cached ? JSON.parse(cached) : null;
+    });
     const [loading, setLoading] = useState(true);
+    const [isExiting, setIsExiting] = useState(false);
+    const [showSplash, setShowSplash] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchTenantConfig = async () => {
+            const startTime = Date.now();
             const hostname = window.location.hostname;
             const mainDomain = process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud';
             const cacheKey = `tenantConfig_${hostname}`;
@@ -45,7 +54,15 @@ export const TenantProvider = ({ children }) => {
                 if (cached && err.response?.status !== 404) {
                     console.log('Recovered tenant config from cache after API network failure');
                     setTenantConfig(JSON.parse(cached));
-                    setLoading(false);
+                    
+                    // Even on cache hit, ensure minimal display time
+                    const elapsed = Date.now() - startTime;
+                    const remaining = Math.max(0, 1000 - elapsed); // Reduced to 1 second for snappier feel
+                    setTimeout(() => {
+                        setLoading(false);
+                        setIsExiting(true);
+                        setTimeout(() => setShowSplash(false), 400); // Faster exit
+                    }, remaining);
                     return;
                 }
 
@@ -62,7 +79,13 @@ export const TenantProvider = ({ children }) => {
                 console.log('API failed definitively, guessing tenant config from hostname:', { hostname, isProbablyMainLabel });
                 setTenantConfig({ is_main_domain: isProbablyMainLabel, agent: null });
             } finally {
-                setLoading(false);
+                const elapsed = Date.now() - startTime;
+                const remaining = Math.max(0, 1000 - elapsed);
+                setTimeout(() => {
+                    setLoading(false);
+                    setIsExiting(true);
+                    setTimeout(() => setShowSplash(false), 400);
+                }, remaining);
             }
         };
 
@@ -88,17 +111,16 @@ export const TenantProvider = ({ children }) => {
         error
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
-    }
-
     return (
         <TenantContext.Provider value={value}>
-            {children}
+            {!loading && children}
+            {showSplash && (
+                <BrandLoading 
+                    agent={tenantConfig?.agent} 
+                    isMainDomain={tenantConfig?.is_main_domain} 
+                    isExiting={isExiting} 
+                />
+            )}
         </TenantContext.Provider>
     );
 };

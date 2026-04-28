@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
+import BrandLoading from './components/Common/BrandLoading';
 
 // Layouts
 import PublicLayout from './components/Layout/PublicLayout';
@@ -49,15 +50,11 @@ import BannerManagement from './pages/Admin/BannerManagement';
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { isAuthenticated, user, loading } = useAuth();
-    const { isMainDomain } = useTenant();
+    const { isMainDomain, agent } = useTenant();
     const location = useLocation();
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return null; // Let TenantProvider handle the initial splash; don't re-animate
     }
 
     if (!isAuthenticated) {
@@ -90,13 +87,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 // Guest Route Component (prevent logged in users from visiting login/register)
 const GuestRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
+    const { isMainDomain, agent } = useTenant();
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return null;
     }
 
     if (isAuthenticated) {

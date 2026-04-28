@@ -752,7 +752,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 // Fetch basic listing details
                 const [response] = await Promise.all([
                     publicApi.getListing(id, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 1000)) // Force skeleton for 1s
+                    new Promise(resolve => setTimeout(resolve, 200)) // Minimal delay for smooth transition
                 ]);
                 const fetchedListing = response.data;
                 
@@ -1881,6 +1881,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 </div>
                             )}
                         </div>
+                        
+                        {/* Cinematic Overlays */}
+                        {!isBookingOverlayOpen && (
+                            <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-[40] pointer-events-none" />
+                        )}
 
                         {/* Image counter */}
                         {hasImages && images.length > 1 && (
@@ -2007,7 +2012,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {/* Title & Info - same layout for listing and viewing-requested; viewing date/status inline when bookingId */}
                                     <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-2 lg:pt-0">
                                         <div className="flex-1 min-w-0 w-full">
-                                            <h1 className="text-[22px] lg:text-3xl font-semibold text-gray-900 dark:text-white leading-[1.2] mb-1 tracking-tight">
+                                            <h1 className="text-[22px] lg:text-3xl font-semibold lg:font-medium text-gray-900 dark:text-white leading-[1.2] mb-1 tracking-tight">
                                                 {listing.title}
                                             </h1>
 
@@ -2020,7 +2025,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
 
                                     {/* Price for Mobile (Fixed styling) */}
-                                    <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-baseline">
+                                    <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold lg:font-semibold text-gray-900 dark:text-white mb-2 flex items-baseline">
                                         {formatPrice(listing.price)}
                                         {listing.listing_type === 'rent' && (
                                             <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">/month</span>
@@ -2028,7 +2033,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </div>
 
                                     <div className="px-0 md:px-0 lg:px-0 my-6">
-                                        <div className={`flex md:inline-flex items-center justify-start gap-2 px-4 py-3 text-white rounded-r-full md:rounded-lg w-[55%] md:w-auto animate-shimmer ${
+                                        <div className={`flex md:inline-flex items-center justify-start gap-2 px-4 py-3 text-white rounded-r-full md:rounded-full w-[55%] md:w-auto animate-shimmer ${
                                             (listing.availability_status || "Ready to move in").toLowerCase() === "ready to move in" ? 'bg-emerald-600' : 'bg-amber-600'
                                         }`}>
                                             {(listing.availability_status || "Ready to move in").toLowerCase() === "ready to move in" ? (
@@ -2058,7 +2063,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white dark:bg-dashboard-card mt-6">
 
                                     {/* Desktop Bento Grid (Visible on lg screens) */}
-                                    <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] cursor-pointer">
+                                    <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] cursor-pointer relative group">
+                                        {/* Vignette Overlay for the entire grid */}
+                                        <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_0_120px_rgba(0,0,0,0.2)] transition-shadow duration-700" />
+                                        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/20 to-transparent z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                                         {/* Main Image (Large, Left) */}
                                         <div
                                             className="col-span-2 row-span-2 relative overflow-hidden group cursor-pointer"
@@ -2624,24 +2632,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         </>
                                     )}
 
-                                    {/* Subdomain-style watermark logo — centered, low opacity */}
-                                    {isMainDomain && (
-                                        <div className="flex flex-col items-center justify-center pt-0 pb-2 opacity-[0.08] pointer-events-none">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <div
-                                                    className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                                    style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                                >
-                                                    {!theme?.logoUrl && (
-                                                        <Logo className="w-56 h-56 text-primary-500" />
-                                                    )}
-                                                </div>
-                                                {!theme?.logoUrl && (
-                                                    <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter uppercase italic">StayNest</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
+                                    {/* Removed watermark logo per user request */}
 
                                 </div>
                                 {/* Bottom spacer for sticky footer breathing room */}

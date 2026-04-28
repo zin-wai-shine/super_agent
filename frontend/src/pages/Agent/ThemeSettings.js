@@ -251,19 +251,20 @@ const ThemeSettings = () => {
             if (targetField === 'favicon_url') setUploadingFavicon(true);
             if (targetField === 'share_preview_image') setUploadingSharePreview(true);
 
-            const extension = cropTarget.isPng ? 'png' : 'jpg';
-            const croppedFile = new File([croppedImageBlob], `${targetField}.${extension}`, { type: imageType });
-            
-            const response = await agentApi.uploadLogo(croppedFile);
+            const response = await agentApi.uploadLogo(croppedImageBlob);
             setValue(targetField, response.data.url);
             
             setIsCropping(false);
             setTempImage(null);
             setCropTarget(null);
             toast.success('Image uploaded successfully!', { id: 'imageUpload' });
+            
+            // Auto-save the theme after image upload to ensure persistence
+            handleSubmit(onSubmit)();
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error('Failed to upload image', { id: 'imageUpload' });
+            const errorMsg = error.response?.data?.error || 'Failed to upload image';
+            toast.error(errorMsg, { id: 'imageUpload' });
         } finally {
             if (targetField === 'logo_url') setUploadingLogo(false);
             if (targetField === 'favicon_url') setUploadingFavicon(false);
@@ -335,7 +336,7 @@ const ThemeSettings = () => {
                         ) : (
                             <CheckCircleIcon className="w-4 h-4" />
                         )}
-                        Export & Build
+                        Save Changes
                     </button>
                 </div>
             </div>
@@ -405,7 +406,7 @@ const ThemeSettings = () => {
                                     </div>
                                 </div>
 
-                                <div className="relative bg-white dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden">
+                                <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden">
                                     <div className="h-20 md:h-28 flex items-center px-6 md:px-12 justify-between">
                                         <div className="flex items-center">
                                             <div
@@ -413,7 +414,8 @@ const ThemeSettings = () => {
                                                 style={{
                                                     backgroundImage: `url(${getMediaUrl(watchAll.logo_url || '/default_logo.png')})`,
                                                     transformOrigin: 'left',
-                                                    transform: `scale(${preview.navbar_logo_height / 100})`
+                                                    transform: `scale(${preview.navbar_logo_height / 100})`,
+                                                    mixBlendMode: 'multiply'
                                                 }}
                                             />
                                         </div>

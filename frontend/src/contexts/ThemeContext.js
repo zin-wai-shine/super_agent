@@ -60,6 +60,7 @@ export const ThemeProvider = ({ children }) => {
                     fontFamily: t.font_family || defaultTheme.fontFamily,
                     logoUrl: t.logo_url || agent.logo || '',
                     faviconUrl: t.favicon_url || t.logo_url || agent.logo || '',
+                    logoCacheBuster: t.updated_at || agent.updated_at || Date.now(),
                     headerText: t.header_text || agent.name || '',
                     footerText: t.footer_text || `© ${new Date().getFullYear()} ${agent.name || 'Super Real Estate'}`,
                     buttonRadius: t.button_radius || defaultTheme.buttonRadius,

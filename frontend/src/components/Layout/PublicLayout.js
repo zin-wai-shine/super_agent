@@ -330,6 +330,7 @@ const PublicLayout = () => {
     const isProfilePage = location.pathname === '/profile';
     const isBookingsPage = location.pathname === '/my-bookings';
     const isListingDetailPage = location.pathname.startsWith('/listings/') && location.pathname.split('/').length > 2;
+    const isCollectionDetailPage = location.pathname.startsWith('/collections/') && location.pathname.split('/').length > 2;
     const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage || isListingDetailPage;
     const scrollContainerRef = useRef(null);
     return (
@@ -354,8 +355,16 @@ const PublicLayout = () => {
                             {/* Drawer Header */}
                             <div className="h-16 flex items-center justify-between px-4 border-b" style={{ borderColor: 'var(--menu-border)' }}>
                                 <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                                    <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
-                                    <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>{brandName}</span>
+                                    {!theme.logoUrl ? (
+                                        <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
+                                    ) : (
+                                        <div className="md:hidden">
+                                            <Logo className="w-8 h-8" style={{ color: 'var(--primary-color)' }} />
+                                        </div>
+                                    )}
+                                    {!theme.logoUrl && (
+                                        <span className="text-xl font-bold" style={{ color: 'var(--menu-text-primary)' }}>{brandName}</span>
+                                    )}
                                 </Link>
                                 <div className="flex items-center gap-2">
 
@@ -621,10 +630,10 @@ const PublicLayout = () => {
             )}
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
-            {!isAuthPage && (
-                <div className={`hidden md:block sticky top-0 z-[150] bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} border-b ${isScrolled ? 'border-gray-100 dark:border-white/5' : 'border-transparent'}`}>
+            {!isAuthPage && !isCollectionDetailPage && (
+                <div className={`hidden md:block z-[150] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isCollectionDetailPage ? 'fixed w-full top-0' : 'sticky top-0'} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : 'bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5'}`}>
                     <nav
-                        className={`transition-all duration-300 bg-white/80 dark:bg-transparent backdrop-blur-md ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
+                        className={`transition-all duration-300 ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent backdrop-blur-none' : 'bg-white/80 dark:bg-transparent backdrop-blur-md'} ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
                         onMouseLeave={closeMenu}
                     >
                         <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20">
@@ -634,8 +643,8 @@ const PublicLayout = () => {
                                         <div className="flex items-center xl:gap-8 lg:gap-6 md:gap-4">
                                             {/* Logo Skeleton */}
                                             <div className="flex items-center space-x-2 pr-4 md:pr-8">
-                                                <div className="w-8 h-8 bg-white/20 rounded" />
-                                                <div className="w-32 h-6 bg-white/20 rounded" />
+                                                <div className="w-8 h-8 bg-white/5 rounded" />
+                                                <div className="w-32 h-6 bg-white/5 rounded" />
                                             </div>
                                             {/* Nav Links Skeleton */}
                                             <div className="flex items-center space-x-1">
@@ -656,17 +665,20 @@ const PublicLayout = () => {
                                             {/* Logo — triple size on desktop only */}
                                             <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center group pr-4 md:pr-8">
                                                 <div
-                                                    className="w-[55px] h-[51px] md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
+                                                    className="hidden md:block md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
                                                     style={{
-                                                        ...(theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}),
+                                                        ...(theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)}?t=${theme.logoCacheBuster})` } : {}),
                                                         transformOrigin: 'left',
-                                                        transform: `scale(var(--navbar-logo-scale, 1))`
+                                                        transform: `scale(var(--navbar-logo-scale, 1))`,
+                                                        mixBlendMode: 'multiply'
                                                     }}
-                                                >
-                                                    {!theme.logoUrl && (
+                                                />
+                                                <div className="md:hidden">
+                                                     <Logo className="w-10 h-10" style={{ color: 'var(--primary-color)' }} />
+                                                </div>
+                                                {!theme.logoUrl && (
                                                         <Logo className="w-full h-full" style={{ color: 'var(--primary-color)' }} />
                                                     )}
-                                                </div>
                                             </Link>
 
                                             <div className="flex items-center space-x-1 lg:hidden xl:flex">
@@ -692,13 +704,27 @@ const PublicLayout = () => {
                                                     {/* Profile — visible at lg (layout like image) */}
                                                     <div className="relative flex items-center" ref={userMenuRef}>
                                                         <div
-                                                            className="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg transition-all duration-300 text-white bg-primary-600"
+                                                            className="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg transition-all duration-300 text-white bg-primary-600 overflow-hidden shadow-sm border border-white/10"
                                                             style={{
                                                                 boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.25)',
                                                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                                             }}
                                                         >
-                                                            {user?.first_name?.[0]?.toUpperCase() || <PiUser className="w-7 h-7" />}
+                                                            {(user?.avatar) ? (
+                                                                <img 
+                                                                    src={getMediaUrl(user.avatar)} 
+                                                                    alt="Avatar" 
+                                                                    className="w-full h-full object-cover" 
+                                                                />
+                                                            ) : localStorage.getItem('google_picture') ? (
+                                                                <img 
+                                                                    src={localStorage.getItem('google_picture')} 
+                                                                    alt="Avatar" 
+                                                                    className="w-full h-full object-cover" 
+                                                                />
+                                                            ) : (
+                                                                user?.first_name?.[0]?.toUpperCase() || <PiUser className="w-7 h-7" />
+                                                            )}
                                                         </div>
 
                                                         {/* Vertical divider */}
@@ -887,10 +913,11 @@ const PublicLayout = () => {
             )}
 
             {/* Mobile Bottom Navigation */}
-            <div
-                className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'translate-y-full duration-0' : 'duration-500'}`}
-                style={{ transform: (mobileBottomNavVisible && !isKeyboardOpen) ? 'translateY(0)' : 'translateY(100%)' }}
-            >
+            {!isCollectionDetailPage && (
+                <div
+                    className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'translate-y-full duration-0' : 'duration-500'}`}
+                    style={{ transform: (mobileBottomNavVisible && !isKeyboardOpen) ? 'translateY(0)' : 'translateY(100%)' }}
+                >
                 <div>
                     <nav className="w-full">
                         <div
@@ -1016,6 +1043,7 @@ const PublicLayout = () => {
                     </nav>
                 </div>
             </div>
+            )}
 
             {/* Footer - shown on all pages except profile, my-bookings, login, register */}
             {
@@ -1054,8 +1082,11 @@ const PublicLayout = () => {
                                     {/* Logo icon — mobile only */}
                                     <div className="md:hidden flex items-center justify-center mb-1">
                                         <div
-                                            className="w-40 h-40 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                            style={theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
+                                            className="w-40 h-40 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center transition-all duration-300"
+                                            style={theme.logoUrl ? { 
+                                                backgroundImage: `url(${getMediaUrl(theme.logoUrl)}?t=${theme.logoCacheBuster})`,
+                                                mixBlendMode: 'multiply'
+                                            } : {}}
                                         >
                                             {!theme.logoUrl && (
                                                 <Logo className="w-40 h-40" style={{ color: 'var(--primary-color)' }} />

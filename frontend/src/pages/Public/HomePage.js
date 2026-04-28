@@ -151,7 +151,7 @@ const HomePage = () => {
                     </div>
                     {/* Right Video Background */}
                     <div className="w-full lg:w-1/2 relative min-h-[400px] lg:min-h-full p-4 lg:py-10 lg:pl-0 lg:pr-0">
-                        <div className="w-full h-full relative rounded-[40px] lg:rounded-r-none overflow-hidden">
+                        <div className="w-full h-full relative rounded-[40px] lg:rounded-r-none overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]">
                             <video
                                 className="absolute inset-0 w-full h-full object-cover"
                                 src="/hero_main_background.mp4"
@@ -160,6 +160,9 @@ const HomePage = () => {
                                 muted
                                 playsInline
                             />
+                            {/* Cinematic Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 z-10 pointer-events-none" />
+                            <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.4)] z-10 pointer-events-none" />
                         </div>
                     </div>
                 </div>

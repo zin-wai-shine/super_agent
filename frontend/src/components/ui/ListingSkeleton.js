@@ -5,11 +5,11 @@ const GridSkeleton = () => {
     return (
         <div className="flex flex-col w-full bg-transparent" style={skeletonStyle}>
             <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] mb-0">
-                <div className="h-full w-full bg-gray-100 dark:bg-white/5 animate-fill-fast" />
+                <div className="h-full w-full bg-gray-50 dark:bg-white/[0.02] animate-fill-fast" />
                 <div className="absolute top-3.5 left-3.5">
-                    <div className="h-6 w-16 bg-gray-50 dark:bg-white/10 rounded-[100px] animate-fill-med" />
+                    <div className="h-6 w-16 bg-white/40 dark:bg-white/5 rounded-[100px] animate-fill-med" />
                 </div>
-                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 dark:bg-black/10 animate-fill-med" />
+                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/10 dark:bg-white/[0.02] animate-fill-med" />
                 <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px]">
                     <div className="w-[88px] md:w-[112px] aspect-[3/1] bg-gray-50 dark:bg-white/10 rounded-[100px] opacity-60 animate-fill-slow" />
                 </div>
@@ -39,11 +39,11 @@ const SavedGridSkeleton = () => {
     return (
         <div className="flex flex-col w-full" style={skeletonStyle}>
             <div className="aspect-[5/4.5] md:aspect-[5/5.0] w-full rounded-[23px] relative overflow-hidden mb-2">
-                <div className="h-full w-full bg-gray-100 dark:bg-white/5 animate-fill-fast" />
+                <div className="h-full w-full bg-gray-50 dark:bg-white/[0.02] animate-fill-fast" />
                 <div className="absolute top-3 left-3">
-                    <div className="h-6 w-16 bg-gray-50 dark:bg-white/10 rounded-[100px] animate-fill-med" />
+                    <div className="h-6 w-16 bg-white/40 dark:bg-white/5 rounded-[100px] animate-fill-med" />
                 </div>
-                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/20 dark:bg-black/20 animate-fill-med" />
+                <div className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/10 dark:bg-white/[0.02] animate-fill-med" />
                 <div className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px]">
                     <div className="w-[88px] md:w-[112px] aspect-[2.8/1] bg-gray-50 dark:bg-white/10 rounded-[100px] opacity-60 animate-fill-slow" />
                 </div>
@@ -126,23 +126,23 @@ const DetailSkeleton = ({ status }) => {
                 </div>
             </div>
 
-            <div className="lg:hidden relative w-full h-[55vh] bg-gray-200 dark:bg-white/10 animate-fill-fast overflow-hidden">
+            <div className="lg:hidden relative w-full h-[55vh] bg-gray-100 dark:bg-white/5 animate-fill-fast overflow-hidden">
                 {/* Back Button Skeleton */}
                 <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                    <div className="w-5 h-0.5 bg-gray-200 dark:bg-white/10 rounded-full" />
+                    <div className="w-5 h-0.5 bg-gray-100 dark:bg-white/10 rounded-full" />
                 </div>
                 <div className="absolute top-4 right-4 flex gap-2">
                     <div className="w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-white/10 rounded-full" />
+                        <div className="w-4 h-4 bg-gray-100 dark:bg-white/10 rounded-full" />
                     </div>
                     <div className="w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-white/10 rounded-full" />
+                        <div className="w-4 h-4 bg-gray-100 dark:bg-white/10 rounded-full" />
                     </div>
                 </div>
             </div>
 
             <div className="max-w-[1440px] mx-auto w-full px-0 md:px-12 lg:px-20 relative z-10">
-                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-20 lg:mt-0 px-0 py-10 lg:px-0 lg:py-8 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none min-h-[60vh]">
+                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-20 lg:mt-0 px-0 py-10 lg:px-0 lg:py-8 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] lg:shadow-none min-h-[60vh]">
                     <div className="flex flex-col gap-4 mb-8 px-6 lg:px-0">
                         <div className="hidden lg:block h-6 w-24 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-fast" />
                         <div className="h-9 lg:h-12 w-3/4 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />

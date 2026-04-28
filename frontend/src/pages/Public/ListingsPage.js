@@ -605,18 +605,12 @@ const ListingsPage = () => {
 
     useEffect(() => {
         localStorage.setItem('show_google_map', isGoogleMapOpen);
-        // Only lock body scroll for the sidebar/filters drawer, NOT for the map view
-        // because map view uses unified window scroll for the bottom sheet effect.
-        const shouldLock = isSidebarOpen;
-        if (shouldLock) {
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            document.body.style.paddingRight = `${scrollbarWidth}px`;
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
+
+        if (isSidebarOpen) {
+            document.body.classList.add('filter-open');
         } else {
+            document.body.classList.remove('filter-open');
             document.body.style.paddingRight = '';
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
         }
 
         // Handle mobile nav visibility: hide on entry to map, but let scroll handle it thereafter
@@ -632,10 +626,31 @@ const ListingsPage = () => {
         }
 
         return () => { 
-            document.body.style.overflow = ''; 
-            document.documentElement.style.overflow = '';
+            document.body.classList.remove('filter-open');
+            document.body.style.paddingRight = '';
         };
     }, [isGoogleMapOpen, isSidebarOpen, setMobileBottomNavVisible]);
+
+    // Non-passive scroll blocking — React onWheel/onTouchMove are passive by default
+    // in modern browsers, so e.preventDefault() would silently fail there.
+    // We attach directly to document with { passive: false } to reliably block background scroll.
+    useEffect(() => {
+        if (!isSidebarOpen) return;
+
+        const preventBackgroundScroll = (e) => {
+            // If the event originates from inside the sidebar dialog, let it scroll normally
+            if (e.target && e.target.closest && e.target.closest('aside[role="dialog"]')) return;
+            e.preventDefault();
+        };
+
+        document.addEventListener('wheel', preventBackgroundScroll, { passive: false });
+        document.addEventListener('touchmove', preventBackgroundScroll, { passive: false });
+
+        return () => {
+            document.removeEventListener('wheel', preventBackgroundScroll);
+            document.removeEventListener('touchmove', preventBackgroundScroll);
+        };
+    }, [isSidebarOpen]);
 
     const handleUnifiedScroll = useCallback(() => {
         if (!isGoogleMapOpen || window.innerWidth >= 1024) return;
@@ -1704,7 +1719,7 @@ const ListingsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable overscroll-contain">
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
@@ -2121,22 +2136,7 @@ const ListingsPage = () => {
                                         </button>
                                     )}
 
-                                    {/* Watermark Logo at the end of the scroll */}
-                                    {isMainDomain && (
-                                        <div className="flex flex-col items-center justify-center pt-8 pb-16 opacity-[0.08] pointer-events-none">
-                                            <div
-                                                className="w-56 h-56 bg-[length:100%_auto] bg-no-repeat bg-center flex items-center justify-center"
-                                                style={theme?.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)})` } : {}}
-                                            >
-                                                {!theme?.logoUrl && (
-                                                    <Logo className="w-56 h-56" style={{ color: 'var(--primary-color)' }} />
-                                                )}
-                                            </div>
-                                            {!theme?.logoUrl && (
-                                                <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">StayNest</span>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* Removed watermark logo per user request */}
                                 </div>
                             </div>
 

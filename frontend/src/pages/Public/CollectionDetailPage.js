@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext';
 import { publicApi, collectionApi } from '../../services/api';
 import ListingCard, { ListingImageSlider } from '../../components/Listings/ListingCard';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { FiHome } from "react-icons/fi";
+import { ArrowLeftIcon, Square2StackIcon } from '@heroicons/react/24/outline';
+import { FiHome, FiImage } from "react-icons/fi";
 import { getMediaUrl } from '../../utils/media';
 
 const CollectionDetailPage = () => {
@@ -13,9 +14,11 @@ const CollectionDetailPage = () => {
     const [collection, setCollection] = useState(null);
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
     const outletContext = useOutletContext() || {};
     const { navVisible = true } = outletContext;
     const [scrolled, setScrolled] = useState(false);
+    const [headerSticky, setHeaderSticky] = useState(false);
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
     const [visibleCount, setVisibleCount] = useState(3);
@@ -26,6 +29,7 @@ const CollectionDetailPage = () => {
 
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
+            setHeaderSticky(window.scrollY >= 340);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
@@ -53,7 +57,7 @@ const CollectionDetailPage = () => {
             const [colRes, listRes] = await Promise.all([
                 collectionApi.getPublicCollection(id),
                 publicApi.getListings({ collection_id: id, limit: 100 }),
-                new Promise(resolve => setTimeout(resolve, 1000)) // Force skeleton visibility for 1s
+                new Promise(resolve => setTimeout(resolve, 200)) // Minimal delay for smooth transition
             ]);
             
             setCollection(colRes.data || null);
@@ -80,7 +84,7 @@ const CollectionDetailPage = () => {
             {/* --- MOBILE ONLY: Immersive UX --- */}
             <div className="lg:hidden">
                 {/* 1. Fixed Hero Header (Background) */}
-                <div className="fixed top-0 left-0 right-0 w-full h-[55vh] md:h-[60vh] overflow-hidden bg-gray-200 dark:bg-gray-800 z-0">
+                <div className="fixed top-0 left-0 right-0 w-full h-[55vh] md:h-[60vh] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0">
                     {!loading && heroImages.length > 0 ? (
                         <div className="w-full h-full">
                             <ListingImageSlider 
@@ -89,19 +93,22 @@ const CollectionDetailPage = () => {
                                 cardLink="#" 
                                 arrowPadding="6"
                                 onImageClick={openGallery}
+                                showArrows={false}
                             />
                         </div>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                            <FiHome className="w-12 h-12 text-gray-300 animate-pulse" />
+                            <FiImage className="w-12 h-12 text-gray-300 animate-pulse" />
                         </div>
                     )}
-                    <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 to-transparent z-40 pointer-events-none" />
+                    {!loading && (
+                        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black/70 via-black/20 to-transparent z-40 pointer-events-none" />
+                    )}
                 </div>
 
                 {/* 2. Floating Header (Fixed at Top) */}
                 <div className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-all duration-500 border-b ${scrolled ? 'bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-xl border-gray-100 dark:border-white/10 shadow-sm' : 'bg-transparent border-transparent pointer-events-none'}`}>
-                    <div className="flex items-center gap-4 pointer-events-auto">
+                    <div className="flex items-center gap-2 pointer-events-auto">
                         <button
                             onClick={() => navigate(-1)}
                             disabled={loading}
@@ -113,10 +120,12 @@ const CollectionDetailPage = () => {
                                 <ArrowLeftIcon className="w-6 h-6 transition-transform group-hover:-translate-x-0.5" />
                             )}
                         </button>
+
+
                     </div>
 
                     <div className="flex flex-col items-center pointer-events-none text-center">
-                        <h1 className={`text-[17px] font-bold tracking-tight truncate max-w-[50vw] transition-all duration-300 ${scrolled ? 'text-gray-900 dark:text-white opacity-100' : 'text-white drop-shadow-md'}`}>
+                        <h1 className={`text-[17px] font-bold tracking-tight truncate max-w-[50vw] transition-all duration-300 ${scrolled ? 'text-gray-900 dark:text-white opacity-100' : 'text-white'}`}>
                             {loading ? (
                                 <div className={`h-5 w-32 rounded-[100px] animate-pulse backdrop-blur-sm ${scrolled ? 'bg-gray-200 dark:bg-white/10' : 'bg-white/30'}`} />
                             ) : (
@@ -137,7 +146,7 @@ const CollectionDetailPage = () => {
                 {/* 3. Overlapping Content Container */}
                 <div className="relative z-10 pointer-events-none">
                     <div className="h-[55vh] md:h-[60vh] w-full" />
-                    <div className="relative z-40 -mt-12 bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[40px] px-6 pt-2 pb-32 shadow-[0_-12px_40px_-15px_rgba(0,0,0,0.25)] min-h-screen pointer-events-auto">
+                    <div className="relative z-40 -mt-12 bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[40px] px-6 pt-2 pb-32 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] min-h-screen pointer-events-auto">
                         <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/10 rounded-full mx-auto mb-2 opacity-50 mt-1" />
                         <div className="relative min-h-[400px]">
                             <ListingsGrid 
@@ -154,55 +163,103 @@ const CollectionDetailPage = () => {
 
             {/* --- DESKTOP ONLY: Classic Design --- */}
             <div className="hidden lg:block">
-                {/* Desktop Hero (Relative) */}
-                <div className="relative w-full h-[400px] overflow-hidden">
-                    {!loading && heroImages.length > 0 ? (
+                {/* Desktop Hero */}
+                <div className="sticky top-0 w-full h-[500px] overflow-hidden z-0">
+                    {loading ? (
+                        <div className="w-full h-full bg-gray-200 dark:bg-white/5 animate-pulse flex items-center justify-center">
+                            <FiImage className="w-16 h-16 text-gray-300 dark:text-white/10" />
+                        </div>
+                    ) : heroImages.length > 0 ? (
                         <ListingImageSlider 
                             images={heroImages} 
                             title={collection?.name} 
                             cardLink="#" 
                             arrowPadding="12"
                             onImageClick={openGallery}
+                            showArrows={false}
+                            showDots={false}
                         />
                     ) : (
                         <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                            <FiHome className="w-16 h-16 text-gray-200" />
+                            <FiImage className="w-16 h-16 text-gray-200" />
                         </div>
                     )}
-                    
-                    {/* Header Overlay Content */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex flex-col justify-end p-12">
-                        <div className="max-w-[1440px] mx-auto w-full">
-                            <div className="flex items-end justify-between">
-                                <div className="text-white">
-                                    <h1 className="text-4xl font-black tracking-tight mb-2">
-                                        {loading ? '...' : collection?.name}
-                                    </h1>
-                                    <p className="text-lg opacity-90 font-medium">
-                                        {loading ? '...' : `${listings.length} Exclusive Properties`}
-                                    </p>
+                </div>
+
+                {/* Desktop Content & Header Container */}
+                <div className="relative z-20 -mt-[160px]">
+                    {/* Integrated Header - Follows then Sticks */}
+                    <div className={`sticky top-0 z-50 transition-all duration-500 pointer-events-auto ${
+                        headerSticky 
+                        ? 'bg-white/95 backdrop-blur-md shadow-sm py-4 border-b border-gray-100' 
+                        : 'bg-transparent py-10'
+                    }`}>
+                        <div className="max-w-[2520px] mx-auto w-full px-6 md:px-12 lg:px-20">
+                            <div className="flex items-center justify-between">
+                                {/* Left: Back Button */}
+                                <div className="w-1/4 flex justify-start">
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        className={`px-6 py-2.5 rounded-full font-bold transition-all active:scale-95 flex items-center gap-2 group ${
+                                            headerSticky 
+                                            ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' 
+                                            : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20'
+                                        }`}
+                                    >
+                                        <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                                        <span className="text-sm">Back to Collections</span>
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => navigate(-1)}
-                                    className="px-6 py-3 bg-white text-gray-900 rounded-full font-bold hover:bg-gray-50 transition-all active:scale-95 shadow-xl flex items-center gap-2"
-                                >
-                                    <ArrowLeftIcon className="w-5 h-5" />
-                                    Back to Collections
-                                </button>
+
+                                {/* Center: Title & Stats */}
+                                <div className="w-2/4 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <h1 className={`transition-all duration-300 ${
+                                            headerSticky 
+                                            ? 'text-xl text-gray-900 font-semibold' 
+                                            : 'text-4xl text-white font-bold drop-shadow-xl mb-1'
+                                        }`}>
+                                            {loading ? <div className="h-10 w-64 bg-white/20 rounded animate-pulse" /> : collection?.name}
+                                        </h1>
+                                        {!headerSticky && !loading && (
+                                            <p className="text-white/90 text-sm font-medium tracking-wide drop-shadow-md">
+                                                {`${listings.length} Exclusive Properties`}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Right: View Images Button */}
+                                <div className="w-1/4 flex justify-end">
+                                    <button
+                                        onClick={() => openGallery(0)}
+                                        className={`px-6 py-2.5 rounded-full font-bold transition-all active:scale-95 flex items-center gap-2 shadow-lg ${
+                                            headerSticky 
+                                            ? 'bg-primary-600 text-white hover:bg-primary-700' 
+                                            : 'bg-white text-gray-900 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <Square2StackIcon className="w-5 h-5" />
+                                        <span className="text-sm">View Images</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Desktop Content Grid */}
-                <div className="max-w-[1440px] mx-auto px-12 py-16">
-                    <ListingsGrid 
-                        loading={loading} 
-                        listings={listings} 
-                        visibleCount={visibleCount}
-                        navigate={navigate} 
-                        observerTarget={observerTarget}
-                    />
+                    {/* Desktop Content Grid - Full Width with Top Radius */}
+                    <div className="w-full bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] min-h-screen">
+                        <div className="max-w-[1440px] mx-auto px-12 py-16">
+                            <ListingsGrid 
+                                loading={loading} 
+                                listings={listings} 
+                                visibleCount={visibleCount}
+                                navigate={navigate} 
+                                observerTarget={observerTarget}
+                                viewMode="grid"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 

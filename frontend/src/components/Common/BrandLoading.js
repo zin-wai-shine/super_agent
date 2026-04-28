@@ -1,7 +1,7 @@
 import React from 'react';
 import { BASE_URL } from '../../services/api';
 
-const BrandLoading = ({ agent, isMainDomain }) => {
+const BrandLoading = ({ agent, isMainDomain, isExiting }) => {
     // Correctly map backend fields: agent.logo and agent.name
     // Use theme primary color if available
     const rawLogo = agent?.logo || agent?.theme?.logo_url;
@@ -24,7 +24,7 @@ const BrandLoading = ({ agent, isMainDomain }) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center animate-fade-in">
+        <div className={`fixed inset-0 bg-white z-[9999] flex items-center justify-center ${isExiting ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'}`}>
             <div className="relative flex items-center justify-center">
                 {/* Minimalist Logo Display */}
                 <div className="relative w-56 h-56 flex items-center justify-center transform transition-all duration-700 animate-logo-pulse">
@@ -76,6 +76,10 @@ const BrandLoading = ({ agent, isMainDomain }) => {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
                 @keyframes fade-up {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
@@ -87,6 +91,9 @@ const BrandLoading = ({ agent, isMainDomain }) => {
                 }
                 .animate-fade-in {
                     animation: fade-in 0.4s ease-out forwards;
+                }
+                .animate-fade-out {
+                    animation: fade-out 0.5s ease-out forwards;
                 }
                 .animate-fade-up {
                     animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;

@@ -13,6 +13,11 @@
     scrollbar-color: #9ca3af40 transparent !important;
   }
 
+  html::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
   body {
     @apply font-sans antialiased text-gray-900 bg-white dark:bg-dashboard-dark dark:text-gray-100;
     font-family: "DM Sans", sans-serif;
@@ -382,8 +387,8 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 2px;
-  height: 2px;
+  width: 1px;
+  height: 1px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -391,12 +396,12 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #00000015;
+  background: #00000010;
   border-radius: 20px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #00000025;
+  background: #00000020;
 }
 
 /* Hover-only scrollbar */
@@ -450,6 +455,16 @@
 
 .overscroll-contain {
   overscroll-behavior: contain;
+}
+
+/* Scroll lock when filter sidebar is open.
+   JS applies padding-right = scrollbar-width to body before adding this class,
+   so the layout stays the same width. The scrollbar disappears behind the sidebar
+   panel (which is fixed and covers the right edge) so no shift is visible. */
+body.filter-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 @keyframes bounce-subtle {

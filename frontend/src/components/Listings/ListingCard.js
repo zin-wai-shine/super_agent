@@ -102,7 +102,7 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w
     );
 };
 
-export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3', initialIndex = 0, onImageClick, isGalleryMode = false }) => {
+export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3', initialIndex = 0, onImageClick, isGalleryMode = false, showArrows = true, showDots = true }) => {
     const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
     const [showIndicator, setShowIndicator] = React.useState(() => {
         return !localStorage.getItem('has_experienced_swipe');
@@ -246,8 +246,13 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                 </div>
             )}
 
+            {/* Subtle Gradient Overlays for better depth/visibility */}
+            {images.length > 1 && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
+            )}
+
             {/* Dots */}
-            {images.length > 1 && (() => {
+            {showDots && images.length > 1 && (() => {
                 const total = images.length;
                 const maxDots = 5;
                 let start = 0;
@@ -284,7 +289,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
             })()}
 
             {/* Arrows */}
-            {images.length > 1 && (
+            {showArrows && images.length > 1 && (
                 <>
                     {currentIndex > 0 && (
                         <button

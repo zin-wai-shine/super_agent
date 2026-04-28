@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     // Initialize auth state from localStorage
     useEffect(() => {
         const initAuth = async () => {
+            const startTime = Date.now();
             const token = localStorage.getItem('access_token');
             if (token) {
                 try {
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }) => {
                 setUser(null);
                 localStorage.removeItem('user');
             }
+            
             setLoading(false);
         };
         initAuth();
