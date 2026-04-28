@@ -509,7 +509,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     // On desktop non-modal view, booking is rendered inline — don't lock scroll
     useEffect(() => {
         const isDesktopInlineBooking = isBookingOverlayOpen && !isModal;
-        const shouldLock = isContactOverlayOpen || (isBookingOverlayOpen && !isDesktopInlineBooking);
+        const shouldLock = isContactOverlayOpen || (isBookingOverlayOpen && !isDesktopInlineBooking) || isStatusOverlayOpen;
 
         if (shouldLock) {
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -544,7 +544,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 container.style.overflow = '';
             });
         };
-    }, [isBookingOverlayOpen, isContactOverlayOpen, isModal]);
+    }, [isBookingOverlayOpen, isContactOverlayOpen, isStatusOverlayOpen, isModal]);
 
     // Scroll Contact modal to top when it opens
     useEffect(() => {
@@ -2867,7 +2867,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <XMarkIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
-                                                <div className="flex-1 overflow-y-auto modal-scrollable p-6 pb-10 pt-2 overscroll-contain">
+                                                <div className="flex-1 overflow-y-auto modal-scrollable z-[60] p-6 pb-10 pt-2 overscroll-contain">
                                                     <div className="w-full text-center mb-4">
                                                         <h3 className="font-bold text-gray-900 dark:text-white text-[22px] tracking-tight mb-2">
                                                             {listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
@@ -2945,7 +2945,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 </div>
 
-                                                <div className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2 overscroll-contain">
+                                                <div className="flex-1 overflow-y-auto modal-scrollable z-[60] p-6 pt-2 overscroll-contain">
                                                     {!isCancelModalOpen ? (
                                                         <div className="w-full animate-fade-in">
                                                             <div className="w-full text-center mb-4">
