@@ -2948,11 +2948,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
 
                                                 <div 
-                                                    className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2"
+                                                    className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2 overscroll-contain"
                                                     onScroll={(e) => {
-                                                        if (e.target.scrollTop > 20 && !isStatusExpanded) {
+                                                        const target = e.target;
+                                                        const isAtTop = target.scrollTop <= 0;
+                                                        
+                                                        if (target.scrollTop > 50 && !isStatusExpanded) {
                                                             setIsStatusExpanded(true);
-                                                        } else if (e.target.scrollTop <= 5 && isStatusExpanded) {
+                                                        } else if (isAtTop && isStatusExpanded) {
                                                             setIsStatusExpanded(false);
                                                         }
                                                     }}
