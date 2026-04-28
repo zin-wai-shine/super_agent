@@ -18,8 +18,8 @@ const CollectionCard = ({
     const navigate = useNavigate();
     const firstImage = collection.media?.find(m => m.type === 'image')?.url;
 
-    // Reduced stagger delay (from 200ms to 100ms) to make revealed cards pop in faster
-    const delay = `${index * 100}ms`;
+    // Reduced stagger delay (from 100ms to 50ms) to make revealed cards pop in faster
+    const delay = `${index * 50}ms`;
 
     const handleClick = () => {
         if (onSelect) {

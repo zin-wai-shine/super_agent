@@ -295,7 +295,7 @@ const CollectionBar = ({
                     </div>
                 </div>
             ) : (
-                <>
+                <div className="animate-fade-in-up duration-500">
                     {/* 1. Popular Collections Section (Standalone children) */}
                     <CollectionGroup
                         title="Popular Collections"
@@ -401,7 +401,7 @@ const CollectionBar = ({
                             </div>
                         </div>
                     )}
-                </>
+                </div>
             )}
 
 
