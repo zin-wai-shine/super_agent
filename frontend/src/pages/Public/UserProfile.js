@@ -595,10 +595,13 @@ const UserProfile = () => {
 
                         <div className="flex-1 px-8 py-6">
                             <div className="relative mb-12">
-                                <div className="flex flex-col items-center mb-10 pt-4 relative">
+                                <div 
+                                    className="flex flex-col items-center p-10 rounded-[40px] mb-12 shadow-sm"
+                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                >
                                      {/* Avatar with Edit Button */}
-                                     <div className="relative group">
-                                        <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
+                                     <div className="relative group mb-6">
+                                        <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border-2 border-white/30">
                                             {(profileForm.avatar || user?.avatar) ? (
                                                 <img 
                                                     src={getMediaUrl(profileForm.avatar || user?.avatar)} 
@@ -608,40 +611,28 @@ const UserProfile = () => {
                                             ) : googlePicture ? (
                                                 <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
+                                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-white">
                                                     {initial}
                                                 </div>
                                             )}
                                         </div>
                                         <label 
-                                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
+                                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-900 cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
                                         >
                                             <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                                            <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
+                                            <PlusIcon className="w-6 h-6" style={{ color: theme?.primaryColor || '#2D8A56' }} strokeWidth={3} />
                                         </label>
                                      </div>
+                                     <h2 className="text-2xl font-bold text-white text-center">
+                                         {user?.first_name} {user?.last_name}
+                                     </h2>
+                                     <p className="text-white/70 text-sm mt-1">{user?.email}</p>
                                 </div>
 
                                 <div className="relative">
                                     <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
                                     
                                     <div className="divide-y divide-gray-50 dark:divide-white/5">
-                                        {/* Name Row */}
-                                        <div className="flex items-center gap-5 py-5 group">
-                                            <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
-                                            <div className="flex-1">
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
-                                            </div>
-                                            <button 
-                                                onClick={() => setEditingField('name')} 
-                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                                className="text-[14px] font-bold hover:underline px-2"
-                                            >
-                                                Edit
-                                            </button>
-                                        </div>
-
                                         {/* Phone Row */}
                                         <div className="flex items-center gap-5 py-5 group">
                                             <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
