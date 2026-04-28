@@ -2932,38 +2932,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 >
                                                     <div className="w-12 h-1 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
                                                     <div className="absolute top-4 right-4 flex items-center gap-2">
-                                                        {!isCancelModalOpen && (viewedBooking?.status?.toLowerCase() !== 'confirmed' && activeBooking?.status?.toLowerCase() !== 'confirmed') && (
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    const booking = viewedBooking || activeBooking;
-                                                                    if (booking) {
-                                                                        const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
-                                                                        const today = new Date();
-                                                                        today.setHours(0, 0, 0, 0);
-                                                                        const isPastBooking = bookingDate && bookingDate < today;
-
-                                                                        setBookingForm({
-                                                                            full_name: booking.full_name || '',
-                                                                            email: booking.email || '',
-                                                                            phone: booking.phone || '',
-                                                                            preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
-                                                                            preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
-                                                                            purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
-                                                                            message: booking.message || '',
-                                                                        });
-                                                                        setConfirmedDateTime(!isPastBooking);
-                                                                        setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
-                                                                    }
-                                                                    setIsStatusOverlayOpen(false);
-                                                                    setIsBookingOverlayOpen(true);
-                                                                }}
-                                                                className="p-2 pl-3 pr-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-all flex items-center gap-1.5"
-                                                            >
-                                                                <PencilSquareIcon className="w-4 h-4" />
-                                                                <span className="text-[13px] font-bold">Edit</span>
-                                                            </button>
-                                                        )}
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
