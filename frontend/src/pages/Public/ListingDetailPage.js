@@ -2756,8 +2756,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div className="grid grid-cols-1 gap-4">
                                                     {renderContactLinks(true)}
                                                 </div>
-                                                {listing?.allow_viewing_requests === false && (
-                                                    <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
                                                         <button
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(window.location.href);
@@ -2779,7 +2778,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             )}
                                                         </button>
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
                                         </Modal>
 
@@ -2879,8 +2878,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     <div className="w-full max-w-md mt-6 space-y-4">
                                                         {renderContactLinks(false)}
                                                     </div>
-                                                    {listing?.allow_viewing_requests === false && (
-                                                        <div className="w-full max-w-md mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                    <div className="w-full max-w-md mt-6 pt-6 border-t border-gray-100 dark:border-white/10">
                                                             <button
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(window.location.href);
@@ -2902,7 +2900,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 )}
                                                             </button>
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
