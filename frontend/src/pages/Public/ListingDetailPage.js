@@ -409,7 +409,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
-    const [isStatusExpanded, setIsStatusExpanded] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsDesktopView(window.innerWidth >= 1024);
@@ -2921,14 +2920,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 }}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] ${isStatusExpanded ? 'h-[90vh]' : 'h-[65vh]'} flex flex-col overflow-hidden
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[85vh] flex flex-col overflow-hidden
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
                                                     className="w-full flex justify-center py-3 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
                                                     onClick={() => {
                                                         setIsStatusOverlayOpen(false);
-                                                        setIsStatusExpanded(false);
                                                         setTimeout(() => setIsCancelModalOpen(false), 500);
                                                     }}
                                                 >
@@ -2947,19 +2945,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                 </div>
 
-                                                <div 
-                                                    className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2 overscroll-contain"
-                                                    onScroll={(e) => {
-                                                        const target = e.target;
-                                                        const isAtTop = target.scrollTop <= 0;
-                                                        
-                                                        if (target.scrollTop > 50 && !isStatusExpanded) {
-                                                            setIsStatusExpanded(true);
-                                                        } else if (isAtTop && isStatusExpanded) {
-                                                            setIsStatusExpanded(false);
-                                                        }
-                                                    }}
-                                                >
+                                                <div className="flex-1 overflow-y-auto modal-scrollable p-6 pt-2 overscroll-contain">
                                                     {!isCancelModalOpen ? (
                                                         <div className="w-full animate-fade-in">
                                                             <div className="w-full text-center mb-4">
@@ -3150,10 +3136,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                     {activeBooking ? (
                         <button
-                            onClick={() => {
-                                setIsStatusExpanded(false);
-                                setIsStatusOverlayOpen(true);
-                            }}
+                            onClick={() => setIsStatusOverlayOpen(true)}
                             className={`${
                                 activeBooking.status === 'confirmed' ? 'bg-emerald-600' : 
                                 activeBooking.status === 'cancelled' ? 'bg-rose-600' : 
