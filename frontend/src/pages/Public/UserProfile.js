@@ -18,6 +18,8 @@ import {
     KeyIcon,
     EyeIcon,
     EyeSlashIcon,
+    ChatBubbleLeftRightIcon,
+    ChatBubbleOvalLeftEllipsisIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
