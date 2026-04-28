@@ -3034,7 +3034,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     value={cancelReason}
                                                                     onChange={(e) => setCancelReason(e.target.value)}
                                                                     placeholder="e.g., Change of plans, found another property..."
-                                                                    className="w-full h-32 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400"
+                                                                    className="w-full h-48 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400"
                                                                 />
                                                             </div>
                                                         </div>
