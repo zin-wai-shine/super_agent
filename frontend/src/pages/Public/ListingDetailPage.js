@@ -2920,7 +2920,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 }}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-auto max-h-[85vh]
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[50vh]
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
