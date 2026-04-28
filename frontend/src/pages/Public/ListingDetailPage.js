@@ -2968,52 +2968,111 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         </button>
                                                     </div>
                                                 </div>
+
+                                                <div className="w-full relative flex flex-col items-center p-6 pb-12 pt-2">
+                                                    <div className="w-full text-center mb-4">
+                                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
                                                     </div>
 
-                                                    {/* Mobile Status Sheet Footer Actions */}
-                                                    {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
-                                                        <div className="w-full flex flex-col gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    const booking = viewedBooking || activeBooking;
-                                                                    if (booking) {
-                                                                        const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
-                                                                        const today = new Date();
-                                                                        today.setHours(0, 0, 0, 0);
-                                                                        const isPastBooking = bookingDate && bookingDate < today;
-
-                                                                        setBookingForm({
-                                                                            full_name: booking.full_name || '',
-                                                                            email: booking.email || '',
-                                                                            phone: booking.phone || '',
-                                                                            preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
-                                                                            preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
-                                                                            purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
-                                                                            message: booking.message || '',
-                                                                        });
-                                                                        setConfirmedDateTime(!isPastBooking);
-                                                                        setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
-                                                                    }
-                                                                    setIsStatusOverlayOpen(false);
-                                                                    setIsBookingOverlayOpen(true);
-                                                                }}
-                                                                className="w-full py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2"
-                                                            >
-                                                                <PencilSquareIcon className="w-5 h-5" />
-                                                                Edit Appointment
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setIsCancelModalOpen(true);
-                                                                }}
-                                                                className="w-full py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[15px] active:scale-95 transition-all"
-                                                            >
-                                                                Cancel Viewing
-                                                            </button>
+                                                    <div className="w-full space-y-8 text-left">
+                                                        <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
+                                                            <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{listing.title}</div>
                                                         </div>
-                                                    )}
+
+                                                        <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
+                                                            <div className="flex flex-col items-center text-center">
+                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4">Preferred Date</div>
+                                                                <span className="text-[84px] font-black leading-none text-gray-900/80 dark:text-white tracking-tighter">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
+                                                                </span>
+                                                                <span className="text-2xl font-black text-[#222222]/80 dark:text-white/80 mt-2 flex items-center gap-3">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '---'}
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20" />
+                                                                    <span className="text-gray-500/80 dark:text-gray-400/80">
+                                                                        {(() => {
+                                                                            const time = (viewedBooking || activeBooking)?.preferred_time;
+                                                                            if (!time) return '---';
+                                                                            const [hours, minutes] = time.split(':');
+                                                                            let hour = parseInt(hours);
+                                                                            const ampm = hour >= 12 ? 'PM' : 'AM';
+                                                                            hour = hour % 12;
+                                                                            hour = hour ? hour : 12;
+                                                                            return `${hour}:${minutes} ${ampm}`;
+                                                                        })()}
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-4 pt-4">
+                                                            <div className="text-center border-r border-gray-100 dark:border-white/10">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                                                                <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                                    {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
+                                                                <div className="font-bold text-lg text-gray-900 dark:text-white">
+                                                                    {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {(viewedBooking || activeBooking)?.message && (
+                                                            <div className="pt-6 border-t border-gray-100 dark:border-white/10">
+                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3">Your Message</div>
+                                                                <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
+                                                                    "{(viewedBooking || activeBooking).message}"
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Mobile Status Sheet Footer Actions */}
+                                                        {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
+                                                            <div className="w-full flex flex-col gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        const booking = viewedBooking || activeBooking;
+                                                                        if (booking) {
+                                                                            const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
+                                                                            const today = new Date();
+                                                                            today.setHours(0, 0, 0, 0);
+                                                                            const isPastBooking = bookingDate && bookingDate < today;
+
+                                                                            setBookingForm({
+                                                                                full_name: booking.full_name || '',
+                                                                                email: booking.email || '',
+                                                                                phone: booking.phone || '',
+                                                                                preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
+                                                                                preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
+                                                                                purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
+                                                                                message: booking.message || '',
+                                                                            });
+                                                                            setConfirmedDateTime(!isPastBooking);
+                                                                            setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
+                                                                        }
+                                                                        setIsStatusOverlayOpen(false);
+                                                                        setIsBookingOverlayOpen(true);
+                                                                    }}
+                                                                    className="w-full py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                                >
+                                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                                    Edit Appointment
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setIsCancelModalOpen(true);
+                                                                    }}
+                                                                    className="w-full py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[15px] active:scale-95 transition-all"
+                                                                >
+                                                                    Cancel Viewing
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -3065,8 +3124,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         ) : 'Confirm Cancellation'}
                                                     </button>
                                                 </div>
-                                            </div>
-                                        </div>
                                             </div>
                                         </div>
                                     </>
