@@ -593,14 +593,18 @@ const UserProfile = () => {
                             <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
                         </div>
 
-                        <div className="flex-1 px-8 py-6">
-                            <div className="relative mb-12">
-                                <div 
-                                    className="flex flex-col items-center p-10 rounded-[40px] mb-12 shadow-sm"
-                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                                >
+                        <div className="flex-1 px-6 py-6">
+                            <div 
+                                className="relative rounded-[48px] p-8 pb-10 shadow-xl overflow-hidden"
+                                style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                            >
+                                {/* Decorative circles for better aesthetic */}
+                                <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+                                <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/10 blur-3xl pointer-events-none" />
+
+                                <div className="flex flex-col items-center mb-10 pt-4 relative">
                                      {/* Avatar with Edit Button */}
-                                     <div className="relative group mb-6">
+                                     <div className="relative group">
                                         <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border-2 border-white/30">
                                             {(profileForm.avatar || user?.avatar) ? (
                                                 <img 
@@ -623,26 +627,29 @@ const UserProfile = () => {
                                             <PlusIcon className="w-6 h-6" style={{ color: theme?.primaryColor || '#2D8A56' }} strokeWidth={3} />
                                         </label>
                                      </div>
-                                     <h2 className="text-2xl font-bold text-white text-center">
+
+                                     <h2 className="text-2xl font-bold text-white text-center mt-2">
                                          {user?.first_name} {user?.last_name}
                                      </h2>
                                      <p className="text-white/70 text-sm mt-1">{user?.email}</p>
                                 </div>
 
                                 <div className="relative">
-                                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                                    <h4 className="text-[12px] font-bold text-white/50 uppercase tracking-widest mb-6 px-1">Personal details</h4>
                                     
-                                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                                    <div className="divide-y divide-white/10">
                                         {/* Phone Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                                                <PhoneIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                                            </div>
                                             <div className="flex-1">
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                                                <p className="text-[13px] text-white/50 mb-0.5">Phone Number</p>
+                                                <p className="text-[16px] font-medium text-white">{user?.phone || 'Not provided'}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('phone')} 
-                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                                className="text-[14px] font-bold hover:underline px-2"
+                                                className="text-[14px] font-bold text-white hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -650,15 +657,16 @@ const UserProfile = () => {
 
                                         {/* Line Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                                                <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                                            </div>
                                             <div className="flex-1">
-                                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                                                <p className="text-[13px] text-white/50 mb-0.5">Line ID</p>
+                                                <p className="text-[16px] font-medium text-white">{user?.line_id || 'Not provided'}</p>
                                             </div>
                                             <button 
-                                                onClick={() => setEditingField('line')} 
-                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                                className="text-[14px] font-bold hover:underline px-2"
+                                                onClick={() => setEditingField('line_id')} 
+                                                className="text-[14px] font-bold text-white hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -666,15 +674,16 @@ const UserProfile = () => {
 
                                         {/* WhatsApp Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
+                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                                                <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                                            </div>
                                             <div className="flex-1">
-                                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                                                <p className="text-[13px] text-white/50 mb-0.5">WhatsApp</p>
+                                                <p className="text-[16px] font-medium text-white">{user?.whatsapp || 'Not provided'}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('whatsapp')} 
-                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
-                                                className="text-[14px] font-bold hover:underline px-2"
+                                                className="text-[14px] font-bold text-white hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -682,10 +691,12 @@ const UserProfile = () => {
 
                                         {/* Email Row (Read Only) */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                                                <EnvelopeIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                                            </div>
                                             <div className="flex-1 min-w-0">
-                                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
+                                                <p className="text-[13px] text-white/50 mb-0.5">Email address</p>
+                                                <p className="text-[16px] font-medium text-white truncate pr-4">{user?.email}</p>
                                             </div>
                                         </div>
                                     </div>
