@@ -294,7 +294,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     {currentIndex > 0 && (
                         <button
                             onClick={prevImage}
-                            className={`absolute left-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white flex items-center justify-center text-gray-900 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute left-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Previous image"
                         >
                             <ChevronLeftIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
@@ -303,7 +303,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={nextImage}
-                            className={`absolute right-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white flex items-center justify-center text-gray-900 opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute right-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Next image"
                         >
                             <ChevronRightIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />

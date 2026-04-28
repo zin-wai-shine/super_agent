@@ -121,8 +121,8 @@ const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
                     />
                     {projectImages.length > 1 && (
                         <>
-                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-800 shadow-sm"><ChevronLeftIcon className="w-4 h-4" /></button>
-                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-800 shadow-sm"><ChevronRightIcon className="w-4 h-4" /></button>
+                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 hidden md:flex items-center justify-center text-gray-800 shadow-sm"><ChevronLeftIcon className="w-4 h-4" /></button>
+                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white/90 hidden md:flex items-center justify-center text-gray-800 shadow-sm"><ChevronRightIcon className="w-4 h-4" /></button>
                             <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-10 flex gap-1">
                                 {projectImages.map((_, i) => <span key={i} className={`rounded-full ${i === currentImageIndex ? 'w-1.5 h-1.5 bg-white' : 'w-1 h-1 bg-white/60'}`} />)}
                             </div>
@@ -207,8 +207,8 @@ const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
                     />
                     {projectImages.length > 1 && (
                         <>
-                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center text-gray-800"><ChevronLeftIcon className="w-3.5 h-3.5" /></button>
-                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center text-gray-800"><ChevronRightIcon className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={goPrev} aria-label="Previous" className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 hidden md:flex items-center justify-center text-gray-800"><ChevronLeftIcon className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={goNext} aria-label="Next" className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/90 hidden md:flex items-center justify-center text-gray-800"><ChevronRightIcon className="w-3.5 h-3.5" /></button>
                             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10 flex gap-0.5">
                                 {projectImages.map((_, i) => <span key={i} className={`rounded-full ${i === currentImageIndex ? 'w-1 h-1 bg-white' : 'w-0.5 h-0.5 bg-white/60'}`} />)}
                             </div>
@@ -332,7 +332,7 @@ const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
                             type="button"
                             onClick={goPrev}
                             aria-label="Previous image"
-                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 hidden md:flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
                         >
                             <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
                         </button>
@@ -340,7 +340,7 @@ const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
                             type="button"
                             onClick={goNext}
                             aria-label="Next image"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 hidden md:flex items-center justify-center text-gray-800 shadow-md hover:bg-white hover:shadow-lg transition-all pointer-events-auto"
                         >
                             <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
                         </button>
