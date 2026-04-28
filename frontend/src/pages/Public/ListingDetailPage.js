@@ -2849,11 +2849,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 onClick={() => setIsContactOverlayOpen(false)}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable contact-modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[60vh]
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[65vh] flex flex-col overflow-hidden
                                                     ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
-                                                    className="w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
+                                                    className="shrink-0 w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
                                                     onClick={() => setIsContactOverlayOpen(false)}
                                                 >
                                                     <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
@@ -2867,7 +2867,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <XMarkIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
-                                                <div className="w-full relative flex flex-col items-center p-6 pb-10 pt-2">
+                                                <div className="flex-1 overflow-y-auto modal-scrollable p-6 pb-10 pt-2 overscroll-contain">
                                                     <div className="w-full text-center mb-4">
                                                         <h3 className="font-bold text-gray-900 dark:text-white text-[22px] tracking-tight mb-2">
                                                             {listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
