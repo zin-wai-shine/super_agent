@@ -241,9 +241,10 @@ const ThemeSettings = () => {
         try {
             toast.loading('Processing image...', { id: 'imageUpload' });
             
-            // Pass imageType to preserve PNG transparency if original was PNG
-            const imageType = cropTarget.isPng ? 'image/png' : 'image/jpeg';
-            const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels, imageType);
+            // Force PNG for favicons to ensure transparent rounded corners are preserved
+            const imageType = (cropTarget.isPng || cropTarget.field === 'favicon_url') ? 'image/png' : 'image/jpeg';
+            const isFavicon = cropTarget.field === 'favicon_url';
+            const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels, imageType, isFavicon);
             
             if (!croppedImageBlob) throw new Error('Failed to crop image');
 
@@ -525,7 +526,7 @@ const ThemeSettings = () => {
                                         <div className="w-full text-center">
                                             {watchAll.favicon_url ? (
                                                 <div className="relative group-hover:scale-[1.01] transition-transform duration-300 flex flex-col items-center">
-                                                    <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-12 h-12 object-contain rounded shadow-sm bg-white p-1" />
+                                                    <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-14 h-14 object-contain rounded-[16px] shadow-sm bg-white p-1.5" />
                                                     <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Icon</div>
                                                 </div>
                                             ) : (
@@ -656,11 +657,16 @@ const ThemeSettings = () => {
                             image={tempImage}
                             crop={crop}
                             zoom={zoom}
-                            aspect={cropTarget?.field === 'share_preview_image' ? 1200 / 630 : undefined}
+                            aspect={cropTarget?.field === 'share_preview_image' ? 1200 / 630 : cropTarget?.field === 'favicon_url' ? 1 : undefined}
                             showGrid={false}
                             onCropChange={setCrop}
                             onCropComplete={onCropComplete}
                             onZoomChange={setZoom}
+                            style={{
+                                cropAreaStyle: {
+                                    borderRadius: cropTarget?.field === 'favicon_url' ? '22%' : '0'
+                                }
+                            }}
                         />
                     </div>
 
