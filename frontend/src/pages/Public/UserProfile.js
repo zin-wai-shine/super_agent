@@ -595,19 +595,12 @@ const UserProfile = () => {
                             <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
                         </div>
 
-                        <div className="flex-1 px-6 py-6">
-                            <div 
-                                className="relative rounded-[48px] p-8 pb-10 shadow-xl overflow-hidden"
-                                style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
-                            >
-                                {/* Decorative circles for better aesthetic */}
-                                <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-                                <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/10 blur-3xl pointer-events-none" />
-
+                        <div className="flex-1 px-8 py-6">
+                            <div className="relative mb-12">
                                 <div className="flex flex-col items-center mb-10 pt-4 relative">
                                      {/* Avatar with Edit Button */}
                                      <div className="relative group">
-                                        <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border-2 border-white/30">
+                                        <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
                                             {(profileForm.avatar || user?.avatar) ? (
                                                 <img 
                                                     src={getMediaUrl(profileForm.avatar || user?.avatar)} 
@@ -617,41 +610,50 @@ const UserProfile = () => {
                                             ) : googlePicture ? (
                                                 <img src={googlePicture} alt="Avatar" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-white">
+                                                <div className="w-full h-full flex items-center justify-center text-[36px] font-bold text-gray-400">
                                                     {initial}
                                                 </div>
                                             )}
                                         </div>
                                         <label 
-                                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-900 cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
+                                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                            className="absolute -right-1 -top-1 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-white"
                                         >
                                             <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                                            <PlusIcon className="w-6 h-6" style={{ color: theme?.primaryColor || '#2D8A56' }} strokeWidth={3} />
+                                            <PlusIcon className="w-6 h-6 text-white" strokeWidth={3} />
                                         </label>
                                      </div>
-
-                                     <h2 className="text-2xl font-bold text-white text-center mt-2">
-                                         {user?.first_name} {user?.last_name}
-                                     </h2>
-                                     <p className="text-white/70 text-sm mt-1">{user?.email}</p>
                                 </div>
 
                                 <div className="relative">
-                                    <h4 className="text-[12px] font-bold text-white/50 uppercase tracking-widest mb-6 px-1">Personal details</h4>
+                                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
                                     
-                                    <div className="divide-y divide-white/10">
+                                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                                        {/* Name Row */}
+                                        <div className="flex items-center gap-5 py-5 group">
+                                            <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="flex-1">
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => setEditingField('name')} 
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+
                                         {/* Phone Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                                                <PhoneIcon className="w-5 h-5 text-white" strokeWidth={2} />
-                                            </div>
+                                            <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1">
-                                                <p className="text-[13px] text-white/50 mb-0.5">Phone Number</p>
-                                                <p className="text-[16px] font-medium text-white">{user?.phone || 'Not provided'}</p>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('phone')} 
-                                                className="text-[14px] font-bold text-white hover:underline px-2"
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -659,16 +661,15 @@ const UserProfile = () => {
 
                                         {/* Line Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                                                <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" strokeWidth={2} />
-                                            </div>
+                                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1">
-                                                <p className="text-[13px] text-white/50 mb-0.5">Line ID</p>
-                                                <p className="text-[16px] font-medium text-white">{user?.line_id || 'Not provided'}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line_id || 'Not provided'}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('line_id')} 
-                                                className="text-[14px] font-bold text-white hover:underline px-2"
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -676,16 +677,15 @@ const UserProfile = () => {
 
                                         {/* WhatsApp Row */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                                                <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5 text-white" strokeWidth={2} />
-                                            </div>
+                                            <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1">
-                                                <p className="text-[13px] text-white/50 mb-0.5">WhatsApp</p>
-                                                <p className="text-[16px] font-medium text-white">{user?.whatsapp || 'Not provided'}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('whatsapp')} 
-                                                className="text-[14px] font-bold text-white hover:underline px-2"
+                                                style={{ color: theme?.primaryColor || '#2D8A56' }}
+                                                className="text-[14px] font-bold hover:underline px-2"
                                             >
                                                 Edit
                                             </button>
@@ -693,12 +693,10 @@ const UserProfile = () => {
 
                                         {/* Email Row (Read Only) */}
                                         <div className="flex items-center gap-5 py-5 group">
-                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                                                <EnvelopeIcon className="w-5 h-5 text-white" strokeWidth={2} />
-                                            </div>
+                                            <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[13px] text-white/50 mb-0.5">Email address</p>
-                                                <p className="text-[16px] font-medium text-white truncate pr-4">{user?.email}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1242,27 +1240,37 @@ const UserProfile = () => {
                         {mobileView === 'menu' && (
                             <div className="animate-fade-in-up pt-10 flex flex-col flex-1">
 
-                                {/* Profile Header */}
-                                <div className="flex flex-col items-center mb-10 pt-4 relative">
-                                    {/* Avatar */}
-                                    <div className="w-32 h-32 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden mb-5 shadow-sm border border-gray-100 dark:border-white/10">
-                                        {(profileForm.avatar || user?.avatar) ? (
-                                            <img 
-                                                src={getMediaUrl(profileForm.avatar || user?.avatar)} 
-                                                alt="Profile" 
-                                                className="w-full h-full object-cover rounded-full" 
-                                            />
-                                        ) : googlePicture ? (
-                                            <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
-                                        ) : (
-                                            <span className="text-[36px] font-bold text-[#222222] dark:text-white">{initial}</span>
-                                        )}
-                                    </div>
-                                    {/* Text */}
-                                    <div className="flex flex-col items-center text-center px-4 w-full">
-                                        <h3 className="text-[18px] font-bold text-[#222222] dark:text-white leading-tight">
-                                            {user?.first_name} {user?.last_name}
-                                        </h3>
+                                {/* Profile Header Card */}
+                                <div 
+                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-[48px] shadow-xl relative overflow-hidden mb-12"
+                                    style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                >
+                                    {/* Decorative subtle circles */}
+                                    <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+                                    <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/10 blur-3xl pointer-events-none" />
+
+                                    <div className="flex flex-col items-center relative z-10">
+                                        {/* Avatar */}
+                                        <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden mb-6 shadow-sm border-2 border-white/30">
+                                            {(profileForm.avatar || user?.avatar) ? (
+                                                <img 
+                                                    src={getMediaUrl(profileForm.avatar || user?.avatar)} 
+                                                    alt="Profile" 
+                                                    className="w-full h-full object-cover rounded-full" 
+                                                />
+                                            ) : googlePicture ? (
+                                                <img src={googlePicture} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                                            ) : (
+                                                <span className="text-[36px] font-bold text-white">{initial}</span>
+                                            )}
+                                        </div>
+                                        {/* Text */}
+                                        <div className="flex flex-col items-center text-center px-4 w-full">
+                                            <h3 className="text-[22px] font-bold text-white leading-tight">
+                                                {user?.first_name} {user?.last_name}
+                                            </h3>
+                                            <p className="text-white/70 text-[14px] mt-1 font-medium">{user?.email}</p>
+                                        </div>
                                     </div>
                                 </div>
 
