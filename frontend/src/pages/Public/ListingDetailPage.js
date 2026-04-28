@@ -2952,6 +2952,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     onScroll={(e) => {
                                                         if (e.target.scrollTop > 20 && !isStatusExpanded) {
                                                             setIsStatusExpanded(true);
+                                                        } else if (e.target.scrollTop <= 5 && isStatusExpanded) {
+                                                            setIsStatusExpanded(false);
                                                         }
                                                     }}
                                                 >
