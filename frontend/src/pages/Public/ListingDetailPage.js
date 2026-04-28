@@ -2920,7 +2920,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 }}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[50vh] flex flex-col overflow-hidden
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-[65vh] flex flex-col overflow-hidden
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
@@ -3028,7 +3028,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
 
                                                 {/* Sticky Footer Actions */}
-                                                <div className="shrink-0 sticky bottom-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md p-6 border-t border-gray-100 dark:border-white/10 safe-area-bottom">
+                                                <div className="shrink-0 sticky bottom-0 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md p-6 safe-area-bottom">
                                                     {!isCancelModalOpen ? (
                                                         <>
                                                             {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
