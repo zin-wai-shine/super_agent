@@ -224,7 +224,9 @@ const TransitFilterModal = ({
             />
 
             {/* Modal Content container */}
-            <div className={`relative w-full sm:w-[85%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
+            <div 
+                role="dialog"
+                className={`relative w-full sm:w-[85%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
                 ${isOpen 
                     ? 'translate-y-0 opacity-100' 
                     : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'

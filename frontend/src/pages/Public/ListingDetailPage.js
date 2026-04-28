@@ -406,6 +406,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [timeLeft, setTimeLeft] = useState(null);
     const [fetchingSlots, setFetchingSlots] = useState(false);
     const [isDesktopView, setIsDesktopView] = useState(window.innerWidth >= 1024);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsDesktopView(window.innerWidth >= 1024);
@@ -654,6 +657,40 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         }
 
         setIsBookingOverlayOpen(!isBookingOverlayOpen);
+    };
+
+    const handleCancelAppointment = async () => {
+        const booking = viewedBooking || activeBooking;
+        if (!booking) return;
+
+        setCancelling(true);
+        try {
+            await appointmentApi.cancelAppointment(booking.id, { reason: cancelReason });
+            setIsCancelModalOpen(false);
+            setIsStatusOverlayOpen(false);
+            // Refresh listing data to show cancelled status
+            const response = await publicApi.getListing(id);
+            setListing(response.data);
+            if (isAuthenticated) {
+                const bookingsRes = await appointmentApi.getMyAppointments();
+                const userBookings = bookingsRes.data.appointments || [];
+                const active = userBookings.find(
+                    app => String(app.listing_id) === String(id) &&
+                        ['pending', 'confirmed', 'completed', 'cancelled'].includes(app.status)
+                );
+                setActiveBooking(active || null);
+                if (bookingId) {
+                    const specific = userBookings.find(app => String(app.id) === String(bookingId));
+                    setViewedBooking(specific || null);
+                }
+            }
+            setCancelReason('');
+        } catch (error) {
+            console.error('Failed to cancel appointment:', error);
+            alert('Failed to cancel appointment. Please try again.');
+        } finally {
+            setCancelling(false);
+        }
     };
 
     const MAP_WIDTH = 1368;
@@ -2879,7 +2916,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 onClick={() => setIsStatusOverlayOpen(false)}
                                             />
                                             <div
-                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-auto max-h-[85vh]
+                                                className={`absolute bottom-0 left-0 right-0 z-[100] overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-card transition-all duration-[500ms] [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] will-change-transform rounded-t-[20px] h-auto max-h-[85vh] animate-fade-in-up
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
@@ -2931,66 +2968,105 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="w-full relative flex flex-col items-center p-6 pb-12 pt-2">
-                                                    <div className="w-full text-center mb-4">
-                                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
                                                     </div>
 
-                                                    <div className="w-full space-y-8 text-left">
-                                                        <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
-                                                            <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{listing.title}</div>
-                                                        </div>
+                                                    {/* Mobile Status Sheet Footer Actions */}
+                                                    {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
+                                                        <div className="w-full flex flex-col gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const booking = viewedBooking || activeBooking;
+                                                                    if (booking) {
+                                                                        const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
+                                                                        const today = new Date();
+                                                                        today.setHours(0, 0, 0, 0);
+                                                                        const isPastBooking = bookingDate && bookingDate < today;
 
-                                                        <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
-                                                            <div className="flex flex-col items-center text-center">
-                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4">Preferred Date</div>
-                                                                <span className="text-[84px] font-black leading-none text-gray-900/80 dark:text-white tracking-tighter">
-                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
-                                                                </span>
-                                                                <span className="text-2xl font-black text-[#222222]/80 dark:text-white/80 mt-2 flex items-center gap-3">
-                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '---'}
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20" />
-                                                                    <span className="text-gray-500/80 dark:text-gray-400/80">
-                                                                        {(() => {
-                                                                            const time = (viewedBooking || activeBooking)?.preferred_time;
-                                                                            if (!time) return '---';
-                                                                            const [hours, minutes] = time.split(':');
-                                                                            let hour = parseInt(hours);
-                                                                            const ampm = hour >= 12 ? 'PM' : 'AM';
-                                                                            hour = hour % 12;
-                                                                            hour = hour ? hour : 12;
-                                                                            return `${hour}:${minutes} ${ampm}`;
-                                                                        })()}
-                                                                    </span>
-                                                                </span>
-                                                            </div>
+                                                                        setBookingForm({
+                                                                            full_name: booking.full_name || '',
+                                                                            email: booking.email || '',
+                                                                            phone: booking.phone || '',
+                                                                            preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
+                                                                            preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
+                                                                            purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
+                                                                            message: booking.message || '',
+                                                                        });
+                                                                        setConfirmedDateTime(!isPastBooking);
+                                                                        setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
+                                                                    }
+                                                                    setIsStatusOverlayOpen(false);
+                                                                    setIsBookingOverlayOpen(true);
+                                                                }}
+                                                                className="w-full py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                            >
+                                                                <PencilSquareIcon className="w-5 h-5" />
+                                                                Edit Appointment
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setIsCancelModalOpen(true);
+                                                                }}
+                                                                className="w-full py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[15px] active:scale-95 transition-all"
+                                                            >
+                                                                Cancel Viewing
+                                                            </button>
                                                         </div>
-
-                                                        <div className="grid grid-cols-2 gap-4 pt-4">
-                                                            <div className="text-center border-r border-gray-100 dark:border-white/10">
-                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
-                                                                <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
-                                                                    {(viewedBooking || activeBooking)?.status || 'Pending'}
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
-                                                                <div className="font-bold text-lg text-gray-900 dark:text-white">
-                                                                    {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {(viewedBooking || activeBooking)?.message && (
-                                                            <div className="pt-6 border-t border-gray-100 dark:border-white/10">
-                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3">Your Message</div>
-                                                                <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
-                                                                    "{(viewedBooking || activeBooking).message}"
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    )}
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Cancel Viewing Confirmation Modal */}
+                                        <div
+                                            className={`fixed inset-0 z-[300] ${isCancelModalOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                                        >
+                                            <div
+                                                className={`absolute inset-0 bg-black/60 backdrop-blur-[4px] transition-opacity duration-300 ${isCancelModalOpen ? 'opacity-100' : 'opacity-0'}`}
+                                                onClick={() => !cancelling && setIsCancelModalOpen(false)}
+                                            />
+                                            <div
+                                                className={`absolute bottom-0 left-0 right-0 z-[310] bg-white dark:bg-dashboard-card transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] rounded-t-[32px] p-8 pb-10
+                                                    ${isCancelModalOpen ? 'translate-y-0' : 'translate-y-full'}`}
+                                            >
+                                                <div className="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mx-auto mb-8" />
+                                                
+                                                <div className="text-center mb-8">
+                                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Cancel Viewing?</h3>
+                                                    <p className="text-gray-500 dark:text-gray-400 font-medium">Please let us know why you need to cancel this appointment.</p>
+                                                </div>
+
+                                                <div className="mb-8">
+                                                    <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">Reason for cancellation</label>
+                                                    <textarea
+                                                        value={cancelReason}
+                                                        onChange={(e) => setCancelReason(e.target.value)}
+                                                        placeholder="e.g., Change of plans, found another property..."
+                                                        className="w-full h-32 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <button
+                                                        onClick={() => setIsCancelModalOpen(false)}
+                                                        disabled={cancelling}
+                                                        className="w-full py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[15px] active:scale-95 transition-all"
+                                                    >
+                                                        Go Back
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelAppointment}
+                                                        disabled={cancelling}
+                                                        className={`w-full py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[15px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
+                                                    >
+                                                        {cancelling ? (
+                                                            <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                                                        ) : 'Confirm Cancellation'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                             </div>
                                         </div>
                                     </>
@@ -3112,15 +3188,17 @@ const ListingDetailPage = () => {
     };
 
     const renderContent = () => (
-        <ListingDetailView
-            id={id}
-            isModal={false}
-            onTitleChange={setModalTitle}
-            onHeaderLeadingChange={setHeaderLeading}
-            onBookingOpenChange={setIsBookingOpen}
-            onClose={() => navigate(-1)}
-            onOpenGallery={openGallery}
-        />
+        <div className="animate-fade-in-up">
+            <ListingDetailView
+                id={id}
+                isModal={false}
+                onTitleChange={setModalTitle}
+                onHeaderLeadingChange={setHeaderLeading}
+                onBookingOpenChange={setIsBookingOpen}
+                onClose={() => navigate(-1)}
+                onOpenGallery={openGallery}
+            />
+        </div>
     );
 
     if (isDesktop) {

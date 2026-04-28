@@ -639,7 +639,7 @@ const ListingsPage = () => {
 
         const preventBackgroundScroll = (e) => {
             // If the event originates from inside the sidebar dialog, let it scroll normally
-            if (e.target && e.target.closest && e.target.closest('aside[role="dialog"]')) return;
+            if (e.target && e.target.closest && (e.target.closest('aside[role="dialog"]') || e.target.closest('[role="dialog"]'))) return;
             e.preventDefault();
         };
 

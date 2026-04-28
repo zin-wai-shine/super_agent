@@ -75,7 +75,9 @@ const FilterSearchModal = ({
             />
 
             {/* Modal Box */}
-            <div className={`relative w-full sm:w-[85%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] aria-hidden:hidden
+            <div 
+                role="dialog"
+                className={`relative w-full sm:w-[85%] sm:max-w-none flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] 
                 ${isOpen 
                     ? 'translate-y-0 opacity-100' 
                     : 'translate-y-full sm:translate-y-12 sm:scale-95 opacity-0'
@@ -232,7 +234,7 @@ const FilterSearchModal = ({
                                 {/* List Content */}
                                 <div 
                                     onScroll={handleScroll}
-                                    className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-5 pb-6"
+                                    className="modal-scrollable flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-5 pb-6"
                                 >
                                     <div className="flex flex-col gap-4 mt-2">
                                         <button 
