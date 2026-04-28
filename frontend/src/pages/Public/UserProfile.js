@@ -1236,13 +1236,13 @@ const UserProfile = () => {
                     </div>
 
                     {/* Mobile Content (Centered Menu) */}
-                    <div className="lg:hidden flex flex-col flex-1">
-                        {mobileView === 'menu' && (
-                            <div className="animate-fade-in-up pt-10 flex flex-col flex-1">
+                        <div className="lg:hidden flex flex-col flex-1">
+                            {mobileView === 'menu' && (
+                                <div className="animate-fade-in-up flex flex-col flex-1">
 
-                                {/* Profile Header Card (Glass Design) */}
+                                {/* Profile Header Card (Full Width Glass Design) */}
                                 <div 
-                                    className="w-full max-w-[400px] mx-auto px-8 py-10 rounded-2xl relative overflow-hidden mb-12 border border-gray-100 dark:border-white/10 backdrop-blur-xl"
+                                    className="w-full px-8 py-14 rounded-b-[48px] relative overflow-hidden mb-12 border-b border-gray-100 dark:border-white/10 backdrop-blur-xl"
                                     style={{ 
                                         backgroundColor: theme?.primaryColor ? `${theme.primaryColor}15` : 'rgba(45, 138, 86, 0.08)',
                                     }}
