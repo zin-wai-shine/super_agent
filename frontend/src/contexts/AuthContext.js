@@ -121,6 +121,10 @@ export const AuthProvider = ({ children }) => {
     const changePassword = useCallback(async (currentPassword, newPassword) => {
         try {
             await api.put('/me/password', { current_password: currentPassword, new_password: newPassword });
+            const response = await api.get('/me');
+            const userData = response.data;
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
             return { success: true };
         } catch (err) {
             return { success: false, error: err.response?.data?.error || 'Password change failed' };

@@ -14,6 +14,10 @@ import {
     UserIcon,
     PlusIcon,
     EnvelopeIcon,
+    DocumentTextIcon,
+    KeyIcon,
+    EyeIcon,
+    EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -157,8 +161,13 @@ const UserProfile = () => {
     // states: 'menu', 'about', 'contact'
     const [mobileView, setMobileView] = useState('menu');
 
-    const { updateProfile } = useAuth();
+    const { updateProfile, changePassword } = useAuth();
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    
+    const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
+    const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
+    
     const [editingField, setEditingField] = useState(null); // 'name', 'email', 'phone'
     const [profileForm, setProfileForm] = useState({
         first_name: user?.first_name || '',
@@ -192,6 +201,32 @@ const UserProfile = () => {
             setEditingField(null); // Return to list view
         } else {
             toast.error(error || 'Failed to update profile');
+        }
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        
+        const hasPassword = user?.has_password;
+        if (hasPassword && !passwordForm.currentPassword) {
+            toast.error('Current password is required');
+            return;
+        }
+        
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast.error('Passwords do not match');
+            return;
+        }
+        setIsSavingPassword(true);
+        const { success, error } = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+        setIsSavingPassword(false);
+        if (success) {
+            toast.success(hasPassword ? 'Password updated successfully' : 'Password set successfully');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            if (activeSection === 'password') setActiveSection('profile');
+            if (mobileView === 'password') setMobileView('menu');
+        } else {
+            toast.error(error || 'Failed to change password');
         }
     };
 
@@ -272,6 +307,9 @@ const UserProfile = () => {
     // Desktop sidebar nav
     const navItems = [
         { id: 'profile', label: 'Personal profile', icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'password', label: user?.has_password ? 'Change Password' : 'Account Security', icon: <KeyIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'contact', label: 'Contact Support', icon: <InformationCircleIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'terms', label: 'Terms & Privacy', icon: <DocumentTextIcon className="w-6 h-6" strokeWidth={2.5} /> },
         ...(isAgent ? [
             { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-6 h-6" strokeWidth={2.5} /> },
         ] : []),
@@ -779,6 +817,148 @@ const UserProfile = () => {
         );
     };
 
+    /* ── Render Password Content ─────────────────────────────── */
+    const renderPassword = (isMobile = false) => {
+        const hasPassword = user?.has_password;
+        const title = hasPassword ? 'Change Password' : 'Account Security';
+
+        const content = (
+            <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[500px]">
+                <div className="py-2">
+                    <div className="flex items-center gap-4 mb-8">
+                        {!isMobile && (
+                            <button onClick={() => setActiveSection('profile')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                        )}
+                        <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{title}</h2>
+                    </div>
+
+                    {!hasPassword && (
+                        <div className="mb-10 bg-slate-50/50 dark:bg-white/5 rounded-[24px] p-6 border border-slate-100 dark:border-white/10">
+                            <div className="flex items-center gap-4 mb-3">
+                                <div className="w-10 h-10 rounded-full bg-white dark:bg-black/20 flex items-center justify-center flex-shrink-0 shadow-sm border border-slate-100 dark:border-white/5">
+                                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                    </svg>
+                                </div>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">Google Account</h3>
+                            </div>
+                            <p className="text-[15px] text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">
+                                You are signed in with Google. Manage your password and security settings directly from your Google Account.
+                            </p>
+                            <a 
+                                href="https://myaccount.google.com/security" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center px-6 py-2 border border-slate-200 dark:border-white/10 rounded-full text-[14px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                Manage Google Account
+                            </a>
+                        </div>
+                    )}
+
+                    <div className="space-y-6">
+                        {!hasPassword && (
+                            <div className="mb-2">
+                                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">Set App Password</h3>
+                                <p className="text-[14px] text-gray-500">Create a password to sign in directly with your email address.</p>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            {hasPassword && (
+                                <div className="space-y-2">
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">Current Password</label>
+                                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
+                                        <input 
+                                            type="password"
+                                            value={passwordForm.currentPassword}
+                                            onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                            className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">New Password</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400 flex items-center">
+                                    <input 
+                                        type={showPasswords.new ? "text" : "password"}
+                                        value={passwordForm.newPassword}
+                                        onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                        className="flex-1 bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                                        className="ml-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none p-1"
+                                    >
+                                        {showPasswords.new ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">Confirm New Password</label>
+                                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400 flex items-center">
+                                    <input 
+                                        type={showPasswords.confirm ? "text" : "password"}
+                                        value={passwordForm.confirmPassword}
+                                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                        className="flex-1 bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                        className="ml-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none p-1"
+                                    >
+                                        {showPasswords.confirm ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-12 pt-8 border-t border-gray-50 dark:border-white/5 flex justify-center">
+                    <button 
+                        onClick={handlePasswordSubmit}
+                        disabled={isSavingPassword || (hasPassword && !passwordForm.currentPassword) || !passwordForm.newPassword || !passwordForm.confirmPassword}
+                        style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                        className={`w-fit min-w-[200px] px-12 py-4 sm:py-3 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${(isSavingPassword || (hasPassword && !passwordForm.currentPassword) || !passwordForm.newPassword || !passwordForm.confirmPassword) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                        {isSavingPassword ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (hasPassword ? 'Change Password' : 'Set Password')}
+                    </button>
+                </div>
+            </div>
+        );
+
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-right overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <button onClick={() => setMobileView('menu')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{title}</h2>
+                        </div>
+                        {content}
+                    </div>
+                </div>
+            );
+        }
+        return <div className="animate-fade-in-right">{content}</div>;
+    };
+
     /* ── Render About Content ────────────────────────────────── */
     const renderAbout = (isMobile = false) => {
         const content = (
@@ -949,7 +1129,53 @@ const UserProfile = () => {
                             >
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Contact</h2>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Contact Support</h2>
+                        </div>
+                        <div className="p-8">
+                            {content}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return content;
+    };
+
+    /* ── Render Terms Content ──────────────────────────────── */
+    const renderTerms = (isMobile = false) => {
+        const content = (
+            <div className="animate-fade-in-up space-y-6 pb-20">
+                <div className="relative">
+                    <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">Terms & Privacy</h4>
+                    <div className="space-y-6 text-[15px] sm:text-[16px] text-slate-600 dark:text-gray-400 leading-relaxed">
+                        <p>
+                            Welcome to our platform. By using our services, you agree to comply with and be bound by the following terms and conditions of use.
+                        </p>
+                        <p>
+                            We are committed to protecting your privacy. Any personal information provided to us will be treated with care and only used in accordance with our privacy policy. We will not sell or distribute your personal information to third parties without your permission unless required by law.
+                        </p>
+                        <p>
+                            For a complete copy of our terms of service and privacy policy, please contact our support team.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
+                        {/* Mobile Header with Back Button */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center border-b border-gray-50 dark:border-white/5">
+                            <button
+                                onClick={() => setMobileView('menu')}
+                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Terms & Privacy</h2>
                         </div>
                         <div className="p-8">
                             {content}
@@ -992,7 +1218,7 @@ const UserProfile = () => {
                 <div className="hidden lg:block w-px bg-gray-100 self-stretch flex-shrink-0 dark:bg-white/5" />
 
                 {/* ── Main Content Area ── */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 flex flex-col">
                     {/* Desktop Content */}
                     <div className="hidden lg:block">
                         <div className="flex items-center mb-8">
@@ -1001,14 +1227,16 @@ const UserProfile = () => {
                             </h2>
                         </div>
                         {activeSection === 'profile' && renderProfile()}
+                        {activeSection === 'password' && renderPassword()}
                         {activeSection === 'about' && renderAbout()}
                         {activeSection === 'contact' && renderContact()}
+                        {activeSection === 'terms' && renderTerms()}
                     </div>
 
                     {/* Mobile Content (Centered Menu) */}
-                    <div className="lg:hidden">
+                    <div className="lg:hidden flex flex-col flex-1">
                         {mobileView === 'menu' && (
-                            <div className="animate-fade-in-up pt-10">
+                            <div className="animate-fade-in-up pt-10 flex flex-col flex-1">
 
                                 {/* Profile Header */}
                                 <div className="flex flex-col items-center mb-10 pt-4 relative">
@@ -1035,45 +1263,78 @@ const UserProfile = () => {
                                 </div>
 
                                 {/* Menu List */}
-                                <div className="divide-y divide-gray-50 dark:divide-white/5">
-                                    {/* Profile Row */}
-                                    <button onClick={() => setMobileView('profile')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
-                                        <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
-                                        <div className="text-left">
-                                            <p className="font-medium text-[16px] text-[#222222] dark:text-white">Personal profile</p>
-                                        </div>
-                                        <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
-                                    </button>
-
-                                    {/* Dashboard Row */}
-                                    {isAgent && (
-                                        <button
-                                            onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
-                                            className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group"
-                                        >
-                                            <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                <div className="flex flex-col flex-1">
+                                    <div className="divide-y divide-gray-50 dark:divide-white/5">
+                                        {/* Profile Row */}
+                                        <button onClick={() => setMobileView('profile')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="text-left">
-                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Personal profile</p>
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                         </button>
-                                    )}
 
-                                    {/* Logout Row */}
-                                    <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
-                                        <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
-                                        <div className="text-left">
-                                            <p className="font-medium text-[16px] text-rose-600">Log out</p>
-                                        </div>
-                                        <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
-                                    </button>
+                                        {/* Change Password Row */}
+                                        <button onClick={() => setMobileView('password')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <KeyIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{user?.has_password ? 'Change Password' : 'Account Security'}</p>
+                                            </div>
+                                            <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
+
+                                        {/* Contact Support Row */}
+                                        <button onClick={() => setMobileView('contact')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <InformationCircleIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Contact Support</p>
+                                            </div>
+                                            <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
+
+                                        {/* Terms & Privacy Row */}
+                                        <button onClick={() => setMobileView('terms')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <DocumentTextIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Terms & Privacy</p>
+                                            </div>
+                                            <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </div>
+
+                                    <div className="mt-auto divide-y divide-gray-50 dark:divide-white/5 border-t border-gray-50 dark:border-white/5">
+                                        {/* Dashboard Row */}
+                                        {isAgent && (
+                                            <button
+                                                onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/agent')}
+                                                className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group"
+                                            >
+                                                <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                                <div className="text-left">
+                                                    <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                                </div>
+                                                <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                            </button>
+                                        )}
+
+                                        {/* Logout Row */}
+                                        <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-rose-600">Log out</p>
+                                            </div>
+                                            <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {mobileView === 'profile' && renderProfile(true)}
+                        {mobileView === 'password' && renderPassword(true)}
                         {mobileView === 'about' && renderAbout(true)}
                         {mobileView === 'contact' && renderContact(true)}
+                        {mobileView === 'terms' && renderTerms(true)}
                     </div>
 
                     {/* Footer Logo (Mobile only in unified layout) */}

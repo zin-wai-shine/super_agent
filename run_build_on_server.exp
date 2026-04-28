@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 120
+set password "-4V2HOvVFF,q7Bx2"
+spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "cd /root/super_real_estate && ls -la && docker-compose build frontend && docker-compose up -d frontend"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

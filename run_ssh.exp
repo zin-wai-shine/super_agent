@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 10
+set password "-4V2HOvVFF,q7Bx2"
+spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "find / -name super_real_estate -type d 2>/dev/null"
+expect "password:"
+send "$password\r"
+expect eof

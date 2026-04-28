@@ -20,6 +20,7 @@ type User struct {
 	ID                    uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Email                 string         `gorm:"uniqueIndex;not null" json:"email"`
 	PasswordHash          string         `gorm:"not null" json:"-"`
+	HasPassword           bool           `gorm:"-" json:"has_password"`
 	FirstName             string         `gorm:"size:100" json:"first_name"`
 	LastName              string         `gorm:"size:100" json:"last_name"`
 	Role                  string         `gorm:"size:20;not null;default:'public'" json:"role"`

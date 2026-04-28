@@ -95,6 +95,8 @@ func (ac *AuthController) Register(c *gin.Context) {
 		return
 	}
 
+	user.HasPassword = true
+
 	c.JSON(http.StatusCreated, TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
@@ -161,6 +163,8 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
+	user.HasPassword = true
+
 	c.JSON(http.StatusOK, TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
@@ -214,6 +218,8 @@ func (ac *AuthController) GetProfile(c *gin.Context) {
 		return
 	}
 
+	user.HasPassword = user.PasswordHash != ""
+
 	c.JSON(http.StatusOK, user)
 }
 
@@ -252,6 +258,7 @@ func (ac *AuthController) UpdateProfile(c *gin.Context) {
 
 	var user models.User
 	ac.db.First(&user, "id = ?", userID)
+	user.HasPassword = user.PasswordHash != ""
 	c.JSON(http.StatusOK, user)
 }
 
@@ -260,7 +267,7 @@ func (ac *AuthController) ChangePassword(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
 	var req struct {
-		CurrentPassword string `json:"current_password" binding:"required"`
+		CurrentPassword string `json:"current_password"`
 		NewPassword     string `json:"new_password" binding:"required,min=8"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -274,10 +281,16 @@ func (ac *AuthController) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	// Verify current password
-	if !utils.CheckPassword(req.CurrentPassword, user.PasswordHash) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
-		return
+	// Verify current password only if user already has one
+	if user.PasswordHash != "" {
+		if req.CurrentPassword == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Current password is required"})
+			return
+		}
+		if !utils.CheckPassword(req.CurrentPassword, user.PasswordHash) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+			return
+		}
 	}
 
 	// Hash new password
