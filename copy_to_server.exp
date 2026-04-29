@@ -1,7 +1,15 @@
 #!/usr/bin/expect -f
 set timeout 30
 set password "-4V2HOvVFF,q7Bx2"
-spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/PropertyShare.js /Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Listings/AllPhotosModalContent.js root@187.77.140.205:/root/super_real_estate/frontend/src/components/Listings/
+spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/BrandLoading.js root@187.77.140.205:/root/super_real_estate/frontend/src/components/Common/BrandLoading.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/frontend/src/contexts/TenantContext.js root@187.77.140.205:/root/super_real_estate/frontend/src/contexts/TenantContext.js
 expect {
     "password:" {
         send "$password\r"

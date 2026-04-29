@@ -1,7 +1,7 @@
 import React from 'react';
 import { BASE_URL } from '../../services/api';
 
-const BrandLoading = ({ agent, isMainDomain, isExiting }) => {
+const BrandLoading = ({ agent, isMainDomain, isExiting, isLoadingConfig }) => {
     // Correctly map backend fields: agent.logo and agent.name
     // Use theme primary color if available
     const rawLogo = agent?.logo || agent?.theme?.logo_url;
@@ -49,8 +49,8 @@ const BrandLoading = ({ agent, isMainDomain, isExiting }) => {
                         </div>
                     ) : (
                         <div 
-                            className="w-20 h-20 flex items-center justify-center text-white font-black text-4xl tracking-tighter rounded-3xl shadow-xl"
-                            style={{ backgroundColor: primaryColor }}
+                            className={`w-20 h-20 flex items-center justify-center text-white font-black text-4xl tracking-tighter rounded-3xl shadow-xl ${isLoadingConfig ? 'opacity-0' : 'opacity-100'}`}
+                            style={{ backgroundColor: primaryColor, transition: 'opacity 0.3s ease' }}
                         >
                             {siteTitle?.charAt(0) || 'S'}
                         </div>
@@ -59,7 +59,7 @@ const BrandLoading = ({ agent, isMainDomain, isExiting }) => {
             </div>
             
             {/* Branding text below */}
-            <div className="absolute bottom-16 left-0 right-0 text-center animate-fade-up">
+            <div className={`absolute bottom-16 left-0 right-0 text-center animate-fade-up ${!agent && isLoadingConfig ? 'opacity-0' : 'opacity-100'}`} style={{ transition: 'opacity 0.3s ease' }}>
                 <p className="text-[13px] font-bold text-gray-500 uppercase tracking-[0.25em]">
                     {siteTitle}
                 </p>

@@ -119,6 +119,7 @@ export const TenantProvider = ({ children }) => {
                     agent={tenantConfig?.agent} 
                     isMainDomain={tenantConfig?.is_main_domain} 
                     isExiting={isExiting} 
+                    isLoadingConfig={loading}
                 />
             )}
         </TenantContext.Provider>
