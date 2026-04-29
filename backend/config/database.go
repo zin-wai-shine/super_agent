@@ -23,6 +23,9 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
+	FacebookAppID      string
+	FacebookAppSecret  string
+	FacebookRedirectURL string
 }
 
 func LoadConfig() *Config {
@@ -38,6 +41,9 @@ func LoadConfig() *Config {
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://srv1534108.hstgr.cloud:8080/api/auth/google/callback"),
+		FacebookAppID:      getEnv("FACEBOOK_APP_ID", ""),
+		FacebookAppSecret:  getEnv("FACEBOOK_APP_SECRET", ""),
+		FacebookRedirectURL: getEnv("FACEBOOK_REDIRECT_URL", "http://srv1534108.hstgr.cloud:8080/api/auth/facebook/callback"),
 	}
 }
 

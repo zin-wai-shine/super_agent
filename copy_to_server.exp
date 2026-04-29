@@ -1,7 +1,12 @@
 #!/usr/bin/expect -f
 set timeout 30
 set password "-4V2HOvVFF,q7Bx2"
-spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/frontend/src/components/Common/BrandLoading.js root@187.77.140.205:/root/super_real_estate/frontend/src/components/Common/BrandLoading.js
+set server "root@187.77.140.205"
+set remote_dir "/root/super_real_estate"
+set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
+
+# 1. Backend: New Facebook auth controller
+spawn scp -o StrictHostKeyChecking=no $local_dir/backend/controllers/facebook_auth_controller.go $server:$remote_dir/backend/controllers/facebook_auth_controller.go
 expect {
     "password:" {
         send "$password\r"
@@ -9,7 +14,9 @@ expect {
     }
     eof
 }
-spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/frontend/src/contexts/TenantContext.js root@187.77.140.205:/root/super_real_estate/frontend/src/contexts/TenantContext.js
+
+# 2. Backend: Updated config (added Facebook fields)
+spawn scp -o StrictHostKeyChecking=no $local_dir/backend/config/database.go $server:$remote_dir/backend/config/database.go
 expect {
     "password:" {
         send "$password\r"
@@ -17,7 +24,9 @@ expect {
     }
     eof
 }
-spawn scp -o StrictHostKeyChecking=no /Users/zinwaishine/Desktop/super_real_estate/backend/controllers/public_controller.go root@187.77.140.205:/root/super_real_estate/backend/controllers/public_controller.go
+
+# 3. Backend: Updated routes (added Facebook routes)
+spawn scp -o StrictHostKeyChecking=no $local_dir/backend/routes/routes.go $server:$remote_dir/backend/routes/routes.go
 expect {
     "password:" {
         send "$password\r"
@@ -25,3 +34,45 @@ expect {
     }
     eof
 }
+
+# 4. Frontend: New Facebook callback page
+spawn scp -o StrictHostKeyChecking=no $local_dir/frontend/src/pages/Auth/FacebookCallback.js $server:$remote_dir/frontend/src/pages/Auth/FacebookCallback.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# 5. Frontend: Updated LoginPage (added Facebook button)
+spawn scp -o StrictHostKeyChecking=no $local_dir/frontend/src/pages/Auth/LoginPage.js $server:$remote_dir/frontend/src/pages/Auth/LoginPage.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# 6. Frontend: Updated RegisterPage (added Facebook button)
+spawn scp -o StrictHostKeyChecking=no $local_dir/frontend/src/pages/Auth/RegisterPage.js $server:$remote_dir/frontend/src/pages/Auth/RegisterPage.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# 7. Frontend: Updated App.js (added Facebook callback route)
+spawn scp -o StrictHostKeyChecking=no $local_dir/frontend/src/App.js $server:$remote_dir/frontend/src/App.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n\nAll files copied successfully!"

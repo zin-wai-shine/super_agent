@@ -1,11 +1,23 @@
 #!/usr/bin/expect -f
-set timeout 120
+set timeout 600
 set password "-4V2HOvVFF,q7Bx2"
-spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "cd /root/super_real_estate && ls -la && docker compose build frontend backend && docker compose up -d frontend backend"
+
+# Add Facebook env vars to docker-compose on the server, then rebuild
+spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "cd /root/super_real_estate && \
+grep -q 'FACEBOOK_APP_ID' docker-compose.yml || \
+sed -i '/GOOGLE_REDIRECT_URL/a\\      - FACEBOOK_APP_ID=1912157792773557\\n      - FACEBOOK_APP_SECRET=ea3dc024a145c78727e17b0369cb4b3d\\n      - FACEBOOK_REDIRECT_URL=https://bolthavenproperty.com/api/auth/facebook/callback' docker-compose.yml && \
+echo 'Facebook env vars added' && \
+docker compose build backend frontend && \
+docker compose up -d backend frontend && \
+echo 'Deploy complete!'"
+
 expect {
     "password:" {
         send "$password\r"
         exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for build..."
     }
     eof
 }

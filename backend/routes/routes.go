@@ -21,6 +21,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	appointmentController := controllers.NewAppointmentController(db, wsManager)
 	developerController := controllers.NewDeveloperController(db)
 	googleAuthController := controllers.NewGoogleAuthController(db, cfg)
+	facebookAuthController := controllers.NewFacebookAuthController(db, cfg)
 	collectionController := controllers.NewCollectionController(db)
 
 	// Public static files (Move before tenant middleware)
@@ -45,6 +46,8 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			auth.POST("/refresh", authController.RefreshToken)
 			auth.GET("/google", googleAuthController.GoogleLogin)
 			auth.GET("/google/callback", googleAuthController.GoogleCallback)
+			auth.GET("/facebook", facebookAuthController.FacebookLogin)
+			auth.GET("/facebook/callback", facebookAuthController.FacebookCallback)
 		}
 
 		// Public routes

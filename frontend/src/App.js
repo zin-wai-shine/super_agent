@@ -20,6 +20,7 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import BannerDetail from './pages/Public/BannerDetail';
 import UserProfile from './pages/Public/UserProfile';
 import GoogleCallback from './pages/Auth/GoogleCallback';
+import FacebookCallback from './pages/Auth/FacebookCallback';
 import BookAppointment from './pages/Public/BookAppointment';
 import MyBookings from './pages/Public/MyBookings';
 import SavedListingsPage from './pages/Public/SavedListingsPage';
@@ -258,6 +259,7 @@ const AppRoutes = () => {
                     }
                 />
                 <Route path="auth/google/callback" element={<GoogleCallback />} />
+                <Route path="auth/facebook/callback" element={<FacebookCallback />} />
             </Route>
 
             {/* Agent Dashboard Routes */}

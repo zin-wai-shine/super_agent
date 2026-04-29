@@ -241,7 +241,7 @@ const TransitFilterModal = ({
                 </button>
                 {/* Main Box - Bottom-up animation container */}
                 <div className={`relative w-full bg-white dark:bg-dashboard-card rounded-t-[20px] sm:rounded-[28px] overflow-hidden flex flex-col transition-all duration-500 ease-in-out shadow-2xl border border-white/10
-                    ${isExpanded || isSearchExpanded ? 'h-[92dvh]' : 'h-[75dvh]'} sm:h-[85vh] sm:max-h-[85vh]
+                    ${isExpanded || isSearchExpanded || showMapOnMobile ? 'h-[90dvh]' : 'h-[75dvh]'} sm:h-[85vh] sm:max-h-[85vh]
                 `}>
 
                     

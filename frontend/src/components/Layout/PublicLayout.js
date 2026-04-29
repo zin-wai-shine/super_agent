@@ -631,7 +631,7 @@ const PublicLayout = () => {
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
             {!isAuthPage && !isCollectionDetailPage && (
-                <div className={`hidden md:block z-[150] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isCollectionDetailPage ? 'fixed w-full top-0' : 'sticky top-0'} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : 'bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5'}`}>
+                <div className={`hidden md:block z-[150] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isCollectionDetailPage ? 'fixed w-full top-0' : 'sticky top-0'} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : `bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-none' : 'border-b border-transparent shadow-none'}`}`}>
                     <nav
                         className={`transition-all duration-300 ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent backdrop-blur-none' : 'bg-white/80 dark:bg-transparent backdrop-blur-md'} ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
                         onMouseLeave={closeMenu}
