@@ -297,27 +297,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [isNavPadExpanded, setIsNavPadExpanded] = useState(false);
     
     // Ensure we start at the top when the detail view/page is opened
-    React.useLayoutEffect(() => {
+    React.useEffect(() => {
         if (!id) return;
         
-        // Immediate reset for window and any existing modal scroll containers
-        if (!isModal) {
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
-        
-        // Find the scrollable container if we're in a modal context
-        const containers = document.querySelectorAll('.modal-scrollable');
-        containers.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
-        
-        // Use a slight timeout for async content that might have changed layout height
-        const t = setTimeout(() => {
+        const resetScroll = () => {
             if (!isModal) {
                 window.scrollTo({ top: 0, behavior: 'instant' });
             }
-            const containersAgain = document.querySelectorAll('.modal-scrollable');
-            containersAgain.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
-        }, 10);
-        
+            const containers = document.querySelectorAll('.modal-scrollable');
+            containers.forEach(c => c.scrollTo({ top: 0, behavior: 'instant' }));
+        };
+
+        resetScroll();
+        // Single deferred check for stability during hydration
+        const t = setTimeout(resetScroll, 50);
         return () => clearTimeout(t);
     }, [id, isModal]);
 
@@ -789,7 +782,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 // Fetch basic listing details
                 const [response] = await Promise.all([
                     publicApi.getListing(id, { signal: controller.signal }),
-                    new Promise(resolve => setTimeout(resolve, 200)) // Minimal delay for smooth transition
+                    Promise.resolve()
                 ]);
                 const fetchedListing = response.data;
                 
