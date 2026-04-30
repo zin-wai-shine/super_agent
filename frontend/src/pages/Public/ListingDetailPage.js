@@ -2000,11 +2000,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
-                                    {/* Handle - match second image */}
-                                    <div className="flex justify-center pt-5 pb-4 lg:hidden">
-                                        <div className="w-10 h-1.5 rounded-full bg-gray-200 dark:bg-white/10" />
-                                    </div>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
@@ -2910,10 +2906,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
-                                                    className="shrink-0 w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
-                                                    onClick={() => setIsContactOverlayOpen(false)}
+                                                    className="shrink-0 w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] group/handle rounded-t-[20px]"
                                                 >
-                                                    <div className="w-12 h-1.5 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -2984,7 +2978,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         setTimeout(() => setIsCancelModalOpen(false), 500);
                                                     }}
                                                 >
-                                                    <div className="w-12 h-1 bg-gray-200 rounded-full group-hover/handle:bg-gray-300 transition-colors" />
                                                     <div className="absolute top-4 right-4 flex items-center gap-2">
                                                         <button
                                                             onClick={(e) => {

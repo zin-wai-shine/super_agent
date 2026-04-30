@@ -251,16 +251,31 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
             )}
 
-            {/* Progress Bar Indicator (Premium "Move Bar") */}
+            {/* 5-Dot Sliding Window Indicator (Oldest Design Style) */}
             {showDots && images.length > 1 && (
-                <div className={`absolute ${isGalleryMode ? 'bottom-12' : 'bottom-6'} left-1/2 -translate-x-1/2 w-20 h-[3px] bg-black/20 dark:bg-white/10 rounded-full overflow-hidden z-30 backdrop-blur-sm`}>
-                    <div 
-                        className="h-full bg-white transition-all duration-500 ease-out rounded-full"
-                        style={{ 
-                            width: `${100 / images.length}%`,
-                            transform: `translateX(${currentIndex * 100}%)`
-                        }}
-                    />
+                <div className={`absolute ${isGalleryMode ? 'bottom-12' : 'bottom-4'} left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30`}>
+                    {(() => {
+                        const maxDots = 5;
+                        const total = images.length;
+                        let startIndex = 0;
+                        if (total > maxDots) {
+                            startIndex = Math.max(0, Math.min(currentIndex - 2, total - maxDots));
+                        }
+                        return images.slice(startIndex, startIndex + maxDots).map((_, i) => {
+                            const actualIndex = startIndex + i;
+                            const isActive = actualIndex === currentIndex;
+                            return (
+                                <div 
+                                    key={actualIndex}
+                                    className={`transition-all duration-300 rounded-full ${
+                                        isActive 
+                                            ? 'w-5 h-1.5 bg-white shadow-sm' 
+                                            : 'w-1.5 h-1.5 bg-white/40'
+                                    }`}
+                                />
+                            );
+                        });
+                    })()}
                 </div>
             )}
 
@@ -524,21 +539,21 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Status Badge Group */}
                         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
-                            <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[11px] md:text-[11px] font-bold text-gray-900 dark:text-white shadow-sm">
+                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 rounded-full text-[12px] md:text-[13px] font-bold text-gray-900 shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
 
                         {/* Favorite Button - Top Right Corner */}
                         {showSave && (
-                            <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
-                                <HeartButton
-                                    isSaved={isSaved}
-                                    onClick={handleToggleSave}
-                                    disabled={savingListing}
-                                    className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
-                                />
-                            </div>
+                                <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
+                                    <HeartButton
+                                        isSaved={isSaved}
+                                        onClick={handleToggleSave}
+                                        disabled={savingListing}
+                                        className="pointer-events-auto w-12 h-12 flex items-center justify-center"
+                                    />
+                                </div>
                         )}
                     </div>
 
@@ -599,7 +614,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                             {/* Status Badge */}
                             <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none animate-fill-med">
-                                <span className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-1.5 rounded-full text-[15px] md:text-[12px] font-bold text-gray-900 dark:text-white shadow-sm">
+                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">
                                     {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                                 </span>
                             </div>
@@ -611,7 +626,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                         isSaved={isSaved}
                                         onClick={handleToggleSave}
                                         disabled={savingListing}
-                                        className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
+                                        className="pointer-events-auto w-12 h-12 flex items-center justify-center"
                                     />
                                 </div>
                             )}
@@ -671,7 +686,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                             isSaved={isSaved}
                                             onClick={handleToggleSave}
                                             disabled={savingListing}
-                                            className="pointer-events-auto w-12 h-12 flex items-center justify-center translate-x-1.5 -translate-y-1.5"
+                                            className="pointer-events-auto w-12 h-12 flex items-center justify-center"
                                         />
                                     </div>
                                 )}
