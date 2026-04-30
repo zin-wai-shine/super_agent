@@ -76,24 +76,32 @@ const CollectionManagement = () => {
             accessorKey: 'name',
             header: 'Collection',
             cell: (info) => {
+                const col = info.row.original;
+                const isIconType = !!col.icon;
+                const hasMedia = col.media && col.media.length > 0;
+
                 return (
                     <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${info.row.original.isVirtual ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                            {(() => {
-                                const Icon = MdIcons[info.row.original.icon] || 
-                                             FaIcons[info.row.original.icon] || 
-                                             HiIcons[info.row.original.icon] || 
-                                             BsIcons[info.row.original.icon] || 
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden ${col.isVirtual ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                            {isIconType ? (() => {
+                                const Icon = MdIcons[col.icon] || 
+                                             FaIcons[col.icon] || 
+                                             HiIcons[col.icon] || 
+                                             BsIcons[col.icon] || 
                                              FolderIcon;
                                              
-                                return <Icon className={`w-5 h-5 ${info.row.original.isVirtual ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'}`} />;
-                            })()}
+                                return <Icon className={`w-5 h-5 ${col.isVirtual ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'}`} />;
+                            })() : (hasMedia && !col.is_parent) ? (
+                                <img src={getMediaUrl(col.media[0].url)} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <FolderIcon className={`w-5 h-5 ${col.is_parent ? 'text-primary-500' : 'text-gray-400'}`} />
+                            )}
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate">
                                 {info.getValue()}
                             </span>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase">Created {new Date(info.row.original.created_at).toLocaleDateString()}</span>
+                            <span className="text-[9px] text-gray-400 font-bold uppercase">Created {new Date(col.created_at).toLocaleDateString()}</span>
                         </div>
                     </div>
                 );
@@ -147,7 +155,71 @@ const CollectionManagement = () => {
         },
     ];
 
-    const parentColumns = useMemo(() => baseColumns, []);
+    const parentColumns = useMemo(() => [
+        {
+            accessorKey: 'name',
+            header: 'Collection',
+            cell: (info) => {
+                const col = info.row.original;
+                return (
+                    <div className="flex items-center gap-3 py-1">
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <FolderIcon className="w-5 h-5 text-secondary-500" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate">
+                                {info.getValue()}
+                            </span>
+                            <span className="text-[9px] text-gray-400 font-bold uppercase">Created {new Date(col.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'children_count',
+            header: 'Childs',
+            cell: ({ getValue }) => (
+                <span className="text-[10px] font-bold text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-500/10 px-1.5 py-0.5 rounded">
+                    {getValue() || 0}
+                </span>
+            ),
+        },
+        {
+            id: 'actions',
+            header: '',
+            cell: ({ row }) => {
+                return (
+                    <div className="flex justify-end space-x-1.5">
+                        <button
+                            onClick={() => setEditingCollection(row.original)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                            title="Edit"
+                        >
+                            <PencilSquareIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={async () => {
+                                if (window.confirm('Delete this main collection?')) {
+                                    try {
+                                        await collectionApi.deleteCollection(row.original.id);
+                                        toast.success('Deleted');
+                                        fetchCollections();
+                                    } catch (e) {
+                                        toast.error('Failed to delete');
+                                    }
+                                }
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                            title="Delete"
+                        >
+                            <TrashIcon className="w-4 h-4" />
+                        </button>
+                    </div>
+                );
+            },
+        },
+    ], []);
     
     const childColumns = useMemo(() => {
         const cols = [...baseColumns];
@@ -168,74 +240,36 @@ const CollectionManagement = () => {
     }, []);
 
     const parentData = useMemo(() => {
-        // We only show "Parents" (top-level collections created as parents with an icon)
-        const realParents = collections.filter(c => !c.parent_id && !!c.icon);
+        // We only show "Parents" (top-level categories)
+        const realParents = collections.filter(c => c.is_parent).map(p => {
+            const children = collections.filter(c => c.parent_id === p.id);
+            return {
+                ...p,
+                children_count: children.length
+            };
+        });
         
-        // Count items without parent OR categorized as children
-        const popularCount = collections.filter(c => !c.icon).length;
-
-        let popName = 'Popular Collections';
-        let popIcon = 'BsStars';
-        try {
-            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-            if (custom) {
-                popName = custom.name || popName;
-                popIcon = custom.icon || popIcon;
-            }
-        } catch (e) {}
-
-        return [
-            { 
-                id: 'virtual-popular', 
-                name: popName, 
-                listings_count: popularCount, 
-                isVirtual: true,
-                icon: popIcon,
-                created_at: new Date().toISOString()
-            },
-            ...realParents
-        ];
+        return realParents;
     }, [collections]);
 
     const parentOptions = useMemo(() => {
         const options = [{ value: 'all', label: 'All Categories' }];
-
-        let popName = 'Popular Collections';
-        try {
-            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-            if (custom) {
-                popName = custom.name || popName;
-            }
-        } catch (e) {}
-
-        options.push({ value: 'virtual-popular', label: popName });
         
-        collections.filter(c => !c.parent_id && !!c.icon).forEach(p => {
+        collections.filter(c => c.is_parent).forEach(p => {
             options.push({ value: p.id, label: p.name });
         });
         return options;
     }, [collections]);
 
     const childData = useMemo(() => {
-        let popName = 'Popular Collections';
-        try {
-            const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-            if (custom) {
-                popName = custom.name || popName;
-            }
-        } catch (e) {}
-
         let items = collections
-            .filter(c => !c.icon) // Filter out actual parent collections
+            .filter(c => !c.is_parent) // Filter only sub-collections (non-parents)
             .map(c => {
-                if (!c.parent_id) {
-                    return { 
-                        ...c, 
-                        parent: { name: popName },
-                        effectiveParentId: 'virtual-popular'
-                    };
-                }
-                return { ...c, effectiveParentId: c.parent_id };
+                return { 
+                    ...c, 
+                    parent: c.parent || { name: 'Unknown' },
+                    effectiveParentId: c.parent_id
+                };
             });
 
         if (childParentFilter !== 'all') {

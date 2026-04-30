@@ -30,17 +30,30 @@ const CollectionsPage = () => {
             const response = await collectionApi.getPublicCollections();
             const allData = response.data || [];
             
-            // Filter categories (those with icons)
-            const categoriesData = allData.filter(c => c.icon);
+            // Filter categories (those marked as is_parent)
+            const categoriesData = allData.filter(c => c.is_parent);
             setCategories(categoriesData);
             globalCategoriesCache = categoriesData;
 
-            // Filter collections (those without icons)
-            let collectionsData = allData.filter(c => !c.icon);
+            // Filter collections (those that are not parents)
+            let collectionsData = allData.filter(c => !c.is_parent);
             
             // If we have an active category filter, filter the collections
             if (activeCategoryId) {
-                collectionsData = collectionsData.filter(c => c.category_id === activeCategoryId);
+                // Check if the selected ID is actually a CHILD (collection) instead of a PARENT (category)
+                const target = allData.find(c => c.id === activeCategoryId);
+                if (target && !target.is_parent) {
+                    // It's a child, user wants its properties - redirect to detail page
+                    navigate(`/collections/${target.id}`, { replace: true });
+                    return;
+                }
+                collectionsData = collectionsData.filter(c => c.parent_id === activeCategoryId);
+            } else {
+                // If no category selected, show "Popular Properties" children by default
+                const popularParent = categoriesData.find(c => c.name === 'Popular Properties');
+                if (popularParent) {
+                    collectionsData = collectionsData.filter(c => c.parent_id === popularParent.id);
+                }
             }
             
             setCollections(collectionsData);
@@ -58,9 +71,10 @@ const CollectionsPage = () => {
     };
 
     const activeCategoryName = useMemo(() => {
-        const found = categories.find(c => c.id === activeCategoryId);
+        // Look in both categories and all collections for the title
+        const found = [...categories, ...collections].find(c => c.id === activeCategoryId);
         return found ? found.name : null;
-    }, [categories, activeCategoryId]);
+    }, [categories, collections, activeCategoryId]);
 
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">

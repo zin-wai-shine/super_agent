@@ -10,12 +10,7 @@
     scroll-behavior: smooth;
     font-size: 87.5%;
     /* Scale entire app down (14px base) */
-    scrollbar-color: #9ca3af40 transparent !important;
-  }
-
-  html::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    overflow-y: overlay;
   }
 
   body {
@@ -33,24 +28,6 @@
     }
   }
 
-  /* Custom scrollbar - Global */
-  ::-webkit-scrollbar {
-    width: 4px !important;
-    height: 4px !important;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(243, 244, 246, 0.5) !important;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.4) !important;
-    border-radius: 10px !important;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(107, 114, 128, 0.6) !important;
-  }
 
   /* Left side scrollbar utility */
   .left-scrollbar {
@@ -313,6 +290,21 @@
   }
   .animate-mesh {
     animation: mesh 15s ease infinite;
+  }
+
+  @keyframes ripple-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+
+  .animate-ripple {
+    animation: ripple-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 }
 
@@ -826,4 +818,52 @@ body.filter-open {
 
 .animate-swipe-ripple {
   animation: swipeRipple 2.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* --- CRITICAL: FLOATING SCROLLBAR UI --- */
+::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-track-piece,
+::-webkit-scrollbar-corner,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+#root::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+#root::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3) !important;
+  background-clip: content-box !important;
+  border: 3px solid transparent !important;
+  border-radius: 100px !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5) !important;
+  background-clip: content-box !important;
+}
+
+/* Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }

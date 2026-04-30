@@ -349,6 +349,8 @@ type Collection struct {
 	Parent         *Collection       `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 	SubCollections []Collection      `gorm:"foreignKey:ParentID" json:"sub_collections,omitempty"`
 	Name           string            `gorm:"size:255;not null" json:"name"`
+	Type           string            `gorm:"size:20;default:'image'" json:"type"` // "image" or "icon"
+	IsParent       bool              `gorm:"default:false" json:"is_parent"`
 	Icon           string            `gorm:"size:100" json:"icon,omitempty"`
 	CreatedBy      uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
 	Media          []CollectionMedia `gorm:"foreignKey:CollectionID" json:"media,omitempty"`

@@ -4,7 +4,7 @@ const GridSkeleton = () => {
     const skeletonStyle = { opacity: 1 };
     return (
         <div className="flex flex-col w-full bg-transparent" style={skeletonStyle}>
-            <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] mb-0">
+            <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[32px] md:rounded-[23px] mb-0">
                 <div className="h-full w-full bg-gray-50 dark:bg-white/[0.02] animate-fill-fast" />
                 <div className="absolute top-3.5 left-3.5">
                     <div className="h-6 w-16 bg-white/40 dark:bg-white/5 rounded-[100px] animate-fill-med" />

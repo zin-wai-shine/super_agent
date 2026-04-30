@@ -329,9 +329,8 @@ const PublicLayout = () => {
     const isSavedPage = location.pathname === '/saved-listings';
     const isProfilePage = location.pathname === '/profile';
     const isBookingsPage = location.pathname === '/my-bookings';
-    const isListingDetailPage = location.pathname.startsWith('/listings/') && location.pathname.split('/').length > 2;
     const isCollectionDetailPage = location.pathname.startsWith('/collections/') && location.pathname.split('/').length > 2;
-    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage || isListingDetailPage;
+    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage;
     const scrollContainerRef = useRef(null);
     return (
         <div
@@ -1048,7 +1047,7 @@ const PublicLayout = () => {
             {/* Footer - shown on all pages except profile, my-bookings, login, register */}
             {
                 !hideNavOnPage && (
-                    <footer className="hidden md:block text-gray-900 dark:text-white pt-8 pb-6 md:pt-32 md:pb-12 relative overflow-hidden flex-shrink-0">
+                    <footer className="hidden md:block bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white pt-4 pb-6 md:pt-10 md:pb-12 relative overflow-hidden flex-shrink-0">
                         {/* Background Decoration */}
                         <div
                             className="absolute inset-0 pointer-events-none select-none z-0 opacity-[0.07] dark:opacity-[0.03]"

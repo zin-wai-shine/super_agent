@@ -1,0 +1,62 @@
+#!/usr/bin/expect -f
+set timeout 300
+set password "-4V2HOvVFF,q7Bx2"
+set server "root@187.77.140.205"
+set remote_dir "/root/super_real_estate"
+set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
+
+# 1. Create missing directory on server
+puts "Creating directory properties_not_fount on server..."
+spawn ssh -o StrictHostKeyChecking=no "$server" "mkdir -p $remote_dir/frontend/src/assets/images/properties_not_fount"
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# List of files to copy
+set files {
+    "frontend/src/index.css"
+    "frontend/src/pages/Public/ListingDetailPage.js"
+    "frontend/src/pages/Public/BookAppointment.js"
+    "frontend/src/assets/images/mobile_booking_confirm_bg.png"
+    "frontend/src/assets/images/desktop_booking_confirm_bg.png"
+    "frontend/src/assets/images/properties_not_fount/pro_mobile_not_found.png"
+    "frontend/src/assets/images/properties_not_fount/pro_desktop_not_found.png"
+}
+
+# 2. Copy files
+foreach f $files {
+    puts "Copying $f..."
+    spawn scp -o StrictHostKeyChecking=no "$local_dir/$f" "$server:$remote_dir/$f"
+    expect {
+        "password:" {
+            send -- "$password\r"
+            exp_continue
+        }
+        eof
+    }
+}
+
+puts "\nFiles copied successfully! Starting build on server...\n"
+
+# 3. Build frontend on server
+spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "cd /root/super_real_estate && \
+docker compose build frontend && \
+docker compose up -d frontend && \
+echo 'Frontend update complete!'"
+
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for build..."
+    }
+    eof
+}
+
+puts "\nDeployment complete!"

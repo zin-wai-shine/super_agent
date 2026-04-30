@@ -47,6 +47,7 @@ import {
     CalendarIcon,
     XCircleIcon,
     CheckCircleIcon as SolidCheckCircleIcon, // Kept SolidCheckCircleIcon for success message
+    ExclamationCircleIcon as SolidExclamationCircleIcon,
 } from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
 import ListingCard from '../../components/Listings/ListingCard';
@@ -58,6 +59,14 @@ import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import AllPhotosModalContent from '../../components/Listings/AllPhotosModalContent';
+
+// Success Backgrounds
+import mobileSuccessBg from '../../assets/images/mobile_booking_confirm_bg.png';
+import desktopSuccessBg from '../../assets/images/desktop_booking_confirm_bg.png';
+
+// Error Backgrounds
+import mobileErrorBg from '../../assets/images/properties_not_fount/pro_mobile_not_found.png';
+import desktopErrorBg from '../../assets/images/properties_not_fount/pro_desktop_not_found.png';
 import FilterBar from '../../components/ui/FilterBar';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
@@ -669,7 +678,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 const userBookings = bookingsRes.data.appointments || [];
                 const active = userBookings.find(
                     app => String(app.listing_id) === String(id) &&
-                        ['pending', 'confirmed', 'completed', 'cancelled'].includes(app.status)
+                        ['pending', 'confirmed'].includes(app.status)
                 );
                 setActiveBooking(active || null);
                 if (bookingId) {
@@ -808,7 +817,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             const userBookings = bookingsRes.value.data.appointments || [];
                             const active = userBookings.find(
                                 app => String(app.listing_id) === String(id) &&
-                                    ['pending', 'confirmed', 'completed'].includes(app.status)
+                                    ['pending', 'confirmed'].includes(app.status)
                             );
                             setActiveBooking(active || null);
 
@@ -885,7 +894,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     const userBookings = bookingsRes.data.appointments || [];
                     const active = userBookings.find(
                         app => String(app.listing_id) === String(id) &&
-                            (app.status === 'pending' || app.status === 'confirmed' || app.status === 'completed')
+                            (app.status === 'pending' || app.status === 'confirmed')
                     );
                     if (active) setActiveBooking(active);
                     else setActiveBooking(null);
@@ -1117,31 +1126,59 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
     if (error || !listing) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dashboard-dark p-6">
-                <div className="text-center p-8 md:p-10 bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-xl border border-white/50 dark:border-white/5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] max-w-sm mx-auto animate-fade-up">
-                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center mx-auto mb-8 transform -rotate-6">
-                        <XMarkIcon className="w-10 h-10 text-rose-600 dark:text-rose-400" />
+            <div className="min-h-screen flex flex-col items-center relative overflow-hidden bg-white dark:bg-dashboard-dark animate-in fade-in duration-700">
+                {/* Background Images */}
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden"
+                    style={{ backgroundImage: `url(${mobileErrorBg})` }}
+                />
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block"
+                    style={{ backgroundImage: `url(${desktopErrorBg})` }}
+                />
+
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 max-w-md w-full relative z-10 transform -translate-y-8">
+                    {/* Icon */}
+                    <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center mb-20 relative"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 12%, transparent)' }}
+                    >
+                        <div className="absolute inset-0 rounded-full animate-ripple" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:0.6s]" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:1.2s]" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                        <SolidExclamationCircleIcon className="w-12 h-12 relative z-10 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+
+                    <h2 className="text-[26px] sm:text-[32px] font-black text-gray-900 dark:text-white mb-6 tracking-tight leading-tight relative z-10">
                         {error || 'Property not found'}
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mb-10 text-sm leading-relaxed">
+                    
+                    <p className="text-base text-gray-500 dark:text-gray-400 font-medium leading-relaxed max-w-sm mx-auto relative z-10">
                         {error === 'Property not found' 
                             ? 'The listing you are looking for may have been removed or is currently unavailable.'
-                            : 'We encountered an error while loading the property details. Please try again or go back.'}
+                            : 'We encountered an error while loading the property details. Please try again later.'}
                     </p>
-                    <div className="flex flex-col gap-3">
-                        {error !== 'Property not found' && (
-                            <Button onClick={() => window.location.reload()} variant="primary" fullWidth className="rounded-full py-4 text-base shadow-lg shadow-primary-500/20">
-                                Retry Connection
-                            </Button>
-                        )}
-                        <Link to="/listings" className="w-full">
-                            <Button variant={error === 'Property not found' ? 'primary' : 'outline'} fullWidth className="rounded-full py-4 text-base shadow-sm">
-                                Back to Listings
-                            </Button>
-                        </Link>
-                    </div>
+                </div>
+
+                {/* Footer Section */}
+                <div className="w-full max-w-md p-10 flex flex-col items-center bg-white/10 backdrop-blur-md dark:bg-dashboard-dark/20 mt-auto relative z-10">
+                    {error !== 'Property not found' && (
+                        <Button 
+                            onClick={() => window.location.reload()} 
+                            className="w-full font-bold text-[1rem] py-4 !rounded-full border-none mb-4 text-white"
+                            style={{ background: 'var(--primary-color)' }}
+                        >
+                            Retry Connection
+                        </Button>
+                    )}
+                    <Link to="/listings" className="w-full">
+                        <Button 
+                            className="w-full font-bold text-[1rem] py-4 !rounded-full border-none text-white"
+                            style={{ background: 'var(--primary-color)' }}
+                        >
+                            Back to Listings
+                        </Button>
+                    </Link>
                 </div>
             </div>
         );
@@ -1281,7 +1318,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         return (
             <div
-                className={`flex flex-col overflow-hidden bg-white dark:bg-dashboard-dark ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}
+                className={`flex flex-col overflow-hidden ${success ? 'h-full' : `bg-white dark:bg-dashboard-dark ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}`}
             >
                 {/* Header */}
                 {!success && (
@@ -1324,52 +1361,77 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                 {/* Content Area - mobile: full width; desktop: centered (max-w-[1400px]); z-[60] so scroll lock skips this container */}
                 <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <div className={`mx-auto w-full max-w-[1440px] px-6 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'} ${success ? 'h-full flex items-center justify-center' : ''}`}>
+                    <div className={`mx-auto w-full ${success ? 'h-full p-0 flex items-center justify-center max-w-none' : `max-w-[1440px] px-6 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'}`}`}>
                         {success ? (
-                            <div className="h-full w-full flex items-center justify-center p-6">
+                            <div className="h-full w-full flex flex-col items-center p-6 sm:p-12 relative overflow-hidden animate-in fade-in duration-700">
+                                {/* Background Images */}
                                 <div
-                                    className="max-w-md w-full text-center px-8 py-12 flex flex-col items-center transition-all animate-in zoom-in-95 duration-300"
-                                >
+                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden"
+                                    style={{ backgroundImage: `url(${mobileSuccessBg})` }}
+                                />
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block"
+                                    style={{ backgroundImage: `url(${desktopSuccessBg})` }}
+                                />
+
+                                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md w-full relative transform -translate-y-6 z-10">
+                                    {/* Icon */}
                                     <div
-                                        className="w-20 h-20 rounded-full flex items-center justify-center mb-8 relative"
-                                        style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 10%, transparent)' }}
+                                        className="w-24 h-24 rounded-full flex items-center justify-center mb-20 relative"
+                                        style={{ backgroundColor: 'var(--primary-color)' }}
                                     >
-                                        <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: 'var(--primary-color)' }}></div>
-                                        <SolidCheckCircleIcon className="w-10 h-10 relative z-10" style={{ color: 'var(--primary-color)' }} />
+                                        <div className="absolute inset-0 rounded-full animate-ripple" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:0.6s]" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:1.2s]" style={{ backgroundColor: 'var(--primary-color)' }}></div>
+                                        <SolidCheckCircleIcon className="w-12 h-12 relative z-10 text-white" />
                                     </div>
+
+                                    {/* Title */}
                                     <h2
-                                        className="text-3xl font-bold mb-3 tracking-tight text-center text-gray-900 dark:text-white"
+                                        className="text-[26px] sm:text-[32px] font-black mb-8 tracking-tight text-gray-900 dark:text-white leading-tight relative z-10"
                                     >
-                                        Appointment Confirmed!
+                                        Appointment Successful!
                                     </h2>
+
+                                    {/* Subtitle badge */}
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-6 text-sm font-bold relative z-10" style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 12%, transparent)', color: 'var(--primary-color)' }}>
+                                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-color)' }} />
+                                        Pending Admin Confirmation
+                                    </div>
+                                </div>
+
+                                {/* Footer section */}
+                                <div className="w-full max-w-md flex flex-col items-center mt-auto relative z-10">
                                     <p
-                                        className="text-base mb-12 max-w-sm mx-auto text-center font-medium leading-relaxed flex flex-wrap items-center justify-center gap-1.5 text-gray-600 dark:text-gray-400"
+                                        className="text-base mb-8 text-center font-medium leading-relaxed text-gray-600 dark:text-gray-400"
                                     >
                                         You can check your viewing request and status at
-                                        <span
-                                            className="group inline-flex items-center gap-1 font-bold cursor-pointer transition-all duration-300 text-base"
-                                            onClick={() => {
-                                                setIsBookingOverlayOpen(false);
-                                                setSuccess(false);
-                                                window.location.href = '/my-bookings';
-                                            }}
-                                        >
-                                            <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300 text-gray-900 dark:text-white">Viewing requests</span>
-                                            <ArrowRightIcon
-                                                className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
-                                                style={{ color: 'var(--primary-color)' }}
-                                            />
-                                        </span>
+                                        <div className="mt-2">
+                                            <span
+                                                className="group inline-flex items-center gap-1.5 font-bold cursor-pointer transition-all duration-300"
+                                                onClick={() => {
+                                                    setIsBookingOverlayOpen(false);
+                                                    setSuccess(false);
+                                                    window.location.href = '/my-bookings';
+                                                }}
+                                            >
+                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300 text-gray-900 dark:text-white">Viewing requests</span>
+                                                <ArrowRightIcon
+                                                    className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
+                                                    style={{ color: 'var(--primary-color)' }}
+                                                />
+                                            </span>
+                                        </div>
                                     </p>
-                                    <div className="flex items-center justify-center w-full">
+
+                                    <div className="flex justify-center w-full pb-4">
                                         <Button
                                             onClick={() => {
                                                 setIsBookingOverlayOpen(false);
                                                 setSuccess(false);
                                             }}
-                                            className="min-w-[180px] font-black py-4 tracking-[0.2em] text-lg text-white border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
+                                            className="font-bold text-[1rem] px-12 py-3 min-w-[180px] min-h-[48px] text-white border-none !rounded-full active:scale-[0.98] transition-all whitespace-nowrap"
                                             style={{
-                                                borderRadius: 'var(--btn-radius)',
                                                 background: 'var(--primary-color)'
                                             }}
                                         >
@@ -1938,7 +2000,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-10 pb-32 lg:pb-8 relative z-10 rounded-t-[32px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
+                                    {/* Handle - match second image */}
+                                    <div className="flex justify-center pt-5 pb-4 lg:hidden">
+                                        <div className="w-10 h-1.5 rounded-full bg-gray-200 dark:bg-white/10" />
+                                    </div>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">

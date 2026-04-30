@@ -29,6 +29,8 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 
 	var req struct {
 		Name     string                   `json:"name" binding:"required"`
+		Type     string                   `json:"type"`
+		IsParent bool                     `json:"is_parent"`
 		Icon     string                   `json:"icon"`
 		ParentID *uuid.UUID               `json:"parent_id"`
 		Media    []models.CollectionMedia `json:"media"`
@@ -47,6 +49,8 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 		AgentID:   agentID,
 		ParentID:  req.ParentID,
 		Name:      req.Name,
+		Type:      req.Type,
+		IsParent:  req.IsParent,
 		Icon:      req.Icon,
 		CreatedBy: userID.(uuid.UUID),
 		Media:     req.Media,
@@ -113,6 +117,8 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 	id := c.Param("id")
 	var req struct {
 		Name     string                   `json:"name" binding:"required"`
+		Type     string                   `json:"type"`
+		IsParent bool                     `json:"is_parent"`
 		Icon     string                   `json:"icon"`
 		ParentID *uuid.UUID               `json:"parent_id"`
 		Media    []models.CollectionMedia `json:"media"`
@@ -127,6 +133,8 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 
 	if err := tx.Model(&models.Collection{}).Where("id = ?", id).Updates(map[string]interface{}{
 		"name":      req.Name,
+		"type":      req.Type,
+		"is_parent": req.IsParent,
 		"icon":      req.Icon,
 		"parent_id": req.ParentID,
 	}).Error; err != nil {

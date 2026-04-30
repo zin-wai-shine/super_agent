@@ -219,12 +219,19 @@ const CollectionBar = ({
         fetchCollections();
     }, [refreshTrigger, readOnly]);
 
-    const { mainCategories, popularChildren, categorizedChildren } = React.useMemo(() => {
-        const main = collections.filter(c => !c.parent_id && !!c.icon);
-        const popular = collections.filter(c => !c.icon && !c.parent_id);
-        const categorized = collections.filter(c => !c.icon && !!c.parent_id);
+    const { mainCategories, popularChildren } = React.useMemo(() => {
+        // Find the parent with name "Popular Properties"
+        const popularParent = collections.find(c => c.is_parent && c.name === 'Popular Properties');
+        const popularItems = collections.filter(c => c.parent_id === popularParent?.id);
+
+        // Find the parent with name "Explore Categories"
+        const exploreParent = collections.find(c => c.is_parent && c.name === 'Explore Categories');
+        const exploreItems = collections.filter(c => c.parent_id === exploreParent?.id);
         
-        return { mainCategories: main, popularChildren: popular, categorizedChildren: categorized };
+        return { 
+            mainCategories: exploreItems, 
+            popularChildren: popularItems 
+        };
     }, [collections]);
 
     const categoriesScrollRef = useRef(null);
@@ -368,7 +375,7 @@ const CollectionBar = ({
                                     return (
                                         <div 
                                             key={category.id}
-                                            onClick={() => navigate(`/collections?category=${category.id}`)}
+                                            onClick={() => navigate(`/collections/${category.id}`, { state: { loadingType: 'icon' } })}
                                             className="flex-shrink-0 group cursor-pointer"
                                         >
                                             <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-md border border-[#222222]/10 dark:border-white/5 flex flex-row items-center gap-3 transition-all duration-300 hover:bg-gray-50/80 dark:hover:bg-white/5 group-active:scale-95">

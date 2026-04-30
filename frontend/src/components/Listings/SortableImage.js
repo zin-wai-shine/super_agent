@@ -24,7 +24,7 @@ const SortableImage = ({ id, img, onRemove }) => {
         <div 
             ref={setNodeRef} 
             style={style}
-            className="relative aspect-square rounded-xl overflow-hidden group border dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 touch-none"
+            className="relative aspect-square rounded-[3px] overflow-hidden group border dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 touch-none"
         >
             <div 
                 {...attributes} 

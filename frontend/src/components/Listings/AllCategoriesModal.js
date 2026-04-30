@@ -153,7 +153,7 @@ const AllCategoriesModal = ({ isOpen, onClose, categories, selectedId }) => {
                                                 <button 
                                                     key={category.id}
                                                     onClick={() => {
-                                                        navigate(`/collections?category=${category.id}`);
+                                                        navigate(`/collections/${category.id}`, { state: { loadingType: 'icon' } });
                                                         onClose();
                                                     }}
                                                     className={`flex items-center gap-3 w-full pl-2 pr-4 py-2 rounded-full border transition-all duration-300 text-left group min-h-[48px] overflow-hidden ${

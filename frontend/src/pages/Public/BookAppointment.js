@@ -24,6 +24,10 @@ import { useNavigate } from 'react-router-dom';
 
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
 
+// Success Backgrounds
+import mobileSuccessBg from '../../assets/images/mobile_booking_confirm_bg.png';
+import desktopSuccessBg from '../../assets/images/desktop_booking_confirm_bg.png';
+
 const BookAppointment = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -249,17 +253,58 @@ const BookAppointment = () => {
     // --- Success View ---
     if (success && bookedAppointment) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark py-12 px-4 flex items-center justify-center">
-                <div className="max-w-md w-full bg-white dark:bg-dashboard-card rounded-[var(--btn-radius)] shadow-xl p-8 text-center border border-gray-100 dark:border-white/10">
-                    <div className="w-20 h-20 bg-secondary-100 dark:bg-secondary-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <SolidCheckCircleIcon className="w-10 h-10 text-secondary-600 dark:text-secondary-400" />
+            <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark flex flex-col items-center relative overflow-hidden animate-in fade-in duration-700">
+                {/* Background Images */}
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden"
+                    style={{ backgroundImage: `url(${mobileSuccessBg})` }}
+                />
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block"
+                    style={{ backgroundImage: `url(${desktopSuccessBg})` }}
+                />
+
+                <div
+                    className="flex-1 flex flex-col items-center justify-center text-center p-10 max-w-md w-full relative overflow-hidden transform -translate-y-8 z-10"
+                >
+                    {/* Icon */}
+                    <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-20 relative"
+                        style={{ backgroundColor: 'var(--primary-color)' }}
+                    >
+                        <div className="absolute inset-0 rounded-full animate-ripple" style={{ backgroundColor: 'var(--primary-color)' }} />
+                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:0.6s]" style={{ backgroundColor: 'var(--primary-color)' }} />
+                        <div className="absolute inset-0 rounded-full animate-ripple [animation-delay:1.2s]" style={{ backgroundColor: 'var(--primary-color)' }} />
+                        <SolidCheckCircleIcon className="w-12 h-12 relative z-10 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Appointment Confirmed!</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mb-8">We've sent the details to {form.email}</p>
+
+                    <h2 className="text-[26px] sm:text-[32px] font-black text-gray-900 dark:text-white mb-8 tracking-tight leading-tight relative z-10">Appointment Successful!</h2>
+
+                    {/* Status badge */}
+                    <div
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-5 text-sm font-bold relative z-10"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 12%, transparent)', color: 'var(--primary-color)' }}
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-color)' }} />
+                        Pending Admin Confirmation
+                    </div>
+                </div>
+
+                {/* Footer section */}
+                <div className="w-full max-w-md p-10 flex flex-col items-center bg-white/10 backdrop-blur-md dark:bg-dashboard-dark/20 mt-auto relative z-10">
+                    <p className="text-base text-gray-600 dark:text-gray-400 mb-10 font-medium leading-relaxed text-center">
+                        We've received your request for <span className="text-gray-900 dark:text-white font-bold">{form.email}</span>.
+                        <br />
+                        The admin will confirm your appointment shortly.
+                    </p>
+
                     <Button
                         onClick={() => navigate('/listings')}
                         variant="primary"
-                        className="w-full font-bold"
+                        className="w-full font-bold text-[1rem] py-4 !rounded-full border-none transition-all duration-300 active:scale-95"
+                        style={{
+                            background: 'var(--primary-color)'
+                        }}
                     >
                         Return to Listings
                     </Button>

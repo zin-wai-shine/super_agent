@@ -251,42 +251,18 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
             )}
 
-            {/* Dots */}
-            {showDots && images.length > 1 && (() => {
-                const total = images.length;
-                const maxDots = 5;
-                let start = 0;
-                let end = total;
-
-                if (total > maxDots) {
-                    if (currentIndex < 3) {
-                        start = 0;
-                        end = maxDots;
-                    } else if (currentIndex >= total - 3) {
-                        start = total - maxDots;
-                        end = total;
-                    } else {
-                        start = currentIndex - 2;
-                        end = currentIndex + 3;
-                    }
-                }
-
-                return (
-                    <div className={`absolute ${isGalleryMode ? 'bottom-12' : 'bottom-3'} left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20 transition-all duration-300`}>
-                        {images.map((_, i) => {
-                            if (i < start || i >= end) return null;
-                            return (
-                                <button
-                                    key={i}
-                                    onClick={(e) => scrollToImage(i, e)}
-                                    className={`h-1.5 rounded-full transition-all duration-300 pointer-events-auto ${i === currentIndex ? 'bg-white w-4 shadow-sm' : 'bg-white/40 w-1.5'}`}
-                                    aria-label={`Go to image ${i + 1}`}
-                                />
-                            );
-                        })}
-                    </div>
-                );
-            })()}
+            {/* Progress Bar Indicator (Premium "Move Bar") */}
+            {showDots && images.length > 1 && (
+                <div className={`absolute ${isGalleryMode ? 'bottom-12' : 'bottom-6'} left-1/2 -translate-x-1/2 w-20 h-[3px] bg-black/20 dark:bg-white/10 rounded-full overflow-hidden z-30 backdrop-blur-sm`}>
+                    <div 
+                        className="h-full bg-white transition-all duration-500 ease-out rounded-full"
+                        style={{ 
+                            width: `${100 / images.length}%`,
+                            transform: `translateX(${currentIndex * 100}%)`
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Arrows */}
             {showArrows && images.length > 1 && (
@@ -294,7 +270,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     {currentIndex > 0 && (
                         <button
                             onClick={prevImage}
-                            className={`absolute left-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute ${isGalleryMode ? 'left-6 lg:left-20' : `left-${arrowPadding}`} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Previous image"
                         >
                             <ChevronLeftIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
@@ -303,7 +279,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={nextImage}
-                            className={`absolute right-${arrowPadding} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute ${isGalleryMode ? 'right-6 lg:right-20' : `right-${arrowPadding}`} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
                             aria-label="Next image"
                         >
                             <ChevronRightIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
@@ -590,7 +566,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
             >
                 <div className="flex flex-col w-full bg-transparent rounded-none border-none">
                         <div className="relative">
-                            <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block animate-fill-fast">
+                            <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[32px] md:rounded-[23px] block animate-fill-fast">
                                 <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} />
 
                                 {/* Agent Profile Overlay - Floating Card Design */}
