@@ -130,9 +130,12 @@ const EditListing = () => {
     const fetchProjects = async () => {
         try {
             const response = await developerApi.getProjects();
-            setProjects(response.data?.projects || []);
+            const projs = response.data?.projects || [];
+            setProjects(projs);
+            return projs;
         } catch (error) {
             console.error('Failed to fetch projects:', error);
+            return [];
         }
     };
 
@@ -155,7 +158,7 @@ const EditListing = () => {
             
             // Initial fetch of options
             fetchStations();
-            fetchProjects();
+            const projectsData = await fetchProjects();
             fetchFacilityGroups();
 
             // Reset form with listing data
