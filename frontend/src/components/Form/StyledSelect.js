@@ -2,39 +2,43 @@ import React from 'react';
 import Select from 'react-select';
 
 // Custom styles for React-Select matching our Tailwind design system
-const getCustomStyles = (isDarkMode) => ({
+const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     control: (base, state) => ({
         ...base,
-        minHeight: '38px',
+        minHeight: isDashboard ? '34px' : '38px',
         borderRadius: '3px',
         borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
         boxShadow: state.isFocused ? '0 0 0 3px color-mix(in srgb, var(--primary-color), transparent 90%)' : 'none',
-        backgroundColor: state.isDisabled ? (isDarkMode ? '#2A3241' : '#f9fafb') : (isDarkMode ? '#111318' : '#f9fafb'),
+        backgroundColor: state.isDisabled 
+            ? (isDarkMode ? 'rgba(30, 35, 48, 0.5)' : '#f9fafb') 
+            : (isDarkMode ? 'rgba(17, 19, 24, 0.4)' : (isDashboard ? 'rgba(255, 255, 255, 0.8)' : '#f9fafb')),
+        backdropFilter: isDashboard ? 'blur(8px)' : 'none',
         '&:hover': {
             borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#A6ADBB' : '#d1d5db'),
+            backgroundColor: isDarkMode ? 'rgba(17, 19, 24, 0.6)' : (isDashboard ? 'rgba(255, 255, 255, 1)' : '#f9fafb'),
         },
         transition: 'all 0.2s ease',
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
         fontWeight: '500',
     }),
     valueContainer: (base) => ({
         ...base,
-        padding: '2px 16px',
+        padding: isDashboard ? '0px 12px' : '2px 16px',
     }),
     placeholder: (base) => ({
         ...base,
         color: isDarkMode ? '#9ca3af' : '#9ca3af',
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
     }),
     singleValue: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
     }),
     input: (base) => ({
         ...base,
         color: isDarkMode ? '#A6ADBB' : '#111827',
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
     }),
     menu: (base) => ({
         ...base,
@@ -76,8 +80,8 @@ const getCustomStyles = (isDarkMode) => ({
                 color: isDarkMode ? '#4b5563' : '#d1d5db',
                 cursor: 'not-allowed',
                 padding: '10px 14px',
-                fontSize: '14px',
-                fontWeight: '700',
+                fontSize: isDashboard ? '12px' : '14px',
+                fontWeight: isDashboard ? '500' : '700',
                 textTransform: 'none',
                 marginBottom: '4px',
                 display: 'flex',
@@ -101,8 +105,8 @@ const getCustomStyles = (isDarkMode) => ({
                     : (isDarkMode ? '#9ca3af' : '#4b5563'),
             borderRadius: '3px',
             padding: '10px 14px',
-            fontSize: '14px',
-            fontWeight: '700',
+            fontSize: isDashboard ? '12px' : '14px',
+            fontWeight: isDashboard ? '500' : '700',
             textTransform: 'none',
             cursor: 'pointer',
             marginBottom: '4px',
@@ -145,7 +149,7 @@ const getCustomStyles = (isDarkMode) => ({
     multiValueLabel: (base) => ({
         ...base,
         color: isDarkMode ? '#93c5fd' : '#1d4ed8',
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
         padding: '2px 6px',
     }),
     multiValueRemove: (base) => ({
@@ -159,13 +163,13 @@ const getCustomStyles = (isDarkMode) => ({
     }),
     noOptionsMessage: (base) => ({
         ...base,
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
         color: isDarkMode ? '#9ca3af' : '#6b7280',
         padding: '12px',
     }),
     loadingMessage: (base) => ({
         ...base,
-        fontSize: '14px',
+        fontSize: isDashboard ? '12px' : '14px',
         color: isDarkMode ? '#9ca3af' : '#6b7280',
     }),
     groupHeading: (base) => ({
@@ -224,16 +228,21 @@ const StyledSelect = ({
     ...props
 }) => {
     // Try to get theme context, but don't throw if missing
+    let isDashboard = false;
     let isDarkMode = false;
     try {
         const context = useDashboardTheme();
+        isDashboard = !!context; // If we can get this context, we're in the dashboard
         isDarkMode = context?.isDarkMode || false;
     } catch (e) {
-        // Fallback to light mode if context is missing
-        isDarkMode = false;
+        // Fallback: check URL for dashboard or admin paths
+        if (typeof window !== 'undefined') {
+            isDashboard = window.location.pathname.startsWith('/dashboard') || 
+                         window.location.pathname.startsWith('/admin');
+        }
     }
 
-    const currentStyles = getCustomStyles(isDarkMode);
+    const currentStyles = getCustomStyles(isDarkMode, isDashboard);
 
     const errorStyles = error
         ? {

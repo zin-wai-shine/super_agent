@@ -108,6 +108,8 @@ type Theme struct {
 	ButtonShadowColor    string    `gorm:"size:20;default:'#000000'" json:"button_shadow_color"`
 	ButtonShadowOpacity  int       `gorm:"default:25" json:"button_shadow_opacity"`
 	NavbarLogoHeight     int       `gorm:"default:100" json:"navbar_logo_height"`
+	PageLogoHeight       int       `gorm:"default:100" json:"page_logo_height"`
+	DashboardLogoHeight  int       `gorm:"default:100" json:"dashboard_logo_height"`
 	CustomCSS            string    `gorm:"type:text" json:"custom_css,omitempty"`
 	CreatedAt            time.Time `json:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at"`
@@ -382,4 +384,12 @@ type UniqueView struct {
 	Fingerprint string    `gorm:"size:255;primaryKey;index"` // Hash or combined IP + UA
 	CreatedAt   time.Time
 }
-
+// FacilityMedia represents general property building/facility images for an agent
+type FacilityMedia struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	AgentID   uuid.UUID `gorm:"type:uuid;not null;index" json:"agent_id"`
+	Name      string    `gorm:"size:255" json:"name"`
+	URL       string    `gorm:"size:500;not null" json:"url"`
+	SortOrder int       `gorm:"default:0" json:"sort_order"`
+	CreatedAt time.Time `json:"created_at"`
+}

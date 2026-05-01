@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+
 import { developerApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -119,7 +121,7 @@ const DeveloperManagement = () => {
             header: 'Developer Name',
             cell: ({ getValue }) => (
                 <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary-100 dark:bg-primary-600/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-full flex items-center justify-center flex-shrink-0">
                         <BuildingOffice2Icon className="w-4 h-4 text-primary-700 dark:text-primary-400" />
                     </div>
                     <span className="font-medium text-gray-900 dark:text-white text-sm">{getValue()}</span>
@@ -137,7 +139,7 @@ const DeveloperManagement = () => {
             id: 'projects_count',
             header: 'Projects',
             cell: ({ row }) => (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50/50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400 backdrop-blur-sm">
                     {row.original.projects?.length || 0}
                 </span>
             ),
@@ -182,43 +184,34 @@ const DeveloperManagement = () => {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-500/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Developers
                     </h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {developers.length} developer{developers.length !== 1 ? 's' : ''} registered
-                    </p>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage developer partners</p>
                 </div>
-            </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Developers</span>
+                {/* Stats - Integrated & Centered */}
+                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 flex-1">
+                    <div className="flex items-center space-x-3 transition-all hover:translate-y-[-2px] duration-300">
+
+
                     </div>
-                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">{developers.length}</div>
+
                 </div>
-                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Projects</span>
-                    </div>
-                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">
-                        {developers.reduce((sum, d) => sum + (d.projects?.length || 0), 0)}
-                    </div>
-                </div>
+
+                {/* Balance Spacer for LG screens */}
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+                <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
                     <div className="w-16">
                         <StyledSelect
                             options={[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]}
@@ -226,7 +219,28 @@ const DeveloperManagement = () => {
                             onChange={(val) => table.setPageSize(Number(val))}
                             isSearchable={false}
                             components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
-                            styles={{ control: (base) => ({ ...base, borderRadius: '3px', height: '34px', minHeight: '34px', fontSize: '11px', textAlign: 'center' }) }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    borderRadius: '3px',
+                                    height: '34px',
+                                    minHeight: '34px',
+                                    fontSize: '11px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
+                            }}
                         />
                     </div>
                 </div>
@@ -338,11 +352,13 @@ const DeveloperManagement = () => {
             </div>
 
             {/* Modal */}
-            {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {showForm && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={handleCloseForm} />
-                    <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-scale-in">
-                        <div className="sticky top-0 bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
+
+
+                    <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+                        <div className="flex-none bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                 {editingDev ? 'Edit Developer' : 'Add Developer'}
                             </h3>
@@ -350,7 +366,8 @@ const DeveloperManagement = () => {
                                 <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+
                             <div>
                                 <label className="input-label">Developer Name *</label>
                                 <input
@@ -372,14 +389,22 @@ const DeveloperManagement = () => {
                                     placeholder="e.g., https://www.sansiri.com"
                                 />
                             </div>
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <button type="button" onClick={handleCloseForm} className="btn-secondary">Cancel</button>
-                                <button type="submit" className="btn-primary px-6">{editingDev ? 'Update' : 'Create'}</button>
-                            </div>
                         </form>
+                        <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">
+                            <button type="button" onClick={handleCloseForm} className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Cancel</button>
+                            <button 
+                                onClick={handleSubmit}
+                                className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98]"
+                            >
+                                {editingDev ? 'Update' : 'Create'}
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
+
+
         </div>
     );
 };

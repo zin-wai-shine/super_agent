@@ -103,6 +103,8 @@ const ThemeSettings = () => {
         button_shadow_color: '#000000',
         button_shadow_opacity: 25,
         navbar_logo_height: 100,
+        page_logo_height: 100,
+        dashboard_logo_height: 100,
     };
 
     // Derived state for live preview (always reflects form state)
@@ -141,6 +143,8 @@ const ThemeSettings = () => {
         register('button_shadow_color');
         register('button_shadow_opacity');
         register('navbar_logo_height');
+        register('page_logo_height');
+        register('dashboard_logo_height');
     }, [register]);
 
     const fetchTheme = async () => {
@@ -178,6 +182,8 @@ const ThemeSettings = () => {
                 button_shadow_color: theme.button_shadow_color || DEFAULT_THEME.button_shadow_color,
                 button_shadow_opacity: theme.button_shadow_opacity ?? DEFAULT_THEME.button_shadow_opacity,
                 navbar_logo_height: theme.navbar_logo_height ?? DEFAULT_THEME.navbar_logo_height,
+                page_logo_height: theme.page_logo_height ?? DEFAULT_THEME.page_logo_height,
+                dashboard_logo_height: theme.dashboard_logo_height ?? DEFAULT_THEME.dashboard_logo_height,
             };
             reset(initialData);
 
@@ -330,7 +336,7 @@ const ThemeSettings = () => {
                     <button
                         onClick={handleSubmit(onSubmit)}
                         disabled={saving}
-                        className="btn-primary h-[34px] text-[12px] px-4 flex items-center gap-2 shadow-lg shadow-primary-500/20"
+                        className="btn-primary h-[34px] text-[12px] px-4 flex items-center gap-2 shadow-none hover:shadow-none transform-none"
                     >
                         {saving ? (
                             <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -410,13 +416,13 @@ const ThemeSettings = () => {
                                 <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden">
                                     <div className="h-20 md:h-28 flex items-center px-6 md:px-12 justify-between">
                                         <div className="flex items-center">
-                                            <div
-                                                className="w-[55px] h-[51px] md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
+                                            <img
+                                                src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
+                                                alt="Logo Preview"
+                                                className="h-16 w-auto object-contain transition-all duration-300"
                                                 style={{
-                                                    backgroundImage: `url(${getMediaUrl(watchAll.logo_url || '/default_logo.png')})`,
                                                     transformOrigin: 'left',
-                                                    transform: `scale(${preview.navbar_logo_height / 100})`,
-                                                    mixBlendMode: 'multiply'
+                                                    transform: `scale(${preview.navbar_logo_height / 100})`
                                                 }}
                                             />
                                         </div>
@@ -440,8 +446,8 @@ const ThemeSettings = () => {
                                             <ModernSlider
                                                 label="Logo Display Scale"
                                                 value={preview.navbar_logo_height}
-                                                min={50}
-                                                max={200}
+                                                min={10}
+                                                max={100}
                                                 step={1}
                                                 unit="%"
                                                 onChange={(val) => setValue('navbar_logo_height', val)}
@@ -457,6 +463,111 @@ const ThemeSettings = () => {
                                         </button>
                                     </div>
                                     <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the public website header.</p>
+                                </div>
+
+                                {/* Loading Screen Preview Section */}
+                                <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-white/5">
+                                    <div className="flex justify-between items-center px-1">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Loading Screen Logo</label>
+                                            <p className="text-[11px] text-gray-400">Preview of your splash screen logo.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden h-64 flex flex-col items-center justify-center">
+                                        <div className="relative flex flex-col items-center justify-center transform transition-all duration-700" style={{ transform: `scale(${preview.page_logo_height / 100})` }}>
+                                            <img
+                                                src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
+                                                alt="Splash Logo Preview"
+                                                className="w-32 h-32 object-contain"
+                                            />
+                                        </div>
+                                        <div className="absolute bottom-6 flex gap-1">
+                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" />
+                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                        </div>
+                                    </div>
+
+                                    {/* Page Logo Scale Adjustment */}
+                                    <div className="px-1 pt-2 max-w-2xl">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex-1">
+                                                <ModernSlider
+                                                    label="Splash Logo Scale"
+                                                    value={preview.page_logo_height}
+                                                    min={10}
+                                                    max={100}
+                                                    step={1}
+                                                    unit="%"
+                                                    onChange={(val) => setValue('page_logo_height', val)}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('page_logo_height')}
+                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                                title="Reset Scale"
+                                            >
+                                                <ArrowPathIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the initial loading screen.</p>
+                                    </div>
+                                </div>
+
+                                {/* Dashboard Preview Section */}
+                                <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-white/5">
+                                    <div className="flex justify-between items-center px-1">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Dashboard Sidebar Logo</label>
+                                            <p className="text-[11px] text-gray-400">Preview of your logo in the admin dashboard.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden h-32 flex items-center px-8">
+                                        <div className="w-16 h-full border-r border-gray-200 dark:border-gray-800 flex flex-col pt-4 gap-4 opacity-30">
+                                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-800" />
+                                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-800" />
+                                        </div>
+                                        <div className="flex-1 flex items-center px-6">
+                                            <img
+                                                src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
+                                                alt="Dashboard Logo Preview"
+                                                className="h-16 w-auto object-contain transition-all duration-300"
+                                                style={{
+                                                    transformOrigin: 'left',
+                                                    transform: `scale(${preview.dashboard_logo_height / 100})`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Dashboard Logo Scale Adjustment */}
+                                    <div className="px-1 pt-2 max-w-2xl">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex-1">
+                                                <ModernSlider
+                                                    label="Dashboard Logo Scale"
+                                                    value={preview.dashboard_logo_height}
+                                                    min={10}
+                                                    max={100}
+                                                    step={1}
+                                                    unit="%"
+                                                    onChange={(val) => setValue('dashboard_logo_height', val)}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('dashboard_logo_height')}
+                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                                title="Reset Scale"
+                                            >
+                                                <ArrowPathIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the admin dashboard sidebar.</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -695,7 +806,7 @@ const ThemeSettings = () => {
                             <button 
                                 onClick={handleCropSave}
                                 style={{ backgroundColor: preview.primary_color || '#2D8A56' }}
-                                className="w-fit py-4 px-12 rounded-full text-white font-bold text-[15px] shadow-lg active:scale-95 transition-all whitespace-nowrap"
+                                className="w-fit py-4 px-12 rounded-full text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
                             >
                                 Apply Changes
                             </button>

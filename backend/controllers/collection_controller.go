@@ -5,6 +5,8 @@ import (
 	"super_real_estate/middleware"
 	"super_real_estate/models"
 
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -208,4 +210,38 @@ func (cc *CollectionController) RemoveListingFromCollection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "removed"})
+}
+
+// ReorderCollections reorders collections by adjusting their created_at timestamps
+func (cc *CollectionController) ReorderCollections(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	var req struct {
+		CollectionIDs []string `json:"collection_ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := cc.db.Begin()
+	// The collection passed first should have the highest CreatedAt (since ordered DESC)
+	// We use time.Now() and subtract 1 second for each subsequent item
+	importTime := time.Now()
+	for i, id := range req.CollectionIDs {
+		newTime := importTime.Add(-time.Duration(i) * time.Second)
+		if err := tx.Model(&models.Collection{}).Where("id = ? AND agent_id = ?", id, agentID).Update("created_at", newTime).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reorder collections"})
+			return
+		}
+	}
+
+	tx.Commit()
+	c.JSON(http.StatusOK, gin.H{"message": "reordered"})
 }

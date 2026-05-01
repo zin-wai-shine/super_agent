@@ -311,14 +311,14 @@ const Users = () => {
                 <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => {/* View Details */ }}
-                        className="p-1.5 text-[#3B82F6] bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 rounded-[3px] transition-all"
+                        className="p-1.5 text-[#3B82F6] bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100/50 backdrop-blur-sm rounded-[3px] transition-all"
                         title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 rounded-[3px] transition-all"
+                        className="p-1.5 text-red-600 bg-red-50/50 dark:bg-red-900/10 hover:bg-red-100/50 backdrop-blur-sm rounded-[3px] transition-all"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -347,29 +347,29 @@ const Users = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
                             <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
-                    Registered Users
-                </h1>
+                        Registered Users
+                    </h1>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 flex-1">
+                    <div className="flex items-center space-x-3 transition-all hover:translate-y-[-2px] duration-300">
+
+                    </div>
+                </div>
+
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
             </div>
 
-            {/* Stats Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-                        <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">Total Users</span>
-                    </div>
-                    <div className="text-lg font-extrabold text-gray-900 dark:text-white">{users.length}</div>
-                </div>
-            </div>
+
 
             {/* Toolbar - Aligned with Appointment Design */}
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
                 {/* Left: Page Size */}
                 <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
                     <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
@@ -395,7 +395,19 @@ const Users = () => {
                                     height: '34px',
                                     minHeight: '34px',
                                     fontSize: '11px',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    cursor: 'pointer'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
                                 })
                             }}
                         />

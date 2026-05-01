@@ -141,23 +141,32 @@ const CollectionGroup = ({
                     >
                         <div className="relative aspect-[1/1] md:aspect-[4/3] bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 shadow-sm rounded-[23px] overflow-hidden mb-3 transition-all duration-300 group-hover:shadow-md">
                             <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
-                                <div className="relative w-[75%] h-[75%]">
-                                    <div className="absolute top-0 right-0 w-[65%] h-[65%] bg-gray-100 rounded-[14px] rotate-12 -translate-y-2 translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-md overflow-hidden opacity-40">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
+                                    <div className="relative w-[75%] h-[75%]">
+                                        {/* Layer 3 (Back) - 3rd Item */}
+                                        <div className="absolute top-0 right-0 w-[65%] h-[65%] bg-gray-100 rounded-[14px] rotate-12 -translate-y-2 translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-md overflow-hidden opacity-40">
+                                            {(() => {
+                                                const coll = groupCollections[2] || groupCollections[0];
+                                                const imgUrl = coll?.media?.find(m => m.type === 'image')?.url || coll?.image;
+                                                return imgUrl ? <img src={getMediaUrl(imgUrl)} className="w-full h-full object-cover" alt="" /> : null;
+                                            })()}
+                                        </div>
+                                        {/* Layer 2 (Middle) - 2nd Item */}
+                                        <div className="absolute top-0 left-0 w-[70%] h-[70%] bg-gray-200 rounded-[14px] -rotate-6 translate-y-2 -translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-lg overflow-hidden opacity-70">
+                                            {(() => {
+                                                const coll = groupCollections[1] || groupCollections[0];
+                                                const imgUrl = coll?.media?.find(m => m.type === 'image')?.url || coll?.image;
+                                                return imgUrl ? <img src={getMediaUrl(imgUrl)} className="w-full h-full object-cover" alt="" /> : null;
+                                            })()}
+                                        </div>
+                                        {/* Layer 1 (Front) - 1st Item */}
+                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[75%] h-[75%] bg-gray-50 rounded-[14px] translate-y-3 border-[3px] border-white dark:border-dashboard-card shadow-xl overflow-hidden">
+                                            {(() => {
+                                                const coll = groupCollections[0];
+                                                const imgUrl = coll?.media?.find(m => m.type === 'image')?.url || coll?.image;
+                                                return imgUrl ? <img src={getMediaUrl(imgUrl)} className="w-full h-full object-cover" alt="" /> : null;
+                                            })()}
+                                        </div>
                                     </div>
-                                    <div className="absolute top-0 left-0 w-[70%] h-[70%] bg-gray-200 rounded-[14px] -rotate-6 translate-y-2 -translate-x-3 border-[3px] border-white dark:border-dashboard-card shadow-lg overflow-hidden opacity-70">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
-                                    </div>
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[75%] h-[75%] bg-gray-50 rounded-[14px] translate-y-3 border-[3px] border-white dark:border-dashboard-card shadow-xl overflow-hidden">
-                                        {groupCollections[0]?.media?.find(m => m.type === 'image') && (
-                                            <img src={getMediaUrl(groupCollections[0].media.find(m => m.type === 'image').url)} className="w-full h-full object-cover" alt="" />
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <div className="px-1">
@@ -219,18 +228,22 @@ const CollectionBar = ({
         fetchCollections();
     }, [refreshTrigger, readOnly]);
 
-    const { mainCategories, popularChildren } = React.useMemo(() => {
-        // Find the parent with name "Popular Properties"
-        const popularParent = collections.find(c => c.is_parent && c.name === 'Popular Properties');
-        const popularItems = collections.filter(c => c.parent_id === popularParent?.id);
+    const { mainCategories, popularChildren, popularTitle, exploreTitle } = React.useMemo(() => {
+        // Get all parents sorted by creation or just their order in the array
+        const parents = collections.filter(c => c.is_parent);
+        
+        // Assume first parent is "Popular", second is "Explore"
+        const popularParent = parents[0];
+        const exploreParent = parents[1];
 
-        // Find the parent with name "Explore Categories"
-        const exploreParent = collections.find(c => c.is_parent && c.name === 'Explore Categories');
+        const popularItems = collections.filter(c => c.parent_id === popularParent?.id);
         const exploreItems = collections.filter(c => c.parent_id === exploreParent?.id);
         
         return { 
             mainCategories: exploreItems, 
-            popularChildren: popularItems 
+            popularChildren: popularItems,
+            popularTitle: popularParent ? popularParent.name : 'Popular Collections',
+            exploreTitle: exploreParent ? exploreParent.name : 'Explore Categories'
         };
     }, [collections]);
 
@@ -305,7 +318,7 @@ const CollectionBar = ({
                 <>
                     {/* 1. Popular Collections Section (Standalone children) */}
                     <CollectionGroup
-                        title="Popular Collections"
+                        title={popularTitle}
                         groupCollections={popularChildren}
                         selectedId={selectedId}
                         onSelectCollection={onSelectCollection}
@@ -322,7 +335,7 @@ const CollectionBar = ({
                             <div className="flex items-center justify-between mb-4 px-6 md:px-1">
                                 <div className="flex items-center gap-2">
                                     <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
-                                        Explore Categories
+                                        {exploreTitle}
                                     </h2>
                                     <button 
                                         onClick={() => setIsAllCategoriesOpen(true)}

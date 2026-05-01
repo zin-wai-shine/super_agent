@@ -94,29 +94,29 @@ const CreateListing = () => {
         };
     }, []);
 
-    useEffect(() => {
-        const fetchStations = async () => {
-            try {
-                const response = await publicApi.getStations();
-                const stationData = Array.isArray(response.data)
-                    ? response.data
-                    : (response.data.stations || []);
-                setStations(stationData);
-            } catch (error) {
-                console.error('Failed to fetch stations:', error);
-            }
-        };
-        fetchStations();
+    const fetchStations = async () => {
+        try {
+            const response = await publicApi.getStations();
+            const stationData = Array.isArray(response.data)
+                ? response.data
+                : (response.data.stations || []);
+            setStations(stationData);
+        } catch (error) {
+            console.error('Failed to fetch stations:', error);
+        }
+    };
 
-        // Fetch projects
-        const fetchProjects = async () => {
-            try {
-                const response = await developerApi.getProjects();
-                setProjects(response.data?.projects || []);
-            } catch (error) {
-                console.error('Failed to fetch projects:', error);
-            }
-        };
+    const fetchProjects = async () => {
+        try {
+            const response = await developerApi.getProjects();
+            setProjects(response.data?.projects || []);
+        } catch (error) {
+            console.error('Failed to fetch projects:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchStations();
         fetchProjects();
     }, []);
 
@@ -420,7 +420,7 @@ const CreateListing = () => {
                                                         e.stopPropagation();
                                                         removeImageFromSection(roomType, indexInSection);
                                                     }}
-                                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+                                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
                                                 </button>
@@ -535,6 +535,7 @@ const CreateListing = () => {
                                             value: p.id,
                                             label: `${p.name} — ${p.developer?.name || 'Unknown'}`,
                                         }))}
+                                        onMenuOpen={fetchProjects}
                                         placeholder="Select project..."
                                         error={!!errors.project_id}
                                         isClearable
@@ -778,6 +779,7 @@ const CreateListing = () => {
                                         <StyledSelect
                                             {...field}
                                             options={stationOptions}
+                                            onMenuOpen={fetchStations}
                                             placeholder="🚇 Search and select a transit station..."
                                             isSearchable
                                             isClearable
@@ -1138,9 +1140,10 @@ const CreateListing = () => {
                 const { file } = item;
                 return (
                     <div
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
+                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300"
                         onClick={() => setLightboxIndex(null)}
                     >
+
                         <div className="absolute inset-0 z-0 overflow-hidden bg-black">
                             <img
                                 src={URL.createObjectURL(file)}

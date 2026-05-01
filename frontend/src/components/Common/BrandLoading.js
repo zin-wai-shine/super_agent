@@ -23,9 +23,13 @@ const BrandLoading = ({ agent, isMainDomain, isExiting, isLoadingConfig }) => {
         }
     }
 
+    // Logo scale
+    const pageLogoScale = (agent?.theme?.page_logo_height || 100) / 100;
+    const navbarLogoScale = (agent?.theme?.navbar_logo_height || 100) / 100;
+
     return (
         <div className={`fixed inset-0 bg-white z-[9999] flex items-center justify-center ${isExiting ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'}`}>
-            <div className="relative flex items-center justify-center">
+            <div className="relative flex items-center justify-center" style={{ transform: `scale(${pageLogoScale})` }}>
                 {/* Minimalist Logo Display */}
                 <div className="relative w-56 h-56 flex items-center justify-center transform transition-all duration-700 animate-logo-pulse">
                     {logoUrl ? (

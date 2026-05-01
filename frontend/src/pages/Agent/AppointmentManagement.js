@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+
 import { appointmentApi } from '../../services/api';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
@@ -335,8 +337,8 @@ const AppointmentManagement = () => {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
                             <CalendarDaysIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -347,32 +349,35 @@ const AppointmentManagement = () => {
                         {total} total appointment{total !== 1 ? 's' : ''}
                     </p>
                 </div>
-            </div>
 
-            {/* Stats Cards (Global Summary) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
-                    const count = stats[key] || 0;
-                    return (
-                        <div
-                            key={key}
-                            className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center bg-white dark:bg-dashboard-card"
-                        >
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
-                                <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.1em]">{config.label}</span>
+                {/* Stats Cards (Integrated & Centered) */}
+                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 flex-1">
+                    {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+                        const count = stats[key] || 0;
+                        return (
+                            <div key={key} className="flex items-center space-x-3 transition-all hover:translate-y-[-2px] duration-300">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm border-2 border-white dark:border-gray-800 ${config.bg.replace('dark:', '')} bg-opacity-20`}>
+                                    <span className={config.text}>{count}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white capitalize leading-tight">{key}</p>
+                                    <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Status</p>
+                                </div>
                             </div>
-                            <div className="text-lg font-extrabold text-gray-900 dark:text-white">{count}</div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
+
+                {/* Balance Spacer for LG screens */}
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
             </div>
 
             {/* Search & Filters (Standardized Toolbar) */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
 
                 {/* LEFT: Page Size */}
-                <div className="flex items-center space-x-2 h-[38px] w-full lg:w-auto">
+                <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
                     <div className="w-16">
                         <StyledSelect
                             options={[
@@ -749,19 +754,22 @@ const AppointmentManagement = () => {
             </div>
 
             {/* Detail Modal */}
-            {showDetailModal && selectedAppointment && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {showDetailModal && selectedAppointment && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDetailModal(false)} />
-                    <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="sticky top-0 bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-6 py-4 rounded-t-3xl flex items-center justify-between z-10">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Appointment Details</h3>
+                    <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+                        <div className="flex-none bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-8 py-6 flex items-center justify-between z-10">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Appointment Details</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">ID: {selectedAppointment.id}</p>
+                            </div>
                             <button onClick={() => setShowDetailModal(false)} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
-                                <XMarkIcon className="w-5 h-5" />
+                                <XMarkIcon className="w-6 h-6" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-5">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+
                             {/* Status & Actions */}
                             <div className="flex items-center justify-between">
                                 <StatusBadge status={selectedAppointment.status} />
@@ -873,14 +881,27 @@ const AppointmentManagement = () => {
                                 </button>
                             </div>
                         </div>
+                        <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end">
+                            <button 
+                                onClick={() => setShowDetailModal(false)}
+                                className="px-10 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-gray-900/10"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
+
+
             {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {showDeleteConfirm && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(null)} />
+
+
                     <div className="relative bg-white dark:bg-dashboard-card rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -902,8 +923,10 @@ const AppointmentManagement = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
+
         </div>
     );
 };

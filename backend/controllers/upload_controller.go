@@ -517,3 +517,71 @@ func (uc *UploadController) UploadAvatar(c *gin.Context) {
 	avatarURL := fmt.Sprintf("/uploads/avatars/%s/%s", userID.(uuid.UUID).String(), filename)
 	c.JSON(http.StatusOK, gin.H{"url": avatarURL})
 }
+
+// UploadFacilityImage handles general facility/building image uploads
+func (uc *UploadController) UploadFacilityImage(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	// Get file
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+	defer file.Close()
+
+	// Check file size
+	if header.Size > maxImageSize {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File too large. Maximum 25MB allowed"})
+		return
+	}
+
+	// Check file type
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if !allowedImageTypes[ext] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, webp"})
+		return
+	}
+
+	// Create directory structure
+	uploadDir := filepath.Join(uc.cfg.UploadPath, agentID.String(), "facilities")
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
+		return
+	}
+
+	// Generate unique filename
+	filename := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Save file
+	if err := c.SaveUploadedFile(header, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// Get max sort order
+	var maxSort int
+	uc.db.Model(&models.FacilityMedia{}).Where("agent_id = ?", agentID).Select("COALESCE(MAX(sort_order), 0)").Scan(&maxSort)
+
+	// Create media record
+	media := models.FacilityMedia{
+		AgentID:   agentID,
+		URL:       fmt.Sprintf("/uploads/%s/facilities/%s", agentID.String(), filename),
+		Name:      c.PostForm("name"),
+		SortOrder: maxSort + 1,
+	}
+
+	if err := uc.db.Create(&media).Error; err != nil {
+		os.Remove(filePath)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save media record"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, media)
+}
+

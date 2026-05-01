@@ -61,7 +61,7 @@ const NotificationBell = () => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors relative"
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-lg text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors relative border border-gray-100 dark:border-gray-700"
             >
                 <BellIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                 {unreadCount > 0 && (

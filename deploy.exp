@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 1800
+set password "-4V2HOvVFF,q7Bx2"
+
+log_user 1
+
+spawn ssh -o StrictHostKeyChecking=no root@187.77.140.205 "cd /root/super_real_estate && git fetch origin v1 && git reset --hard origin/v1 && docker compose build backend frontend && docker compose up -d backend frontend && docker compose run --rm backend go run scratch/migrate_collections.go"
+expect "password:"
+send -- "$password\r"
+
+expect eof

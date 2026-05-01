@@ -266,7 +266,7 @@ const AgentManagement = () => {
                 header: 'Agent',
                 cell: ({ row }) => (
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-primary-700 dark:text-primary-400 font-bold">{row.original.name?.[0]?.toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
@@ -372,23 +372,23 @@ const AgentManagement = () => {
                             <button
                                 onClick={() => handleSuspend(agent.id || agent.ID, isActive)}
                                 className={`p-1.5 rounded-lg transition-all duration-200 ${isActive
-                                    ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
-                                    : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
-                                    }`}
+                                    ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
+                                    : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
+                                    } backdrop-blur-sm`}
                                 title={isActive ? 'Suspend Agent' : 'Reactivate Agent'}
                             >
                                 {isActive ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
                             </button>
                             <button
                                 onClick={() => openModal(agent)}
-                                className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all duration-200"
+                                className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
                                 title="Edit Agent"
                             >
                                 <PencilIcon className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => handleDelete(agent.id || agent.ID)}
-                                className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                                className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-400/10 dark:text-red-400 dark:hover:bg-red-400/20 backdrop-blur-sm rounded-lg transition-all duration-200"
                                 title="Delete Agent"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -427,7 +427,7 @@ const AgentManagement = () => {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                    <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
                         <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     Agent Management
@@ -514,7 +514,7 @@ const AgentManagement = () => {
                     {statusFilter !== 'all' && (
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors -ml-1"
                             title="Reset Status"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -551,7 +551,7 @@ const AgentManagement = () => {
                     {planFilter !== 'all' && (
                         <button
                             onClick={() => setPlanFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors -ml-1"
                             title="Reset Plan"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -614,7 +614,7 @@ const AgentManagement = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -973,7 +973,7 @@ const AgentManagement = () => {
                                     <label className="input-label">Domain Type *</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-600/10'
+                                            ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-sm'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
                                             <input

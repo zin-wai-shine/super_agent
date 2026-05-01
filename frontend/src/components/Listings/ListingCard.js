@@ -204,7 +204,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     >
                         <Link
                             to={onImageClick || isGalleryMode ? '#' : cardLink}
-                            className={`block w-full h-full cursor-pointer ${isGalleryMode ? 'p-2 md:p-8' : ''}`}
+                            className={`block w-full h-full cursor-pointer ${isGalleryMode ? 'p-0 md:p-8' : ''}`}
                             onClick={(e) => {
                                 if (onImageClick) {
                                     e.preventDefault();
@@ -341,8 +341,13 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         const images = media.filter(m => m.type === 'image');
         if (!images.length) return featuredImage ? [featuredImage] : [];
         const order = (rt) => {
-            const i = PHOTO_ROOM_TYPES.indexOf(rt && rt.trim() ? rt.trim() : 'Additional Photos');
-            return i >= 0 ? i : PHOTO_ROOM_TYPES.length;
+            if (!rt) return PHOTO_ROOM_TYPES.length;
+            const normalized = rt.trim().toLowerCase();
+            const index = PHOTO_ROOM_TYPES.findIndex(type => 
+                type.toLowerCase() === normalized || 
+                (normalized === 'bed room' && type.toLowerCase() === 'bedroom')
+            );
+            return index >= 0 ? index : PHOTO_ROOM_TYPES.length;
         };
         const sorted = [...images].sort((a, b) => order(a.room_type) - order(b.room_type));
         return sorted.map(m => getMediaUrl(m.url));
@@ -539,7 +544,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Status Badge Group */}
                         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
-                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 rounded-full text-[12px] md:text-[13px] font-bold text-gray-900 shadow-sm">
+                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[12px] md:text-[13px] font-bold text-gray-900 shadow-sm">
                                 {listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                             </span>
                         </div>
@@ -614,7 +619,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                             {/* Status Badge */}
                             <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none animate-fill-med">
-                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">
+                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">
                                     {is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}
                                 </span>
                             </div>

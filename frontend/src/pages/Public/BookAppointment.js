@@ -107,7 +107,7 @@ const BookAppointment = () => {
                     params.agent_id = user.agent_id;
                 }
                 // Simulate delay as requested for "smooth animation like other page"
-                await new Promise(resolve => setTimeout(resolve, 800));
+                await new Promise(resolve => setTimeout(resolve, 200));
                 const response = await publicApi.getListing(id, params);
                 const listingData = response.data;
                 setListing(listingData);

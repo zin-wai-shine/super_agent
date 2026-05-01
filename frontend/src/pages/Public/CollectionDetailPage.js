@@ -64,7 +64,7 @@ const CollectionDetailPage = () => {
             const [colRes, listRes] = await Promise.all([
                 collectionApi.getPublicCollection(id),
                 publicApi.getListings({ collection_id: id, limit: 100 }),
-                new Promise(resolve => setTimeout(resolve, 800)) // Artificial delay to show skeleton
+                new Promise(resolve => setTimeout(resolve, 200)) // Artificial delay to show skeleton
             ]);
             
             setCollection(colRes.data || null);
@@ -78,8 +78,13 @@ const CollectionDetailPage = () => {
     };
 
     const heroImages = React.useMemo(() => {
-        if (!collection?.media) return [];
-        return collection.media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
+        if (collection?.media && collection.media.length > 0) {
+            return collection.media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
+        }
+        if (collection?.image) {
+            return [getMediaUrl(collection.image)];
+        }
+        return [];
     }, [collection]);
 
     const openGallery = (index = 0) => {
@@ -156,17 +161,19 @@ const CollectionDetailPage = () => {
                     {/* Nav Header */}
                     <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || headerSticky ? 'bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/10' : 'bg-transparent'}`}>
                         <div className="max-w-[1440px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between relative">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white' : 'bg-white text-gray-900 shadow-md'}`}
-                            >
-                                <ArrowLeftIcon className="w-6 h-6" />
-                            </button>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white' : 'bg-white text-gray-900 shadow-md'}`}
+                                >
+                                    <ArrowLeftIcon className="w-6 h-6" />
+                                </button>
 
-                            <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-100 lg:opacity-0 translate-y-0 lg:-translate-y-2 pointer-events-none'}`}>
-                                <h1 className={`text-[16px] lg:text-[18px] font-bold truncate max-w-[50vw] transition-colors ${scrolled || headerSticky ? 'text-gray-900 dark:text-white' : 'text-white drop-shadow-md'}`}>
-                                    {collection?.name}
-                                </h1>
+                                <div className={`flex flex-col transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-100 lg:opacity-0 translate-y-0 lg:-translate-y-2 pointer-events-none'}`}>
+                                    <h1 className={`text-[17px] lg:text-[18px] font-bold truncate max-w-[50vw] transition-colors ${scrolled || headerSticky ? 'text-gray-900 dark:text-white' : 'text-white drop-shadow-md'}`}>
+                                        {collection?.name}
+                                    </h1>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -192,17 +199,17 @@ const CollectionDetailPage = () => {
                     </div>
 
                     {/* Content Section */}
-                    <div className="relative z-30">
+                    <div className="relative z-30 pointer-events-none">
                         {/* High-Overlap Content Container */}
                         <div className="h-[60vh] lg:h-[420px]" /> {/* Spacer */}
                         
-                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[44px] shadow-[0_-25px_60px_rgba(0,0,0,0.2)] min-h-screen relative -mt-32 lg:-mt-20 overflow-hidden">
+                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[28px] shadow-[0_-25px_60px_rgba(0,0,0,0.2)] min-h-screen relative -mt-32 lg:-mt-20 overflow-hidden pointer-events-auto">
                             {/* Mobile Drag Handle Area */}
-                            <div className="lg:hidden flex flex-col items-center pt-2.5">
-                                <div className="w-16 h-1 bg-gray-200 dark:bg-white/10 rounded-full" />
+                            <div className="lg:hidden flex flex-col items-center pt-4 pb-2">
+                                <div className="w-12 h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full" />
                             </div>
                             
-                            <div className="max-w-[1440px] mx-auto px-5 lg:px-20 pt-1 lg:pt-6 pb-20">
+                            <div className="max-w-[1440px] mx-auto px-5 lg:px-20 pt-2 lg:pt-6 pb-20">
                                 <ListingsGrid 
                                     listings={listings} 
                                     visibleCount={visibleCount}
@@ -338,24 +345,29 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
     if (!galleryOpen) return null;
     return (
         <div className="fixed inset-0 z-[10000] bg-black flex flex-col animate-fadeIn overflow-hidden">
+            <div className="absolute top-6 left-6 z-[10001] flex items-center gap-4">
+                <button 
+                    onClick={() => setGalleryOpen(false)} 
+                    className="w-12 h-12 flex items-center justify-center text-white bg-black/40 backdrop-blur-md rounded-full hover:bg-black/60 transition-all border border-white/10 active:scale-90"
+                >
+                    <ArrowLeftIcon className="w-6 h-6" />
+                </button>
+                <h2 className="text-white font-bold text-[17px] drop-shadow-md">
+                    {collection?.name}
+                </h2>
+            </div>
+
             <div className="absolute inset-0 z-0 flex items-center justify-center bg-black">
-                <div className="w-full h-full max-w-[1440px] mx-auto">
+                <div className="w-full h-full">
                     <ListingImageSlider 
                         images={heroImages} 
                         title={collection?.name} 
                         cardLink="#" 
                         initialIndex={galleryIndex}
                         isGalleryMode={true}
+                        showArrows={true}
+                        showDots={true}
                     />
-                </div>
-            </div>
-            <div className="relative z-10 border-b border-white/5 bg-black/60 backdrop-blur-xl">
-                <div className="max-w-[1440px] mx-auto px-6 lg:px-20 py-3 flex items-center justify-between">
-                    <button onClick={() => setGalleryOpen(false)} className="w-10 h-10 flex items-center justify-center text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors">
-                        <ArrowLeftIcon className="w-6 h-6" />
-                    </button>
-                    <span className="text-white font-semibold">{collection?.name} Gallery</span>
-                    <div className="w-10" />
                 </div>
             </div>
         </div>

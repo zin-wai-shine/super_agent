@@ -151,7 +151,12 @@ export const agentApi = {
     deleteListing: (id) => api.delete(`/agent/listings/${id}`),
     publishListing: (id) => api.post(`/agent/listings/${id}/publish`),
     unpublishListing: (id) => api.post(`/agent/listings/${id}/unpublish`),
+    repostListing: (id) => api.post(`/agent/listings/${id}/repost`),
     toggleViewingRequests: (id) => api.put(`/agent/listings/${id}/toggle-viewing`),
+    getFacilityMedia: () => api.get('/agent/facilities'),
+    updateFacilityMedia: (id, data) => api.put(`/agent/facilities/${id}`, data),
+    deleteFacilityMedia: (id) => api.delete(`/agent/facilities/${id}`),
+    reorderFacilityMedia: (data) => api.put('/agent/facilities/reorder', data),
     getSubAgents: () => api.get('/agent/sub-agents'),
     createSubAgent: (data) => api.post('/agent/sub-agents', data),
     updateSubAgent: (id, data) => api.put(`/agent/sub-agents/${id}`, data),
@@ -249,6 +254,15 @@ export const uploadApi = {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
+    uploadFacilityImage: (file, name = '') => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', name);
+        return api.post('/upload/facility-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    },
+
     uploadVideo: (listingId, file, caption = '') => {
         const formData = new FormData();
         formData.append('listing_id', listingId);
@@ -318,4 +332,5 @@ export const collectionApi = {
     deleteCollection: (id) => api.delete(`/agent/collections/${id}`),
     addListing: (colId, listingId) => api.post(`/agent/collections/${colId}/listings/${listingId}`),
     removeListing: (colId, listingId) => api.delete(`/agent/collections/${colId}/listings/${listingId}`),
+    reorderCollections: (data) => api.put('/agent/collections/reorder', data),
 };

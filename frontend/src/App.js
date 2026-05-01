@@ -40,6 +40,8 @@ import Users from './pages/Agent/Users';
 import DeveloperManagement from './pages/Agent/DeveloperManagement';
 import ProjectManagement from './pages/Agent/ProjectManagement';
 import CollectionManagement from './pages/Agent/CollectionManagement';
+import FacilityManagement from './pages/Agent/FacilityManagement';
+
 
 // Super Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -281,6 +283,8 @@ const AppRoutes = () => {
                 <Route path="developers" element={<DeveloperManagement />} />
                 <Route path="projects" element={<ProjectManagement />} />
                 <Route path="collections" element={<CollectionManagement />} />
+                <Route path="facilities" element={<FacilityManagement />} />
+
                 <Route path="theme" element={<ThemeSettings />} />
                 <Route path="settings" element={<AgentSettings />} />
                 <Route path="notifications" element={<NotificationCenter />} />

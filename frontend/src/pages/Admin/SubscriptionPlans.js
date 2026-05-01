@@ -131,7 +131,7 @@ const SubscriptionPlans = () => {
                 header: 'Plan Name',
                 cell: ({ row }) => (
                     <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-lg flex items-center justify-center">
                             <CreditCardIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <span className="font-semibold text-gray-900 dark:text-white">{row.original.plan_name || row.original.name}</span>
@@ -207,7 +207,7 @@ const SubscriptionPlans = () => {
                     <div className="flex items-center justify-end gap-2">
                         <button
                             onClick={() => openModal(row.original)}
-                            className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all duration-200"
+                            className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
                             title="Edit Plan"
                         >
                             <PencilIcon className="w-5 h-5" />

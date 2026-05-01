@@ -91,7 +91,7 @@
 
   /* Input styles — rounded-full, consistent height for UI */
   .input-field {
-    @apply w-full px-4 py-2 min-h-[38px] bg-white dark:bg-dashboard-input border border-gray-200 dark:border-dashboard-border rounded-[3px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-2 min-h-[38px] bg-white/80 dark:bg-dashboard-input/50 backdrop-blur-md border border-gray-200 dark:border-dashboard-border/50 rounded-[3px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-30 focus:border-primary-500 transition-all duration-200;
   }
 
   .input-label {
@@ -866,4 +866,37 @@ body::-webkit-scrollbar-thumb,
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+/* ── Dashboard Overrides ─────────────────────────────────────── 
+   Forces consistent 12px bold buttons and flat design in admin.
+   Only affects elements inside .dashboard-container.
+──────────────────────────────────────────────────────────────── */
+.dashboard-container button,
+.dashboard-container .btn-primary,
+.dashboard-container .btn-secondary,
+.dashboard-container .btn-outline {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container button:hover,
+.dashboard-container .btn-primary:hover,
+.dashboard-container .btn-secondary:hover,
+.dashboard-container .btn-outline:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dashboard-container button:active,
+.dashboard-container .btn-primary:active {
+  transform: scale(0.98) !important;
+}
+
+/* Ensure icons in buttons are also appropriately sized */
+.dashboard-container button svg {
+  width: 14px !important;
+  height: 14px !important;
 }

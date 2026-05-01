@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { agentApi } from '../../services/api';
+import { agentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
     useReactTable,
@@ -31,10 +31,9 @@ import {
 import { getMediaUrl } from '../../utils/media';
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
-import CollectionBar from '../../components/Listings/CollectionBar';
 import AddToCollectionModal from '../../components/Listings/AddToCollectionModal';
 import CreateCollectionModal from '../../components/Listings/CreateCollectionModal';
-import { 
+import {
     FolderPlusIcon,
     Bars3Icon,
     FolderIcon as FolderIconSolid
@@ -156,6 +155,16 @@ const AgentListings = () => {
         }
     };
 
+    const handleRepost = async (id) => {
+        try {
+            await agentApi.repostListing(id);
+            toast.success('Listing reposted to top!');
+            fetchListings();
+        } catch (error) {
+            toast.error('Failed to repost listing');
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this listing?')) return;
 
@@ -266,14 +275,29 @@ const AgentListings = () => {
             accessorKey: 'title',
             cell: ({ row }) => {
                 const listing = row.original;
+                const bedroomImage = listing.media?.find(m => 
+                    m.room_type === PHOTO_ROOM_TYPES[0] ||
+                    m.room_type?.toLowerCase() === 'bedroom' || 
+                    m.room_type?.toLowerCase() === 'bed room'
+                )?.url;
+                const displayImage = bedroomImage || listing.media?.find(m => m.type === 'image')?.url || listing.media?.[0]?.url;
+
                 return (
                     <div className="flex items-center space-x-4">
-                        <div className="w-16 h-12 bg-gray-200 dark:bg-gray-700 rounded-[3px] overflow-hidden flex-shrink-0">
-                            <img
-                                src={getMediaUrl(listing.media?.[0]?.url)}
-                                alt={listing.title}
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-[3px] overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                            {displayImage ? (
+                                <img
+                                    src={getMediaUrl(displayImage)}
+                                    alt={listing.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/placeholder-property.jpg'; // Ensure a fallback exists
+                                    }}
+                                />
+                            ) : (
+                                <BuildingOffice2Icon className="w-6 h-6 text-gray-400" />
+                            )}
                         </div>
                         <div>
                             <div className="font-medium text-gray-900 dark:text-white line-clamp-1">{listing.title}</div>
@@ -385,6 +409,13 @@ const AgentListings = () => {
                                 <EyeIcon className="w-5 h-5" />
                             )}
                         </button>
+                        <button
+                            onClick={() => handleRepost(listing.id)}
+                            className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-400/10 dark:text-indigo-400 dark:hover:bg-indigo-400/20 rounded-lg transition-all duration-200"
+                            title="Repost to Top"
+                        >
+                            <ArrowPathIcon className="w-5 h-5" />
+                        </button>
                         <Link
                             to={`/dashboard/listings/${listing.id}/edit`}
                             className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-600/10 dark:text-primary-400 dark:hover:bg-primary-600/20 rounded-lg transition-all duration-200"
@@ -421,29 +452,21 @@ const AgentListings = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+            {/* Header Section */}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
-                        {selectedCollection ? `${selectedCollection.name} Collection` : 'All Listings'}
+                        {selectedCollection ? `${selectedCollection.name}` : 'All Listings'}
                     </h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {listings.length} listing{listings.length !== 1 ? 's' : ''} in {selectedCollection ? 'this collection' : 'total'}
-                    </p>
                 </div>
-            </div>
 
-            {/* Collection Bar - NEW */}
-            <CollectionBar 
-                selectedId={selectedCollection?.id}
-                onSelectCollection={setSelectedCollection}
-                refreshTrigger={collectionRefreshTrigger}
-                canEdit={false}
-                initialPath="/dashboard/listings"
-            />
+
+
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
+            </div>
 
             {/* Toolbar: Actions & Filters */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
@@ -693,15 +716,15 @@ const AgentListings = () => {
                     <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                         <button
                             onClick={() => setIsCollectionModalOpen(true)}
-                            className="flex-1 sm:flex-none h-[34px] px-4 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-[3px] text-xs font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center space-x-2"
+                            className="btn-secondary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
                         >
                             <FolderPlusIcon className="w-4 h-4 text-primary-500" />
                             <span className="whitespace-nowrap">New Collection</span>
                         </button>
-                        
+
                         <Link
                             to="/dashboard/listings/new"
-                            className="flex-1 sm:flex-none h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-xs font-bold shadow-lg shadow-primary-600/20 transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
+                            className="btn-primary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
                         >
                             <PlusIcon className="w-4 h-4" />
                             <span>Add Listing</span>
@@ -866,13 +889,13 @@ const AgentListings = () => {
                 )}
             </div>
 
-            <AddToCollectionModal 
-                isOpen={!!addToCollectionId} 
-                onClose={() => setAddToCollectionId(null)} 
-                listingId={addToCollectionId} 
+            <AddToCollectionModal
+                isOpen={!!addToCollectionId}
+                onClose={() => setAddToCollectionId(null)}
+                listingId={addToCollectionId}
             />
 
-            <CreateCollectionModal 
+            <CreateCollectionModal
                 isOpen={isCollectionModalOpen}
                 onClose={() => setIsCollectionModalOpen(false)}
                 onSuccess={(newCol) => {

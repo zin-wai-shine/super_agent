@@ -251,7 +251,7 @@ const SavedListingsPage = () => {
         setSearchParams(newParams);
 
         // Standard reveal delay
-        await new Promise(resolve => setTimeout(resolve, 350));
+        await new Promise(resolve => setTimeout(resolve, 200));
         setInitialLoading(false);
     };
 

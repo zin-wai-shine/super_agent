@@ -663,15 +663,17 @@ const PublicLayout = () => {
                                         <div className="flex items-center xl:gap-8 lg:gap-6 md:gap-4">
                                             {/* Logo — triple size on desktop only */}
                                             <Link to={localStorage.getItem('preferredView') === 'map' ? '/?view=map' : '/'} className="flex items-center group pr-4 md:pr-8">
-                                                <div
-                                                    className="hidden md:block md:w-[150px] md:h-[51px] bg-[length:100%_auto] bg-no-repeat bg-left transition-all duration-300"
-                                                    style={{
-                                                        ...(theme.logoUrl ? { backgroundImage: `url(${getMediaUrl(theme.logoUrl)}?t=${theme.logoCacheBuster})` } : {}),
-                                                        transformOrigin: 'left',
-                                                        transform: `scale(var(--navbar-logo-scale, 1))`,
-                                                        mixBlendMode: 'multiply'
-                                                    }}
-                                                />
+                                                {theme.logoUrl && (
+                                                    <img
+                                                        src={`${getMediaUrl(theme.logoUrl)}?t=${theme.logoCacheBuster}`}
+                                                        alt="Logo"
+                                                        className="hidden md:block h-[51px] w-auto object-contain transition-all duration-300"
+                                                        style={{
+                                                            transformOrigin: 'left',
+                                                            transform: `scale(var(--navbar-logo-scale, 1))`
+                                                        }}
+                                                    />
+                                                )}
                                                 <div className="md:hidden">
                                                      <Logo className="w-10 h-10" style={{ color: 'var(--primary-color)' }} />
                                                 </div>

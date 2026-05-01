@@ -15,7 +15,25 @@ import {
     ChevronDoubleRightIcon,
     ChevronUpIcon as ChevronUpIconOutline,
     ChevronDownIcon as ChevronDownIconOutline,
+    ArrowsUpDownIcon,
+    Bars3Icon,
 } from '@heroicons/react/24/outline';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
     useReactTable,
     getCoreRowModel,
@@ -35,12 +53,188 @@ import { getMediaUrl } from '../../utils/media';
 import CreateCollectionModal from '../../components/Listings/CreateCollectionModal';
 import EditCollectionModal from '../../components/Listings/EditCollectionModal';
 
+const SortableItem = ({ id, collection }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style = {
+        transform: transform ? CSS.Translate.toString({ ...transform, x: 0 }) : undefined,
+        transition,
+        zIndex: isDragging ? 1 : 0,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center gap-4 p-4 mb-2 bg-white dark:bg-gray-800 rounded-[3px] shadow-sm transition-all ${
+                isDragging ? 'opacity-50 scale-105 ring-4 ring-primary-500/10' : ''
+            }`}
+        >
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-[3px] transition-colors">
+                <Bars3Icon className="w-4 h-4 text-gray-400" />
+            </div>
+            
+            <div className="w-10 h-10 rounded-[3px] bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {collection.media && collection.media[0] ? (
+                    <img src={getMediaUrl(collection.media[0].url)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                    <FolderIcon className="w-5 h-5 text-primary-500" />
+                )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-bold text-gray-900 dark:text-white truncate">
+                    {collection.name}
+                </p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tight">
+                    Joined Collection
+                </p>
+            </div>
+        </div>
+    );
+};
+
+const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => {
+    const [items, setItems] = useState([]);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && parent) {
+            // Get children of this parent
+            const children = collections.filter(c => c.parent_id === parent.id);
+            setItems(children);
+        }
+    }, [isOpen, parent, collections]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (active.id !== over.id) {
+            setItems((items) => {
+                const oldIndex = items.findIndex((i) => i.id === active.id);
+                const newIndex = items.findIndex((i) => i.id === over.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            await collectionApi.reorderCollections({
+                collection_ids: items.map(i => i.id)
+            });
+            toast.success('Order updated successfully');
+            onReordered();
+            onClose();
+        } catch (error) {
+            console.error('Failed to reorder:', error);
+            toast.error('Failed to update order');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
+
+            <div className="relative w-full max-w-xl bg-white dark:bg-dashboard-card rounded-[3px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
+                    <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">
+                        Adjust Display Order
+                    </h3>
+                    <button 
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                    >
+                        <BsIcons.BsX className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="p-6 bg-gray-50/30 dark:bg-gray-900/20">
+                    <div className="mb-6">
+                        <p className="text-[13px] text-gray-500 dark:text-gray-400 font-medium">
+                            Drag and drop items below to change their appearance order in the <span className="text-primary-500 font-bold">"{parent?.name}"</span> section.
+                        </p>
+                    </div>
+
+                    <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                        {items.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">No child collections found</p>
+                            </div>
+                        ) : (
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={items.map(i => i.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {items.map((item) => (
+                                        <SortableItem key={item.id} id={item.id} collection={item} />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 bg-white dark:bg-dashboard-card border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="h-[38px] px-6 border border-gray-300 dark:border-gray-600 text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-[3px] transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving || items.length === 0}
+                        className="h-[38px] px-8 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-[3px] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
+                    >
+                        {saving ? (
+                            <>
+                                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Saving...</span>
+                            </>
+                        ) : (
+                            <span>Save New Order</span>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const CollectionManagement = () => {
     const [collections, setCollections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createModalType, setCreateModalType] = useState('child');
     const [editingCollection, setEditingCollection] = useState(null);
+    const [showReorderModal, setShowReorderModal] = useState(false);
+    const [selectedParentForReorder, setSelectedParentForReorder] = useState(null);
     
     // Parent Table States
     const [parentFilter, setParentFilter] = useSessionState('colman_parentFilter', '');
@@ -192,6 +386,16 @@ const CollectionManagement = () => {
                 return (
                     <div className="flex justify-end space-x-1.5">
                         <button
+                            onClick={() => {
+                                setSelectedParentForReorder(row.original);
+                                setShowReorderModal(true);
+                            }}
+                            className="p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 rounded-lg transition-all"
+                            title="Adjust Order"
+                        >
+                            <ArrowsUpDownIcon className="w-4 h-4" />
+                        </button>
+                        <button
                             onClick={() => setEditingCollection(row.original)}
                             className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
                             title="Edit"
@@ -219,7 +423,7 @@ const CollectionManagement = () => {
                 );
             },
         },
-    ], []);
+    ], [fetchCollections]);
     
     const childColumns = useMemo(() => {
         const cols = [...baseColumns];
@@ -376,7 +580,7 @@ const CollectionManagement = () => {
                                 value={parentFilter}
                                 onChange={(e) => setParentFilter(e.target.value)}
                                 placeholder="Search main..."
-                                className="w-full pl-9 pr-4 h-[34px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-[3px] text-[13px] focus:ring-1 focus:ring-primary-500/20 transition-all outline-none font-medium text-gray-700 dark:text-gray-200"
+                                className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[13px]"
                             />
                         </div>
                         <button
@@ -384,7 +588,7 @@ const CollectionManagement = () => {
                                 setCreateModalType('parent');
                                 setShowCreateModal(true);
                             }}
-                            className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary-600/10 whitespace-nowrap"
+                            className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
                             <span>Add Parent</span>
@@ -420,7 +624,7 @@ const CollectionManagement = () => {
                                 value={childFilter}
                                 onChange={(e) => setChildFilter(e.target.value)}
                                 placeholder="Search child..."
-                                className="w-full pl-9 pr-4 h-[34px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-[3px] text-[13px] focus:ring-1 focus:ring-secondary-500/20 transition-all outline-none font-medium text-gray-700 dark:text-gray-200"
+                                className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[13px]"
                             />
                         </div>
 
@@ -438,8 +642,6 @@ const CollectionManagement = () => {
                                         minHeight: '34px',
                                         borderRadius: '3px',
                                         fontSize: '13px',
-                                        backgroundColor: 'white',
-                                        borderColor: '#E5E7EB',
                                     }),
                                     valueContainer: (base) => ({
                                         ...base,
@@ -454,7 +656,7 @@ const CollectionManagement = () => {
                                 setCreateModalType('child');
                                 setShowCreateModal(true);
                             }}
-                            className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-secondary-600/10 whitespace-nowrap"
+                            className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
                             <span>Add Child</span>
@@ -483,6 +685,17 @@ const CollectionManagement = () => {
                 onClose={() => setEditingCollection(null)}
                 onSuccess={() => fetchCollections()}
                 collection={editingCollection}
+            />
+
+            <ReorderModal
+                isOpen={showReorderModal}
+                onClose={() => {
+                    setShowReorderModal(false);
+                    setSelectedParentForReorder(null);
+                }}
+                parent={selectedParentForReorder}
+                collections={collections}
+                onReordered={() => fetchCollections()}
             />
         </div>
     );

@@ -363,7 +363,7 @@ const AgentSettings = () => {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="btn-primary px-8 h-[42px] shadow-primary-500/20"
+                                className="btn-primary px-8 h-[42px] shadow-none hover:shadow-none transform-none"
                             >
                                 {saving ? (
                                     <div className="flex items-center gap-2">

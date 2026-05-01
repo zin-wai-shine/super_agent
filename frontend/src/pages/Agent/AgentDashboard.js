@@ -62,35 +62,35 @@ const AgentDashboard = () => {
             name: 'Total Listings',
             value: stats?.total_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-primary-50 text-primary-600 dark:bg-primary-600/10 dark:text-primary-400',
+            iconBg: 'bg-primary-50/50 text-primary-600 dark:bg-primary-600/10 dark:text-primary-400',
             trend: '+2 this week'
         },
         {
             name: 'Total Views',
             value: stats?.total_views || 0,
             icon: EyeIcon,
-            iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-600/10 dark:text-blue-400',
+            iconBg: 'bg-blue-50/50 text-blue-600 dark:bg-blue-600/10 dark:text-blue-400',
             trend: 'Lifetime'
         },
         {
             name: 'Published',
             value: stats?.published_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-600/10 dark:text-emerald-400',
+            iconBg: 'bg-emerald-50/50 text-emerald-600 dark:bg-emerald-600/10 dark:text-emerald-400',
             trend: 'Active'
         },
         {
             name: 'Sub-Agents',
             value: stats?.total_sub_agents || 0,
             icon: UsersIcon,
-            iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-600/10 dark:text-indigo-400',
+            iconBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-600/10 dark:text-indigo-400',
             trend: 'Team'
         },
         {
             name: 'Total Appointments',
             value: stats?.total_appointments || 0,
             icon: CalendarDaysIcon,
-            iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-600/10 dark:text-amber-400',
+            iconBg: 'bg-amber-50/50 text-amber-600 dark:bg-amber-600/10 dark:text-amber-400',
             trend: `${stats?.appointments_this_week || 0} this week`,
             feature: 'appointments'
         },
@@ -98,7 +98,7 @@ const AgentDashboard = () => {
             name: 'Registered Users',
             value: stats?.total_users || 0,
             icon: UsersIcon,
-            iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-600/10 dark:text-purple-400',
+            iconBg: 'bg-purple-50/50 text-purple-600 dark:bg-primary-600/10 dark:text-primary-400',
             trend: 'Direct'
         },
     ];
@@ -133,7 +133,7 @@ const AgentDashboard = () => {
                                     <span className="text-gray-400 dark:text-gray-500 ml-1">vs last period</span>
                                 </div>
                             </div>
-                            <div className={`p-2.5 rounded-lg ${stat.iconBg}`}>
+                            <div className={`p-2.5 rounded-lg ${stat.iconBg} backdrop-blur-md`}>
                                 <stat.icon className="w-5 h-5" aria-hidden="true" />
                             </div>
                         </div>

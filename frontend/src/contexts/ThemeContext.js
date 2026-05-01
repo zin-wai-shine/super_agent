@@ -34,6 +34,8 @@ const defaultTheme = {
     buttonShadowColor: '#000000',
     buttonShadowOpacity: 25,
     navbarLogoHeight: 100,
+    pageLogoHeight: 100,
+    dashboardLogoHeight: 100,
 };
 
 export const useTheme = () => {
@@ -83,6 +85,8 @@ export const ThemeProvider = ({ children }) => {
                     buttonShadowColor: t.button_shadow_color || defaultTheme.buttonShadowColor,
                     buttonShadowOpacity: t.button_shadow_opacity ?? defaultTheme.buttonShadowOpacity,
                     navbarLogoHeight: t.navbar_logo_height ?? defaultTheme.navbarLogoHeight,
+                    pageLogoHeight: t.page_logo_height ?? defaultTheme.pageLogoHeight,
+                    dashboardLogoHeight: t.dashboard_logo_height ?? defaultTheme.dashboardLogoHeight,
                 });
             } else {
                 setTheme(defaultTheme);

@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"super_real_estate/config"
@@ -201,6 +204,24 @@ func (ac *AgentController) UnpublishListing(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Listing unpublished successfully"})
+}
+
+// RepostListing updates the created_at timestamp to "bump" the listing to the top
+func (ac *AgentController) RepostListing(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+
+	if err := ac.db.Model(&models.Listing{}).Where("id = ? AND agent_id = ?", id, agentID).Update("created_at", time.Now()).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to repost listing"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Listing reposted successfully"})
 }
 
 // ToggleViewingRequests toggles the allow_viewing_requests status of a listing
@@ -617,3 +638,117 @@ func (ac *AgentController) GetSettings(c *gin.Context) {
 		"social_links":    agent.SocialLinks,
 	})
 }
+
+// GetFacilityMedia returns all facility media for the agent
+func (ac *AgentController) GetFacilityMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var media []models.FacilityMedia
+	if err := ac.db.Where("agent_id = ?", agentID).Order("sort_order ASC").Find(&media).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch facility media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, media)
+}
+
+// UpdateFacilityMedia updates a facility media record
+func (ac *AgentController) UpdateFacilityMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+	var media models.FacilityMedia
+	if err := ac.db.Where("id = ? AND agent_id = ?", id, agentID).First(&media).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Media not found"})
+		return
+	}
+
+	var req struct {
+		Name      string `json:"name"`
+		SortOrder int    `json:"sort_order"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	media.Name = req.Name
+	media.SortOrder = req.SortOrder
+
+	if err := ac.db.Save(&media).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, media)
+}
+
+// DeleteFacilityMedia deletes a facility media record
+func (ac *AgentController) DeleteFacilityMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	id := c.Param("id")
+	var media models.FacilityMedia
+	if err := ac.db.Where("id = ? AND agent_id = ?", id, agentID).First(&media).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Media not found"})
+		return
+	}
+
+	// Delete file
+	filePath := filepath.Join(ac.cfg.UploadPath, strings.TrimPrefix(media.URL, "/uploads/"))
+	os.Remove(filePath)
+
+	if err := ac.db.Delete(&media).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Media deleted successfully"})
+}
+
+// ReorderFacilityMedia updates sort orders for multiple media records
+func (ac *AgentController) ReorderFacilityMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var req []struct {
+		ID        string `json:"id"`
+		SortOrder int    `json:"sort_order"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := ac.db.Transaction(func(tx *gorm.DB) error {
+		for _, item := range req {
+			if err := tx.Model(&models.FacilityMedia{}).Where("id = ? AND agent_id = ?", item.ID, agentID).Update("sort_order", item.SortOrder).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reorder media"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Media reordered successfully"})
+}
+

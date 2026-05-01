@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
 import { Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { bannerApi, publicApi, agentApi } from '../../services/api';
@@ -440,7 +442,7 @@ const BannerManagement = () => {
                     </button>
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-2 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-[3px] transition-colors border border-transparent hover:border-primary-100"
+                        className="p-2 text-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-500/10 backdrop-blur-sm rounded-[3px] transition-colors border border-transparent hover:border-primary-100"
                         title="Edit Banner"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
@@ -481,16 +483,19 @@ const BannerManagement = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
-                <div>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
-                        <MegaphoneIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    Banner Management
-                </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Promote your listings and brand with high-impact graphics.</p>
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                            <MegaphoneIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        Banner Management
+                    </h1>
                 </div>
+
+
+
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
             </div>
 
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
@@ -510,9 +515,26 @@ const BannerManagement = () => {
                             isSearchable={false}
                             components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
                             styles={{
-                                control: (base) => ({ ...base, minHeight: '34px', height: '34px', textAlign: 'center', cursor: 'pointer', fontSize: '12px' }),
-                                valueContainer: (base) => ({ ...base, justifyContent: 'center', padding: '0' }),
-                                singleValue: (base) => ({ ...base, margin: '0', textAlign: 'center', width: '100% ' })
+                                control: (base) => ({
+                                    ...base,
+                                    borderRadius: '3px',
+                                    height: '34px',
+                                    minHeight: '34px',
+                                    fontSize: '11px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
                             }}
                         />
                     </div>
@@ -578,7 +600,7 @@ const BannerManagement = () => {
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-600/10 rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Clear Date Filter"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -643,7 +665,7 @@ const BannerManagement = () => {
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-[3px]"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-[3px] shadow-none hover:shadow-none transform-none"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Banner</span>
@@ -706,7 +728,7 @@ const BannerManagement = () => {
                                 <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronLeftIcon className="w-4 h-4" /></button>
                                 <div className="flex items-center space-x-1 mx-2">
                                     <span className="text-xs text-gray-500 font-bold">Page</span>
-                                    <span className="text-xs text-primary-600 font-bold px-2 py-0.5 bg-primary-50 rounded-[3px]">{table.getState().pagination.pageIndex + 1}</span>
+                                    <span className="text-xs text-primary-600 dark:text-primary-400 font-bold px-2 py-0.5 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-sm rounded-[3px]">{table.getState().pagination.pageIndex + 1}</span>
                                     <span className="text-xs text-gray-500 font-bold">of {table.getPageCount()}</span>
                                 </div>
                                 <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronRightIcon className="w-4 h-4" /></button>
@@ -718,8 +740,9 @@ const BannerManagement = () => {
             </div>
 
             {/* Creation Modal */}
-            {showModal && (
+            {showModal && createPortal(
                 <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fade-in">
+
                     <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[3px] border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
 
                         {/* Premium Header with Gradient - Compacted */}
@@ -897,7 +920,7 @@ const BannerManagement = () => {
                                                     <div className="space-y-3">
                                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Action Destination (URL)</label>
                                                         <div className="relative group">
-                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50 dark:bg-gray-800 rounded group-focus-within:bg-primary-50 transition-colors">
+                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md rounded group-focus-within:bg-primary-50/50 transition-colors">
                                                                 <LinkIcon className="w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
                                                             </div>
                                                             {viewMode === 'view' ? (
@@ -987,7 +1010,7 @@ const BannerManagement = () => {
                                                 <button
                                                     type="submit"
                                                     disabled={loading || uploading || (!isSuperAdmin && !bannerFile && viewMode === 'create')}
-                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] shadow-[0_5px_15px_rgba(59,130,246,0.15)] text-[11px] font-black uppercase tracking-[0.15em] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
                                                 >
                                                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
                                                     {loading ? (
@@ -1008,13 +1031,17 @@ const BannerManagement = () => {
                             </form>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
+
             {/* Custom Confirmation Alert */}
-            {showConfirmClose && (
-                <div className="fixed inset-0 z-[10000] flex items-start justify-center pt-20 px-4 bg-gray-900/20 backdrop-blur-sm animate-fade-in pointer-events-auto">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-gray-700 animate-slide-down relative overflow-hidden">
+            {showConfirmClose && createPortal(
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-fade-in pointer-events-auto">
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-gray-700 animate-slide-down relative overflow-hidden">
+
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
                         <div className="flex gap-4">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
@@ -1034,7 +1061,7 @@ const BannerManagement = () => {
                                     </button>
                                     <button
                                         onClick={confirmClose}
-                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-[3px] shadow-lg shadow-red-500/20 transition-all transform hover:-translate-y-0.5"
+                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-[3px] transition-all"
                                     >
                                         Discard Changes
                                     </button>
@@ -1042,8 +1069,10 @@ const BannerManagement = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
+
         </div>
     );
 };

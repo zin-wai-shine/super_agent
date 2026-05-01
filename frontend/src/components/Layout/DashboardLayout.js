@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import NotificationBell from '../Common/NotificationBell';
 
 import Logo from '../Common/Logo';
@@ -28,11 +29,13 @@ import {
     BuildingOffice2Icon,
     ArrowTopRightOnSquareIcon,
     FolderIcon,
+    PhotoIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardLayout = () => {
     const { isDarkMode, toggleTheme } = useDashboardTheme();
     const { isMainDomain, agent } = useTenant();
+    const { theme } = useTheme();
     const { user, logout, isSuperAdmin, isAgent } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -65,6 +68,7 @@ const DashboardLayout = () => {
     const agentNavigation = [
         { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
         { name: 'Listings', href: '/dashboard/listings', icon: BuildingOfficeIcon },
+        { name: 'Facility Images', href: '/dashboard/facilities', icon: PhotoIcon },
         { name: 'Developers', href: '/dashboard/developers', icon: BuildingOffice2Icon },
         { name: 'Projects', href: '/dashboard/projects', icon: BuildingOfficeIcon },
         { name: 'Collections', href: '/dashboard/collections', icon: FolderIcon },
@@ -134,7 +138,11 @@ const DashboardLayout = () => {
                                     <img
                                         src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
                                         alt={agent.agency_name || agent.name || 'Agent Logo'}
-                                        className="h-16 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm scale-110 sm:scale-100"
+                                        className="h-16 sm:h-32 w-auto max-w-full object-contain flex-shrink-0 transition-all duration-300 drop-shadow-sm"
+                                        style={{
+                                            transformOrigin: 'left',
+                                            transform: `scale(${(theme?.dashboardLogoHeight || 100) / 100})`
+                                        }}
                                     />
                                 </div>
                             ) : (
@@ -153,7 +161,7 @@ const DashboardLayout = () => {
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 lg:px-3 lg:py-1.5 flex items-center gap-1.5 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 lg:hover:bg-primary-50 dark:lg:hover:bg-primary-900/20 rounded-lg transition-all border border-transparent lg:border-gray-200 dark:lg:border-gray-700 lg:hover:border-primary-100 dark:lg:hover:border-primary-800"
+                        className="h-[30px] px-2.5 flex items-center gap-1.5 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 bg-primary-50 lg:bg-primary-50/50 dark:bg-primary-900/20 rounded-lg transition-all border border-gray-100 lg:border-gray-200 dark:lg:border-gray-700 hover:border-primary-200"
                         title="View Site"
                     >
                         <span className="hidden lg:inline text-xs font-bold">View Site</span>
@@ -163,7 +171,7 @@ const DashboardLayout = () => {
                     {/* Dark Mode Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                        className="w-[30px] h-[30px] flex items-center justify-center rounded-lg text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700"
                         title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {isDarkMode ? (
@@ -231,8 +239,8 @@ const DashboardLayout = () => {
                                     title={isCollapsed ? item.name : ''}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
-                                        ? 'bg-primary-50 dark:bg-primary-600/10 text-primary-700 dark:text-primary-400 shadow-sm'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-primary-600/5'
+                                        ? 'bg-primary-50/50 dark:bg-transparent text-primary-700 dark:text-primary-400'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-primary-50/30 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -271,7 +279,7 @@ const DashboardLayout = () => {
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dashboard-dark p-4 sm:p-6 lg:p-8 relative w-full transition-colors duration-200">
+                <main className="dashboard-container flex-1 overflow-y-auto bg-gray-50 dark:bg-dashboard-dark p-4 sm:p-6 lg:p-8 relative w-full transition-colors duration-200">
                     <Outlet />
                 </main>
             </div>

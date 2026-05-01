@@ -49,8 +49,8 @@ const CollectionsPage = () => {
                 }
                 collectionsData = collectionsData.filter(c => c.parent_id === activeCategoryId);
             } else {
-                // If no category selected, show "Popular Properties" children by default
-                const popularParent = categoriesData.find(c => c.name === 'Popular Properties');
+                // If no category selected, show first parent (Popular Properties) children by default
+                const popularParent = categoriesData[0];
                 if (popularParent) {
                     collectionsData = collectionsData.filter(c => c.parent_id === popularParent.id);
                 }
@@ -61,7 +61,7 @@ const CollectionsPage = () => {
 
             // Smooth reveal
             if (!globalCollectionsCache || globalCollectionsCache.length === 0) {
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 200));
             }
         } catch (error) {
             console.error('Failed to fetch data:', error);
@@ -92,14 +92,7 @@ const CollectionsPage = () => {
 
                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center min-w-0 px-4">
                         <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
-                            {activeCategoryName || (() => {
-                                let popName = 'Popular Properties';
-                                try {
-                                    const custom = JSON.parse(localStorage.getItem('popular_collection_custom'));
-                                    if (custom) popName = custom.name || popName;
-                                } catch (e) { }
-                                return popName;
-                            })()}
+                            {activeCategoryName || categories[0]?.name || 'Popular Collections'}
                         </h1>
                     </div>
 

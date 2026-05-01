@@ -134,7 +134,15 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				agent.DELETE("/listings/:id", agentController.DeleteListing)
 				agent.POST("/listings/:id/publish", agentController.PublishListing)
 				agent.POST("/listings/:id/unpublish", agentController.UnpublishListing)
+				agent.POST("/listings/:id/repost", agentController.RepostListing)
 				agent.PUT("/listings/:id/toggle-viewing", agentController.ToggleViewingRequests)
+
+				// Facility media management
+				agent.GET("/facilities", agentController.GetFacilityMedia)
+				agent.PUT("/facilities/:id", agentController.UpdateFacilityMedia)
+				agent.DELETE("/facilities/:id", agentController.DeleteFacilityMedia)
+				agent.PUT("/facilities/reorder", agentController.ReorderFacilityMedia)
+
 
 				// Sub-agent management (Agent only)
 				subAgents := agent.Group("/sub-agents")
@@ -204,6 +212,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				collections := agent.Group("/collections")
 				{
 					collections.GET("", collectionController.GetCollections)
+					collections.PUT("/reorder", collectionController.ReorderCollections)
 					collections.POST("", collectionController.CreateCollection)
 					collections.GET("/:id", collectionController.GetCollection)
 					collections.PUT("/:id", collectionController.UpdateCollection)
@@ -222,6 +231,8 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				upload.POST("/banner", uploadController.UploadBanner)
 				upload.POST("/collection-image", uploadController.UploadCollectionImage)
 				upload.POST("/avatar", uploadController.UploadAvatar)
+				upload.POST("/facility-image", uploadController.UploadFacilityImage)
+
 				upload.PATCH("/:id", uploadController.UpdateMedia)
 				upload.DELETE("/:id", uploadController.DeleteMedia)
 			}
