@@ -180,6 +180,143 @@ const CollectionGroup = ({
     );
 };
 
+const IconCategoryGroup = ({ title, categories, onNavigate }) => {
+    const categoriesScrollRef = useRef(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [isAllOpen, setIsAllOpen] = useState(false);
+
+    const checkScroll = () => {
+        if (categoriesScrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = categoriesScrollRef.current;
+            setCanScrollLeft(scrollLeft > 1);
+            setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+        }
+    };
+
+    useEffect(() => {
+        checkScroll();
+        const currentRef = categoriesScrollRef.current;
+        if (currentRef) {
+            currentRef.addEventListener('scroll', checkScroll);
+            window.addEventListener('resize', checkScroll);
+            setTimeout(checkScroll, 100);
+            return () => {
+                currentRef.removeEventListener('scroll', checkScroll);
+                window.removeEventListener('resize', checkScroll);
+            };
+        }
+    }, [categories]);
+
+    const scrollCategories = (direction) => {
+        if (categoriesScrollRef.current) {
+            const scrollAmount = window.innerWidth < 768 ? 300 : 500;
+            categoriesScrollRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    if (categories.length === 0) return null;
+
+    return (
+        <div className="mb-8">
+            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
+                <div className="flex items-center gap-2">
+                    <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
+                        {title}
+                    </h2>
+                    <button 
+                        onClick={() => setIsAllOpen(true)}
+                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => setIsAllOpen(true)}
+                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
+                    </button>
+
+                    <div className="hidden md:flex items-center gap-3">
+                        <button
+                            onClick={() => scrollCategories('left')}
+                            disabled={!canScrollLeft}
+                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeft ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                        >
+                            <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+                        <button
+                            onClick={() => scrollCategories('right')}
+                            disabled={!canScrollRight}
+                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRight ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                        >
+                            <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div 
+                ref={categoriesScrollRef}
+                className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide px-6 md:px-1 scroll-smooth"
+            >
+                {categories.slice(0, 10).map((category) => {
+                    const Icon = MdIcons[category.icon] || 
+                                 FaIcons[category.icon] || 
+                                 HiIcons[category.icon] || 
+                                 BsIcons[category.icon] || 
+                                 FolderIcon;
+                                 
+                    return (
+                        <div 
+                            key={category.id}
+                            onClick={() => onNavigate(`/collections/${category.id}`, { state: { loadingType: 'icon' } })}
+                            className="flex-shrink-0 group cursor-pointer"
+                        >
+                            <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-md border border-[#222222]/10 dark:border-white/5 flex flex-row items-center gap-3 transition-all duration-300 hover:bg-gray-50/80 dark:hover:bg-white/5 group-active:scale-95">
+                                <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
+                                    <Icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-[14px] font-medium text-[#222222] dark:text-white whitespace-nowrap">
+                                    {category.name}
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {categories.length > 10 && (
+                    <div 
+                        onClick={() => setIsAllOpen(true)}
+                        className="flex-shrink-0 group cursor-pointer"
+                    >
+                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-none">
+                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
+                                <FiGrid className="w-5 h-5" />
+                            </div>
+                            <span className="text-[14px] font-semibold text-white dark:text-gray-900 whitespace-nowrap">
+                                See all
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <AllCategoriesModal 
+                isOpen={isAllOpen}
+                onClose={() => setIsAllOpen(false)}
+                categories={categories}
+            />
+        </div>
+    );
+};
+
 let globalCollectionsCache = null;
 
 const CollectionBar = ({ 
@@ -203,7 +340,6 @@ const CollectionBar = ({
         return true;
     });
     const [editingCollection, setEditingCollection] = useState(null);
-    const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
 
     const fetchCollections = async () => {
         try {
@@ -228,61 +364,13 @@ const CollectionBar = ({
         fetchCollections();
     }, [refreshTrigger, readOnly]);
 
-    const { mainCategories, popularChildren, popularTitle, exploreTitle } = React.useMemo(() => {
-        // Get all parents sorted by creation or just their order in the array
+    const parentsWithChildren = React.useMemo(() => {
         const parents = collections.filter(c => c.is_parent);
-        
-        // Assume first parent is "Popular", second is "Explore"
-        const popularParent = parents[0];
-        const exploreParent = parents[1];
-
-        const popularItems = collections.filter(c => c.parent_id === popularParent?.id);
-        const exploreItems = collections.filter(c => c.parent_id === exploreParent?.id);
-        
-        return { 
-            mainCategories: exploreItems, 
-            popularChildren: popularItems,
-            popularTitle: popularParent ? popularParent.name : 'Popular Collections',
-            exploreTitle: exploreParent ? exploreParent.name : 'Explore Categories'
-        };
+        return parents.map(parent => ({
+            parent,
+            children: collections.filter(c => c.parent_id === parent.id)
+        }));
     }, [collections]);
-
-    const categoriesScrollRef = useRef(null);
-    const [canScrollLeftCats, setCanScrollLeftCats] = useState(false);
-    const [canScrollRightCats, setCanScrollRightCats] = useState(false);
-
-    const checkCategoriesScroll = () => {
-        if (categoriesScrollRef.current) {
-            const { scrollLeft, scrollWidth, clientWidth } = categoriesScrollRef.current;
-            setCanScrollLeftCats(scrollLeft > 1);
-            setCanScrollRightCats(scrollLeft + clientWidth < scrollWidth - 1);
-        }
-    };
-
-    useEffect(() => {
-        checkCategoriesScroll();
-        const currentRef = categoriesScrollRef.current;
-        if (currentRef) {
-            currentRef.addEventListener('scroll', checkCategoriesScroll);
-            window.addEventListener('resize', checkCategoriesScroll);
-            // Also check after categories might have rendered
-            setTimeout(checkCategoriesScroll, 100);
-            return () => {
-                currentRef.removeEventListener('scroll', checkCategoriesScroll);
-                window.removeEventListener('resize', checkCategoriesScroll);
-            };
-        }
-    }, [mainCategories]);
-
-    const scrollCategories = (direction) => {
-        if (categoriesScrollRef.current) {
-            const scrollAmount = window.innerWidth < 768 ? 300 : 500;
-            categoriesScrollRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
 
     return (
         <div className="collection-section py-4 mb-8 -mx-6 md:mx-0">
@@ -316,114 +404,35 @@ const CollectionBar = ({
                 </div>
             ) : (
                 <>
-                    {/* 1. Popular Collections Section (Standalone children) */}
-                    <CollectionGroup
-                        title={popularTitle}
-                        groupCollections={popularChildren}
-                        selectedId={selectedId}
-                        onSelectCollection={onSelectCollection}
-                        setEditingCollection={setEditingCollection}
-                        readOnly={readOnly}
-                        canEdit={canEdit}
-                        initialPath={initialPath}
-                        onNavigate={navigate}
-                    />
-
-                    {/* 2. Main Categories Section (Icons scroll) */}
-                    {mainCategories.length > 0 && (
-                        <div className={`${readOnly ? 'mb-0' : 'mb-8'}`}>
-                            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
-                                <div className="flex items-center gap-2">
-                                    <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
-                                        {exploreTitle}
-                                    </h2>
-                                    <button 
-                                        onClick={() => setIsAllCategoriesOpen(true)}
-                                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
-                                    </button>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <button 
-                                        onClick={() => setIsAllCategoriesOpen(true)}
-                                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
-                                    </button>
-
-                                    {/* Scroll Buttons */}
-                                    <div className="hidden md:flex items-center gap-3">
-                                        <button
-                                            onClick={() => scrollCategories('left')}
-                                            disabled={!canScrollLeftCats}
-                                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeftCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
-                                        >
-                                            <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
-                                        </button>
-                                        <button
-                                            onClick={() => scrollCategories('right')}
-                                            disabled={!canScrollRightCats}
-                                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRightCats ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
-                                        >
-                                            <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div 
-                                ref={categoriesScrollRef}
-                                className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide px-6 md:px-1 scroll-smooth"
-                            >
-                                {mainCategories.slice(0, 10).map((category) => {
-                                    // Dynamic icon resolver
-                                    const Icon = MdIcons[category.icon] || 
-                                                 FaIcons[category.icon] || 
-                                                 HiIcons[category.icon] || 
-                                                 BsIcons[category.icon] || 
-                                                 FolderIcon;
-                                                 
-                                    return (
-                                        <div 
-                                            key={category.id}
-                                            onClick={() => navigate(`/collections/${category.id}`, { state: { loadingType: 'icon' } })}
-                                            className="flex-shrink-0 group cursor-pointer"
-                                        >
-                                            <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-md border border-[#222222]/10 dark:border-white/5 flex flex-row items-center gap-3 transition-all duration-300 hover:bg-gray-50/80 dark:hover:bg-white/5 group-active:scale-95">
-                                                <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
-                                                    <Icon className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-[14px] font-medium text-[#222222] dark:text-white whitespace-nowrap">
-                                                    {category.name}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-
-                                {mainCategories.length > 10 && (
-                                    <div 
-                                        onClick={() => setIsAllCategoriesOpen(true)}
-                                        className="flex-shrink-0 group cursor-pointer"
-                                    >
-                                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-none">
-                                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
-                                                <FiGrid className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-[14px] font-semibold text-white dark:text-gray-900 whitespace-nowrap">
-                                                See all
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                    {parentsWithChildren.map(({ parent, children }) => {
+                        if (parent.type === 'icon') {
+                            return (
+                                <IconCategoryGroup
+                                    key={parent.id}
+                                    title={parent.name}
+                                    categories={children}
+                                    onNavigate={navigate}
+                                />
+                            );
+                        } else {
+                            return (
+                                <CollectionGroup
+                                    key={parent.id}
+                                    title={parent.name}
+                                    groupCollections={children}
+                                    selectedId={selectedId}
+                                    onSelectCollection={onSelectCollection}
+                                    setEditingCollection={setEditingCollection}
+                                    readOnly={readOnly}
+                                    canEdit={canEdit}
+                                    initialPath={initialPath}
+                                    onNavigate={navigate}
+                                />
+                            );
+                        }
+                    })}
                 </>
             )}
-
 
             <EditCollectionModal 
                 isOpen={!!editingCollection}
@@ -435,12 +444,6 @@ const CollectionBar = ({
                     }
                 }}
                 collection={editingCollection}
-            />
-
-            <AllCategoriesModal 
-                isOpen={isAllCategoriesOpen}
-                onClose={() => setIsAllCategoriesOpen(false)}
-                categories={mainCategories}
             />
         </div>
     );
