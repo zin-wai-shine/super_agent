@@ -160,7 +160,7 @@ const CollectionDetailPage = () => {
                                 title={collection?.name} 
                                 cardLink="#" 
                                 onImageClick={openGallery}
-                                showArrows={true}
+                                showArrows={false}
                                 showDots={true}
                                 className="w-full h-full"
                             />
