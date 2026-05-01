@@ -437,7 +437,7 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
 
     if (!galleryOpen || !heroImages?.length) return null;
 
-    const currentUrl = heroImages[currentIdx]?.url ?? heroImages[0]?.url;
+    const currentUrl = heroImages[currentIdx] ?? heroImages[0];
 
     return (
         <div className="fixed inset-0 z-[10000] flex flex-col overflow-hidden" style={{ background: '#000' }}>
@@ -449,7 +449,7 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
                 <img
                     key={currentIdx}
-                    src={getMediaUrl(currentUrl)}
+                    src={currentUrl}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
                     style={{ filter: 'blur(28px) brightness(0.35) saturate(1.2)', transform: 'scale(1.1)' }}
@@ -488,7 +488,7 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
                         {heroImages.map((img, i) => (
                             <div key={i} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4">
                                 <img
-                                    src={getMediaUrl(img.url)}
+                                    src={img}
                                     alt=""
                                     className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-2xl pointer-events-none rounded-2xl md:rounded-[23px]"
                                     draggable={false}
