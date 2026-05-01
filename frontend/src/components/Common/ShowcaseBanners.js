@@ -41,7 +41,7 @@ const ShowcaseBanners = ({ agentId }) => {
     const allBanners = [...agentBanners, ...companyBanners];
 
     if (isLoading) return (
-        <div className="bg-white rounded-[3px] border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
             <div className="h-52 bg-gray-200 relative">
                 <div className="absolute bottom-4 left-4 space-y-2">
                     <div className="h-3 w-16 bg-gray-300 rounded" />
@@ -53,7 +53,7 @@ const ShowcaseBanners = ({ agentId }) => {
 
     if (allBanners.length === 0) return (
         // Default Placeholder if empty
-        <div className="h-52 rounded-[3px] bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
+        <div className="h-52 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex flex-col items-center justify-center p-6 text-center">
             <SparklesIcon className="w-8 h-8 text-gray-300 mb-2" />
             <p className="text-[10px] text-gray-400">Agent Showcase</p>
         </div>
@@ -95,7 +95,7 @@ const ShowcaseBanners = ({ agentId }) => {
     };
 
     return (
-        <div className="w-full relative overflow-hidden rounded-[3px] group/slider shadow-sm border border-gray-100">
+        <div className="w-full relative overflow-hidden rounded-xl group/slider shadow-sm border border-gray-100">
             <BannerCarousel banners={allBanners} renderBanner={renderBanner} />
         </div>
     );

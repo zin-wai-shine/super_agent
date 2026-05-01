@@ -70,6 +70,32 @@ func (ac *AgentController) GetListings(c *gin.Context) {
 		return
 	}
 
+	// For each listing with a facility_name, inject the facility's first image if listing has no own images
+	for i := range listings {
+		if listings[i].FacilityName == "" {
+			continue
+		}
+		hasOwnImages := false
+		for _, m := range listings[i].Media {
+			if m.Type == "image" && m.Caption == "" {
+				hasOwnImages = true
+				break
+			}
+		}
+		if !hasOwnImages {
+			var facilityMedia []models.FacilityMedia
+			ac.db.Where("agent_id = ? AND name = ?", agentID, listings[i].FacilityName).Order("sort_order ASC").Limit(1).Find(&facilityMedia)
+			for _, fm := range facilityMedia {
+				listings[i].Media = append(listings[i].Media, models.Media{
+					URL:      fm.URL,
+					Type:     "image",
+					RoomType: "Additional Photos",
+					Caption:  "(Facility: " + listings[i].FacilityName + ")",
+				})
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, listings)
 }
 
@@ -114,6 +140,28 @@ func (ac *AgentController) GetListing(c *gin.Context) {
 	if err := ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
 		return
+	}
+
+	if listing.FacilityName != "" {
+		var facilityMedia []models.FacilityMedia
+		ac.db.Where("agent_id = ? AND name = ?", agentID, listing.FacilityName).Order("sort_order ASC").Find(&facilityMedia)
+		
+		// Prevent duplicates
+		existingUrls := make(map[string]bool)
+		for _, m := range listing.Media {
+			existingUrls[m.URL] = true
+		}
+
+		for _, fm := range facilityMedia {
+			if !existingUrls[fm.URL] {
+				listing.Media = append(listing.Media, models.Media{
+					URL:      fm.URL,
+					Type:     "image",
+					RoomType: "Additional Photos",
+					Caption:  "(Facility: " + listing.FacilityName + ")",
+				})
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, listing)

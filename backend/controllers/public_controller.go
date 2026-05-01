@@ -204,6 +204,42 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		return
 	}
 
+	// For each listing with a facility_name, inject the facility's first image if listing has no own images
+	for i := range listings {
+		if listings[i].FacilityName == "" {
+			continue
+		}
+		// Only inject if listing has no locally uploaded images
+		hasOwnImages := false
+		for _, m := range listings[i].Media {
+			if m.Type == "image" && m.Caption == "" {
+				hasOwnImages = true
+				break
+			}
+		}
+		if !hasOwnImages {
+			var facilityMedia []models.FacilityMedia
+			pc.db.Where("agent_id = ? AND name = ?", listings[i].AgentID, listings[i].FacilityName).Order("sort_order ASC").Limit(1).Find(&facilityMedia)
+			
+			// Use a map for fast lookup of existing URLs
+			existingUrls := make(map[string]bool)
+			for _, m := range listings[i].Media {
+				existingUrls[m.URL] = true
+			}
+
+			for _, fm := range facilityMedia {
+				if !existingUrls[fm.URL] {
+					listings[i].Media = append(listings[i].Media, models.Media{
+						URL:      fm.URL,
+						Type:     "image",
+						RoomType: "Additional Photos",
+						Caption:  "(Facility: " + listings[i].FacilityName + ")",
+					})
+				}
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"listings": listings,
 		"total":    total,
@@ -340,6 +376,28 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 	if err := query.First(&listing).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
 		return
+	}
+
+	if listing.FacilityName != "" {
+		var facilityMedia []models.FacilityMedia
+		pc.db.Where("agent_id = ? AND name = ?", listing.AgentID, listing.FacilityName).Order("sort_order ASC").Find(&facilityMedia)
+		
+		// Prevent duplicates
+		existingUrls := make(map[string]bool)
+		for _, m := range listing.Media {
+			existingUrls[m.URL] = true
+		}
+
+		for _, fm := range facilityMedia {
+			if !existingUrls[fm.URL] {
+				listing.Media = append(listing.Media, models.Media{
+					URL:      fm.URL,
+					Type:     "image",
+					RoomType: "Additional Photos",
+					Caption:  "(Facility: " + listing.FacilityName + ")",
+				})
+			}
+		}
 	}
 
 	// Increment view count if unique

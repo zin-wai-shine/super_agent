@@ -193,7 +193,7 @@ const MyBookings = () => {
                 </div>
 
                 {user?.late_cancellation_count >= 3 && !initialLoading && (
-                    <div className="mx-0 lg:mx-0 bg-red-50 border-l-4 border-red-500 p-6 rounded-[3px] mb-10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="mx-0 lg:mx-0 bg-red-50 border-l-4 border-red-500 p-6 rounded-xl mb-10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
                             <div className="shrink-0 bg-red-100 p-2 rounded-full">
                                 <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
@@ -210,7 +210,7 @@ const MyBookings = () => {
                 )}
 
                 {error && (
-                    <div className="mx-0 bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-[3px] mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
+                    <div className="mx-0 bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-xl mb-10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
                         <XCircleIcon className="w-6 h-6 shrink-0" />
                         <span className="font-bold">{error}</span>
                     </div>

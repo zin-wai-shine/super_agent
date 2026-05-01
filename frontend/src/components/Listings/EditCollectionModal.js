@@ -4,27 +4,13 @@ import { collectionApi, uploadApi, agentApi } from '../../services/api';
 import { 
     XMarkIcon, 
     PhotoIcon, 
-    CloudArrowUpIcon
+    CloudArrowUpIcon,
+    SparklesIcon
 } from '@heroicons/react/24/outline';
-import {
-    DndContext, 
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    rectSortingStrategy,
-} from '@dnd-kit/sortable';
 import toast from 'react-hot-toast';
 import { getMediaUrl } from '../../utils/media';
 import StyledSelect from '../Form/StyledSelect';
 import IconPicker from './IconPicker';
-import SortableImage from './SortableImage';
 
 const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
     const [name, setName] = useState('');
@@ -32,12 +18,13 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
     const [parentId, setParentId] = useState('');
     const [collectionType, setCollectionType] = useState('image'); // 'image' or 'icon'
     const [availableParents, setAvailableParents] = useState([]);
-    const [images, setImages] = useState([]); // Array of { id, url, file, preview, isNew }
     const [availableListings, setAvailableListings] = useState([]);
     const [selectedListings, setSelectedListings] = useState([]);
     const [originalSelectedListings, setOriginalSelectedListings] = useState([]);
     const [loading, setLoading] = useState(false);
-    const fileInputRef = useRef(null);
+    const [facilityGroups, setFacilityGroups] = useState([]);
+    const [allFacilityMedia, setAllFacilityMedia] = useState([]);
+    const [facilityName, setFacilityName] = useState(null);
     const isParentType = !collection?.parent_id;
 
     useEffect(() => {
@@ -46,14 +33,10 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
             setIcon(collection.icon || 'BsFolder');
             setParentId(collection.parent_id || '');
             setCollectionType(collection.type || 'image');
-            setImages(collection.media?.map(m => ({
-                id: String(m.id),
-                url: m.url,
-                preview: getMediaUrl(m.url),
-                isNew: false
-            })) || []);
+            setFacilityName(collection.facility_name ? { value: collection.facility_name, label: collection.facility_name } : null);
             if (!isParentType) {
                 fetchAvailableParents();
+                fetchFacilityGroups();
                 if (collection.id && collection.id !== 'virtual-popular') {
                     fetchListingsData();
                 }
@@ -96,49 +79,6 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
         fetchCollectionBindings();
     };
 
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files);
-        const newImages = files.map(file => ({
-            id: `new-${Date.now()}-${Math.random()}`,
-            file,
-            preview: URL.createObjectURL(file),
-            isNew: true
-        }));
-        setImages(prev => [...prev, ...newImages]);
-    };
-
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
-
-    const handleDragEnd = (event) => {
-        const { active, over } = event;
-
-        if (active.id !== over?.id) {
-            setImages((items) => {
-                const oldIndex = items.findIndex((i) => i.id === active.id);
-                const newIndex = items.findIndex((i) => i.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
-    };
-
-    const removeImage = (id) => {
-        setImages(prev => {
-            const img = prev.find(i => i.id === id);
-            if (img?.preview && img.isNew) {
-                URL.revokeObjectURL(img.preview);
-            }
-            return prev.filter(i => i.id !== id);
-        });
-    };
 
     // Auto-sync child type with parent type
     useEffect(() => {
@@ -161,6 +101,25 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
         }
     };
 
+    const fetchFacilityGroups = async () => {
+        try {
+            const response = await agentApi.getFacilityMedia();
+            const media = response.data || [];
+            setAllFacilityMedia(media);
+            const groups = [...new Set(media.map(m => m.name))].filter(Boolean);
+            setFacilityGroups(groups.map(g => ({ value: g, label: g })));
+        } catch (error) {
+            console.error('Failed to fetch facility groups:', error);
+        }
+    };
+
+    const handleLinkFacility = (val) => {
+        setFacilityName(val);
+        if (val) {
+            toast.success(`Facility collection set to ${val.value}`);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name.trim()) {
@@ -179,32 +138,15 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                 return;
             }
 
-            // 1. Upload new images and preserve order
-            const finalMedia = [];
-            for (const img of images) {
-                if (img.isNew) {
-                    const res = await uploadApi.uploadCollectionImage(collection.id, img.file);
-                    finalMedia.push({
-                        url: res.data.url,
-                        type: 'image'
-                    });
-                } else {
-                    finalMedia.push({
-                        id: Number(img.id),
-                        url: img.url,
-                        type: 'image'
-                    });
-                }
-            }
-
-            // 2. Update collection
+            // Update collection
             await collectionApi.updateCollection(collection.id, {
                 name,
                 type: isParentType ? collectionType : (availableParents.find(p => p.value === parentId)?.type || 'image'),
                 is_parent: isParentType,
                 icon: !isParentType && (availableParents.find(p => p.value === parentId)?.type === 'icon') ? icon : '',
                 parent_id: isParentType ? null : (parentId || null),
-                media: finalMedia
+                facility_name: facilityName?.value || facilityName || '',
+                media: []
             });
 
             // 3. Update bindings if not a parent collection
@@ -234,7 +176,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
 
     const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
-            <div className={`bg-white dark:bg-dashboard-card w-full rounded-[3px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-200 dark:border-gray-800 transition-all ${isParentType ? 'max-w-md' : 'max-w-5xl'}`}>
+            <div className={`bg-white dark:bg-dashboard-card w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-200 dark:border-gray-800 transition-all ${isParentType ? 'max-w-md' : 'max-w-5xl'}`}>
                 
                 {/* Header Section */}
                 <div className="flex-none flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
@@ -272,7 +214,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         placeholder={isParentType ? "e.g. Popular Collections" : "e.g. Luxury Condos"}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full px-4 py-2 bg-white dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-[3px] focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-[13px] transition-all text-gray-900 dark:text-white"
+                                        className="w-full px-4 py-2 bg-white dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-[13px] transition-all text-gray-900 dark:text-white"
                                         required
                                     />
                                 </div>
@@ -301,7 +243,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         <button
                                             type="button"
                                             onClick={() => isParentType && setCollectionType('image')}
-                                            className={`p-3 rounded-[3px] border transition-all flex flex-col items-center gap-2 ${collectionType === 'image' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
+                                            className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${collectionType === 'image' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
                                         >
                                             <PhotoIcon className={`w-5 h-5 ${collectionType === 'image' ? 'text-primary-600' : 'text-gray-400'}`} />
                                             <span className={`text-[10px] font-bold uppercase tracking-tight ${collectionType === 'image' ? 'text-primary-700' : 'text-gray-500'}`}>Image Based</span>
@@ -309,7 +251,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         <button
                                             type="button"
                                             onClick={() => isParentType && setCollectionType('icon')}
-                                            className={`p-3 rounded-[3px] border transition-all flex flex-col items-center gap-2 ${collectionType === 'icon' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
+                                            className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${collectionType === 'icon' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
                                         >
                                             <CloudArrowUpIcon className={`w-5 h-5 ${collectionType === 'icon' ? 'text-primary-600' : 'text-gray-400'}`} />
                                             <span className={`text-[10px] font-bold uppercase tracking-tight ${collectionType === 'icon' ? 'text-primary-700' : 'text-gray-500'}`}>Icon Based</span>
@@ -317,61 +259,56 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                     </div>
                                 </div>
 
-                                {!isParentType && (collectionType === 'image') && (
-                                    <div className="space-y-2">
-                                        <label className="text-[13px] font-bold text-gray-500 uppercase tracking-wider">Media Assets</label>
-                                        <div 
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[3px] p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/10 transition-all group"
-                                        >
-                                            <CloudArrowUpIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 mb-2 transition-colors" />
-                                            <p className="text-sm font-bold text-gray-900 dark:text-white">Click to Upload</p>
-                                            <p className="text-[10px] text-gray-500 mt-1">PNG, JPG, WebP supported</p>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                                className="hidden"
-                                            />
+                                {!isParentType && collectionType === 'image' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Media Assets</label>
+                                            <div className="w-64">
+                                                <StyledSelect
+                                                    options={facilityGroups}
+                                                    value={facilityName}
+                                                    onChange={(val) => handleLinkFacility(val)}
+                                                    placeholder="Add Facility..."
+                                                    isClearable
+                                                    isSearchable={true}
+                                                />
+                                            </div>
                                         </div>
-
-                                        {images.length > 0 && (
-                                            <DndContext 
-                                                sensors={sensors}
-                                                collisionDetection={closestCenter}
-                                                onDragEnd={handleDragEnd}
-                                            >
-                                                <div className="mt-6 space-y-3">
-                                                    <label className="text-[10px] font-bold text-primary-600 uppercase tracking-widest block px-1">
-                                                        Images ({images.length}) - Drag to Sort
-                                                    </label>
-                                                    <SortableContext 
-                                                        items={images.map(img => img.id)}
-                                                        strategy={rectSortingStrategy}
-                                                    >
-                                                        <div className="grid grid-cols-4 gap-3">
-                                                            {images.map((img) => (
-                                                                <SortableImage 
-                                                                    key={img.id} 
-                                                                    id={img.id} 
-                                                                    img={img} 
-                                                                    onRemove={() => removeImage(img.id)} 
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </SortableContext>
+                                        
+                                        {/* Facility Images Preview */}
+                                        {facilityName && (
+                                            <div className="bg-primary-50/30 dark:bg-primary-500/5 p-3 rounded-xl border border-primary-100 dark:border-primary-500/10">
+                                                <p className="text-[9px] font-bold text-primary-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                    <SparklesIcon className="w-3 h-3" />
+                                                    Shared Collection: {facilityName?.value || facilityName} (Display Only)
+                                                </p>
+                                                <div className="grid grid-cols-4 gap-3">
+                                                    {allFacilityMedia
+                                                        .filter(m => m.name === (facilityName?.value || facilityName))
+                                                        .map((item) => (
+                                                            <div
+                                                                key={`fac-preview-${item.id}`}
+                                                                className="relative aspect-video rounded-[2px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 opacity-80"
+                                                            >
+                                                                <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
+                                                                <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded-[1px] text-[8px] text-white font-bold uppercase tracking-wider">
+                                                                    Shared
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    }
                                                 </div>
-                                            </DndContext>
+                                            </div>
                                         )}
+
+
                                     </div>
                                 )}
 
                                 {!isParentType && (collectionType === 'icon') && (
                                     <div className="space-y-2">
                                         <label className="text-[13px] font-bold text-gray-500 uppercase tracking-wider">Visual Icon</label>
-                                        <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-[3px] border border-gray-100 dark:border-gray-800">
+                                        <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800">
                                             <IconPicker selectedIcon={icon} onSelect={setIcon} />
                                         </div>
                                     </div>
@@ -382,12 +319,12 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                             {!isParentType && (
                                 <div className="space-y-4">
                                     <label className="text-[13px] font-bold text-gray-500 uppercase tracking-wider block px-1">Preview Selection ({selectedListings.length})</label>
-                                    <div className="bg-gray-50 dark:bg-white/5 rounded-[3px] p-4 border border-gray-100 dark:border-gray-800 min-h-[350px]">
+                                    <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-gray-800 min-h-[350px]">
                                         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
                                             {selectedListings.map(item => {
                                                 const l = item.listing;
                                                 return (
-                                                    <div key={item.value} className="flex items-center gap-3 p-2 rounded-[3px] bg-white dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                    <div key={item.value} className="flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 shadow-sm">
                                                         <div className="w-12 h-12 rounded-[2px] overflow-hidden flex-shrink-0 bg-gray-100">
                                                             {l?.media?.[0]?.url ? (
                                                                 <img src={getMediaUrl(l.media[0].url)} alt="preview" className="w-full h-full object-cover" />
@@ -432,14 +369,14 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-[3px] font-bold text-[12px] hover:bg-gray-50 transition-colors"
+                            className="px-6 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-[12px] hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !name}
-                            className="px-8 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-[3px] font-bold text-[12px] transition-colors shadow-sm"
+                            className="px-8 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-xl font-bold text-[12px] transition-colors shadow-sm"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-2">

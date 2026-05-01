@@ -585,3 +585,90 @@ func (uc *UploadController) UploadFacilityImage(c *gin.Context) {
 	c.JSON(http.StatusCreated, media)
 }
 
+// LinkFacilityMediaRequest is the body for POST /upload/link-facility
+type LinkFacilityMediaRequest struct {
+	TargetType   string `json:"target_type"` // "listing" or "collection"
+	TargetID     string `json:"target_id"`
+	FacilityName string `json:"facility_name"`
+	RoomType     string `json:"room_type"` // for listings
+}
+
+// LinkFacilityMedia copies references from FacilityMedia to Listing/Collection
+func (uc *UploadController) LinkFacilityMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var req LinkFacilityMediaRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// 1. Get facility media items
+	var facilityMedia []models.FacilityMedia
+	if err := uc.db.Where("agent_id = ? AND name = ?", agentID, req.FacilityName).Order("sort_order asc").Find(&facilityMedia).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch facility media"})
+		return
+	}
+
+	if len(facilityMedia) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No facility media found for this name"})
+		return
+	}
+
+	targetUUID, err := uuid.Parse(req.TargetID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid target ID"})
+		return
+	}
+
+	if req.TargetType == "listing" {
+		// Verify listing ownership
+		var listing models.Listing
+		if err := uc.db.Where("id = ? AND agent_id = ?", targetUUID, agentID).First(&listing).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
+			return
+		}
+
+		// Create media records
+		for _, fm := range facilityMedia {
+			media := models.Media{
+				ListingID: targetUUID,
+				Type:      "image",
+				URL:       fm.URL,
+				Caption:   fm.Name,
+				RoomType:  req.RoomType,
+			}
+			if req.RoomType == "" {
+				media.RoomType = models.RoomTypeAdditionalPhotos
+			}
+			uc.db.Create(&media)
+		}
+	} else if req.TargetType == "collection" {
+		// Verify collection ownership
+		var collection models.Collection
+		if err := uc.db.Where("id = ? AND agent_id = ?", targetUUID, agentID).First(&collection).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Collection not found"})
+			return
+		}
+
+		// Create media records
+		for _, fm := range facilityMedia {
+			media := models.CollectionMedia{
+				CollectionID: targetUUID,
+				Type:         "image",
+				URL:          fm.URL,
+			}
+			uc.db.Create(&media)
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid target type"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Facility images linked successfully", "count": len(facilityMedia)})
+}
+

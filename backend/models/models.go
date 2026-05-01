@@ -216,6 +216,7 @@ type Listing struct {
 	IsFeatured           bool           `gorm:"default:false" json:"is_featured"`
 	AllowViewingRequests bool           `gorm:"default:true" json:"allow_viewing_requests"`
 	ViewCount            int            `gorm:"default:0" json:"view_count"`
+	FacilityName         string         `gorm:"size:255" json:"facility_name,omitempty"`
 	Media              []Media        `gorm:"foreignKey:ListingID" json:"media,omitempty"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
@@ -354,6 +355,7 @@ type Collection struct {
 	Type           string            `gorm:"size:20;default:'image'" json:"type"` // "image" or "icon"
 	IsParent       bool              `gorm:"default:false" json:"is_parent"`
 	Icon           string            `gorm:"size:100" json:"icon,omitempty"`
+	FacilityName   string            `gorm:"size:255" json:"facility_name,omitempty"`
 	CreatedBy      uuid.UUID         `gorm:"type:uuid;not null" json:"created_by"`
 	Media          []CollectionMedia `gorm:"foreignKey:CollectionID" json:"media,omitempty"`
 	Listings       []Listing         `gorm:"many2many:collection_listings;" json:"listings,omitempty"`

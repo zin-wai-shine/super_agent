@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { publicApi, collectionApi } from '../../services/api';
 import ListingCard, { ListingImageSlider } from '../../components/Listings/ListingCard';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
-import { ArrowLeftIcon, Square2StackIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, Square2StackIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { FiHome, FiImage } from "react-icons/fi";
 import { getMediaUrl } from '../../utils/media';
 
@@ -44,6 +44,15 @@ const CollectionDetailPage = () => {
     }, [id]);
 
     useEffect(() => {
+        if (galleryOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [galleryOpen]);
+
+    useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
                 if (entries[0].isIntersecting && !loading && visibleCount < listings.length) {
@@ -78,13 +87,14 @@ const CollectionDetailPage = () => {
     };
 
     const heroImages = React.useMemo(() => {
+        let urls = [];
         if (collection?.media && collection.media.length > 0) {
-            return collection.media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
+            urls = collection.media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
+        } else if (collection?.image) {
+            urls = [getMediaUrl(collection.image)];
         }
-        if (collection?.image) {
-            return [getMediaUrl(collection.image)];
-        }
-        return [];
+        // Deduplicate
+        return [...new Set(urls)];
     }, [collection]);
 
     const openGallery = (index = 0) => {
@@ -97,7 +107,11 @@ const CollectionDetailPage = () => {
     if (initialLoading) return <CollectionDetailSkeleton isIconType={loadingType === 'icon'} />;
 
     return (
-        <div className="bg-white dark:bg-dashboard-dark min-h-screen pb-20">
+        <div className="bg-white dark:bg-dashboard-dark min-h-screen pb-20 no-scrollbar">
+            <style dangerouslySetInnerHTML={{ __html: `
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            ` }} />
             {isIconType ? (
                 /* --- ICON TYPE --- */
                 <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
@@ -137,6 +151,7 @@ const CollectionDetailPage = () => {
                     {/* Hero Section */}
                     <div 
                         className="fixed top-0 left-0 right-0 w-full h-[65vh] lg:h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0 cursor-pointer"
+                        style={{ overflowX: 'hidden' }}
                         onClick={() => openGallery(0)}
                     >
                         {heroImages.length > 0 ? (
@@ -342,34 +357,171 @@ const ListingsGrid = ({ listings, visibleCount, navigate, observerTarget }) => {
 };
 
 const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, galleryIndex }) => {
-    if (!galleryOpen) return null;
+    const [currentIdx, setCurrentIdx] = useState(galleryIndex ?? 0);
+    const scrollRef = useRef(null);
+    const isScrolling = useRef(false);
+    const total = heroImages?.length ?? 0;
+
+    // Sync initial index when opened
+    useEffect(() => {
+        if (galleryOpen) setCurrentIdx(galleryIndex ?? 0);
+    }, [galleryOpen, galleryIndex]);
+
+    // Scroll to current index without animation on open
+    useEffect(() => {
+        if (galleryOpen && scrollRef.current && total > 0) {
+            const timeout = setTimeout(() => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollTo({ left: (galleryIndex ?? 0) * scrollRef.current.offsetWidth, behavior: 'auto' });
+                }
+            }, 50);
+            return () => clearTimeout(timeout);
+        }
+    }, [galleryOpen]);
+
+    const scrollTo = useCallback((idx, smooth = true) => {
+        if (!scrollRef.current) return;
+        isScrolling.current = true;
+        scrollRef.current.scrollTo({ left: idx * scrollRef.current.offsetWidth, behavior: smooth ? 'smooth' : 'auto' });
+        setCurrentIdx(idx);
+        setTimeout(() => { isScrolling.current = false; }, 500);
+    }, []);
+
+    const goPrev = useCallback(() => {
+        if (currentIdx <= 0) return;
+        scrollTo(currentIdx - 1);
+    }, [currentIdx, scrollTo]);
+
+    const goNext = useCallback(() => {
+        if (currentIdx >= total - 1) return;
+        scrollTo(currentIdx + 1);
+    }, [currentIdx, total, scrollTo]);
+
+    const handleScroll = () => {
+        if (!scrollRef.current || isScrolling.current) return;
+        const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
+        if (idx !== currentIdx && idx >= 0 && idx < total) setCurrentIdx(idx);
+    };
+
+    // Keyboard navigation
+    useEffect(() => {
+        if (!galleryOpen || total <= 1) return;
+        const onKey = (e) => {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+            else if (e.key === 'Escape') setGalleryOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [galleryOpen, goPrev, goNext, total, setGalleryOpen]);
+
+    const handleShare = async () => {
+        if (navigator.share) {
+            try { await navigator.share({ url: window.location.href }); } catch (e) {}
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(window.location.href);
+        }
+    };
+
+    if (!galleryOpen || !heroImages?.length) return null;
+
+    const currentUrl = heroImages[currentIdx]?.url ?? heroImages[0]?.url;
+
     return (
-        <div className="fixed inset-0 z-[10000] bg-black flex flex-col animate-fadeIn overflow-hidden">
-            <div className="absolute top-6 left-6 z-[10001] flex items-center gap-4">
-                <button 
-                    onClick={() => setGalleryOpen(false)} 
-                    className="w-12 h-12 flex items-center justify-center text-white bg-black/40 backdrop-blur-md rounded-full hover:bg-black/60 transition-all border border-white/10 active:scale-90"
-                >
-                    <ArrowLeftIcon className="w-6 h-6" />
-                </button>
-                <h2 className="text-white font-bold text-[17px] drop-shadow-md">
-                    {collection?.name}
-                </h2>
+        <div className="fixed inset-0 z-[10000] flex flex-col overflow-hidden" style={{ background: '#000' }}>
+            <style dangerouslySetInnerHTML={{ __html: `
+                .gallery-no-scroll::-webkit-scrollbar { display: none; }
+                .gallery-no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+            ` }} />
+            {/* Blurred background from current image */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+                <img
+                    key={currentIdx}
+                    src={getMediaUrl(currentUrl)}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                    style={{ filter: 'blur(28px) brightness(0.35) saturate(1.2)', transform: 'scale(1.1)' }}
+                    draggable={false}
+                />
+                <div className="absolute inset-0 bg-black/50" />
             </div>
 
-            <div className="absolute inset-0 z-0 flex items-center justify-center bg-black">
-                <div className="w-full h-full">
-                    <ListingImageSlider 
-                        images={heroImages} 
-                        title={collection?.name} 
-                        cardLink="#" 
-                        initialIndex={galleryIndex}
-                        isGalleryMode={true}
-                        showArrows={true}
-                        showDots={true}
-                    />
+            {/* Header — no border, transparent */}
+            <header className="relative flex-none z-10">
+                <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-20">
+                    <button
+                        onClick={() => setGalleryOpen(false)}
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
+                    >
+                        <ArrowLeftIcon className="w-6 h-6 md:w-5 md:h-5 text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform" />
+                    </button>
+
+                    <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-white truncate max-w-[50vw] pointer-events-none">
+                        {collection?.name}
+                    </span>
+
+                    <div className="w-10" />
+                </div>
+            </header>
+
+            {/* Image area */}
+            <div className="relative flex-1 min-h-0 flex items-center justify-center z-10">
+                <div className="w-full h-full relative overflow-hidden">
+                    <div
+                        ref={scrollRef}
+                        onScroll={handleScroll}
+                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none gallery-no-scroll"
+                        style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {heroImages.map((img, i) => (
+                            <div key={i} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4">
+                                <img
+                                    src={getMediaUrl(img.url)}
+                                    alt=""
+                                    className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-2xl pointer-events-none rounded-2xl md:rounded-[23px]"
+                                    draggable={false}
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {total > 1 && (
+                        <>
+                            {currentIdx > 0 && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                                    className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                >
+                                    <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" strokeWidth={2} />
+                                </button>
+                            )}
+                            {currentIdx < total - 1 && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); goNext(); }}
+                                    className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                >
+                                    <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Dots */}
+            {total > 1 && (
+                <div className="flex-none min-h-[72px] pt-2 pb-4 flex flex-col justify-center items-center z-10">
+                    <div className="flex items-center justify-center gap-2 mb-4 px-4 overflow-x-auto max-w-full" style={{ scrollbarWidth: 'none' }}>
+                        {Array.from({ length: total }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => scrollTo(i)}
+                                className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/40'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

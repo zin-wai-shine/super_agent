@@ -211,7 +211,7 @@ const AgentSettings = () => {
                                 <button
                                     type="button"
                                     onClick={addSocialLink}
-                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 rounded-xl transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -276,7 +276,7 @@ const AgentSettings = () => {
                                     <label htmlFor="min_price_limit" className="input-label">
                                         Minimum Price Limit
                                     </label>
-                                    <div className="relative mt-1 rounded-md shadow-sm">
+                                    <div className="relative mt-1 rounded-xl shadow-sm">
                                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                             <span className="text-gray-500 sm:text-sm">$</span>
                                         </div>
@@ -295,7 +295,7 @@ const AgentSettings = () => {
                                     <label htmlFor="max_price_limit" className="input-label">
                                         Maximum Price Limit
                                     </label>
-                                    <div className="relative mt-1 rounded-md shadow-sm">
+                                    <div className="relative mt-1 rounded-xl shadow-sm">
                                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                             <span className="text-gray-500 sm:text-sm">$</span>
                                         </div>
@@ -313,9 +313,9 @@ const AgentSettings = () => {
 
                         {/* Price Format Selection */}
                         <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-                            <label className="input-label mb-3 block">Price Display Format</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 block">Price Display Format</label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-dashboard-input dark:border-gray-700">
+                                <label className={`relative flex cursor-pointer rounded-xl border p-5 shadow-sm transition-all ${priceFormat === 'full' ? 'border-orange-500 ring-1 ring-orange-500 bg-orange-50/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-dashboard-input'}`}>
                                     <input
                                         type="radio"
                                         value="full"
@@ -324,19 +324,20 @@ const AgentSettings = () => {
                                     />
                                     <span className="flex flex-1">
                                         <span className="flex flex-col">
-                                            <span className="block text-sm font-medium text-gray-900 dark:text-white">Full Price</span>
-                                            <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                            <span className={`block text-sm font-bold ${priceFormat === 'full' ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>Full Price</span>
+                                            <span className="mt-1 flex items-center text-[12px] text-gray-500 dark:text-gray-400">
                                                 e.g. 3,000 / month
                                             </span>
                                         </span>
                                     </span>
-                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : priceFormat === 'full' ? 'border-primary-600' : 'border-gray-300'}`}>
-                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${priceFormat === 'full' ? 'block' : 'hidden'}`} />
-                                    </span>
-                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${priceFormat === 'full' ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                    <div className="flex items-center">
+                                        <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${priceFormat === 'full' ? 'border-orange-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                                            <div className={`h-2.5 w-2.5 rounded-full bg-orange-500 transition-all ${priceFormat === 'full' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`} />
+                                        </div>
+                                    </div>
                                 </label>
 
-                                <label className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none data-[checked]:border-primary-600 data-[checked]:ring-1 data-[checked]:ring-primary-600 dark:bg-dashboard-input dark:border-gray-700">
+                                <label className={`relative flex cursor-pointer rounded-xl border p-5 shadow-sm transition-all ${priceFormat === 'short' ? 'border-orange-500 ring-1 ring-orange-500 bg-orange-50/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-dashboard-input'}`}>
                                     <input
                                         type="radio"
                                         value="short"
@@ -345,16 +346,17 @@ const AgentSettings = () => {
                                     />
                                     <span className="flex flex-1">
                                         <span className="flex flex-col">
-                                            <span className="block text-sm font-medium text-gray-900 dark:text-white">Short Price</span>
-                                            <span className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                            <span className={`block text-sm font-bold ${priceFormat === 'short' ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>Short Price</span>
+                                            <span className="mt-1 flex items-center text-[12px] text-gray-500 dark:text-gray-400">
                                                 e.g. 3K / month
                                             </span>
                                         </span>
                                     </span>
-                                    <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${errors.price_format ? 'border-red-300' : priceFormat === 'short' ? 'border-primary-600' : 'border-gray-300'}`}>
-                                        <span className={`h-2.5 w-2.5 rounded-full bg-primary-600 ${priceFormat === 'short' ? 'block' : 'hidden'}`} />
-                                    </span>
-                                    <div className={`absolute -inset-px rounded-lg border-2 pointer-events-none ${priceFormat === 'short' ? 'border-primary-600' : 'border-transparent'}`} aria-hidden="true" />
+                                    <div className="flex items-center">
+                                        <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${priceFormat === 'short' ? 'border-orange-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                                            <div className={`h-2.5 w-2.5 rounded-full bg-orange-500 transition-all ${priceFormat === 'short' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`} />
+                                        </div>
+                                    </div>
                                 </label>
                             </div>
                         </div>

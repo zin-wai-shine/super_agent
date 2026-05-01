@@ -10,11 +10,18 @@ import { PHOTO_ROOM_TYPES } from '../../services/api';
 // Group images by room_type; treat empty as "Additional Photos". Order by PHOTO_ROOM_TYPES.
 function groupImagesByRoomType(images) {
     const grouped = {};
+    const seenUrls = new Set();
+    
+    // Deduplicate images by URL and group by room_type
     (images || []).forEach((img) => {
+        if (!img.url || seenUrls.has(img.url)) return;
+        seenUrls.add(img.url);
+
         const roomType = (img.room_type && img.room_type.trim()) ? img.room_type.trim() : 'Additional Photos';
         if (!grouped[roomType]) grouped[roomType] = [];
         grouped[roomType].push(img);
     });
+
     const sections = PHOTO_ROOM_TYPES.filter((t) => grouped[t]?.length).map((t) => ({ title: t, images: grouped[t] }));
     const flatImages = sections.flatMap((s) => s.images);
     return { sections, flatImages };
@@ -138,15 +145,13 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     }, []);
 
     const goPrevImage = useCallback(() => {
-        if (focusedImageIndex === null) return;
-        const prevIdx = (focusedImageIndex - 1 + flatImages.length) % flatImages.length;
-        scrollToImage(prevIdx);
-    }, [focusedImageIndex, flatImages.length, scrollToImage]);
+        if (focusedImageIndex === null || focusedImageIndex <= 0) return;
+        scrollToImage(focusedImageIndex - 1);
+    }, [focusedImageIndex, scrollToImage]);
 
     const goNextImage = useCallback(() => {
-        if (focusedImageIndex === null) return;
-        const nextIdx = (focusedImageIndex + 1) % flatImages.length;
-        scrollToImage(nextIdx);
+        if (focusedImageIndex === null || focusedImageIndex >= flatImages.length - 1) return;
+        scrollToImage(focusedImageIndex + 1);
     }, [focusedImageIndex, flatImages.length, scrollToImage]);
 
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
@@ -269,33 +274,43 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         };
 
         const focusedViewContent = (
-            <div className="h-full min-h-0 flex flex-col bg-black overflow-hidden relative">
-                {/* Header */}
-                <header className="relative flex-none border-b border-white/10 z-10 bg-black">
+            <div className="h-full min-h-0 flex flex-col overflow-hidden relative" style={{ background: '#000' }}>
+                {/* Blurred background from current image */}
+                <div
+                    className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+                    aria-hidden="true"
+                >
+                    <img
+                        key={currentIdx}
+                        src={getMediaUrl(flatImages[currentIdx]?.url)}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                        style={{ filter: 'blur(28px) brightness(0.35) saturate(1.2)', transform: 'scale(1.1)' }}
+                        draggable={false}
+                    />
+                    <div className="absolute inset-0 bg-black/50" />
+                </div>
+
+                {/* Header — no border, transparent */}
+                <header className="relative flex-none z-10">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-20">
                         <button
                             type="button"
                             onClick={() => setFocusedImageIndex(null)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all group"
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
                         >
-                            <ArrowLeftIcon className={`${isDesktop ? 'w-5 h-5' : 'w-7 h-7 md:w-6 md:h-6'} text-current stroke-[2] group-hover:-translate-x-0.5 transition-transform`} />
+                            <ArrowLeftIcon className={`${isDesktop ? 'w-5 h-5' : 'w-6 h-6 md:w-6 md:h-6'} text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform`} />
                         </button>
 
                         <span className={`absolute left-1/2 -translate-x-1/2 ${isDesktop ? 'text-base font-normal' : 'text-lg md:text-base font-semibold'} text-white truncate max-w-[50vw] pointer-events-none`}>
                             {focusedSectionTitle}
                         </span>
 
-                        <button
-                            type="button"
-                            onClick={handleShare}
-                            className="flex items-center justify-center w-10 h-10 text-white bg-transparent dark:bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200"
-                        >
-                            <ShareIcon className={`${isDesktop ? 'w-5 h-5' : 'w-7 h-7 md:w-6 md:h-6'} text-current stroke-[2]`} />
-                        </button>
+                        <div className="w-10" />
                     </div>
                 </header>
 
-                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0">
+                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0 z-10">
                     <div className="w-full h-full mx-auto relative overflow-hidden">
                         <div
                             ref={focusedScrollRef}
@@ -312,7 +327,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <img
                                         src={getMediaUrl(img.url)}
                                         alt=""
-                                        className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none"
+                                        className="max-w-full max-h-full w-auto h-auto object-contain pointer-events-none drop-shadow-2xl rounded-2xl md:rounded-[23px]"
                                         draggable={false}
                                     />
                                 </div>
@@ -320,36 +335,39 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         </div>
                         {total > 1 && (
                             <>
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
-                                    className="hidden md:flex absolute left-4 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 items-center justify-center active:scale-95 transition-all"
-                                >
-                                    <ChevronLeftIcon className="w-6 h-6" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); goNextImage(); }}
-                                    className="hidden md:flex absolute right-4 lg:right-20 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-lg border border-gray-200/80 items-center justify-center active:scale-95 transition-all"
-                                >
-                                    <ChevronRightIcon className="w-6 h-6" />
-                                </button>
+                                {currentIdx > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
+                                        className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                    >
+                                        <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" strokeWidth={2} />
+                                    </button>
+                                )}
+                                {currentIdx < total - 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); goNextImage(); }}
+                                        className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                    >
+                                        <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>
                 </div>
 
                 {total > 1 && (
-                    <div className="flex-none min-h-[72px] pt-2 pb-4 flex flex-col justify-center items-center pointer-events-none bg-black">
-                        <div className="flex items-center justify-center gap-2 mb-4 px-4 overflow-x-auto max-w-full no-scrollbar">
-                            {Array.from({ length: total }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={(e) => scrollToImage(i, e)}
-                                    className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out pointer-events-auto ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`}
-                                />
-                            ))}
-                        </div>
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-md pointer-events-auto">
+                        {Array.from({ length: total }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={(e) => { e.stopPropagation(); scrollToImage(i); }}
+                                className={`h-1.5 rounded-full transition-all duration-300 ease-out ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
+                                aria-label={`Go to photo ${i + 1}`}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
@@ -371,19 +389,20 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
     return (
         <div className={`flex flex-col bg-white dark:bg-dashboard-dark ${isDesktop ? '' : 'h-full overflow-hidden'}`}>
-            <style dangerouslySetInnerHTML={{ __html: `.no-scrollbar::-webkit-scrollbar { display: none; }` }} />
+            <style dangerouslySetInnerHTML={{ __html: `
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            ` }} />
             {!isDesktop && (
-                <header className="relative flex-none border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark shrink-0 z-20">
+            <header className="relative flex-none z-20 bg-white dark:bg-dashboard-dark shrink-0">
                     <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4">
                         <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 rounded-full group">
-                            <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
+                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                         <span className="absolute left-1/2 -translate-x-1/2 text-lg md:text-base font-semibold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none">
                             {activeSectionTitle || 'Photo tour'}
                         </span>
-                        <button type="button" onClick={handleShare} className="flex items-center justify-center w-10 h-10 rounded-full text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20">
-                            <ShareIcon className="w-7 h-7 md:w-6 md:h-6" />
-                        </button>
+                        <div className="w-10" />
                     </div>
                 </header>
             )}
@@ -402,11 +421,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         </button>
                                     )}
                                     {!isDesktop && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Photo tour</h1>}
-                                    {isDesktop && (
-                                        <button type="button" onClick={handleShare} className="flex items-center justify-center w-10 h-10 rounded-full text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20">
-                                            <ShareIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                                        </button>
-                                    )}
+                                    {isDesktop && <div className="w-10" />}
                                 </div>
                                 <div className="pb-4 md:py-4">
                                     <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>

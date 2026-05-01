@@ -19,6 +19,7 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { format, addMonths, subMonths, getYear, getMonth, setYear, setMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
+import { getMediaUrl } from '../../utils/media';
 
 const availabilityOptions = [
     { value: 'ready', label: 'Ready to Move In' },
@@ -35,6 +36,8 @@ const CreateListing = () => {
     const [imageSections, setImageSections] = useState(initialImageSections);
     const [uploading, setUploading] = useState(false);
     const [walkingTime, setWalkingTime] = useState('');
+    const [facilityGroups, setFacilityGroups] = useState([]);
+    const [allFacilityMedia, setAllFacilityMedia] = useState([]);
 
     // Availability State
     const [availabilityType, setAvailabilityType] = useState('ready');
@@ -76,6 +79,7 @@ const CreateListing = () => {
             property_type: propertyTypeOptions[0],
             listing_type: listingTypeOptions[1], // Default to Rent
             availability_status: 'Ready to Move In',
+            facility_name: null,
             allow_viewing_requests: true,
         }
     });
@@ -115,9 +119,22 @@ const CreateListing = () => {
         }
     };
 
+    const fetchFacilityGroups = async () => {
+        try {
+            const response = await agentApi.getFacilityMedia();
+            const media = response.data || [];
+            setAllFacilityMedia(media);
+            const groups = [...new Set(media.map(m => m.name))].filter(Boolean);
+            setFacilityGroups(groups.map(g => ({ value: g, label: g })));
+        } catch (error) {
+            console.error('Failed to fetch facility groups:', error);
+        }
+    };
+
     useEffect(() => {
         fetchStations();
         fetchProjects();
+        fetchFacilityGroups();
     }, []);
 
     const handleLocationChange = (value) => {
@@ -183,6 +200,7 @@ const CreateListing = () => {
                     ...(data.building_features || []),
                     ...(data.project_facilities || [])
                 ]),
+                facility_name: data.facility_name?.value || data.facility_name || '',
                 is_published: true,
                 allow_viewing_requests: data.allow_viewing_requests,
             });
@@ -190,20 +208,24 @@ const CreateListing = () => {
             toast.success('Listing created successfully!');
             const listingId = response.data.id;
 
-            // Upload images by section (each file gets its section's room type)
+            // Upload images by section
             const flatImages = PHOTO_ROOM_TYPES.flatMap((roomType) =>
                 (imageSections[roomType] || []).map((file) => ({ file, roomType }))
             );
+            
             if (flatImages.length > 0) {
                 setUploading(true);
                 try {
                     for (const { file, roomType } of flatImages) {
-                        await uploadApi.uploadImage(listingId, file, { roomType });
+                        if (file instanceof File) {
+                            await uploadApi.uploadImage(listingId, file, { roomType });
+                        }
                     }
-                    toast.success('Images uploaded successfully!');
+                    
+                    toast.success('Images added successfully!');
                     navigate('/dashboard/listings');
                 } catch (uploadError) {
-                    console.error('Image upload failed:', uploadError);
+                    console.error('Image processing failed:', uploadError);
                     navigate('/dashboard/listings');
                 } finally {
                     setUploading(false);
@@ -237,6 +259,7 @@ const CreateListing = () => {
                 project_facilities: [],
                 project_id: null,
                 station_id: null,
+                facility_name: null,
                 allow_viewing_requests: true
             });
             setImageSections(initialImageSections());
@@ -285,6 +308,11 @@ const CreateListing = () => {
         }
     };
 
+    const handleFacilityChange = (facilityName) => {
+        setValue('facility_name', facilityName);
+        toast.success(`Facility collection set to ${facilityName?.value || 'none'}`);
+    };
+
     const nextImage = (e) => {
         e.stopPropagation();
         const flat = getFlattenedImages();
@@ -296,9 +324,6 @@ const CreateListing = () => {
         const flat = getFlattenedImages();
         setLightboxIndex((prev) => (prev - 1 + flat.length) % flat.length);
     };
-
-    // Dropdown options
-
 
     // Group stations by line for better organization
     const stationOptions = useMemo(() => {
@@ -400,8 +425,48 @@ const CreateListing = () => {
                             });
                             return (
                                 <div key={roomType} className="space-y-3">
-                                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                        {roomType === 'Additional Photos' && (
+                                            <div className="w-80">
+                                                <Controller
+                                                    name="facility_name"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <StyledSelect
+                                                            {...field}
+                                                            options={facilityGroups}
+                                                            onChange={(val) => {
+                                                                field.onChange(val);
+                                                                handleFacilityChange(val);
+                                                            }}
+                                                            placeholder="Use Facility Collection..."
+                                                            isClearable
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {/* Facility Images Preview */}
+                                        {roomType === 'Additional Photos' && fieldValues.facility_name && (
+                                            allFacilityMedia
+                                                .filter(m => m.name === (fieldValues.facility_name?.value || fieldValues.facility_name))
+                                                .map((item) => (
+                                                    <div
+                                                        key={`facility-${item.id}`}
+                                                        className="relative aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100 dark:border-gray-800 opacity-70 cursor-help"
+                                                        title="Shared Facility Image (Display Only)"
+                                                    >
+                                                        <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/5" />
+                                                        <div className="absolute top-2 right-2 px-2 py-1 bg-primary-600/90 backdrop-blur-sm rounded-xl text-[9px] text-white font-bold uppercase tracking-wider shadow-sm">
+                                                            Shared
+                                                        </div>
+                                                    </div>
+                                                ))
+                                        )}
                                         {files.map((file, indexInSection) => (
                                             <div
                                                 key={`${roomType}-${indexInSection}`}
@@ -409,7 +474,7 @@ const CreateListing = () => {
                                                 onClick={() => setLightboxIndex(flatOffset + indexInSection)}
                                             >
                                                 <img
-                                                    src={URL.createObjectURL(file)}
+                                                    src={file.isFacility ? getMediaUrl(file.url) : URL.createObjectURL(file)}
                                                     alt=""
                                                     className="w-full h-full object-cover"
                                                 />
@@ -420,7 +485,7 @@ const CreateListing = () => {
                                                         e.stopPropagation();
                                                         removeImageFromSection(roomType, indexInSection);
                                                     }}
-                                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+                                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
                                                 </button>
@@ -566,7 +631,7 @@ const CreateListing = () => {
                                                 ['clean']
                                             ],
                                         }}
-                                        className="bg-white dark:bg-gray-900 rounded-lg"
+                                        className="bg-white dark:bg-gray-900 rounded-xl"
                                         placeholder="Describe the property features, amenities, and unique selling points..."
                                     />
                                 )}
@@ -594,7 +659,7 @@ const CreateListing = () => {
                             {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price.message}</p>}
                         </div>
                         <div className="flex items-center">
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-[3px]">
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
                                     💡 Enter monthly rent for rentals, or total price for sales.
                                 </p>
@@ -646,7 +711,7 @@ const CreateListing = () => {
                                     </div>
 
                                     {showDatePicker && (
-                                        <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 z-50 shadow-lg rounded-md border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-auto min-w-[300px]">
+                                        <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 z-50 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-auto min-w-[300px]">
                                             {/* Custom Header */}
                                             <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                                 <button
@@ -672,7 +737,6 @@ const CreateListing = () => {
                                                                     ...base,
                                                                     minHeight: '30px',
                                                                     height: '30px',
-                                                                    fontSize: '0.8rem'
                                                                 }),
                                                                 dropdownIndicator: (base) => ({
                                                                     ...base,
@@ -695,7 +759,6 @@ const CreateListing = () => {
                                                                     ...base,
                                                                     minHeight: '30px',
                                                                     height: '30px',
-                                                                    fontSize: '0.8rem'
                                                                 }),
                                                                 dropdownIndicator: (base) => ({
                                                                     ...base,
@@ -1014,10 +1077,10 @@ const CreateListing = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div className="space-y-8 pt-6">
                         <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Unit Amenities</h3>
-                            <div className="grid grid-cols-2 gap-3">
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Unit Amenities</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 {[
                                     { id: 'refrigerator', label: 'Refrigerator', icon: <MdKitchen className="w-5 h-5 text-blue-400" /> },
                                     { id: 'bathtub', label: 'Bathtub', icon: <MdBathtub className="w-5 h-5 text-blue-300" /> },
@@ -1028,16 +1091,16 @@ const CreateListing = () => {
                                     { id: 'water_heater', label: 'Water Heater', icon: <MdShower className="w-5 h-5 text-blue-400" /> },
                                     { id: 'kitchen', label: 'Kitchen / Stove', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
                                 ].map((item) => (
-                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
                                             type="checkbox"
                                             value={item.id}
                                             {...register('unit_amenities')}
-                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                         />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2 flex items-center justify-center">{item.icon}</span>
-                                            {item.label}
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                            <span className="truncate">{item.label}</span>
                                         </span>
                                     </label>
                                 ))}
@@ -1045,8 +1108,8 @@ const CreateListing = () => {
                         </div>
 
                         <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Building Features</h3>
-                            <div className="grid grid-cols-2 gap-3">
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Building Features</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 {[
                                     { id: 'parking', label: 'Covered Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
                                     { id: 'pool', label: 'Swimming Pool', icon: <MdPool className="w-5 h-5 text-cyan-500" /> },
@@ -1057,16 +1120,16 @@ const CreateListing = () => {
                                     { id: 'playground', label: 'Playground', icon: <MdChildCare className="w-5 h-5 text-purple-400" /> },
                                     { id: 'coworking', label: 'Co-working Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
                                 ].map((item) => (
-                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
                                             type="checkbox"
                                             value={item.id}
                                             {...register('building_features')}
-                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                         />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2 flex items-center justify-center">{item.icon}</span>
-                                            {item.label}
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                            <span className="truncate">{item.label}</span>
                                         </span>
                                     </label>
                                 ))}
@@ -1074,9 +1137,9 @@ const CreateListing = () => {
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
-                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Project Facilities</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="pt-8">
+                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Project Facilities</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             {[
                                 { id: 'communal_elevator', label: 'Communal Elevator', icon: <MdElevator className="w-5 h-5 text-gray-500" /> },
                                 { id: 'communal_reception', label: 'Communal Reception', icon: <MdGroups className="w-5 h-5 text-amber-600" /> },
@@ -1090,16 +1153,16 @@ const CreateListing = () => {
                                 { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: <MdGarage className="w-5 h-5 text-blue-600" /> },
                                 { id: 'communal_function_room', label: 'Communal Function Room', icon: <MdMeetingRoom className="w-5 h-5 text-amber-700" /> },
                             ].map((item) => (
-                                <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                     <input
                                         type="checkbox"
                                         value={item.id}
                                         {...register('project_facilities')}
-                                        className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                     />
-                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                        <span className="mr-2">{item.icon}</span>
-                                        {item.label}
+                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                        <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                        <span className="truncate">{item.label}</span>
                                     </span>
                                 </label>
                             ))}
@@ -1193,7 +1256,7 @@ const CreateListing = () => {
                             <img
                                 src={URL.createObjectURL(file)}
                                 alt="Preview"
-                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
+                                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl transition-all duration-300"
                             />
                             <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
                                 {lightboxIndex + 1} / {flat.length} — {file.name}

@@ -274,6 +274,7 @@ export const uploadApi = {
     },
     updateMedia: (id, data) => api.patch(`/upload/${id}`, data),
     deleteMedia: (id) => api.delete(`/upload/${id}`),
+    linkFacilityMedia: (data) => api.post('/upload/link-facility', data),
     uploadAvatar: (file) => {
         const formData = new FormData();
         formData.append('file', file);

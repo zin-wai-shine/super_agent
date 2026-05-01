@@ -122,7 +122,7 @@ const AgentDashboard = () => {
             {/* Stats Grid - Clean Minimal Design */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredCards.map((stat) => (
-                    <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-lg p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+                    <div key={stat.name} className="bg-white dark:bg-dashboard-card rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{stat.name}</p>
@@ -133,7 +133,7 @@ const AgentDashboard = () => {
                                     <span className="text-gray-400 dark:text-gray-500 ml-1">vs last period</span>
                                 </div>
                             </div>
-                            <div className={`p-2.5 rounded-lg ${stat.iconBg} backdrop-blur-md`}>
+                            <div className={`p-2.5 rounded-xl ${stat.iconBg} backdrop-blur-md`}>
                                 <stat.icon className="w-5 h-5" aria-hidden="true" />
                             </div>
                         </div>
@@ -144,7 +144,7 @@ const AgentDashboard = () => {
             {/* Charts Grid - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
-                <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revenue Overview</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Monthly revenue performance</p>
@@ -153,7 +153,7 @@ const AgentDashboard = () => {
                 </div>
 
                 {/* Activity Chart */}
-                <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">User Activity</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly platform engagement</p>
@@ -167,7 +167,7 @@ const AgentDashboard = () => {
                 {/* Left Column: Recent Listings */}
                 <div className="lg:col-span-2">
                     {/* Recent Listings */}
-                    <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-dashboard-card rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">Recent Listings</h3>
@@ -177,12 +177,12 @@ const AgentDashboard = () => {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-800/20 rounded-lg">
+                                <thead className="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-800/20 rounded-xl">
                                     <tr>
-                                        <th className="px-4 py-3 font-medium rounded-l-lg">Property</th>
+                                        <th className="px-4 py-3 font-medium rounded-l-xl">Property</th>
                                         <th className="px-4 py-3 font-medium">Price</th>
                                         <th className="px-4 py-3 font-medium">Status</th>
-                                        <th className="px-4 py-3 font-medium rounded-r-lg">Action</th>
+                                        <th className="px-4 py-3 font-medium rounded-r-xl">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -190,7 +190,7 @@ const AgentDashboard = () => {
                                         <tr key={listing.id} className="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                             <td className="px-4 py-4">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+                                                    <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
                                                         {listing.images?.[0] ? (
                                                             <img src={getMediaUrl(listing.images[0])} alt="" className="w-full h-full object-cover" />
                                                         ) : (
@@ -232,17 +232,17 @@ const AgentDashboard = () => {
                 {/* Right Column: Quick Actions */}
                 <div className="space-y-6">
                     {/* Quick Actions */}
-                    <div className="bg-white dark:bg-dashboard-card rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-dashboard-card rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                         <div className="space-y-3">
-                             <Link to="/dashboard/listings/new" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-primary-500/10 transition-colors group">
-                                <div className="p-2 bg-primary-50 dark:bg-primary-600/15 text-primary-600 dark:text-primary-400 rounded-lg group-hover:scale-110 transition-transform">
+                             <Link to="/dashboard/listings/new" className="flex items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-primary-500/10 transition-colors group">
+                                <div className="p-2 bg-primary-50 dark:bg-primary-600/15 text-primary-600 dark:text-primary-400 rounded-xl group-hover:scale-110 transition-transform">
                                     <PlusIcon className="w-5 h-5" />
                                 </div>
                                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Add New Listing</span>
                             </Link>
-                            <Link to="/dashboard/users" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-purple-500/10 transition-colors group">
-                                <div className="p-2 bg-purple-50 dark:bg-purple-600/15 text-purple-600 dark:text-purple-400 rounded-lg group-hover:scale-110 transition-transform">
+                            <Link to="/dashboard/users" className="flex items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-purple-500/10 transition-colors group">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-600/15 text-purple-600 dark:text-purple-400 rounded-xl group-hover:scale-110 transition-transform">
                                     <UsersIcon className="w-5 h-5" />
                                 </div>
                                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Manage Users</span>

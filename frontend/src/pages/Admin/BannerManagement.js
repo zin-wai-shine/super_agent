@@ -18,6 +18,7 @@ import {
     ChevronUpIcon,
     ChevronDownIcon,
     EyeIcon,
+    PencilSquareIcon,
     LinkIcon,
     CalendarIcon,
     SparklesIcon,
@@ -28,7 +29,6 @@ import {
     XMarkIcon,
     ArrowPathIcon,
     AdjustmentsHorizontalIcon,
-    PencilSquareIcon,
     MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import { PiUser } from 'react-icons/pi';
@@ -381,7 +381,7 @@ const BannerManagement = () => {
 
                 return (
                     <div className="flex items-center space-x-4 py-1 whitespace-nowrap">
-                        <div className="w-24 h-14 bg-gray-100 dark:bg-gray-800 rounded-[3px] overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="w-24 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
                             <img src={fullImageUrl} alt={banner.title} className="w-full h-full object-cover" />
                         </div>
                         <div>
@@ -401,7 +401,7 @@ const BannerManagement = () => {
             header: 'Target',
             accessorKey: 'target_role',
             cell: ({ getValue }) => (
-                <span className="capitalize px-2 py-1 rounded-[3px] text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border dark:border-gray-700 whitespace-nowrap">
+                <span className="capitalize px-2 py-1 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border dark:border-gray-700 whitespace-nowrap">
                     {getValue()}
                 </span>
             )
@@ -410,7 +410,7 @@ const BannerManagement = () => {
             header: 'Status',
             accessorKey: 'is_active',
             cell: ({ getValue }) => (
-                <span className={`inline-flex items-center px-2 py-1 rounded-[3px] text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${getValue() ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                <span className={`inline-flex items-center px-2 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${getValue() ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
                     {getValue() ? 'Active' : 'Inactive'}
                 </span>
             )
@@ -432,24 +432,24 @@ const BannerManagement = () => {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="flex items-center justify-end whitespace-nowrap gap-2">
+                <div className="flex items-center justify-end whitespace-nowrap gap-2.5">
                     <button
                         onClick={() => handlePreview(row.original)}
-                        className="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-[3px] transition-colors border border-transparent hover:border-gray-200"
+                        className="p-2.5 text-gray-500 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition-all border border-gray-100/30 dark:border-gray-700 shadow-sm flex items-center justify-center"
                         title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-2 text-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-500/10 backdrop-blur-sm rounded-[3px] transition-colors border border-transparent hover:border-primary-100"
+                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                         title="Edit Banner"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-[3px] transition-colors border border-transparent hover:border-red-100"
+                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete Banner"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -457,7 +457,7 @@ const BannerManagement = () => {
                 </div>
             )
         }
-    ], [handleDelete, handlePreview]);
+    ], [handleDelete, handlePreview, handleEdit]);
 
     const table = useReactTable({
         data: filteredBanners,
@@ -514,28 +514,6 @@ const BannerManagement = () => {
                             onChange={(val) => table.setPageSize(val)}
                             isSearchable={false}
                             components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
-                            styles={{
-                                control: (base) => ({
-                                    ...base,
-                                    borderRadius: '3px',
-                                    height: '34px',
-                                    minHeight: '34px',
-                                    fontSize: '11px',
-                                    textAlign: 'center',
-                                    cursor: 'pointer'
-                                }),
-                                valueContainer: (base) => ({
-                                    ...base,
-                                    justifyContent: 'center',
-                                    padding: '0'
-                                }),
-                                singleValue: (base) => ({
-                                    ...base,
-                                    margin: '0',
-                                    textAlign: 'center',
-                                    width: '100%'
-                                })
-                            }}
                         />
                     </div>
                 </div>
@@ -553,7 +531,6 @@ const BannerManagement = () => {
                             value={statusFilter}
                             onChange={(val) => setStatusFilter(val)}
                             isSearchable={false}
-                            styles={{ control: (base) => ({ ...base, minHeight: '34px', height: '34px' }), valueContainer: (base) => ({ ...base, padding: '0 8px' }) }}
                         />
                     </div>
 
@@ -594,13 +571,12 @@ const BannerManagement = () => {
                                 }}
                                 onChange={(val) => handleDatePresetChange(val)}
                                 isSearchable={false}
-                                styles={{ control: (base) => ({ ...base, minHeight: '34px', height: '34px', fontSize: '12px' }), valueContainer: (base) => ({ ...base, padding: '0 8px' }) }}
                             />
                         </div>
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Clear Date Filter"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -617,7 +593,6 @@ const BannerManagement = () => {
                                                 onChange={(val) => setShownDate(setMonth(shownDate, val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
                                                 isSearchable={false}
-                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
                                             />
                                         </div>
                                         <div className="w-24">
@@ -626,7 +601,6 @@ const BannerManagement = () => {
                                                 onChange={(val) => setShownDate(setYear(shownDate, val))}
                                                 options={Array.from({ length: 5 }, (_, i) => ({ value: getYear(new Date()) - 2 + i, label: (getYear(new Date()) - 2 + i).toString() }))}
                                                 isSearchable={false}
-                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '0.875rem' }) }}
                                             />
                                         </div>
                                     </div>
@@ -654,7 +628,7 @@ const BannerManagement = () => {
                 {/* RIGHT: Search & Add Button */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     <div className="relative w-full lg:w-64 h-[34px]">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={globalFilter}
@@ -665,7 +639,7 @@ const BannerManagement = () => {
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-[3px] shadow-none hover:shadow-none transform-none"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-xl shadow-none hover:shadow-none transform-none"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Banner</span>
@@ -674,7 +648,7 @@ const BannerManagement = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
                 {banners.length === 0 ? (
                     <div className="py-20">
                         <EmptyState
@@ -721,18 +695,54 @@ const BannerManagement = () => {
                         {/* Pagination */}
                         <div className="px-8 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 dark:bg-gray-800/10">
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
-                                Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of {table.getFilteredRowModel().rows.length} campaigns
+                                <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronDoubleLeftIcon className="w-4 h-4" /></button>
-                                <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronLeftIcon className="w-4 h-4" /></button>
-                                <div className="flex items-center space-x-1 mx-2">
-                                    <span className="text-xs text-gray-500 font-bold">Page</span>
-                                    <span className="text-xs text-primary-600 dark:text-primary-400 font-bold px-2 py-0.5 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-sm rounded-[3px]">{table.getState().pagination.pageIndex + 1}</span>
-                                    <span className="text-xs text-gray-500 font-bold">of {table.getPageCount()}</span>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => table.setPageIndex(0)}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
+                                    <ChevronDoubleLeftIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => table.previousPage()}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
+                                    <ChevronLeftIcon className="w-4 h-4" />
+                                </button>
+
+                                <div className="flex items-center gap-2 mx-2">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={table.getPageCount()}
+                                        value={table.getState().pagination.pageIndex + 1}
+                                        onChange={e => {
+                                            const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                                            table.setPageIndex(page);
+                                        }}
+                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                    />
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
-                                <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronRightIcon className="w-4 h-4" /></button>
-                                <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="p-2 border border-gray-200 dark:border-gray-700 rounded-[3px] hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"><ChevronDoubleRightIcon className="w-4 h-4" /></button>
+
+                                <button
+                                    onClick={() => table.nextPage()}
+                                    disabled={!table.getCanNextPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
+                                    <ChevronRightIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                    disabled={!table.getCanNextPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
+                                    <ChevronDoubleRightIcon className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -743,12 +753,12 @@ const BannerManagement = () => {
             {showModal && createPortal(
                 <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fade-in">
 
-                    <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[3px] border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
+                    <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-xl border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
 
                         {/* Premium Header with Gradient - Compacted */}
                         <div className="relative z-20 shadow-none overflow-hidden flex items-center justify-between p-5 bg-gradient-to-r from-primary-600 to-indigo-700 text-white">
                             <div className="relative z-10 flex items-center gap-4">
-                                <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm border border-white/30 shadow-none">
+                                <div className="p-1.5 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30 shadow-none">
                                     <SparklesIcon className="w-6 h-6 text-white animate-pulse" />
                                 </div>
                                 <div>
@@ -778,13 +788,13 @@ const BannerManagement = () => {
                                             </label>
                                             {isSuperAdmin ? (
                                                 viewMode === 'view' ? (
-                                                    <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300">
+                                                    <div className="h-[46px] flex items-center px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300">
                                                         {watch('image_url')}
                                                     </div>
                                                 ) : (
                                                     <input
                                                         type="url"
-                                                        className="input-field rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700"
+                                                        className="input-field rounded-xl h-[46px] border-gray-200 dark:border-gray-700"
                                                         placeholder="https://images.unsplash.com/..."
                                                         {...register('image_url', { required: 'Image URL is required' })}
                                                     />
@@ -794,12 +804,12 @@ const BannerManagement = () => {
                                                     {viewMode !== 'view' && (
                                                         <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" />
                                                     )}
-                                                    <div className={`aspect-video sm:aspect-[16/6] rounded-[3px] flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
+                                                    <div className={`aspect-video sm:aspect-[16/6] rounded-xl flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
                                                         {previewUrl ? (
                                                             <div className="relative w-full h-full">
-                                                                <img src={previewUrl} className="w-full h-full object-cover rounded-[3px]" alt="Preview" />
+                                                                <img src={previewUrl} className="w-full h-full object-cover rounded-xl" alt="Preview" />
                                                                 {viewMode !== 'view' && (
-                                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[1px] backdrop-blur-[2px]">
+                                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl backdrop-blur-[2px]">
                                                                         <ArrowPathIcon className="w-8 h-8 text-white animate-spin-slow" />
                                                                     </div>
                                                                 )}
@@ -834,7 +844,7 @@ const BannerManagement = () => {
                                                         ) : (
                                                             <input
                                                                 type="text"
-                                                                className="input-field rounded-[3px] h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
+                                                                className="input-field rounded-xl h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
                                                                 placeholder="E.g. Exclusive Waterfront Properties"
                                                                 {...register('title')}
                                                             />
@@ -851,12 +861,12 @@ const BannerManagement = () => {
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Visibility Duration</label>
                                                             <div className="relative">
                                                                 {viewMode === 'view' ? (
-                                                                    <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                                    <div className="h-[46px] flex items-center px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300">
                                                                         {watch('days_active')} Days
                                                                     </div>
                                                                 ) : (
                                                                     <>
-                                                                        <input type="number" className="input-field rounded-[3px] h-[46px] pr-12" {...register('days_active')} />
+                                                                        <input type="number" className="input-field rounded-xl h-[46px] pr-12" {...register('days_active')} />
                                                                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Days</span>
                                                                     </>
                                                                 )}
@@ -865,7 +875,7 @@ const BannerManagement = () => {
                                                         <div className="space-y-3">
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Targeting</label>
                                                             {viewMode === 'view' ? (
-                                                                <div className="h-[46px] flex items-center px-4 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 capitalize">
+                                                                <div className="h-[46px] flex items-center px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 capitalize">
                                                                     {watch('target_role') === 'all' ? 'Everyone' : watch('target_role') === 'agent' ? 'Agents' : 'Visitors'}
                                                                 </div>
                                                             ) : (
@@ -880,7 +890,6 @@ const BannerManagement = () => {
                                                                                 { value: 'agent', label: 'Agents' },
                                                                                 { value: 'public', label: 'Visitors' },
                                                                             ]}
-                                                                            styles={{ control: (b) => ({ ...b, height: '46px', minHeight: '46px', borderRadius: '3px' }) }}
                                                                         />
                                                                     )}
                                                                 />
@@ -920,15 +929,15 @@ const BannerManagement = () => {
                                                     <div className="space-y-3">
                                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Action Destination (URL)</label>
                                                         <div className="relative group">
-                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md rounded group-focus-within:bg-primary-50/50 transition-colors">
+                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md rounded-xl group-focus-within:bg-primary-50/50 transition-colors">
                                                                 <LinkIcon className="w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
                                                             </div>
                                                             {viewMode === 'view' ? (
-                                                                <div className="h-[46px] flex items-center px-4 pl-12 rounded-[3px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-primary-600 truncate">
+                                                                <div className="h-[46px] flex items-center px-4 pl-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-primary-600 truncate">
                                                                     {watch('link_url')}
                                                                 </div>
                                                             ) : (
-                                                                <input type="url" className="input-field pl-12 rounded-[3px] h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
+                                                                <input type="url" className="input-field pl-12 rounded-xl h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -941,10 +950,10 @@ const BannerManagement = () => {
                                         {/* Row 3: Rich Details */}
                                         <div className="space-y-4">
                                             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">3. Storytelling & Details</label>
-                                            <div className="bg-white dark:bg-gray-950 rounded-[3px] border border-gray-200 dark:border-gray-800 overflow-hidden group">
+                                            <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden group">
                                                 {viewMode === 'view' ? (
                                                     <div
-                                                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-[3px] text-gray-700 dark:text-gray-300 min-h-[250px] prose dark:prose-invert max-w-none"
+                                                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-700 dark:text-gray-300 min-h-[250px] prose dark:prose-invert max-w-none"
                                                         dangerouslySetInnerHTML={{ __html: watch('description') }}
                                                     />
                                                 ) : (
@@ -989,14 +998,14 @@ const BannerManagement = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleCloseModal()}
-                                                    className="h-[38px] px-6 text-[11px] font-black text-white hover:text-white/80 uppercase tracking-widest bg-gray-900 dark:bg-gray-700 rounded-[3px] transition-colors"
+                                                    className="h-[38px] px-6 text-[11px] font-black text-white hover:text-white/80 uppercase tracking-widest bg-gray-900 dark:bg-gray-700 rounded-xl transition-colors"
                                                 >
                                                     Close
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode('edit')}
-                                                    className="h-[38px] px-8 bg-primary-600 text-white rounded-[3px] text-[11px] font-black uppercase tracking-widest hover:bg-primary-700 transition-colors flex items-center gap-2"
+                                                    className="h-[38px] px-8 bg-primary-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-primary-700 transition-colors flex items-center gap-2"
                                                 >
                                                     <PencilSquareIcon className="w-4 h-4" />
                                                     Edit Campaign
@@ -1010,7 +1019,7 @@ const BannerManagement = () => {
                                                 <button
                                                     type="submit"
                                                     disabled={loading || uploading || (!isSuperAdmin && !bannerFile && viewMode === 'create')}
-                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-[3px] text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
+                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
                                                 >
                                                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
                                                     {loading ? (
@@ -1061,7 +1070,7 @@ const BannerManagement = () => {
                                     </button>
                                     <button
                                         onClick={confirmClose}
-                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-[3px] transition-all"
+                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-all"
                                     >
                                         Discard Changes
                                     </button>

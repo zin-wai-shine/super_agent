@@ -262,14 +262,14 @@ const SubAgents = () => {
                 <div className="flex justify-end space-x-2">
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
+                        className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
                         title="Edit"
                     >
                         <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
+                        className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -362,10 +362,6 @@ const SubAgents = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    borderRadius: '3px',
-                                    height: '34px',
-                                    minHeight: '34px',
-                                    fontSize: '11px',
                                     textAlign: 'center',
                                     cursor: 'pointer'
                                 }),
@@ -405,10 +401,6 @@ const SubAgents = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    borderRadius: '3px',
-                                    height: '34px',
-                                    minHeight: '34px',
-                                    fontSize: '11px'
                                 })
                             }}
                             formatOptionLabel={(option) => {
@@ -438,7 +430,7 @@ const SubAgents = () => {
 
                     <button
                         onClick={() => handleDatePresetChange('all')}
-                        className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-[3px] transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                        className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                         title="Reset Filters"
                     >
                         <ArrowPathIcon className="w-4 h-4" />
@@ -446,7 +438,7 @@ const SubAgents = () => {
 
                     {/* Custom Date Picker Popup - Smooth Version */}
                     {showDatePicker && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] bg-white dark:bg-dashboard-card rounded-[3px] shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-[350px]">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] bg-white dark:bg-dashboard-card rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-[350px]">
                             <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                 <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400">
                                     <ChevronLeftIcon className="w-5 h-5" />
@@ -458,7 +450,7 @@ const SubAgents = () => {
                                             onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
                                             options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
                                             isSearchable={false}
-                                            styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                            styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px' }) }}
                                         />
                                     </div>
                                     <div className="w-24">
@@ -467,7 +459,7 @@ const SubAgents = () => {
                                             onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
                                             options={Array.from({ length: 10 }, (_, i) => { const y = new Date().getFullYear() - 5 + i; return { value: y, label: y.toString() }; })}
                                             isSearchable={false}
-                                            styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                            styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px' }) }}
                                         />
                                     </div>
                                 </div>
@@ -500,7 +492,7 @@ const SubAgents = () => {
                 {/* Right Actions: Search & Add */}
                 <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full lg:w-auto flex-1">
                     <div className="relative w-full lg:w-64">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
@@ -520,7 +512,7 @@ const SubAgents = () => {
             </div>
 
             {/* Table Area */}
-            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -578,14 +570,14 @@ const SubAgents = () => {
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
@@ -601,7 +593,7 @@ const SubAgents = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                                        className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">of {table.getPageCount()}</span>
                                 </div>
@@ -609,14 +601,14 @@ const SubAgents = () => {
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>

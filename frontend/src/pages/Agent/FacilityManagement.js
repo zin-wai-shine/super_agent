@@ -32,6 +32,17 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { getMediaUrl } from '../../utils/media';
 import EmptyState from '../../components/Common/EmptyState';
+import StyledSelect from '../../components/Form/StyledSelect';
+import { 
+    MagnifyingGlassIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    ChevronDoubleLeftIcon,
+    ChevronDoubleRightIcon,
+    BuildingOfficeIcon
+} from '@heroicons/react/24/outline';
 
 const SortableTableRow = ({ group, onDelete, onEdit }) => {
     const {
@@ -55,49 +66,44 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
         <tr
             ref={setNodeRef}
             style={style}
-            className={`group border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors ${isDragging ? 'shadow-2xl' : ''}`}
+            className={`group border-b border-gray-50 dark:border-gray-800/50 hover:bg-gray-50/40 dark:hover:bg-gray-700/30 transition-colors ${isDragging ? 'shadow-2xl' : ''}`}
         >
-            <td className="py-4 pl-6 w-10">
-                <div 
-                    {...attributes} 
-                    {...listeners}
-                    className="cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                >
-                    <ArrowsPointingOutIcon className="w-5 h-5" />
+            <td className="py-5 pl-6 min-w-[300px]">
+                <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                        <BuildingOfficeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div className="flex flex-col">
+                        <button
+                            onClick={() => onEdit(group)}
+                            className="text-sm font-bold text-gray-900 dark:text-white hover:text-primary-600 transition-colors text-left group/name flex items-center gap-2"
+                        >
+                            {group.name}
+                        </button>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-widest mt-1 font-bold">
+                            Facility Collection
+                        </span>
+                    </div>
                 </div>
             </td>
-            <td className="py-4 px-4 min-w-[300px]">
-                <div className="flex flex-col">
-                    <button
-                        onClick={() => onEdit(group)}
-                        className="text-base font-bold text-gray-900 dark:text-white hover:text-primary-600 transition-colors text-left group/name flex items-center gap-2"
-                    >
-                        {group.name}
-                        <PencilSquareIcon className="w-4 h-4 opacity-0 group-hover/name:opacity-100 transition-opacity" />
-                    </button>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest mt-1 font-medium">
-                        Facility Collection
-                    </span>
-                </div>
-            </td>
-            <td className="py-4 px-4">
-                <div className="inline-flex items-center px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-full text-xs font-black uppercase tracking-tighter">
-                    <PhotoIcon className="w-3.5 h-3.5 mr-1.5" />
+            <td className="py-5 px-4">
+                <div className="inline-flex items-center px-4 py-1.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-primary-100/50 dark:border-primary-500/20">
+                    <PhotoIcon className="w-3.5 h-3.5 mr-2" />
                     {group.items.length} {group.items.length === 1 ? 'Image' : 'Images'}
                 </div>
             </td>
-            <td className="py-4 pr-6 text-right">
-                <div className="flex items-center justify-end space-x-2">
+            <td className="py-5 pr-6 text-right">
+                <div className="flex items-center justify-end gap-2.5">
                     <button
                         onClick={() => onEdit(group)}
-                        className="p-2.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"
+                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                         title="Edit Collection"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => onDelete(group)}
-                        className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete Collection"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -169,6 +175,9 @@ const FacilityManagement = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const [uploadName, setUploadName] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [pageSize, setPageSize] = useState(10);
+    const [pageIndex, setPageIndex] = useState(0);
 
     const fileInputRef = useRef(null);
 
@@ -236,6 +245,24 @@ const FacilityManagement = () => {
         });
         return groups;
     }, [media]);
+
+    const filteredGroups = React.useMemo(() => {
+        if (!searchTerm) return groupedMedia;
+        const lowSearch = searchTerm.toLowerCase();
+        return groupedMedia.filter(g => g.name.toLowerCase().includes(lowSearch));
+    }, [groupedMedia, searchTerm]);
+
+    const paginatedGroups = React.useMemo(() => {
+        const start = pageIndex * pageSize;
+        return filteredGroups.slice(start, start + pageSize);
+    }, [filteredGroups, pageIndex, pageSize]);
+
+    const pageCount = Math.ceil(filteredGroups.length / pageSize);
+
+    // Reset to first page when search term or page size changes
+    useEffect(() => {
+        setPageIndex(0);
+    }, [searchTerm, pageSize]);
 
 
     const handleUpload = async () => {
@@ -353,18 +380,72 @@ const FacilityManagement = () => {
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Facility & Building Images</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Manage general images for buildings and property facilities.</p>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
+                            <PhotoIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        Facility & Building Images
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage general images for buildings and property facilities.</p>
                 </div>
-                <button
-                    onClick={() => setIsUploadModalOpen(true)}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary-500/25 active:scale-95 space-x-2"
-                >
-                    <PlusIcon className="w-5 h-5" />
-                    <span>Upload New Images</span>
-                </button>
+                {/* Stats / Spacer */}
+                <div className="flex-1"></div>
+                <div className="hidden lg:block lg:min-w-[280px]"></div>
+            </div>
+
+            {/* Toolbar */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+                <div className="flex items-center space-x-2 h-[34px] w-full lg:w-auto">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Show</span>
+                    <div className="w-16">
+                        <StyledSelect
+                            options={[{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }, { value: 50, label: '50' }]}
+                            value={pageSize}
+                            onChange={(val) => setPageSize(Number(val))}
+                            isSearchable={false}
+                            components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    textAlign: 'center',
+                                    cursor: 'pointer'
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
+                            }}
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full lg:w-auto flex-1">
+                    <div className="relative w-full lg:w-64">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search collections..."
+                            className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
+                        />
+                    </div>
+                    <button
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-95 shadow-sm"
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        Upload New Images
+                    </button>
+                </div>
             </div>
 
             {/* Content Area */}
@@ -377,43 +458,79 @@ const FacilityManagement = () => {
                     onAction={() => setIsUploadModalOpen(true)}
                 />
             ) : (
-                <div className="bg-white dark:bg-dashboard-card rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none overflow-hidden">
+                <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
                     >
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="py-4 pl-6 w-10"></th>
-                                    <th className="py-4 px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Unit Name</th>
-                                    <th className="py-4 px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Image Count</th>
-                                    <th className="py-4 pr-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
-                                </tr>
-
-                            </thead>
-                            <SortableContext
-                                items={groupedMedia.map(i => i.name)}
-                                strategy={rectSortingStrategy}
-                            >
-                                <tbody>
-                                    {groupedMedia.map((group) => (
-                                        <SortableTableRow
-                                            key={group.name}
-                                            group={group}
-                                            onDelete={handleDelete}
-                                            onEdit={(group) => {
-                                                setEditingItem(group);
-                                                setEditName(group.name);
-                                                setIsEditModalOpen(true);
-                                            }}
-                                        />
-                                    ))}
-                                </tbody>
-                            </SortableContext>
-                        </table>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-[#F9FAFB] dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
+                                        <th className="px-6 py-4 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Unit Name</th>
+                                        <th className="px-6 py-4 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Image Count</th>
+                                        <th className="px-6 py-4 text-right text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <SortableContext
+                                    items={paginatedGroups.map(i => i.name)}
+                                    strategy={rectSortingStrategy}
+                                >
+                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                                        {paginatedGroups.map((group) => (
+                                            <SortableTableRow
+                                                key={group.name}
+                                                group={group}
+                                                onDelete={handleDelete}
+                                                onEdit={(group) => {
+                                                    setEditingItem(group);
+                                                    setEditName(group.name);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            />
+                                        ))}
+                                    </tbody>
+                                </SortableContext>
+                            </table>
+                        </div>
                     </DndContext>
+
+                    {/* Pagination */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5 border-t border-gray-50 dark:border-gray-800">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Showing <span className="font-bold text-gray-900 dark:text-white">{pageIndex * pageSize + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min((pageIndex + 1) * pageSize, filteredGroups.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredGroups.length}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                                <ChevronDoubleLeftIcon className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => setPageIndex(prev => Math.max(0, prev - 1))} disabled={pageIndex === 0} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                                <ChevronLeftIcon className="w-4 h-4" />
+                            </button>
+                            <div className="flex items-center space-x-2">
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Page</span>
+                                <input 
+                                    type="number" 
+                                    min={1} 
+                                    max={pageCount} 
+                                    value={pageIndex + 1} 
+                                    onChange={(e) => {
+                                        const val = e.target.value ? Number(e.target.value) - 1 : 0;
+                                        setPageIndex(Math.max(0, Math.min(val, pageCount - 1)));
+                                    }} 
+                                    className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
+                                />
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">of {pageCount || 1}</span>
+                            </div>
+                            <button onClick={() => setPageIndex(prev => Math.min(pageCount - 1, prev + 1))} disabled={pageIndex >= pageCount - 1} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                                <ChevronRightIcon className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => setPageIndex(pageCount - 1)} disabled={pageIndex >= pageCount - 1} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                                <ChevronDoubleRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -462,7 +579,7 @@ const FacilityManagement = () => {
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             placeholder="e.g. Unit 101, Lobby, Swimming Pool"
-                                            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900 dark:text-white"
+                                            className="input-field px-4 py-3"
                                         />
                                     </div>
 
@@ -670,7 +787,7 @@ const FacilityManagement = () => {
                                             value={uploadName}
                                             onChange={(e) => setUploadName(e.target.value)}
                                             placeholder="e.g. Unit 101, Lobby, Swimming Pool"
-                                            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900 dark:text-white"
+                                            className="input-field px-4 py-3"
                                         />
                                     </div>
 

@@ -14,6 +14,7 @@ import {
 import {
     PlusIcon,
     PencilIcon,
+    PencilSquareIcon,
     TrashIcon,
     MagnifyingGlassIcon,
     PauseIcon,
@@ -368,27 +369,27 @@ const AgentManagement = () => {
                     const agent = row.original;
                     const isActive = (agent.is_active ?? agent.IsActive ?? true) && !(agent.is_suspended ?? agent.IsSuspended ?? false);
                     return (
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2.5">
                             <button
                                 onClick={() => handleSuspend(agent.id || agent.ID, isActive)}
-                                className={`p-1.5 rounded-lg transition-all duration-200 ${isActive
-                                    ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
-                                    : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
-                                    } backdrop-blur-sm`}
+                                className={`p-2.5 rounded-xl transition-all duration-200 border shadow-sm flex items-center justify-center ${isActive
+                                    ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 border-amber-100/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 dark:hover:bg-amber-500/20'
+                                    : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-100/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20'
+                                    }`}
                                 title={isActive ? 'Suspend Agent' : 'Reactivate Agent'}
                             >
                                 {isActive ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
                             </button>
                             <button
                                 onClick={() => openModal(agent)}
-                                className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
+                                className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                                 title="Edit Agent"
                             >
-                                <PencilIcon className="w-5 h-5" />
+                                <PencilSquareIcon className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => handleDelete(agent.id || agent.ID)}
-                                className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-400/10 dark:text-red-400 dark:hover:bg-red-400/20 backdrop-blur-sm rounded-lg transition-all duration-200"
+                                className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                                 title="Delete Agent"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -458,27 +459,6 @@ const AgentManagement = () => {
                                 DropdownIndicator: () => null,
                                 IndicatorSeparator: () => null
                             }}
-                            styles={{
-                                control: (base) => ({
-                                    ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
-                                    textAlign: 'center',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                }),
-                                valueContainer: (base) => ({
-                                    ...base,
-                                    justifyContent: 'center',
-                                    padding: '0'
-                                }),
-                                singleValue: (base) => ({
-                                    ...base,
-                                    margin: '0',
-                                    textAlign: 'center',
-                                    width: '100%'
-                                })
-                            }}
                         />
                     </div>
                 </div>
@@ -497,24 +477,13 @@ const AgentManagement = () => {
                             onChange={(val) => setStatusFilter(val)}
                             isSearchable={false}
                             placeholder="Status"
-                            styles={{
-                                control: (base) => ({
-                                    ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
-                                }),
-                                valueContainer: (base) => ({
-                                    ...base,
-                                    padding: '0 8px'
-                                })
-                            }}
                         />
                     </div>
                     {/* Reset Status */}
                     {statusFilter !== 'all' && (
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors -ml-1"
                             title="Reset Status"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -534,24 +503,13 @@ const AgentManagement = () => {
                             onChange={(val) => setPlanFilter(val)}
                             isSearchable={false}
                             placeholder="Plan"
-                            styles={{
-                                control: (base) => ({
-                                    ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
-                                }),
-                                valueContainer: (base) => ({
-                                    ...base,
-                                    padding: '0 8px'
-                                })
-                            }}
                         />
                     </div>
                     {/* Reset Plan */}
                     {planFilter !== 'all' && (
                         <button
                             onClick={() => setPlanFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors -ml-1"
                             title="Reset Plan"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -596,25 +554,13 @@ const AgentManagement = () => {
                                 onChange={(val) => handleDatePresetChange(val)}
                                 isSearchable={false}
                                 placeholder="Date Range"
-                                styles={{
-                                    control: (base) => ({
-                                        ...base,
-                                        minHeight: '34px',
-                                        height: '34px',
-                                        fontSize: '13px'
-                                    }),
-                                    valueContainer: (base) => ({
-                                        ...base,
-                                        padding: '0 8px'
-                                    })
-                                }}
                             />
                         </div>
 
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-md transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -622,7 +568,7 @@ const AgentManagement = () => {
 
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-md overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
                                 {/* Custom Header */}
                                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                     <button
@@ -642,18 +588,6 @@ const AgentManagement = () => {
                                                     label: format(new Date(2000, i, 1), 'MMMM')
                                                 }))}
                                                 isSearchable={false}
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        minHeight: '30px',
-                                                        height: '30px',
-                                                        fontSize: '0.875rem'
-                                                    }),
-                                                    dropdownIndicator: (base) => ({
-                                                        ...base,
-                                                        padding: '2px'
-                                                    })
-                                                }}
                                             />
                                         </div>
                                         <div className="w-28">
@@ -665,18 +599,6 @@ const AgentManagement = () => {
                                                     return { value: year, label: year.toString() };
                                                 })}
                                                 isSearchable={false}
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        minHeight: '30px',
-                                                        height: '30px',
-                                                        fontSize: '0.875rem'
-                                                    }),
-                                                    dropdownIndicator: (base) => ({
-                                                        ...base,
-                                                        padding: '2px'
-                                                    })
-                                                }}
                                             />
                                         </div>
                                     </div>
@@ -712,12 +634,12 @@ const AgentManagement = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     {/* Search - Compact */}
                     <div className="relative w-full lg:w-56 h-[34px]">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
                             onChange={(e) => setGlobalFilter(e.target.value)}
-                            placeholder="Search..."
+                            placeholder="Search agents..."
                             className="input-field pl-9 h-[34px] min-h-0 text-[12px]"
                         />
                     </div>
@@ -817,64 +739,53 @@ const AgentManagement = () => {
 
                         {/* Pagination */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                Showing{' '}
-                                <span className="font-medium">
-                                    {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
-                                </span>{' '}
-                                to{' '}
-                                <span className="font-medium">
-                                    {Math.min(
-                                        (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                                        table.getFilteredRowModel().rows.length
-                                    )}
-                                </span>{' '}
-                                of <span className="font-medium">{table.getFilteredRowModel().rows.length}</span> results
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
-                                <div className="flex items-center space-x-1">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Page</span>
+                                <div className="flex items-center gap-2 mx-2">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
                                     <input
                                         type="number"
                                         min={1}
                                         max={table.getPageCount()}
                                         value={table.getState().pagination.pageIndex + 1}
-                                        onChange={(e) => {
+                                        onChange={e => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-14 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
+                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
                                     />
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">of {table.getPageCount()}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
 
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -972,7 +883,7 @@ const AgentManagement = () => {
                                 <div>
                                     <label className="input-label">Domain Type *</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
+                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${!editingAgent?.domain_type || editingAgent?.domain_type === 'subdomain'
                                             ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-sm'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
@@ -987,7 +898,7 @@ const AgentManagement = () => {
                                             <span className="font-medium text-sm text-gray-900 dark:text-white">Subdomain</span>
                                             <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Free Plan</span>
                                         </label>
-                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-[3px] cursor-pointer transition-all ${editingAgent?.domain_type === 'custom'
+                                        <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${editingAgent?.domain_type === 'custom'
                                             ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}>
@@ -1013,7 +924,7 @@ const AgentManagement = () => {
                                             placeholder="company"
                                             {...register('subdomain', { required: 'Subdomain is required' })}
                                         />
-                                        <span className="inline-flex items-center px-4 bg-gray-100 dark:bg-gray-700 border border-l-0 border-gray-200 dark:border-gray-600 rounded-r-[3px] text-gray-500 dark:text-gray-400 text-sm">
+                                        <span className="inline-flex items-center px-4 bg-gray-100 dark:bg-gray-700 border border-l-0 border-gray-200 dark:border-gray-600 rounded-r-xl text-gray-500 dark:text-gray-400 text-sm">
                                             .super.app
                                         </span>
                                     </div>

@@ -219,7 +219,7 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                             <img
                                 src={img}
                                 alt={`${title} - image ${i + 1}`}
-                                className={`w-full h-full select-none pointer-events-none transition-all duration-300 ${isGalleryMode ? 'object-contain' : 'object-cover'}`}
+                                className={`w-full h-full select-none pointer-events-none transition-all duration-300 ${isGalleryMode ? 'object-contain rounded-[32px] md:rounded-[23px]' : 'object-cover'}`}
                             />
                         </Link>
                     </div>
@@ -551,7 +551,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                         {/* Favorite Button - Top Right Corner */}
                         {showSave && (
-                                <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
+                                <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
                                     <HeartButton
                                         isSaved={isSaved}
                                         onClick={handleToggleSave}
@@ -626,7 +626,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                             {/* Favorite Button - Top Right Corner */}
                             {showSave && (
-                                <div className="absolute top-3.5 right-3.5 z-50 pointer-events-none">
+                                <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
                                     <HeartButton
                                         isSaved={isSaved}
                                         onClick={handleToggleSave}
@@ -686,7 +686,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
                                 {/* Favorite Button - Top Right Corner */}
                                 {showSave && (
-                                    <div className="absolute top-3.5 right-3.5 z-10 pointer-events-none">
+                                    <div className="absolute top-2 right-3.5 z-10 pointer-events-none">
                                         <HeartButton
                                             isSaved={isSaved}
                                             onClick={handleToggleSave}

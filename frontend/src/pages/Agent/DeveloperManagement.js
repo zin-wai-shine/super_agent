@@ -8,6 +8,7 @@ import {
     PlusIcon,
     TrashIcon,
     PencilIcon,
+    PencilSquareIcon,
     MagnifyingGlassIcon,
     XMarkIcon,
     ChevronUpIcon,
@@ -120,11 +121,11 @@ const DeveloperManagement = () => {
             accessorKey: 'name',
             header: 'Developer Name',
             cell: ({ getValue }) => (
-                <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-full flex items-center justify-center flex-shrink-0">
-                        <BuildingOffice2Icon className="w-4 h-4 text-primary-700 dark:text-primary-400" />
+                <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                        <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
-                    <span className="font-medium text-gray-900 dark:text-white text-sm">{getValue()}</span>
+                    <span className="font-bold text-gray-900 dark:text-white text-sm">{getValue()}</span>
                 </div>
             ),
         },
@@ -148,17 +149,17 @@ const DeveloperManagement = () => {
             id: 'actions',
             header: '',
             cell: ({ row }) => (
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2.5">
                     <button
                         onClick={() => handleOpenForm(row.original)}
-                        className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-lg transition-all duration-200"
+                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                         title="Edit"
                     >
-                        <PencilIcon className="w-5 h-5" />
+                        <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -222,10 +223,6 @@ const DeveloperManagement = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    borderRadius: '3px',
-                                    height: '34px',
-                                    minHeight: '34px',
-                                    fontSize: '11px',
                                     textAlign: 'center',
                                     cursor: 'pointer'
                                 }),
@@ -246,7 +243,7 @@ const DeveloperManagement = () => {
                 </div>
                 <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full lg:w-auto flex-1">
                     <div className="relative w-full lg:w-64">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
@@ -266,7 +263,7 @@ const DeveloperManagement = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -312,25 +309,53 @@ const DeveloperManagement = () => {
                         </div>
                         {/* Pagination */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5 border-t border-gray-50 dark:border-gray-800">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                Showing <span className="font-bold text-gray-900 dark:text-white">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span>
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => table.setPageIndex(0)}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none">
+                                <button
+                                    onClick={() => table.previousPage()}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Page</span>
-                                    <input type="number" min={1} max={table.getPageCount()} value={table.getState().pagination.pageIndex + 1} onChange={(e) => table.setPageIndex(e.target.value ? Number(e.target.value) - 1 : 0)} className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">of {table.getPageCount()}</span>
+
+                                <div className="flex items-center gap-2 mx-2">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={table.getPageCount()}
+                                        value={table.getState().pagination.pageIndex + 1}
+                                        onChange={e => {
+                                            const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                                            table.setPageIndex(page);
+                                        }}
+                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                    />
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
-                                <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none">
+
+                                <button
+                                    onClick={() => table.nextPage()}
+                                    disabled={!table.getCanNextPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none">
+                                <button
+                                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                    disabled={!table.getCanNextPage()}
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
                             </div>

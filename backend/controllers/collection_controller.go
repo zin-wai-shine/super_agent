@@ -30,12 +30,13 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 	}
 
 	var req struct {
-		Name     string                   `json:"name" binding:"required"`
-		Type     string                   `json:"type"`
-		IsParent bool                     `json:"is_parent"`
-		Icon     string                   `json:"icon"`
-		ParentID *uuid.UUID               `json:"parent_id"`
-		Media    []models.CollectionMedia `json:"media"`
+		Name         string                   `json:"name" binding:"required"`
+		Type         string                   `json:"type"`
+		IsParent     bool                     `json:"is_parent"`
+		Icon         string                   `json:"icon"`
+		ParentID     *uuid.UUID               `json:"parent_id"`
+		FacilityName string                   `json:"facility_name"`
+		Media        []models.CollectionMedia `json:"media"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -48,14 +49,15 @@ func (cc *CollectionController) CreateCollection(c *gin.Context) {
 	}
 
 	collection := models.Collection{
-		AgentID:   agentID,
-		ParentID:  req.ParentID,
-		Name:      req.Name,
-		Type:      req.Type,
-		IsParent:  req.IsParent,
-		Icon:      req.Icon,
-		CreatedBy: userID.(uuid.UUID),
-		Media:     req.Media,
+		AgentID:      agentID,
+		ParentID:     req.ParentID,
+		Name:         req.Name,
+		Type:         req.Type,
+		IsParent:     req.IsParent,
+		Icon:         req.Icon,
+		FacilityName: req.FacilityName,
+		CreatedBy:    userID.(uuid.UUID),
+		Media:        req.Media,
 	}
 
 	if err := cc.db.Create(&collection).Error; err != nil {
@@ -87,10 +89,37 @@ func (cc *CollectionController) GetCollections(c *gin.Context) {
 		ListingsCount int64 `json:"listings_count"`
 	}
 
+	// Pre-fetch facility media
+	var facilityNames []string
+	for _, col := range collections {
+		if col.FacilityName != "" {
+			facilityNames = append(facilityNames, col.FacilityName)
+		}
+	}
+
+	facilityMediaMap := make(map[string][]models.FacilityMedia)
+	if len(facilityNames) > 0 {
+		var fms []models.FacilityMedia
+		cc.db.Where("agent_id = ? AND name IN ?", agentID, facilityNames).Order("sort_order ASC").Find(&fms)
+		for _, fm := range fms {
+			facilityMediaMap[fm.Name] = append(facilityMediaMap[fm.Name], fm)
+		}
+	}
+
 	result := []CollectionWithCount{}
 	for _, col := range collections {
 		var count int64
 		cc.db.Model(&models.CollectionListing{}).Where("collection_id = ?", col.ID).Count(&count)
+
+		if col.FacilityName != "" {
+			for _, fm := range facilityMediaMap[col.FacilityName] {
+				col.Media = append(col.Media, models.CollectionMedia{
+					URL:  fm.URL,
+					Type: "image",
+				})
+			}
+		}
+
 		result = append(result, CollectionWithCount{
 			Collection:    col,
 			ListingsCount: count,
@@ -111,6 +140,26 @@ func (cc *CollectionController) GetCollection(c *gin.Context) {
 		return
 	}
 
+	if collection.FacilityName != "" {
+		var facilityMedia []models.FacilityMedia
+		cc.db.Where("agent_id = ? AND name = ?", collection.AgentID, collection.FacilityName).Order("sort_order ASC").Find(&facilityMedia)
+		
+		// Prevent duplicates
+		existingUrls := make(map[string]bool)
+		for _, m := range collection.Media {
+			existingUrls[m.URL] = true
+		}
+
+		for _, fm := range facilityMedia {
+			if !existingUrls[fm.URL] {
+				collection.Media = append(collection.Media, models.CollectionMedia{
+					URL:  fm.URL,
+					Type: "image",
+				})
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, collection)
 }
 
@@ -118,12 +167,13 @@ func (cc *CollectionController) GetCollection(c *gin.Context) {
 func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 	id := c.Param("id")
 	var req struct {
-		Name     string                   `json:"name" binding:"required"`
-		Type     string                   `json:"type"`
-		IsParent bool                     `json:"is_parent"`
-		Icon     string                   `json:"icon"`
-		ParentID *uuid.UUID               `json:"parent_id"`
-		Media    []models.CollectionMedia `json:"media"`
+		Name         string                   `json:"name" binding:"required"`
+		Type         string                   `json:"type"`
+		IsParent     bool                     `json:"is_parent"`
+		Icon         string                   `json:"icon"`
+		ParentID     *uuid.UUID               `json:"parent_id"`
+		FacilityName string                   `json:"facility_name"`
+		Media        []models.CollectionMedia `json:"media"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -134,11 +184,12 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 	tx := cc.db.Begin()
 
 	if err := tx.Model(&models.Collection{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"name":      req.Name,
-		"type":      req.Type,
-		"is_parent": req.IsParent,
-		"icon":      req.Icon,
-		"parent_id": req.ParentID,
+		"name":          req.Name,
+		"type":          req.Type,
+		"is_parent":     req.IsParent,
+		"icon":          req.Icon,
+		"parent_id":     req.ParentID,
+		"facility_name": req.FacilityName,
 	}).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update collection"})

@@ -253,6 +253,7 @@ const PublicLayout = () => {
 
     // Navbar visibility logic (Always visible)
     const [isVisible, setIsVisible] = useState(true);
+    const [hideLayout, setHideLayout] = useState(false);
 
     // Mobile bottom nav: hide on scroll down, show on scroll up (with animation)
     const [mobileBottomNavVisible, setMobileBottomNavVisible] = useState(true);
@@ -330,7 +331,7 @@ const PublicLayout = () => {
     const isProfilePage = location.pathname === '/profile';
     const isBookingsPage = location.pathname === '/my-bookings';
     const isCollectionDetailPage = location.pathname.startsWith('/collections/') && location.pathname.split('/').length > 2;
-    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage;
+    const hideNavOnPage = isSavedPage || isProfilePage || isBookingsPage || isAuthPage || hideLayout;
     const scrollContainerRef = useRef(null);
     return (
         <div
@@ -340,7 +341,7 @@ const PublicLayout = () => {
             style={{ fontFamily: theme.fontFamily }}
         >
             {/* Navigation Drawer (Mobile + lg when burger is used) */}
-            {mobileMenuOpen && (
+            {(mobileMenuOpen && !hideLayout) && (
                 <div className="fixed inset-0 z-[250]">
                     {/* Backdrop */}
                     <div
@@ -629,7 +630,7 @@ const PublicLayout = () => {
             )}
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
-            {!isAuthPage && !isCollectionDetailPage && (
+            {!isAuthPage && !isCollectionDetailPage && !hideLayout && (
                 <div className={`hidden md:block z-[150] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isCollectionDetailPage ? 'fixed w-full top-0' : 'sticky top-0'} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : `bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-none' : 'border-b border-transparent shadow-none'}`}`}>
                     <nav
                         className={`transition-all duration-300 ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent backdrop-blur-none' : 'bg-white/80 dark:bg-transparent backdrop-blur-md'} ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
@@ -841,7 +842,7 @@ const PublicLayout = () => {
             {/* Main Content
                 Add bottom padding on mobile so content isn't hidden behind the mobile bottom nav. */}
             <main className={`${isListingsOrProjects ? 'min-h-[100vh] flex-shrink-0' : 'flex-1'} ${mobileBottomNavVisible && !hideNavOnPage ? 'pb-20' : 'pb-0'} md:pb-0`}>
-                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, mobileBottomNavVisible, setMobileBottomNavVisible }} />
+                <Outlet context={{ navVisible: isVisible, filterBarSlot, isScrolled, mobileBottomNavVisible, setMobileBottomNavVisible, setHideLayout }} />
             </main>
 
             {/* Map/List bottom sheet panel — slides up above the nav on /listings */}
@@ -914,7 +915,7 @@ const PublicLayout = () => {
             )}
 
             {/* Mobile Bottom Navigation */}
-            {!isCollectionDetailPage && (
+            {!isCollectionDetailPage && !hideLayout && (
                 <div
                     className={`fixed inset-x-0 bottom-0 z-[210] md:hidden transition-transform ease-[cubic-bezier(0.32,0.72,0,1)] ${isKeyboardOpen ? 'translate-y-full duration-0' : 'duration-500'}`}
                     style={{ transform: (mobileBottomNavVisible && !isKeyboardOpen) ? 'translateY(0)' : 'translateY(100%)' }}

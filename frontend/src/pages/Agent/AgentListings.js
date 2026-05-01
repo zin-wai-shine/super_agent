@@ -13,6 +13,7 @@ import {
 import {
     PlusIcon,
     PencilIcon,
+    PencilSquareIcon,
     TrashIcon,
     EyeIcon,
     EyeSlashIcon,
@@ -284,7 +285,7 @@ const AgentListings = () => {
 
                 return (
                     <div className="flex items-center space-x-4">
-                        <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-[3px] overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200 dark:border-gray-700">
                             {displayImage ? (
                                 <img
                                     src={getMediaUrl(displayImage)}
@@ -387,19 +388,19 @@ const AgentListings = () => {
             cell: ({ row }) => {
                 const listing = row.original;
                 return (
-                    <div className="flex items-center justify-end space-x-2">
+                    <div className="flex items-center justify-end gap-2.5">
                         <button
                             onClick={() => setAddToCollectionId(listing.id)}
-                            className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-400/10 dark:text-blue-400 dark:hover:bg-blue-400/20 rounded-lg transition-all duration-200"
+                            className="p-2.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-100/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                             title="Add to Collection"
                         >
                             <FolderPlusIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => handlePublish(listing.id, listing.is_published)}
-                            className={`p-1.5 rounded-lg transition-all duration-200 ${listing.is_published
-                                ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-400/10 dark:text-amber-400 dark:hover:bg-amber-400/20'
-                                : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-400 dark:hover:bg-emerald-400/20'
+                            className={`p-2.5 rounded-xl transition-all border shadow-sm flex items-center justify-center ${listing.is_published
+                                ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 border-amber-100/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 dark:hover:bg-amber-500/20'
+                                : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-100/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20'
                                 }`}
                             title={listing.is_published ? 'Unpublish' : 'Publish'}
                         >
@@ -411,21 +412,21 @@ const AgentListings = () => {
                         </button>
                         <button
                             onClick={() => handleRepost(listing.id)}
-                            className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-400/10 dark:text-indigo-400 dark:hover:bg-indigo-400/20 rounded-lg transition-all duration-200"
+                            className="p-2.5 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-xl transition-all border border-indigo-100/20 dark:border-indigo-500/20 shadow-sm flex items-center justify-center"
                             title="Repost to Top"
                         >
                             <ArrowPathIcon className="w-5 h-5" />
                         </button>
                         <Link
                             to={`/dashboard/listings/${listing.id}/edit`}
-                            className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-600/10 dark:text-primary-400 dark:hover:bg-primary-600/20 rounded-lg transition-all duration-200"
+                            className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
-                            <PencilIcon className="w-5 h-5" />
+                            <PencilSquareIcon className="w-5 h-5" />
                         </Link>
                         <button
                             onClick={() => handleDelete(listing.id)}
-                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-400/10 dark:text-red-400 dark:hover:bg-red-400/20 rounded-lg transition-all duration-200"
+                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                             title="Delete"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -492,10 +493,6 @@ const AgentListings = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    borderRadius: '3px',
-                                    height: '34px',
-                                    minHeight: '34px',
-                                    fontSize: '13px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
                                 }),
@@ -532,10 +529,6 @@ const AgentListings = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
-                                    borderRadius: '3px',
-                                    fontSize: '13px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -586,10 +579,6 @@ const AgentListings = () => {
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        minHeight: '34px',
-                                        height: '34px',
-                                        fontSize: '13px',
-                                        borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
                                         ...base,
@@ -602,14 +591,14 @@ const AgentListings = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-[3px] transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-[3px] overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
                                 {/* Custom Header */}
                                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                     <button
@@ -634,8 +623,6 @@ const AgentListings = () => {
                                                         ...base,
                                                         minHeight: '30px',
                                                         height: '30px',
-                                                        fontSize: '12px',
-                                                        borderRadius: '3px'
                                                     }),
                                                     dropdownIndicator: (base) => ({
                                                         ...base,
@@ -658,8 +645,7 @@ const AgentListings = () => {
                                                         ...base,
                                                         minHeight: '30px',
                                                         height: '30px',
-                                                        fontSize: '12px',
-                                                        borderRadius: '3px'
+                                                        fontSize: '12px'
                                                     }),
                                                     dropdownIndicator: (base) => ({
                                                         ...base,
@@ -704,7 +690,7 @@ const AgentListings = () => {
                 {/* RIGHT: Search & Actions */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     <div className="relative w-full lg:w-64">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={globalFilter ?? ''}
@@ -733,8 +719,8 @@ const AgentListings = () => {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+            {/* Listings Table Section */}
+            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -810,64 +796,53 @@ const AgentListings = () => {
 
                         {/* Pagination */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                Showing{' '}
-                                <span className="font-medium">
-                                    {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
-                                </span>{' '}
-                                to{' '}
-                                <span className="font-medium">
-                                    {Math.min(
-                                        (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                                        table.getFilteredRowModel().rows.length
-                                    )}
-                                </span>{' '}
-                                of <span className="font-medium">{table.getFilteredRowModel().rows.length}</span> results
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
-                                <div className="flex items-center space-x-1">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Page</span>
+                                <div className="flex items-center gap-2 mx-2">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
                                     <input
                                         type="number"
                                         min={1}
                                         max={table.getPageCount()}
                                         value={table.getState().pagination.pageIndex + 1}
-                                        onChange={(e) => {
+                                        onChange={e => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-14 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-sm bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
+                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
                                     />
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">of {table.getPageCount()}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
 
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-500 dark:text-gray-400"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>

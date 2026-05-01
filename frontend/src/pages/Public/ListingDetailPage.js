@@ -274,7 +274,7 @@ const TrainIconCool = (props) => (
     </svg>
 );
 
-export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onHeaderLeadingChange, onBookingOpenChange, onClose, onOpenGallery }) => {
+export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onHeaderLeadingChange, onBookingOpenChange, onClose, onOpenGallery, setHideLayout }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { id: routeId } = useParams();
@@ -422,11 +422,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     // Order by room type: Bedroom first, then Living Room, then rest — so count 1, 2, 3… starts from Bedroom
     const images = useMemo(() => {
         if (!rawImages.length) return [];
+        
+        // Deduplicate by URL to prevent showing the same image multiple times
+        const seenUrls = new Set();
+        const uniqueRawImages = rawImages.filter(img => {
+            if (!img.url || seenUrls.has(img.url)) return false;
+            seenUrls.add(img.url);
+            return true;
+        });
+
         const order = (rt) => {
             const i = PHOTO_ROOM_TYPES.indexOf(rt && rt.trim() ? rt.trim() : 'Additional Photos');
             return i >= 0 ? i : PHOTO_ROOM_TYPES.length;
         };
-        return [...rawImages].sort((a, b) => order(a.room_type) - order(b.room_type));
+        return [...uniqueRawImages].sort((a, b) => order(a.room_type) - order(b.room_type));
     }, [listing?.media]);
 
     // Detail hero starts at first image (Bedroom first after sort)
@@ -1112,6 +1121,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         }
     };
 
+    useEffect(() => {
+        if (setHideLayout) {
+            if (error || (!loading && !listing)) {
+                setHideLayout(true);
+            } else {
+                setHideLayout(false);
+            }
+        }
+        return () => {
+            if (setHideLayout) setHideLayout(false);
+        };
+    }, [error, listing, loading, setHideLayout]);
+
     if (loading) {
         const statusFromState = location.state?.status;
         const statusFromUrl = searchParams.get('status');
@@ -1292,19 +1314,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
-                    <PropertyShare
-                        property={{
-                            id,
-                            title: listing?.title,
-                            description: listing?.description || `${listing?.bedrooms} Bed, ${listing?.bathrooms} Bath property in ${listing?.district || 'Bangkok'}`,
-                            image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
-                            url: window.location.href
-                        }}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group shrink-0"
-                        showLabel={true}
-                        labelClassName="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300 whitespace-nowrap"
-                        iconClassName="w-4 h-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300"
-                    />
+                    <div className="w-10" />
                 </div>
 
             </div>,
@@ -1917,18 +1927,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                         </button>
                         <div className="flex items-center gap-2 pointer-events-auto">
-                            <PropertyShare
-                                property={{
-                                    id,
-                                    title: listing?.title,
-                                    description: listing?.description || `${listing?.bedrooms} Bed, ${listing?.bathrooms} Bath property in ${listing?.district || 'Bangkok'}`,
-                                    image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
-                                    url: window.location.href
-                                }}
-                                className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 active:scale-90 transition-all"
-                                showLabel={false}
-                                iconClassName="w-6 h-6 text-gray-900 dark:text-white"
-                            />
+                            <div className="w-[42px] h-[42px]" />
                             <HeartButton
                                 isSaved={isSaved}
                                 onClick={handleToggleSave}
@@ -2083,19 +2082,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             {isSaved ? 'Saved' : 'Save'}
                                                         </span>
                                                     </button>
-                                                    <PropertyShare
-                                                        property={{
-                                                            id,
-                                                            title: listing?.title,
-                                                            description: listing?.description || `${listing?.bedrooms} Bed, ${listing?.bathrooms} Bath property in ${listing?.district || 'Bangkok'}`,
-                                                            image: getMediaUrl(listing?.media?.find(m => m.type === 'image')?.url),
-                                                            url: window.location.href
-                                                        }}
-                                                        className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn shrink-0 whitespace-nowrap"
-                                                        showLabel={true}
-                                                        labelClassName="text-[13px] font-normal text-gray-900 dark:text-white"
-                                                        iconClassName="w-4 h-4 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all"
-                                                    />
+                                                    <div className="w-10" />
                                                 </div>
                                             </div>
                                         </div>
@@ -3216,6 +3203,7 @@ const ListingDetailPage = () => {
     const context = useOutletContext();
     const navVisible = context?.navVisible ?? true;
     const filterBarSlot = context?.filterBarSlot;
+    const setHideLayout = context?.setHideLayout;
     const bookingId = searchParams.get('bookingId');
     const [modalTitle, setModalTitle] = useState(bookingId ? 'Viewing Request' : 'Property Details');
     const [headerLeading, setHeaderLeading] = useState(
@@ -3273,6 +3261,7 @@ const ListingDetailPage = () => {
             onBookingOpenChange={setIsBookingOpen}
             onClose={() => navigate(-1)}
             onOpenGallery={openGallery}
+            setHideLayout={setHideLayout}
         />
     );
 

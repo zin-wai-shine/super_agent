@@ -84,9 +84,9 @@ const NotificationCenter = () => {
             </div>
 
             {activeTab === 'send' && (
-                <div className="bg-white dark:bg-dashboard-card shadow rounded-lg p-6 max-w-2xl border dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card shadow rounded-xl p-6 max-w-2xl border dark:border-gray-700">
                     {successMessage && (
-                        <div className="mb-4 p-4 rounded-md bg-green-50 dark:bg-green-900/20 flex items-center border border-green-100 dark:border-green-800">
+                        <div className="mb-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center border border-green-100 dark:border-green-800">
                             <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
                             <span className="text-green-700 dark:text-green-300">{successMessage}</span>
                         </div>
@@ -188,7 +188,7 @@ const NotificationCenter = () => {
             )}
 
             {activeTab === 'history' && (
-                <div className="bg-white dark:bg-dashboard-card shadow overflow-hidden sm:rounded-lg border dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card shadow overflow-hidden sm:rounded-xl border dark:border-gray-700">
                     {history.length === 0 ? (
                         <EmptyState
                             icon={InboxIcon}

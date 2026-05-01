@@ -247,7 +247,7 @@ const ThemeSettings = () => {
         try {
             toast.loading('Processing image...', { id: 'imageUpload' });
             
-            // Force PNG for favicons to ensure transparent rounded corners are preserved
+            // Force PNG for favicons to ensure transparent rounded-xl corners are preserved
             const imageType = (cropTarget.isPng || cropTarget.field === 'favicon_url') ? 'image/png' : 'image/jpeg';
             const isFavicon = cropTarget.field === 'favicon_url';
             const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels, imageType, isFavicon);
@@ -376,7 +376,7 @@ const ThemeSettings = () => {
                     {/* Section Label Header */}
                     <div className="mb-6 pb-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
                         <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
-                            <div className="p-2 bg-primary-600/10 rounded-lg">
+                            <div className="p-2 bg-primary-600/10 rounded-xl">
                                 {React.createElement(tabs.find(t => t.id === activeTab).icon, { className: "w-5 h-5 text-primary-500" })}
                             </div>
                             {tabs.find(t => t.id === activeTab).label}
@@ -413,7 +413,7 @@ const ThemeSettings = () => {
                                     </div>
                                 </div>
 
-                                <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden">
+                                <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden">
                                     <div className="h-20 md:h-28 flex items-center px-6 md:px-12 justify-between">
                                         <div className="flex items-center">
                                             <img
@@ -456,7 +456,7 @@ const ThemeSettings = () => {
                                         <button
                                             type="button"
                                             onClick={() => resetField('navbar_logo_height')}
-                                            className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                            className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
                                             title="Reset Scale"
                                         >
                                             <ArrowPathIcon className="w-4 h-4" />
@@ -474,7 +474,7 @@ const ThemeSettings = () => {
                                         </div>
                                     </div>
 
-                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden h-64 flex flex-col items-center justify-center">
+                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden h-64 flex flex-col items-center justify-center">
                                         <div className="relative flex flex-col items-center justify-center transform transition-all duration-700" style={{ transform: `scale(${preview.page_logo_height / 100})` }}>
                                             <img
                                                 src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
@@ -506,7 +506,7 @@ const ThemeSettings = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => resetField('page_logo_height')}
-                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
                                                 title="Reset Scale"
                                             >
                                                 <ArrowPathIcon className="w-4 h-4" />
@@ -525,10 +525,10 @@ const ThemeSettings = () => {
                                         </div>
                                     </div>
 
-                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-[5px] overflow-hidden h-32 flex items-center px-8">
+                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden h-32 flex items-center px-8">
                                         <div className="w-16 h-full border-r border-gray-200 dark:border-gray-800 flex flex-col pt-4 gap-4 opacity-30">
-                                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-800" />
-                                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-800" />
+                                            <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-800" />
+                                            <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-800" />
                                         </div>
                                         <div className="flex-1 flex items-center px-6">
                                             <img
@@ -560,7 +560,7 @@ const ThemeSettings = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => resetField('dashboard_logo_height')}
-                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-lg"
+                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
                                                 title="Reset Scale"
                                             >
                                                 <ArrowPathIcon className="w-4 h-4" />
@@ -672,7 +672,7 @@ const ThemeSettings = () => {
                                         <div className="w-full text-center">
                                             {watchAll.share_preview_image ? (
                                                 <div className="relative w-full group-hover:scale-[1.01] transition-transform duration-300">
-                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="w-full h-auto object-cover rounded-lg shadow-sm" />
+                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="w-full h-auto object-cover rounded-xl shadow-sm" />
                                                     <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Image</div>
                                                 </div>
                                             ) : (
@@ -792,7 +792,7 @@ const ThemeSettings = () => {
                                 step={0.1}
                                 aria-labelledby="Zoom"
                                 onChange={(e) => setZoom(e.target.value)}
-                                className="w-full lg:w-1/2 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                                className="w-full lg:w-1/2 h-1.5 bg-white/10 rounded-xl appearance-none cursor-pointer accent-white"
                             />
                         </div>
                         

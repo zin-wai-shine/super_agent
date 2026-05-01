@@ -45,6 +45,8 @@ const EditListing = () => {
     const [shownDate, setShownDate] = useState(new Date());
     const datePickerRef = useRef(null);
     const [lightboxIndex, setLightboxIndex] = useState(null);
+    const [facilityGroups, setFacilityGroups] = useState([]);
+    const [allFacilityMedia, setAllFacilityMedia] = useState([]);
 
     const WALKING_SPEED_MPM = 80; // Meters per minute
 
@@ -134,6 +136,18 @@ const EditListing = () => {
         }
     };
 
+    const fetchFacilityGroups = async () => {
+        try {
+            const response = await agentApi.getFacilityMedia();
+            const media = response.data || [];
+            setAllFacilityMedia(media);
+            const groups = [...new Set(media.map(m => m.name))].filter(Boolean);
+            setFacilityGroups(groups.map(g => ({ value: g, label: g })));
+        } catch (error) {
+            console.error('Failed to fetch facility groups:', error);
+        }
+    };
+
     const fetchData = useCallback(async () => {
         try {
             const listingRes = await agentApi.getListing(id);
@@ -142,6 +156,7 @@ const EditListing = () => {
             // Initial fetch of options
             fetchStations();
             fetchProjects();
+            fetchFacilityGroups();
 
             // Reset form with listing data
             reset({
@@ -161,6 +176,7 @@ const EditListing = () => {
                 latitude: listing.latitude,
                 longitude: listing.longitude,
                 map_url: listing.map_url,
+                facility_name: listing.facility_name ? { value: listing.facility_name, label: listing.facility_name } : null,
                 allow_viewing_requests: listing.allow_viewing_requests ?? true,
             });
 
@@ -232,7 +248,7 @@ const EditListing = () => {
                 }
             }
 
-            setMedia(listing.media || []);
+            setMedia(listing.media?.filter(m => !m.caption?.includes('(Facility:')) || []);
         } catch (error) {
             toast.error('Failed to load listing');
             navigate('/dashboard/listings');
@@ -308,6 +324,7 @@ const EditListing = () => {
                     ...(data.building_features || []),
                     ...(data.project_facilities || [])
                 ]),
+                facility_name: data.facility_name?.value || data.facility_name || '',
                 allow_viewing_requests: data.allow_viewing_requests,
             });
             toast.success('Listing updated successfully!');
@@ -317,6 +334,11 @@ const EditListing = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleFacilityChange = (facilityName) => {
+        setValue('facility_name', facilityName);
+        toast.success(`Facility collection updated to ${facilityName?.value || 'none'}`);
     };
 
     const handleImageUpload = async (roomType, e) => {
@@ -356,11 +378,13 @@ const EditListing = () => {
 
     const imageList = useMemo(() => {
         const byType = {};
-        (media || []).filter((m) => m.type === 'image').forEach((m) => {
-            const rt = (m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos';
-            if (!byType[rt]) byType[rt] = [];
-            byType[rt].push(m);
-        });
+        (media || [])
+            .filter((m) => m.type === 'image' && !m.caption?.includes('(Facility:')) // Filter out virtual facility images
+            .forEach((m) => {
+                const rt = (m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos';
+                if (!byType[rt]) byType[rt] = [];
+                byType[rt].push(m);
+            });
         return PHOTO_ROOM_TYPES.flatMap((t) => byType[t] || []);
     }, [media]);
 
@@ -454,7 +478,29 @@ const EditListing = () => {
                             });
                             return (
                                 <div key={roomType} className="space-y-3">
-                                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">{roomType}</h3>
+                                        {roomType === 'Additional Photos' && (
+                                            <div className="w-80">
+                                                <Controller
+                                                    name="facility_name"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <StyledSelect
+                                                            {...field}
+                                                            options={facilityGroups}
+                                                            onChange={(val) => {
+                                                                field.onChange(val);
+                                                                handleFacilityChange(val);
+                                                            }}
+                                                            placeholder="Use Facility Collection..."
+                                                            isClearable
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {items.map((item, i) => {
                                             const flatIndex = flatIndexOffset >= 0 ? flatIndexOffset + i : 0;
@@ -472,13 +518,32 @@ const EditListing = () => {
                                                             e.stopPropagation();
                                                             handleDeleteMedia(item.id);
                                                         }}
-                                                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+                                                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
                                                     >
                                                         <TrashIcon className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             );
                                         })}
+                                        
+                                        {/* Facility Images Preview */}
+                                        {roomType === 'Additional Photos' && fieldValues.facility_name && (
+                                            allFacilityMedia
+                                                .filter(m => m.name === (fieldValues.facility_name?.value || fieldValues.facility_name))
+                                                .map((item) => (
+                                                    <div
+                                                        key={`facility-${item.id}`}
+                                                        className="relative aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100 dark:border-gray-800 opacity-70 cursor-help"
+                                                        title="Shared Facility Image (Display Only)"
+                                                    >
+                                                        <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/5" />
+                                                        <div className="absolute top-2 right-2 px-2 py-1 bg-primary-600/90 backdrop-blur-sm rounded-xl text-[9px] text-white font-bold uppercase tracking-wider shadow-sm">
+                                                            Shared
+                                                        </div>
+                                                    </div>
+                                                ))
+                                        )}
                                         <label className="aspect-video rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group bg-gray-50/50 dark:bg-gray-800/10">
                                             <PhotoIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors mb-2" />
                                             <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 px-2 text-center">
@@ -604,7 +669,7 @@ const EditListing = () => {
                                                 ['clean']
                                             ],
                                         }}
-                                        className="bg-white dark:bg-gray-900 rounded-lg"
+                                        className="bg-white dark:bg-gray-900 rounded-xl"
                                         placeholder="Describe the property features, amenities, and unique selling points..."
                                     />
                                 )}
@@ -656,7 +721,7 @@ const EditListing = () => {
                                     </div>
 
                                     {showDatePicker && (
-                                        <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 z-50 shadow-lg rounded-md border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-auto min-w-[300px]">
+                                        <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 z-50 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-auto min-w-[300px]">
                                             {/* Custom Header */}
                                             <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                                 <button
@@ -682,7 +747,6 @@ const EditListing = () => {
                                                                     ...base,
                                                                     minHeight: '30px',
                                                                     height: '30px',
-                                                                    fontSize: '0.8rem'
                                                                 }),
                                                                 dropdownIndicator: (base) => ({
                                                                     ...base,
@@ -705,7 +769,6 @@ const EditListing = () => {
                                                                     ...base,
                                                                     minHeight: '30px',
                                                                     height: '30px',
-                                                                    fontSize: '0.8rem'
                                                                 }),
                                                                 dropdownIndicator: (base) => ({
                                                                     ...base,
@@ -1032,10 +1095,10 @@ const EditListing = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div className="space-y-8 pt-6">
                         <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Unit Amenities</h3>
-                            <div className="grid grid-cols-2 gap-3">
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Unit Amenities</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 {[
                                     { id: 'refrigerator', label: 'Refrigerator', icon: <MdKitchen className="w-5 h-5 text-blue-400" /> },
                                     { id: 'bathtub', label: 'Bathtub', icon: <MdBathtub className="w-5 h-5 text-blue-300" /> },
@@ -1046,16 +1109,16 @@ const EditListing = () => {
                                     { id: 'water_heater', label: 'Water Heater', icon: <MdShower className="w-5 h-5 text-blue-400" /> },
                                     { id: 'kitchen', label: 'Kitchen / Stove', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
                                 ].map((item) => (
-                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
                                             type="checkbox"
                                             value={item.id}
                                             {...register('unit_amenities')}
-                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                         />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2 flex items-center justify-center">{item.icon}</span>
-                                            {item.label}
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                            <span className="truncate">{item.label}</span>
                                         </span>
                                     </label>
                                 ))}
@@ -1063,8 +1126,8 @@ const EditListing = () => {
                         </div>
 
                         <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Building Features</h3>
-                            <div className="grid grid-cols-2 gap-3">
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Building Features</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 {[
                                     { id: 'parking', label: 'Covered Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
                                     { id: 'pool', label: 'Swimming Pool', icon: <MdPool className="w-5 h-5 text-cyan-500" /> },
@@ -1075,16 +1138,16 @@ const EditListing = () => {
                                     { id: 'playground', label: 'Playground', icon: <MdChildCare className="w-5 h-5 text-purple-400" /> },
                                     { id: 'coworking', label: 'Co-working Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
                                 ].map((item) => (
-                                    <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                         <input
                                             type="checkbox"
                                             value={item.id}
                                             {...register('building_features')}
-                                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                         />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                            <span className="mr-2">{item.icon}</span>
-                                            {item.label}
+                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                            <span className="truncate">{item.label}</span>
                                         </span>
                                     </label>
                                 ))}
@@ -1092,9 +1155,9 @@ const EditListing = () => {
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
-                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">Project Facilities</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="pt-8">
+                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Project Facilities</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             {[
                                 { id: 'communal_elevator', label: 'Communal Elevator', icon: <MdElevator className="w-5 h-5 text-gray-500" /> },
                                 { id: 'communal_reception', label: 'Communal Reception', icon: <MdGroups className="w-5 h-5 text-amber-600" /> },
@@ -1108,16 +1171,16 @@ const EditListing = () => {
                                 { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: <MdGarage className="w-5 h-5 text-blue-600" /> },
                                 { id: 'communal_function_room', label: 'Communal Function Room', icon: <MdMeetingRoom className="w-5 h-5 text-amber-700" /> },
                             ].map((item) => (
-                                <label key={item.id} className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+                                <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
                                     <input
                                         type="checkbox"
                                         value={item.id}
                                         {...register('project_facilities')}
-                                        className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
                                     />
-                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center">
-                                        <span className="mr-2 flex items-center justify-center">{item.icon}</span>
-                                        {item.label}
+                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
+                                        <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
+                                        <span className="truncate">{item.label}</span>
                                     </span>
                                 </label>
                             ))}
@@ -1206,7 +1269,7 @@ const EditListing = () => {
                         <img
                             src={getMediaUrl(imageList[lightboxIndex].url)}
                             alt="Full Preview"
-                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300"
+                            className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl transition-all duration-300"
                         />
                         <div className="absolute -bottom-10 left-0 right-0 text-center text-white/60 text-sm font-medium">
                             {lightboxIndex + 1} / {imageList.length}

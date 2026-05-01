@@ -11,9 +11,9 @@ const PricingPlan = ({ plan, onSelect }) => {
     };
 
     return (
-        <div className={`relative glass-card !rounded-[3px] p-8 shadow-lg border-2 transition-all duration-300 hover:scale-[1.02] ${plan.domain_type === 'custom' ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-transparent shadow-gray-200/50'} w-full max-w-sm mx-auto flex flex-col h-full`}>
+        <div className={`relative glass-card !rounded-xl p-8 shadow-lg border-2 transition-all duration-300 hover:scale-[1.02] ${plan.domain_type === 'custom' ? 'border-primary-500 ring-4 ring-primary-500/10' : 'border-transparent shadow-gray-200/50'} w-full max-w-sm mx-auto flex flex-col h-full`}>
             {plan.domain_type === 'custom' && (
-                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-primary-600 text-white px-4 py-1.5 rounded-[3px] text-[10px] font-bold uppercase tracking-widest shadow-lg">
+                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-primary-600 text-white px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg">
                     Recommended
                 </div>
             )}
@@ -53,7 +53,7 @@ const PricingPlan = ({ plan, onSelect }) => {
 
             <button
                 onClick={() => onSelect(plan)}
-                className={`w-full ${plan.domain_type === 'custom' ? 'btn-primary' : 'btn-secondary'} !rounded-[3px] !h-12 text-sm mt-auto`}
+                className={`w-full ${plan.domain_type === 'custom' ? 'btn-primary' : 'btn-secondary'} !rounded-xl !h-12 text-sm mt-auto`}
             >
                 Choose {plan.plan_name || plan.name}
             </button>

@@ -273,7 +273,7 @@ const TransitMapFilter = ({
                                 />
 
                                 {showResults && searchTerm && (
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-xl rounded-[3px] shadow-2xl border border-white/20 dark:border-white/5 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 dark:border-white/5 max-h-[400px] overflow-y-auto z-[120] animate-fade-in custom-scrollbar">
                                         {stations
                                             .filter(s => {
                                                 const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
@@ -335,7 +335,7 @@ const TransitMapFilter = ({
                         ].map((line) => (
                             <div
                                 key={line.name}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-[3px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-shadow cursor-default"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-shadow cursor-default"
                             >
                                 <div
                                     className="w-2.5 h-2.5 rounded-[1px] flex-none ring-2 ring-white"

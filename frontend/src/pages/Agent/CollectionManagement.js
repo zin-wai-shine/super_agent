@@ -73,15 +73,15 @@ const SortableItem = ({ id, collection }) => {
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex items-center gap-4 p-4 mb-2 bg-white dark:bg-gray-800 rounded-[3px] shadow-sm transition-all ${
+            className={`flex items-center gap-4 p-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all ${
                 isDragging ? 'opacity-50 scale-105 ring-4 ring-primary-500/10' : ''
             }`}
         >
-            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-[3px] transition-colors">
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors">
                 <Bars3Icon className="w-4 h-4 text-gray-400" />
             </div>
             
-            <div className="w-10 h-10 rounded-[3px] bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {collection.media && collection.media[0] ? (
                     <img src={getMediaUrl(collection.media[0].url)} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -154,7 +154,7 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-xl bg-white dark:bg-dashboard-card rounded-[3px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="relative w-full max-w-xl bg-white dark:bg-dashboard-card rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
                     <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">
@@ -203,14 +203,14 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
                 <div className="px-6 py-4 bg-white dark:bg-dashboard-card border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="h-[38px] px-6 border border-gray-300 dark:border-gray-600 text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-[3px] transition-all"
+                        className="h-[38px] px-6 border border-gray-300 dark:border-gray-600 text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving || items.length === 0}
-                        className="h-[38px] px-8 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-[3px] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
+                        className="h-[38px] px-8 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-xl text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
                     >
                         {saving ? (
                             <>
@@ -275,8 +275,8 @@ const CollectionManagement = () => {
                 const hasMedia = col.media && col.media.length > 0;
 
                 return (
-                    <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden ${col.isVirtual ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                    <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border ${col.isVirtual ? 'bg-primary-50 border-primary-100/50 dark:bg-primary-500/10 dark:border-primary-500/20' : 'bg-gray-50 border-gray-100 dark:bg-gray-800 dark:border-gray-700'}`}>
                             {isIconType ? (() => {
                                 const Icon = MdIcons[col.icon] || 
                                              FaIcons[col.icon] || 
@@ -288,7 +288,7 @@ const CollectionManagement = () => {
                             })() : (hasMedia && !col.is_parent) ? (
                                 <img src={getMediaUrl(col.media[0].url)} alt="" className="w-full h-full object-cover" />
                             ) : (
-                                <FolderIcon className={`w-5 h-5 ${col.is_parent ? 'text-primary-500' : 'text-gray-400'}`} />
+                                <FolderIcon className={`w-5 h-5 ${col.is_parent ? 'text-primary-600' : 'text-gray-400'}`} />
                             )}
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -305,7 +305,7 @@ const CollectionManagement = () => {
             accessorKey: 'listings_count',
             header: 'Props',
             cell: ({ getValue }) => (
-                <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-500/10 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-500/10 px-1.5 py-0.5 rounded-xl">
                     {getValue() || 0}
                 </span>
             ),
@@ -319,7 +319,7 @@ const CollectionManagement = () => {
                     <div className="flex justify-end space-x-1.5">
                         <button
                             onClick={() => setEditingCollection(row.original)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-all"
                             title="Edit"
                         >
                             <PencilSquareIcon className="w-4 h-4" />
@@ -337,7 +337,7 @@ const CollectionManagement = () => {
                                         }
                                     }
                                 }}
-                                className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
                                 title="Delete"
                             >
                                 <TrashIcon className="w-4 h-4" />
@@ -357,7 +357,7 @@ const CollectionManagement = () => {
                 const col = info.row.original;
                 return (
                     <div className="flex items-center gap-3 py-1">
-                        <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center flex-shrink-0 shadow-sm">
                             <FolderIcon className="w-5 h-5 text-secondary-500" />
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -374,7 +374,7 @@ const CollectionManagement = () => {
             accessorKey: 'children_count',
             header: 'Childs',
             cell: ({ getValue }) => (
-                <span className="text-[10px] font-bold text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-500/10 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-500/10 px-1.5 py-0.5 rounded-xl">
                     {getValue() || 0}
                 </span>
             ),
@@ -384,23 +384,23 @@ const CollectionManagement = () => {
             header: '',
             cell: ({ row }) => {
                 return (
-                    <div className="flex justify-end space-x-1.5">
+                    <div className="flex justify-end space-x-2">
                         <button
                             onClick={() => {
                                 setSelectedParentForReorder(row.original);
                                 setShowReorderModal(true);
                             }}
-                            className="p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 rounded-lg transition-all"
+                            className="p-2.5 text-gray-400 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition-all border border-gray-100/20 dark:border-gray-700 shadow-sm flex items-center justify-center"
                             title="Adjust Order"
                         >
-                            <ArrowsUpDownIcon className="w-4 h-4" />
+                            <ArrowsUpDownIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setEditingCollection(row.original)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                            className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
-                            <PencilSquareIcon className="w-4 h-4" />
+                            <PencilSquareIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={async () => {
@@ -414,10 +414,10 @@ const CollectionManagement = () => {
                                     }
                                 }
                             }}
-                            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                             title="Delete"
                         >
-                            <TrashIcon className="w-4 h-4" />
+                            <TrashIcon className="w-5 h-5" />
                         </button>
                     </div>
                 );
@@ -511,31 +511,57 @@ const CollectionManagement = () => {
 
     const TablePagination = ({ table }) => (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-800/30">
-            <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
-                <span className="font-bold text-gray-900 dark:text-white">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">
+                <span className="text-gray-900 dark:text-white">
                     {table.getFilteredRowModel().rows.length}
                 </span> results
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                >
+                    <ChevronDoubleLeftIcon className="w-4 h-4" />
+                </button>
                 <button
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
-                    className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-white dark:hover:bg-gray-700 disabled:opacity-30 transition-all text-gray-500 dark:text-gray-400"
+                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronLeftIcon className="w-4 h-4" />
                 </button>
-                
-                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400 px-2">
-                    Page <span className="font-bold text-gray-900 dark:text-white">{table.getState().pagination.pageIndex + 1}</span> of {table.getPageCount() || 1}
-                </span>
+
+                <div className="flex items-center gap-2 mx-2">
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                    <input
+                        type="number"
+                        min={1}
+                        max={table.getPageCount()}
+                        value={table.getState().pagination.pageIndex + 1}
+                        onChange={e => {
+                            const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                            table.setPageIndex(page);
+                        }}
+                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                    />
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
+                </div>
 
                 <button
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
-                    className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-white dark:hover:bg-gray-700 disabled:opacity-30 transition-all text-gray-500 dark:text-gray-400"
+                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronRightIcon className="w-4 h-4" />
+                </button>
+                <button
+                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                    disabled={!table.getCanNextPage()}
+                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                >
+                    <ChevronDoubleRightIcon className="w-4 h-4" />
                 </button>
             </div>
         </div>
@@ -566,7 +592,7 @@ const CollectionManagement = () => {
                             <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">
                                 Main Collections
                             </h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-xl">
                                 {parentData.length}
                             </span>
                         </div>
@@ -574,12 +600,12 @@ const CollectionManagement = () => {
                     
                     <div className="flex items-center gap-3">
                         <div className="relative flex-1">
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 z-10" />
                             <input
                                 type="text"
                                 value={parentFilter}
                                 onChange={(e) => setParentFilter(e.target.value)}
-                                placeholder="Search main..."
+                                placeholder="Search collections..."
                                 className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[13px]"
                             />
                         </div>
@@ -588,7 +614,7 @@ const CollectionManagement = () => {
                                 setCreateModalType('parent');
                                 setShowCreateModal(true);
                             }}
-                            className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+                            className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
                             <span>Add Parent</span>
@@ -610,7 +636,7 @@ const CollectionManagement = () => {
                             <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">
                                 Child Collections
                             </h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-secondary-50 dark:bg-secondary-500/10 text-secondary-600 dark:text-secondary-400 rounded">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-secondary-50 dark:bg-secondary-500/10 text-secondary-600 dark:text-secondary-400 rounded-xl">
                                 {childData.length}
                             </span>
                         </div>
@@ -618,12 +644,12 @@ const CollectionManagement = () => {
 
                     <div className="flex items-center gap-2.5">
                         <div className="relative flex-[1.5]">
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 z-10" />
                             <input
                                 type="text"
                                 value={childFilter}
                                 onChange={(e) => setChildFilter(e.target.value)}
-                                placeholder="Search child..."
+                                placeholder="Search collections..."
                                 className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[13px]"
                             />
                         </div>
@@ -638,10 +664,6 @@ const CollectionManagement = () => {
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        height: '34px',
-                                        minHeight: '34px',
-                                        borderRadius: '3px',
-                                        fontSize: '13px',
                                     }),
                                     valueContainer: (base) => ({
                                         ...base,
@@ -656,7 +678,7 @@ const CollectionManagement = () => {
                                 setCreateModalType('child');
                                 setShowCreateModal(true);
                             }}
-                            className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-[3px] text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+                            className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
                             <span>Add Child</span>
@@ -703,7 +725,7 @@ const CollectionManagement = () => {
 
 const TableView = ({ table, loading, emptyTitle, colorTheme = "primary", pagination }) => {
     return (
-        <div className="bg-white dark:bg-dashboard-card rounded-[3px] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[400px] flex flex-col">
+        <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[400px] flex flex-col">
             {loading ? (
                 <div className="flex-1 flex items-center justify-center p-12">
                     <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${colorTheme === 'primary' ? 'border-primary-600' : 'border-secondary-600'}`}></div>

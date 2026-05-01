@@ -74,7 +74,7 @@
 
   /* Premium button */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-primary-600 text-white font-bold rounded-[3px] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-primary-600 text-white font-bold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
   .btn-primary:hover {
@@ -82,16 +82,16 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold rounded-[3px] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm border-2 border-primary-500 text-primary-600 font-semibold rounded-[3px] hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 h-[38px] text-sm border-2 border-primary-500 text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
   /* Input styles — rounded-full, consistent height for UI */
   .input-field {
-    @apply w-full px-4 py-2 min-h-[38px] bg-white/80 dark:bg-dashboard-input/50 backdrop-blur-md border border-gray-200 dark:border-dashboard-border/50 rounded-[3px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-30 focus:border-primary-500 transition-all duration-200;
+    @apply w-full px-4 py-2 min-h-[38px] bg-white/80 dark:bg-dashboard-input/50 backdrop-blur-md border border-gray-200 dark:border-dashboard-border/50 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-30 focus:border-primary-500 transition-all duration-200;
   }
 
   .input-label {
@@ -875,11 +875,13 @@ body::-webkit-scrollbar-thumb,
 .dashboard-container button,
 .dashboard-container .btn-primary,
 .dashboard-container .btn-secondary,
-.dashboard-container .btn-outline {
+.dashboard-container .btn-outline,
+.dashboard-container .input-field {
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: none !important;
   box-shadow: none !important;
+  border-radius: 12px !important;
 }
 
 .dashboard-container button:hover,
@@ -888,6 +890,7 @@ body::-webkit-scrollbar-thumb,
 .dashboard-container .btn-outline:hover {
   box-shadow: none !important;
   transform: none !important;
+  border-radius: 12px !important;
 }
 
 .dashboard-container button:active,

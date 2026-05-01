@@ -1,14 +1,15 @@
 import React from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 // Custom styles for React-Select matching our Tailwind design system
 const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     control: (base, state) => ({
         ...base,
         minHeight: isDashboard ? '34px' : '38px',
-        borderRadius: '3px',
+        borderRadius: '12px',
         borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
-        boxShadow: state.isFocused ? '0 0 0 3px color-mix(in srgb, var(--primary-color), transparent 90%)' : 'none',
+        boxShadow: 'none',
         backgroundColor: state.isDisabled 
             ? (isDarkMode ? 'rgba(30, 35, 48, 0.5)' : '#f9fafb') 
             : (isDarkMode ? 'rgba(17, 19, 24, 0.4)' : (isDashboard ? 'rgba(255, 255, 255, 0.8)' : '#f9fafb')),
@@ -18,7 +19,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
             backgroundColor: isDarkMode ? 'rgba(17, 19, 24, 0.6)' : (isDashboard ? 'rgba(255, 255, 255, 1)' : '#f9fafb'),
         },
         transition: 'all 0.2s ease',
-        fontSize: isDashboard ? '12px' : '14px',
+        fontSize: isDashboard ? '13px' : '14px',
         fontWeight: '500',
     }),
     valueContainer: (base) => ({
@@ -42,12 +43,13 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     }),
     menu: (base) => ({
         ...base,
-        borderRadius: '3px',
+        borderRadius: '12px',
         border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
-        backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
+        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
         overflow: 'hidden',
         zIndex: 9999,
-        padding: '8px',
+        padding: '0',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         animation: 'slideIn 0.2s ease-out',
     }),
     menuList: (base) => ({
@@ -56,7 +58,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
         padding: '0',
         backgroundColor: 'transparent',
         '&::-webkit-scrollbar': {
-            width: '4px',
+            width: '2px',
         },
         '&::-webkit-scrollbar-track': {
             background: 'transparent',
@@ -94,29 +96,26 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
         return {
             ...base,
             backgroundColor: state.isSelected
-                ? 'var(--primary-color)'
+                ? 'rgba(255, 90, 31, 0.05)'
                 : state.isFocused
-                    ? (activeColor + (isDarkMode ? '40' : '20')) // Add transparency
+                    ? 'rgba(255, 90, 31, 0.02)'
                     : 'transparent',
-            color: state.isSelected
-                ? '#ffffff'
-                : state.isFocused
-                    ? (isDarkMode ? '#ffffff' : activeColor)
-                    : (isDarkMode ? '#9ca3af' : '#4b5563'),
-            borderRadius: '3px',
-            padding: '10px 14px',
-            fontSize: isDashboard ? '12px' : '14px',
-            fontWeight: isDashboard ? '500' : '700',
+            color: (state.isSelected || state.isFocused)
+                ? 'rgba(255, 90, 31, 1)'
+                : (isDarkMode ? '#9ca3af' : '#4b5563'),
+            borderRadius: '0',
+            padding: '6px 16px',
+            fontSize: isDashboard ? '13px' : '14px',
+            fontWeight: state.isSelected ? '600' : '500',
             textTransform: 'none',
             cursor: 'pointer',
-            marginBottom: '4px',
-            transition: 'all 0.2s ease',
+            marginBottom: '0',
+            transition: 'all 0.1s ease',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             '&:active': {
-                backgroundColor: activeColor,
-                color: '#ffffff',
+                backgroundColor: 'rgba(255, 90, 31, 0.1)',
             },
         };
     },
@@ -126,7 +125,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     dropdownIndicator: (base, state) => ({
         ...base,
         color: state.isFocused ? 'var(--primary-color)' : '#9ca3af',
-        padding: '4px',
+        padding: '4px 8px',
         transition: 'transform 0.2s ease',
         transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
         '&:hover': {
@@ -186,7 +185,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
 // Custom theme that matches our design system
 const customTheme = (theme) => ({
     ...theme,
-    borderRadius: 8,
+    borderRadius: 12,
     colors: {
         ...theme.colors,
         primary: 'var(--primary-color)',
@@ -277,7 +276,7 @@ const StyledSelect = ({
     const finalStyles = mergeStyles({ ...currentStyles, ...errorStyles }, stylesFromProps);
 
     // Remove styles from props to avoid overwriting
-    const { styles: _, ...restProps } = props;
+    const { styles: _, components: customComponents, ...restProps } = props;
 
     // Support both object and string values
     const selectValue = React.useMemo(() => {
@@ -333,6 +332,14 @@ const StyledSelect = ({
             isMulti={isMulti}
             isLoading={isLoading}
             styles={{ ...finalStyles, menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            components={{
+                DropdownIndicator: (indicatorProps) => (
+                    <components.DropdownIndicator {...indicatorProps}>
+                        <ChevronDownIcon className="w-3 h-3 stroke-[2]" />
+                    </components.DropdownIndicator>
+                ),
+                ...customComponents
+            }}
             menuPlacement="auto"
             theme={customTheme}
             className={className}

@@ -131,7 +131,7 @@ const SubscriptionPlans = () => {
                 header: 'Plan Name',
                 cell: ({ row }) => (
                     <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-xl flex items-center justify-center">
                             <CreditCardIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <span className="font-semibold text-gray-900 dark:text-white">{row.original.plan_name || row.original.name}</span>
@@ -189,7 +189,7 @@ const SubscriptionPlans = () => {
                     return (
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {features.map((f, i) => (
-                                <span key={i} className={`px-2 py-0.5 text-[10px] rounded-md border ${f.enabled
+                                <span key={i} className={`px-2 py-0.5 text-[10px] rounded-xl border ${f.enabled
                                     ? 'bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
                                     : 'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700 opacity-50'
                                     }`}>
@@ -207,14 +207,14 @@ const SubscriptionPlans = () => {
                     <div className="flex items-center justify-end gap-2">
                         <button
                             onClick={() => openModal(row.original)}
-                            className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-lg transition-all duration-200"
+                            className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
                             title="Edit Plan"
                         >
                             <PencilIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => handleDelete(row.original.id)}
-                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all duration-200"
                             title="Delete Plan"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -242,7 +242,7 @@ const SubscriptionPlans = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage plans and pricing for your agents</p>
                 </div>
-                <button onClick={() => openModal()} className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap h-[34px] text-[12px] px-4 rounded-[3px]">
+                <button onClick={() => openModal()} className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap h-[34px] text-[12px] px-4 rounded-xl">
                     <PlusIcon className="w-4 h-4" />
                     <span>Add Plan</span>
                 </button>
@@ -348,27 +348,27 @@ const SubscriptionPlans = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-y-2 py-2 border-y border-gray-100 dark:border-gray-700">
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_appointments')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_appointments')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Appointments</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_theme')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_theme')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Theme Customization</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_sub_agents')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_sub_agents')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Sub-Agents</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_notifications')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_notifications')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Notifications</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_banners')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_banners')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Banners</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Custom Domain</span>
                                 </label>
                             </div>

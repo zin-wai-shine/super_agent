@@ -290,45 +290,46 @@ const AppointmentManagement = () => {
         );
     };
 
-    const StatusActions = ({ appointment, compact = false }) => {
+    const StatusActions = ({ appointment }) => {
         const { status } = appointment;
-        const btnBase = compact
-            ? 'p-1.5 rounded-lg transition-all text-xs'
-            : 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all';
         return (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
                 {status === 'pending' && (
-                    <button
-                        onClick={() => handleStatusChange(appointment, 'confirmed')}
-                        disabled={updating}
-                        className={`${btnBase} bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20`}
-                        title="Confirm"
-                    >
-                        <CheckIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
-                        {!compact && 'Confirm'}
-                    </button>
+                    <>
+                        <button
+                            onClick={() => handleStatusChange(appointment, 'confirmed')}
+                            className="p-2.5 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20 rounded-xl transition-all border border-emerald-100/20 dark:border-emerald-500/20 shadow-sm flex items-center justify-center"
+                            title="Confirm"
+                        >
+                            <CheckIcon className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={() => handleStatusChange(appointment, 'cancelled')}
+                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            title="Cancel"
+                        >
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
+                    </>
                 )}
                 {status === 'confirmed' && (
                     <button
                         onClick={() => handleStatusChange(appointment, 'completed')}
-                        disabled={updating}
-                        className={`${btnBase} bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20`}
-                        title="Complete"
+                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        title="Mark as Completed"
                     >
-                        <CheckIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
-                        {!compact && 'Complete'}
+                        <CheckBadgeIcon className="w-5 h-5" />
                     </button>
                 )}
-                {(status === 'pending' || status === 'confirmed') && (
-                    <button
-                        onClick={() => handleStatusChange(appointment, 'cancelled')}
-                        disabled={updating}
-                        className={`${btnBase} bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20`}
-                        title="Cancel"
-                    >
-                        <XMarkIcon className={compact ? 'w-4 h-4' : 'w-3.5 h-3.5 inline mr-1'} />
-                        {!compact && 'Cancel'}
-                    </button>
+                {status === 'completed' && (
+                    <div className="p-2.5 text-gray-400 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-100/20 dark:border-gray-700/20 opacity-50 cursor-default flex items-center justify-center">
+                        <CheckBadgeIcon className="w-5 h-5" />
+                    </div>
+                )}
+                {status === 'cancelled' && (
+                    <div className="p-2.5 text-red-400 bg-red-50/50 dark:bg-red-500/10 rounded-xl border border-red-100/20 dark:border-red-500/20 opacity-50 cursor-default flex items-center justify-center">
+                        <XMarkIcon className="w-5 h-5" />
+                    </div>
                 )}
             </div>
         );
@@ -396,12 +397,8 @@ const AppointmentManagement = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    fontSize: '11px',
-                                    borderRadius: '3px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -432,10 +429,6 @@ const AppointmentManagement = () => {
                             styles={{
                                 control: (base) => ({
                                     ...base,
-                                    minHeight: '34px',
-                                    height: '34px',
-                                    fontSize: '11px',
-                                    borderRadius: '3px'
                                 }),
                                 valueContainer: (base) => ({
                                     ...base,
@@ -486,10 +479,6 @@ const AppointmentManagement = () => {
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        minHeight: '34px',
-                                        height: '34px',
-                                        fontSize: '11px',
-                                        borderRadius: '3px'
                                     }),
                                     valueContainer: (base) => ({
                                         ...base,
@@ -501,14 +490,14 @@ const AppointmentManagement = () => {
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-[3px] transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Reset Filters"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-[3px] overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
                                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
                                     <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
                                     <div className="flex items-center gap-2">
@@ -518,7 +507,7 @@ const AppointmentManagement = () => {
                                                 onChange={(val) => setShownDate(setMonth(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(2000, i, 1), 'MMMM') }))}
                                                 isSearchable={false}
-                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px' }) }}
                                             />
                                         </div>
                                         <div className="w-24">
@@ -527,7 +516,7 @@ const AppointmentManagement = () => {
                                                 onChange={(val) => setShownDate(setYear(shownDate || new Date(), val))}
                                                 options={Array.from({ length: 10 }, (_, i) => { const y = new Date().getFullYear() - 5 + i; return { value: y, label: y.toString() }; })}
                                                 isSearchable={false}
-                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px', fontSize: '12px', borderRadius: '3px' }) }}
+                                                styles={{ control: (base) => ({ ...base, minHeight: '30px', height: '30px' }) }}
                                             />
                                         </div>
                                     </div>
@@ -560,7 +549,7 @@ const AppointmentManagement = () => {
                 {/* RIGHT: Search */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     <form onSubmit={handleSearch} className="relative w-full lg:w-64 h-[34px]">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                         <input
                             type="text"
                             value={searchInput}
@@ -573,7 +562,7 @@ const AppointmentManagement = () => {
             </div>
 
             {/* Appointments Table */}
-            <div className="bg-white dark:bg-dashboard-card border border-gray-100 dark:border-gray-700 rounded-[3px] overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-dashboard-card border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -675,17 +664,17 @@ const AppointmentManagement = () => {
                                                 <StatusActions appointment={appointment} />
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center justify-end gap-2">
+                                                <div className="flex items-center justify-end gap-2.5">
                                                     <button
                                                         onClick={() => openDetailModal(appointment)}
-                                                        className="p-1.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-lg transition-all"
+                                                        className="p-2.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/50 dark:border-primary-500/20 shadow-sm"
                                                         title="View Details"
                                                     >
                                                         <EyeIcon className="w-5 h-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setShowDeleteConfirm(appointment.id)}
-                                                        className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-lg transition-all"
+                                                        className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/50 dark:border-red-500/20 shadow-sm"
                                                         title="Delete"
                                                     >
                                                         <TrashIcon className="w-5 h-5" />
@@ -700,26 +689,27 @@ const AppointmentManagement = () => {
 
                         {/* Pagination */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                Showing <span className="text-gray-900 dark:text-white">{(page - 1) * limit + 1}</span> to <span className="text-gray-900 dark:text-white">{Math.min(page * limit, total)}</span> of <span className="text-gray-900 dark:text-white">{total}</span>
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                <span className="text-gray-900 dark:text-white">{total}</span> results
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setPage(1)}
                                     disabled={page === 1}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
-                                <div className="flex items-center space-x-1.5">
-                                    <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Page</span>
+
+                                <div className="flex items-center gap-2 mx-2">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -729,21 +719,22 @@ const AppointmentManagement = () => {
                                             const p = e.target.value ? Number(e.target.value) : 1;
                                             setPage(Math.min(Math.max(1, p), totalPages));
                                         }}
-                                        className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-[3px] text-xs font-bold bg-white dark:bg-dashboard-dark text-gray-900 dark:text-white"
+                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
                                     />
-                                    <span className="text-xs text-gray-500 font-bold uppercase">of {totalPages}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {totalPages || 1}</span>
                                 </div>
+
                                 <button
                                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                     disabled={page === totalPages}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setPage(totalPages)}
                                     disabled={page === totalPages}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-[3px] hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500"
+                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -875,7 +866,7 @@ const AppointmentManagement = () => {
                                 <button
                                     onClick={handleSaveNotes}
                                     disabled={updating || agentNotes === (selectedAppointment.agent_notes || '')}
-                                    className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-lg hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     {updating ? 'Saving...' : 'Save Notes'}
                                 </button>

@@ -76,7 +76,7 @@ const AdminDashboard = () => {
             {/* Stats Grid - Clean Minimal Design */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((stat) => (
-                    <div key={stat.name} className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-lg p-5 border border-gray-200 dark:border-white/5 hover:shadow-md transition-all duration-300">
+                    <div key={stat.name} className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-5 border border-gray-200 dark:border-white/5 hover:shadow-md transition-all duration-300">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{stat.name}</p>
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
                                     <span className="text-green-600 dark:text-green-500 font-medium">{stat.change}</span>
                                 </div>
                             </div>
-                            <div className={`p-2.5 rounded-lg ${stat.iconBg} dark:backdrop-blur-md border border-transparent dark:border-white/5`}>
+                            <div className={`p-2.5 rounded-xl ${stat.iconBg} dark:backdrop-blur-md border border-transparent dark:border-white/5`}>
                                 <stat.icon className="w-5 h-5" aria-hidden="true" />
                             </div>
                         </div>
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
             {/* Charts Grid - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
-                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-lg p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revenue Overview</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Monthly revenue performance</p>
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Activity Chart */}
-                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-lg p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">User Activity</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly platform engagement</p>
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
                                 <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className={`p-2 rounded-lg ${item.bg} ${item.color} mr-3 ring-1 ring-gray-100 dark:ring-gray-700`}>
+                                            <div className={`p-2 rounded-xl ${item.bg} ${item.color} mr-3 ring-1 ring-gray-100 dark:ring-gray-700`}>
                                                 <item.icon className="w-4 h-4" />
                                             </div>
                                             <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{item.action}</span>
