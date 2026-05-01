@@ -66,26 +66,26 @@ const SortableItem = ({ id, collection }) => {
     const style = {
         transform: transform ? CSS.Translate.toString({ ...transform, x: 0 }) : undefined,
         transition,
-        zIndex: isDragging ? 1 : 0,
+        zIndex: isDragging ? 10 : 1,
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex items-center gap-4 p-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all ${
-                isDragging ? 'opacity-50 scale-105 ring-4 ring-primary-500/10' : ''
+            className={`flex items-center gap-4 p-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 transition-all ${
+                isDragging ? 'opacity-50 scale-[1.02] ring-4 ring-primary-500/10 shadow-xl border-primary-500/30' : 'hover:border-gray-200 dark:hover:border-white/10'
             }`}
         >
-            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors">
-                <Bars3Icon className="w-4 h-4 text-gray-400" />
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors">
+                <Bars3Icon className="w-5 h-5 text-gray-400" />
             </div>
             
-            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-inner">
                 {collection.media && collection.media[0] ? (
                     <img src={getMediaUrl(collection.media[0].url)} alt="" className="w-full h-full object-cover" />
                 ) : (
-                    <FolderIcon className="w-5 h-5 text-primary-500" />
+                    <FolderIcon className={`w-6 h-6 ${collection.is_parent ? 'text-primary-500' : 'text-secondary-500'}`} />
                 )}
             </div>
 
@@ -93,9 +93,16 @@ const SortableItem = ({ id, collection }) => {
                 <p className="text-[14px] font-bold text-gray-900 dark:text-white truncate">
                     {collection.name}
                 </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tight">
-                    Joined Collection
-                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tight">
+                        {collection.is_parent ? 'Main Category' : 'Sub-Collection'}
+                    </p>
+                    {collection.listings_count > 0 && (
+                        <span className="text-[9px] px-1.5 py-0.5 bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-lg font-black">
+                            {collection.listings_count} PROPS
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -106,10 +113,16 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        if (isOpen && parent) {
-            // Get children of this parent
-            const children = collections.filter(c => c.parent_id === parent.id);
-            setItems(children);
+        if (isOpen) {
+            if (parent) {
+                // Get children of this parent
+                const children = collections.filter(c => c.parent_id === parent.id);
+                setItems(children);
+            } else {
+                // Get all main parents
+                const parents = collections.filter(c => c.is_parent);
+                setItems(parents);
+            }
         }
     }, [isOpen, parent, collections]);
 
@@ -158,7 +171,7 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
                     <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">
-                        Adjust Display Order
+                        Adjust {parent ? `"${parent.name}"` : 'Main Categories'} Order
                     </h3>
                     <button 
                         onClick={onClose}
@@ -171,7 +184,7 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
                 <div className="p-6 bg-gray-50/30 dark:bg-gray-900/20">
                     <div className="mb-6">
                         <p className="text-[13px] text-gray-500 dark:text-gray-400 font-medium">
-                            Drag and drop items below to change their appearance order in the <span className="text-primary-500 font-bold">"{parent?.name}"</span> section.
+                            Drag and drop items below to change their appearance order in the <span className="text-primary-500 font-bold">{parent ? `"${parent.name}" section` : 'main categories list'}</span>.
                         </p>
                     </div>
 
@@ -609,16 +622,28 @@ const CollectionManagement = () => {
                                 className="input-field pl-9 pr-4 h-[34px] min-h-0 text-[13px]"
                             />
                         </div>
-                        <button
-                            onClick={() => {
-                                setCreateModalType('parent');
-                                setShowCreateModal(true);
-                            }}
-                            className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
-                        >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                            <span>Add Parent</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    setSelectedParentForReorder(null);
+                                    setShowReorderModal(true);
+                                }}
+                                className="h-[34px] w-[34px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-400 hover:text-primary-500 rounded-xl transition-all flex items-center justify-center shadow-sm"
+                                title="Reorder Main Categories"
+                            >
+                                <ArrowsUpDownIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setCreateModalType('parent');
+                                    setShowCreateModal(true);
+                                }}
+                                className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <PlusIcon className="w-3.5 h-3.5" />
+                                <span>Add Parent</span>
+                            </button>
+                        </div>
                     </div>
 
                     <TableView 
