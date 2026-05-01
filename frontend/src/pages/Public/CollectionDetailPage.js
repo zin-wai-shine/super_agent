@@ -109,8 +109,15 @@ const CollectionDetailPage = () => {
     return (
         <div className="bg-white dark:bg-dashboard-dark min-h-screen pb-20 no-scrollbar">
             <style dangerouslySetInnerHTML={{ __html: `
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                .no-scrollbar::-webkit-scrollbar,
+                body::-webkit-scrollbar,
+                html::-webkit-scrollbar,
+                *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+                
+                .no-scrollbar, body, html, * { 
+                    -ms-overflow-style: none !important; 
+                    scrollbar-width: none !important; 
+                }
             ` }} />
             {isIconType ? (
                 /* --- ICON TYPE --- */
@@ -430,8 +437,8 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
     return (
         <div className="fixed inset-0 z-[10000] flex flex-col overflow-hidden" style={{ background: '#000' }}>
             <style dangerouslySetInnerHTML={{ __html: `
-                .gallery-no-scroll::-webkit-scrollbar { display: none; }
-                .gallery-no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+                .gallery-no-scroll::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+                .gallery-no-scroll { -ms-overflow-style: none !important; scrollbar-width: none !important; }
             ` }} />
             {/* Blurred background from current image */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
