@@ -172,7 +172,7 @@ const ProjectManagement = () => {
                 toast.success('Project created!');
             }
             handleCloseForm();
-            fetchData();
+            fetchProjects();
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to save project');
         }
@@ -183,7 +183,7 @@ const ProjectManagement = () => {
         try {
             await developerApi.deleteProject(id);
             toast.success('Project deleted');
-            fetchData();
+            fetchProjects();
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to delete project');
         }
@@ -447,7 +447,7 @@ const ProjectManagement = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+                        <form id="project-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
@@ -554,7 +554,8 @@ const ProjectManagement = () => {
                         <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">
                             <button type="button" onClick={handleCloseForm} className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Cancel</button>
                             <button 
-                                onClick={handleSubmit}
+                                type="submit"
+                                form="project-form"
                                 disabled={uploadingImage} 
                                 className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
                             >
