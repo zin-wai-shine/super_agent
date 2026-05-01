@@ -45,18 +45,18 @@ const RegisterPage = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8 md:py-12">
             <div className="w-full max-w-md">
                 {/* Logo — mobile: slightly larger */}
-                <Link to="/" className="flex items-center justify-center space-x-3 mb-2 md:mb-4">
+                <Link to="/" className="flex items-center justify-center mb-2 md:mb-4">
                     {!isMainDomain ? (
                         (agent?.theme?.logo_url || agent?.logo) ? (
-                            <div className="flex items-center justify-center">
-                                <div
-                                    className="w-[150px] h-[51px] bg-[length:100%_auto] bg-center bg-no-repeat transition-all duration-300"
-                                    style={{
-                                        backgroundImage: `url(${getMediaUrl(agent.theme?.logo_url || agent.logo)})`
-                                    }}
-                                    aria-label={agent.agency_name || agent.name || 'Agent Logo'}
-                                />
-                            </div>
+                            <img
+                                src={getMediaUrl(agent.theme?.logo_url || agent.logo)}
+                                alt={agent.agency_name || agent.name || 'Agent Logo'}
+                                className="object-contain transition-all duration-300"
+                                style={{
+                                    height: `${((agent?.theme?.page_logo_height || 100) / 100) * 80}px`,
+                                    width: 'auto',
+                                }}
+                            />
                         ) : (
                             <span className="text-[28px] md:text-2xl font-black text-primary-600 uppercase tracking-tighter">
                                 {agent?.subdomain || 'Agent'}
@@ -67,7 +67,7 @@ const RegisterPage = () => {
                             <div className="w-14 h-14 md:w-12 md:h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/25">
                                 <BuildingOfficeIcon className="w-8 h-8 md:w-7 md:h-7 text-white" />
                             </div>
-                            <span className="text-[26px] md:text-2xl font-bold gradient-text">
+                            <span className="text-[26px] md:text-2xl font-bold gradient-text ml-3">
                                 Super
                             </span>
                         </>
