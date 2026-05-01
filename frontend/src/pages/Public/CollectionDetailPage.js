@@ -208,7 +208,7 @@ const CollectionDetailPage = () => {
                         <h2 className="text-5xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] tracking-tight text-center">
                             {collection?.name}
                         </h2>
-                        <p className="mt-4 text-[15px] font-bold text-white/90 uppercase tracking-[0.2em] drop-shadow-md">
+                        <p className="mt-4 text-[15px] font-bold text-white/90 tracking-wide drop-shadow-md">
                             {listings.length} Exclusive Properties
                         </p>
                     </div>
