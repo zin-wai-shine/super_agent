@@ -373,7 +373,7 @@ const CollectionBar = ({
     }, [collections]);
 
     return (
-        <div className="collection-section py-4 mb-8 -mx-6 md:mx-0">
+        <div className="collection-section pt-4 pb-0 mb-2 -mx-6 md:mx-0">
             {loading ? (
                 <div className="px-6 md:px-1 overflow-hidden">
                     {/* A. Popular Collections Skeleton Section */}

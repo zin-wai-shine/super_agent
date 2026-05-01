@@ -181,13 +181,7 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
                     </button>
                 </div>
 
-                <div className="p-6 bg-gray-50/30 dark:bg-gray-900/20">
-                    <div className="mb-6">
-                        <p className="text-[13px] text-gray-500 dark:text-gray-400 font-medium">
-                            Drag and drop items below to change their appearance order in the <span className="text-primary-500 font-bold">{parent ? `"${parent.name}" section` : 'main categories list'}</span>.
-                        </p>
-                    </div>
-
+                <div className="px-6 py-6 bg-gray-50/30 dark:bg-gray-900/20">
                     <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                         {items.length === 0 ? (
                             <div className="text-center py-12">
