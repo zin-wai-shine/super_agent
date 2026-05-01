@@ -447,7 +447,7 @@ const ThemeSettings = () => {
                                                 label="Logo Display Scale"
                                                 value={preview.navbar_logo_height}
                                                 min={10}
-                                                max={100}
+                                                max={150}
                                                 step={1}
                                                 unit="%"
                                                 onChange={(val) => setValue('navbar_logo_height', val)}
@@ -497,7 +497,7 @@ const ThemeSettings = () => {
                                                     label="Splash Logo Scale"
                                                     value={preview.page_logo_height}
                                                     min={10}
-                                                    max={100}
+                                                    max={150}
                                                     step={1}
                                                     unit="%"
                                                     onChange={(val) => setValue('page_logo_height', val)}
@@ -551,7 +551,7 @@ const ThemeSettings = () => {
                                                     label="Dashboard Logo Scale"
                                                     value={preview.dashboard_logo_height}
                                                     min={10}
-                                                    max={100}
+                                                    max={150}
                                                     step={1}
                                                     unit="%"
                                                     onChange={(val) => setValue('dashboard_logo_height', val)}
