@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"super_real_estate/config"
 	"super_real_estate/models"
@@ -336,7 +339,30 @@ func (sac *SuperAdminController) UpdateAgent(c *gin.Context) {
 func (sac *SuperAdminController) DeleteAgent(c *gin.Context) {
 	id := c.Param("id")
 
-	if err := sac.db.Delete(&models.Agent{}, "id = ?", id).Error; err != nil {
+	var agent models.Agent
+	if err := sac.db.Preload("Theme").First(&agent, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	// 1. Delete physical logo
+	if agent.Logo != "" && strings.HasPrefix(agent.Logo, "/uploads/") {
+		filePath := filepath.Join(sac.cfg.UploadPath, strings.TrimPrefix(agent.Logo, "/uploads/"))
+		os.Remove(filePath)
+	}
+
+	// 2. Delete physical theme images
+	if agent.Theme != nil {
+		images := []string{agent.Theme.LogoURL, agent.Theme.FaviconURL, agent.Theme.SharePreviewImage}
+		for _, img := range images {
+			if img != "" && strings.HasPrefix(img, "/uploads/") {
+				filePath := filepath.Join(sac.cfg.UploadPath, strings.TrimPrefix(img, "/uploads/"))
+				os.Remove(filePath)
+			}
+		}
+	}
+
+	if err := sac.db.Delete(&agent).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete agent"})
 		return
 	}

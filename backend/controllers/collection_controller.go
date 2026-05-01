@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"super_real_estate/config"
 	"super_real_estate/middleware"
 	"super_real_estate/models"
-
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,11 +16,12 @@ import (
 )
 
 type CollectionController struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewCollectionController(db *gorm.DB) *CollectionController {
-	return &CollectionController{db: db}
+func NewCollectionController(db *gorm.DB, cfg *config.Config) *CollectionController {
+	return &CollectionController{db: db, cfg: cfg}
 }
 
 // CreateCollection creates a new collection
@@ -224,6 +228,24 @@ func (cc *CollectionController) UpdateCollection(c *gin.Context) {
 // DeleteCollection deletes a collection
 func (cc *CollectionController) DeleteCollection(c *gin.Context) {
 	id := c.Param("id")
+
+	// 1. Get associated media to delete files
+	var media []models.CollectionMedia
+	cc.db.Where("collection_id = ?", id).Find(&media)
+
+	for _, m := range media {
+		if m.URL != "" && strings.HasPrefix(m.URL, "/uploads/") {
+			filePath := filepath.Join(cc.cfg.UploadPath, strings.TrimPrefix(m.URL, "/uploads/"))
+			os.Remove(filePath)
+		}
+	}
+
+	// 2. Delete database records
+	if err := cc.db.Where("collection_id = ?", id).Delete(&models.CollectionMedia{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete collection media"})
+		return
+	}
+
 	if err := cc.db.Delete(&models.Collection{}, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete collection"})
 		return

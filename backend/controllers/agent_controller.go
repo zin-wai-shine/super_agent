@@ -207,7 +207,21 @@ func (ac *AgentController) DeleteListing(c *gin.Context) {
 
 	id := c.Param("id")
 
-	// Delete associated media
+	// 1. Get associated media to delete physical files
+	var media []models.Media
+	ac.db.Where("listing_id = ?", id).Find(&media)
+
+	for _, m := range media {
+		if m.URL != "" && strings.HasPrefix(m.URL, "/uploads/") {
+			// Only delete if it's NOT a shared facility image (starts with /uploads/AGENT_ID/facilities/)
+			if !strings.Contains(m.URL, "/facilities/") {
+				filePath := filepath.Join(ac.cfg.UploadPath, strings.TrimPrefix(m.URL, "/uploads/"))
+				os.Remove(filePath)
+			}
+		}
+	}
+
+	// 2. Delete associated media records
 	ac.db.Where("listing_id = ?", id).Delete(&models.Media{})
 
 	if err := ac.db.Where("id = ? AND agent_id = ?", id, agentID).Delete(&models.Listing{}).Error; err != nil {
@@ -371,7 +385,19 @@ func (ac *AgentController) DeleteSubAgent(c *gin.Context) {
 
 	id := c.Param("id")
 
-	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RoleSubAgent).Delete(&models.User{}).Error; err != nil {
+	var subAgent models.User
+	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RoleSubAgent).First(&subAgent).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sub-agent not found"})
+		return
+	}
+
+	// Delete physical avatar
+	if subAgent.Avatar != "" && strings.HasPrefix(subAgent.Avatar, "/uploads/") {
+		filePath := filepath.Join(ac.cfg.UploadPath, strings.TrimPrefix(subAgent.Avatar, "/uploads/"))
+		os.Remove(filePath)
+	}
+
+	if err := ac.db.Delete(&subAgent).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete sub-agent"})
 		return
 	}
@@ -482,7 +508,19 @@ func (ac *AgentController) DeleteUser(c *gin.Context) {
 	}
 
 	id := c.Param("id")
-	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RolePublic).Delete(&models.User{}).Error; err != nil {
+	var user models.User
+	if err := ac.db.Where("id = ? AND agent_id = ? AND role = ?", id, agentID, models.RolePublic).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Delete physical avatar
+	if user.Avatar != "" && strings.HasPrefix(user.Avatar, "/uploads/") {
+		filePath := filepath.Join(ac.cfg.UploadPath, strings.TrimPrefix(user.Avatar, "/uploads/"))
+		os.Remove(filePath)
+	}
+
+	if err := ac.db.Delete(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}

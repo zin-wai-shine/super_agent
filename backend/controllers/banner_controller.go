@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"super_real_estate/config"
 	"super_real_estate/models"
 	"time"
 
@@ -12,11 +15,12 @@ import (
 )
 
 type BannerController struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewBannerController(db *gorm.DB) *BannerController {
-	return &BannerController{db: db}
+func NewBannerController(db *gorm.DB, cfg *config.Config) *BannerController {
+	return &BannerController{db: db, cfg: cfg}
 }
 
 // CreateBanner creates a new banner
@@ -248,6 +252,12 @@ func (bc *BannerController) DeleteBanner(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
 			return
 		}
+	}
+
+	// Delete physical file
+	if banner.ImageURL != "" {
+		filePath := filepath.Join(bc.cfg.UploadPath, strings.TrimPrefix(banner.ImageURL, "/uploads/"))
+		os.Remove(filePath)
 	}
 
 	if err := bc.db.Delete(&banner).Error; err != nil {

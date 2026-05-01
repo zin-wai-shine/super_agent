@@ -2,6 +2,10 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"super_real_estate/config"
 	"super_real_estate/middleware"
 	"super_real_estate/models"
 
@@ -11,11 +15,12 @@ import (
 )
 
 type DeveloperController struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewDeveloperController(db *gorm.DB) *DeveloperController {
-	return &DeveloperController{db: db}
+func NewDeveloperController(db *gorm.DB, cfg *config.Config) *DeveloperController {
+	return &DeveloperController{db: db, cfg: cfg}
 }
 
 // ==================== DEVELOPERS ====================
@@ -120,7 +125,19 @@ func (dc *DeveloperController) DeleteDeveloper(c *gin.Context) {
 		return
 	}
 
-	result := dc.db.Where("id = ? AND agent_id = ?", id, agentID).Delete(&models.Developer{})
+	var developer models.Developer
+	if err := dc.db.Where("id = ? AND agent_id = ?", id, agentID).First(&developer).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Developer not found"})
+		return
+	}
+
+	// Delete physical logo
+	if developer.Logo != "" && strings.HasPrefix(developer.Logo, "/uploads/") {
+		filePath := filepath.Join(dc.cfg.UploadPath, strings.TrimPrefix(developer.Logo, "/uploads/"))
+		os.Remove(filePath)
+	}
+
+	result := dc.db.Delete(&developer)
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Developer not found"})
 		return
@@ -314,7 +331,19 @@ func (dc *DeveloperController) DeleteProject(c *gin.Context) {
 		return
 	}
 
-	result := dc.db.Where("id = ? AND agent_id = ?", id, agentID).Delete(&models.Project{})
+	var project models.Project
+	if err := dc.db.Where("id = ? AND agent_id = ?", id, agentID).First(&project).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		return
+	}
+
+	// Delete physical cover image
+	if project.CoverImage != "" && strings.HasPrefix(project.CoverImage, "/uploads/") {
+		filePath := filepath.Join(dc.cfg.UploadPath, strings.TrimPrefix(project.CoverImage, "/uploads/"))
+		os.Remove(filePath)
+	}
+
+	result := dc.db.Delete(&project)
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return

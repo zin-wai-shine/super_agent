@@ -19,10 +19,10 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	publicController := controllers.NewPublicController(db)
 	uploadController := controllers.NewUploadController(db, cfg)
 	appointmentController := controllers.NewAppointmentController(db, wsManager)
-	developerController := controllers.NewDeveloperController(db)
+	developerController := controllers.NewDeveloperController(db, cfg)
 	googleAuthController := controllers.NewGoogleAuthController(db, cfg)
 	facebookAuthController := controllers.NewFacebookAuthController(db, cfg)
-	collectionController := controllers.NewCollectionController(db)
+	collectionController := controllers.NewCollectionController(db, cfg)
 
 	// Public static files (Move before tenant middleware)
 	router.Static("/uploads", cfg.UploadPath)
@@ -249,7 +249,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			}
 
 			// Banner routes
-			bannerController := controllers.NewBannerController(db)
+			bannerController := controllers.NewBannerController(db, cfg)
 			banners := protected.Group("/banners")
 			banners.Use(middleware.FeatureMiddleware(db, "banners"))
 			{
