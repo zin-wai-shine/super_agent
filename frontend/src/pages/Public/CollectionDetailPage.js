@@ -218,7 +218,7 @@ const CollectionDetailPage = () => {
                         {/* High-Overlap Content Container */}
                         <div className="h-[60vh] lg:h-[420px]" /> {/* Spacer */}
                         
-                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[28px] shadow-[0_-25px_60px_rgba(0,0,0,0.2)] min-h-screen relative -mt-32 lg:-mt-20 overflow-hidden pointer-events-auto">
+                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[28px] shadow-[0_-25px_60px_rgba(0,0,0,0.2)] min-h-screen relative -mt-16 lg:-mt-10 overflow-hidden pointer-events-auto">
                             {/* Mobile Drag Handle Area */}
                             <div className="lg:hidden flex flex-col items-center pt-4 pb-2">
                                 <div className="w-12 h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full" />
@@ -299,7 +299,7 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
             {/* Content Skeleton */}
             <div className="relative z-30">
                 <div className="h-[60vh] lg:h-[420px]" />
-                <div className="bg-white dark:bg-dashboard-dark rounded-t-[44px] shadow-[0_-25px_60px_rgba(0,0,0,0.1)] min-h-screen relative -mt-32 lg:-mt-20 overflow-hidden">
+                <div className="bg-white dark:bg-dashboard-dark rounded-t-[44px] shadow-[0_-25px_60px_rgba(0,0,0,0.1)] min-h-screen relative -mt-16 lg:-mt-10 overflow-hidden">
                     <div className="lg:hidden flex flex-col items-center pt-2.5 mb-6">
                         <div className="w-16 h-1 bg-gray-100 dark:bg-white/5 rounded-full" />
                     </div>
