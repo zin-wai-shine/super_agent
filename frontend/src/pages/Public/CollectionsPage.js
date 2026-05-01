@@ -96,16 +96,8 @@ const CollectionsPage = () => {
                         </h1>
                     </div>
 
-                    {/* Categories Trigger Button */}
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => setIsCategoriesModalOpen(true)}
-                            className="flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 group bg-transparent border-transparent px-2"
-                        >
-                            <HiOutlineQueueList className="w-7 h-7 text-[#222222] dark:text-white transition-colors duration-300 group-hover:text-primary-600" />
-                            <span className="hidden sm:block ml-2 text-[14px] font-medium text-gray-900 dark:text-white group-hover:text-primary-600">Categories</span>
-                        </button>
-                    </div>
+                    {/* Categories Trigger Button placeholder to maintain centering */}
+                    <div className="w-10 h-10"></div>
                 </div>
 
                 {/* Staggered Per-Card Discovery Grid */}
