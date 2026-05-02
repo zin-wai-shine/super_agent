@@ -745,34 +745,40 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 		return
 	}
 
-	// Use Theme HeaderTitle if set, otherwise Agent Name
-	title := agent.Theme.HeaderText
-	if title == "" {
-		title = agent.Name
+	// Use Theme HeaderText if set (Header Site Title), otherwise Agent Name
+	title := agent.Name
+	if agent.Theme != nil && agent.Theme.HeaderText != "" {
+		title = agent.Theme.HeaderText
 	}
 
+	// Use Agent Description (Bio / Description)
 	description := agent.Description
 	if description == "" {
 		description = "Find your dream property near Bangkok's transit lines. High-quality listings, easy search, and professional service."
 	}
 
-	// Clean description (remove newlines)
+	// Clean description (remove newlines and excess spaces)
 	description = strings.ReplaceAll(description, "\n", " ")
+	description = strings.ReplaceAll(description, "\r", " ")
+	for strings.Contains(description, "  ") {
+		description = strings.ReplaceAll(description, "  ", " ")
+	}
+	description = strings.TrimSpace(description)
 	if len(description) > 300 {
 		description = description[:297] + "..."
 	}
 
+	// Logo logic: Theme Logo -> Agent Logo -> Default
 	image := ""
-	if agent.Theme != nil && agent.Theme.SharePreviewImage != "" {
-		image = agent.Theme.SharePreviewImage
+	if agent.Theme != nil && agent.Theme.LogoURL != "" {
+		image = agent.Theme.LogoURL
 	} else if agent.Logo != "" {
 		image = agent.Logo
 	} else {
-		// Use a high-quality default if no logo or preview image
 		image = "/logo-super.png"
 	}
 
-	// Form absolute URL
+	// Form absolute URL for image and site
 	scheme := "https"
 	if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
 		scheme = proto
@@ -783,13 +789,7 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 	}
 
 	if strings.HasPrefix(image, "/") {
-		if strings.HasPrefix(image, "/uploads") {
-			// Ensure it points to the full domain
-			image = fmt.Sprintf("%s://%s%s", scheme, host, image)
-		} else {
-			// Static assets should also be absolute
-			image = fmt.Sprintf("%s://%s%s", scheme, host, image)
-		}
+		image = fmt.Sprintf("%s://%s%s", scheme, host, image)
 	}
 
 	html := fmt.Sprintf(`<!DOCTYPE html>
@@ -797,16 +797,19 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 <head>
     <meta charset="utf-8">
     <title>%s</title>
-    <!-- Social Preview Tags (Backend Rendered) -->
+    <!-- Social Preview Tags (Agent Specific) -->
     <meta property="og:title" content="%s" />
     <meta property="og:description" content="%s" />
     <meta property="og:image" content="%s" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="%s://%s/" />
+    <meta property="og:site_name" content="%s" />
+    
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="%s" />
     <meta name="twitter:description" content="%s" />
     <meta name="twitter:image" content="%s" />
+    
     <link rel="icon" href="%s://%s/favicon.ico" />
 </head>
 <body>
@@ -818,7 +821,7 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
         window.location.href = "/";
     </script>
 </body>
-</html>`, title, title, description, image, scheme, host, title, description, image, scheme, host, title, description, image)
+</html>`, title, title, description, image, scheme, host, title, title, description, image, scheme, host, title, description, image)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
