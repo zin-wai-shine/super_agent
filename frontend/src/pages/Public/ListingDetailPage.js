@@ -1314,7 +1314,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             {isSaved ? 'Saved' : 'Save'}
                         </span>
                     </button>
-                    <div className="w-10" />
+                    <PropertyShare
+                        property={listing}
+                        className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
+                        showLabel
+                        labelClassName="text-[13px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300"
+                        iconClassName="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0"
+                    />
                 </div>
 
             </div>,
@@ -1927,7 +1933,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                         </button>
                         <div className="flex items-center gap-2 pointer-events-auto">
-                            <div className="w-[42px] h-[42px]" />
+                            <PropertyShare
+                                property={listing}
+                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all flex items-center justify-center"
+                                iconClassName="w-6 h-6 text-gray-900 dark:text-white"
+                            />
                             <HeartButton
                                 isSaved={isSaved}
                                 onClick={handleToggleSave}
@@ -2082,7 +2092,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             {isSaved ? 'Saved' : 'Save'}
                                                         </span>
                                                     </button>
-                                                    <div className="w-10" />
+                                                    <PropertyShare
+                                                        property={listing}
+                                                        className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
+                                                        showLabel
+                                                        labelClassName="text-[13px] font-normal text-gray-900 dark:text-white"
+                                                        iconClassName="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>

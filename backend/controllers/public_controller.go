@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"super_real_estate/models"
 
@@ -623,6 +624,30 @@ func (pc *PublicController) GetDevelopers(c *gin.Context) {
 	})
 }
 
+// normalizeCase converts ALL CAPS strings to Title Case for better aesthetics in shares
+func normalizeCase(s string) string {
+	if s == "" {
+		return s
+	}
+	// Check if it's all caps (excluding spaces and punctuation)
+	isAllCaps := true
+	hasLetters := false
+	for _, r := range s {
+		if unicode.IsLetter(r) {
+			hasLetters = true
+			if !unicode.IsUpper(r) {
+				isAllCaps = false
+				break
+			}
+		}
+	}
+	if hasLetters && isAllCaps {
+		// Convert to Title Case
+		return strings.Title(strings.ToLower(s))
+	}
+	return s
+}
+
 // ServeListingMeta returns a minimal HTML with meta tags for social media crawlers
 func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 	id := c.Param("id")
@@ -636,7 +661,8 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		return
 	}
 
-	title := listing.Title
+	title := normalizeCase(listing.Title)
+	agentName := normalizeCase(listing.Agent.Name)
 	// Format price nicely
 	priceStr := fmt.Sprintf("%.0f", listing.Price)
 	if listing.Price >= 1000000 {
@@ -645,12 +671,13 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		priceStr = fmt.Sprintf("%.0fK", listing.Price/1000)
 	}
 
-	// Format description: bed, bath, sqm
-	description := fmt.Sprintf("%d Bed | %d Bath | %.0f sqm", listing.Bedrooms, listing.Bathrooms, listing.Area)
+	// Format description: bed / bath / sqm / price
+	priceDisplay := fmt.Sprintf("฿%s", priceStr)
+	if listing.ListingType == "rent" {
+		priceDisplay += " / mo"
+	}
 	
-	// Add price to description
-	priceDisplay := fmt.Sprintf("฿%s / month", priceStr)
-	fullDescription := fmt.Sprintf("%s | %s", description, priceDisplay)
+	fullDescription := fmt.Sprintf("%d Bed / %d Bath / %.0f sqm / %s", listing.Bedrooms, listing.Bathrooms, listing.Area, priceDisplay)
 	
 	if listing.Description != "" {
 		cleanDesc := listing.Description
@@ -684,6 +711,8 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		}
 	} else if listing.Agent.Theme != nil && listing.Agent.Theme.SharePreviewImage != "" {
 		image = listing.Agent.Theme.SharePreviewImage
+	} else if listing.Agent.Theme != nil && listing.Agent.Theme.LogoURL != "" {
+		image = listing.Agent.Theme.LogoURL
 	} else if listing.Agent.Logo != "" {
 		image = listing.Agent.Logo
 	}
@@ -726,7 +755,7 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
         window.location.href = "/listings/%s";
     </script>
 </body>
-</html>`, title, listing.Agent.Name, title, fullDescription, image, title, fullDescription, image, title, id)
+</html>`, title, agentName, title, fullDescription, image, title, fullDescription, image, title, id)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
@@ -750,6 +779,7 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 	if agent.Theme != nil && agent.Theme.HeaderText != "" {
 		title = agent.Theme.HeaderText
 	}
+	title = normalizeCase(title)
 
 	// Use Agent Description (Bio / Description)
 	description := agent.Description
@@ -768,9 +798,11 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 		description = description[:297] + "..."
 	}
 
-	// Logo logic: Theme Logo -> Agent Logo -> Default
+	// Logo logic: Theme Share Preview -> Theme Logo -> Agent Logo -> Default
 	image := ""
-	if agent.Theme != nil && agent.Theme.LogoURL != "" {
+	if agent.Theme != nil && agent.Theme.SharePreviewImage != "" {
+		image = agent.Theme.SharePreviewImage
+	} else if agent.Theme != nil && agent.Theme.LogoURL != "" {
 		image = agent.Theme.LogoURL
 	} else if agent.Logo != "" {
 		image = agent.Logo

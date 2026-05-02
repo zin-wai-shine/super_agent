@@ -80,6 +80,7 @@ const ThemeSettings = () => {
         logo_url: '',
         favicon_url: '',
         share_preview_image: '',
+        share_preview_image_scale: 100,
         header_text: 'Super Real Estate',
         footer_text: '© 2024 Super Real Estate',
         font_family: 'Inter, sans-serif',
@@ -145,6 +146,7 @@ const ThemeSettings = () => {
         register('navbar_logo_height');
         register('page_logo_height');
         register('dashboard_logo_height');
+        register('share_preview_image_scale');
     }, [register]);
 
     const fetchTheme = async () => {
@@ -184,6 +186,7 @@ const ThemeSettings = () => {
                 navbar_logo_height: theme.navbar_logo_height ?? DEFAULT_THEME.navbar_logo_height,
                 page_logo_height: theme.page_logo_height ?? DEFAULT_THEME.page_logo_height,
                 dashboard_logo_height: theme.dashboard_logo_height ?? DEFAULT_THEME.dashboard_logo_height,
+                share_preview_image_scale: theme.share_preview_image_scale ?? DEFAULT_THEME.share_preview_image_scale,
             };
             reset(initialData);
 
@@ -652,28 +655,21 @@ const ThemeSettings = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between items-center">
-                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Social Share Preview</label>
-                                        {watchAll.share_preview_image && (
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('share_preview_image')}
-                                                className="text-gray-400 hover:text-primary-500 transition-colors"
-                                                title="Reset Share Image"
-                                            >
-                                                <ArrowPathIcon className="w-3 h-3" />
-                                            </button>
-                                        )}
-                                    </div>
                                     <div
                                         onClick={() => sharePreviewInputRef.current?.click()}
                                         className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[160px] flex-col items-center overflow-hidden"
                                     >
                                         <div className="w-full text-center">
                                             {watchAll.share_preview_image ? (
-                                                <div className="relative w-full group-hover:scale-[1.01] transition-transform duration-300">
-                                                    <img src={getMediaUrl(watchAll.share_preview_image)} alt="Preview" className="w-full h-auto object-cover rounded-xl shadow-sm" />
-                                                    <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Image</div>
+                                                <div className="relative w-full group-hover:scale-[1.01] transition-transform duration-300 flex justify-center items-center">
+                                                    <img 
+                                                        src={getMediaUrl(watchAll.share_preview_image)} 
+                                                        alt="Preview" 
+                                                        className="w-full h-auto object-cover rounded-xl shadow-sm transition-transform duration-300" 
+                                                        style={{ transform: `scale(${preview.share_preview_image_scale / 100})` }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors rounded-xl" />
+                                                    <div className="absolute bottom-3 text-[10px] font-bold uppercase tracking-widest text-white drop-shadow-md">Change Image</div>
                                                 </div>
                                             ) : (
                                                 <div className="py-6">
@@ -685,6 +681,32 @@ const ThemeSettings = () => {
                                                 </div>
                                             )}
                                         </div>
+                                    </div>
+
+                                    {/* Share Image Scale Adjustment */}
+                                    <div className="pt-2">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex-1">
+                                                <ModernSlider
+                                                    label="Share Image Scale"
+                                                    value={preview.share_preview_image_scale}
+                                                    min={50}
+                                                    max={150}
+                                                    step={1}
+                                                    unit="%"
+                                                    onChange={(val) => setValue('share_preview_image_scale', val)}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => resetField('share_preview_image_scale')}
+                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
+                                                title="Reset Scale"
+                                            >
+                                                <ArrowPathIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust how your preview image appears in the live preview.</p>
                                     </div>
                                 </div>
                             </div>
