@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 
 const mapContainerStyle = {
@@ -83,7 +83,19 @@ const LocationPicker = ({ value, onChange, address }) => {
         return null;
     }, [value]);
 
+    const isInternalChangeRef = useRef(false);
+
+    useEffect(() => {
+        if (map && markerPosition && !isInternalChangeRef.current) {
+            map.panTo(markerPosition);
+            map.setZoom(17);
+        }
+        // Reset internal change flag after effect runs
+        isInternalChangeRef.current = false;
+    }, [map, markerPosition]);
+
     const onMapClick = useCallback((e) => {
+        isInternalChangeRef.current = true;
         onChange({
             lat: e.latLng.lat(),
             lng: e.latLng.lng()
@@ -91,6 +103,7 @@ const LocationPicker = ({ value, onChange, address }) => {
     }, [onChange]);
 
     const onMarkerDragEnd = useCallback((e) => {
+        isInternalChangeRef.current = true;
         onChange({
             lat: e.latLng.lat(),
             lng: e.latLng.lng()
@@ -105,6 +118,7 @@ const LocationPicker = ({ value, onChange, address }) => {
                     lat: place.geometry.location.lat(),
                     lng: place.geometry.location.lng()
                 };
+                isInternalChangeRef.current = true;
                 onChange(newPos);
                 if (map) {
                     map.panTo(newPos);

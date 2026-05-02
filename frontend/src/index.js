@@ -49,13 +49,23 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-dashboard-dark p-6 text-center overflow-hidden relative">
+                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center overflow-hidden relative">
                     {/* Background Decorations */}
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-500/10 rounded-full blur-[120px] animate-pulse"></div>
                     <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
 
                     <div className="relative z-10 w-full max-w-md animate-fade-up">
-                        <div className="bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-xl border border-white/50 dark:border-white/5 rounded-[32px] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                        {/* Branded Logo Header */}
+                        <div className="flex justify-center mb-8">
+                            <div className="flex items-center space-x-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white shadow-sm">
+                                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
+                                    <span className="text-white font-bold text-xl">S</span>
+                                </div>
+                                <span className="font-bold text-gray-900 tracking-tight">Super <span className="text-primary-600">Real Estate</span></span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/70 dark:bg-dashboard-card/70 backdrop-blur-xl border border-white/50 dark:border-white/5 rounded-[32px] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                             <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center mx-auto mb-8 transform -rotate-6">
                                 <svg className="w-10 h-10 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -67,20 +77,25 @@ class ErrorBoundary extends React.Component {
                                 We encountered an unexpected error. Our team has been notified. Please try reloading the page.
                             </p>
 
-                            <div className="bg-gray-950/5 dark:bg-white/5 rounded-2xl p-4 mb-8">
-                                <pre className="text-[11px] text-gray-600 dark:text-gray-400 font-mono text-left overflow-auto max-h-[120px] scrollbar-thin">
-                                    {this.state.error?.toString() || 'Unknown runtime error'}
-                                </pre>
-                            </div>
+                            {this.state.error && (
+                                <div className="bg-gray-950/5 dark:bg-white/5 rounded-2xl p-4 mb-8">
+                                    <pre className="text-[11px] text-gray-600 dark:text-gray-400 font-mono text-left overflow-auto max-h-[120px] scrollbar-thin">
+                                        {this.state.error.toString()}
+                                    </pre>
+                                </div>
+                            )}
 
                             <button
                                 onClick={() => window.location.reload()}
-                                className="w-full py-4 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold rounded-full shadow-lg shadow-primary-500/25 flex items-center justify-center gap-2"
+                                className="group relative flex items-center justify-center w-full px-8 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition-all duration-300 shadow-xl shadow-gray-200 hover:shadow-gray-300 transform hover:-translate-y-1 overflow-hidden"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Reload Page
+                                <span className="relative z-10 flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Reload Page
+                                </span>
+                                <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white/10 opacity-40 group-hover:animate-shimmer" style={{ animation: 'shimmer 1.5s infinite' }}></div>
                             </button>
                         </div>
 
@@ -88,6 +103,14 @@ class ErrorBoundary extends React.Component {
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Error Protection Active</span>
                         </div>
                     </div>
+
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
+                        @keyframes shimmer {
+                            0% { transform: translateX(-150%) skewX(-12deg); }
+                            100% { transform: translateX(250%) skewX(-12deg); }
+                        }
+                    `}} />
                 </div>
             );
         }

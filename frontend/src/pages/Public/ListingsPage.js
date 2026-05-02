@@ -29,6 +29,8 @@ import { FilterIcons } from '../../utils/IconMap';
 import ScrollableFilterList from '../../components/ui/ScrollableFilterList';
 import RoomStepperRow from '../../components/ui/RoomStepperRow';
 import { getMediaUrl } from '../../utils/media';
+import { formatDistance, formatBedrooms } from '../../utils/format';
+import { extractCoordinates } from '../../utils/map';
 
 import {
     AdjustmentsHorizontalIcon,
@@ -92,6 +94,7 @@ const bathroomOptions = [
 
 const bedroomOptions = [
     { value: '', label: 'Any' },
+    { value: '0', label: 'Studio' },
     { value: '1', label: '1+' },
     { value: '2', label: '2+' },
     { value: '3', label: '3+' },
@@ -162,6 +165,21 @@ const ListingsPage = () => {
     const stateCacheRef = useRef({ listings: [], page: 1, total: 0, searchParamsString: '' });
     const scrollPositionRef = useRef(0);
     const hasRestoredScrollRef = useRef(false);
+    const currentUrlRef = useRef(location.pathname + location.search);
+
+    useEffect(() => {
+        currentUrlRef.current = location.pathname + location.search;
+    }, [location]);
+
+    const [selectedListingId, setSelectedListingId] = useState(() => {
+        if (isCacheValidSync && globalListCache?.selectedListingId) return globalListCache.selectedListingId;
+        return null;
+    });
+
+    const [isMapExpanded, setIsMapExpanded] = useState(() => {
+        if (isCacheValidSync && globalListCache?.isMapExpanded) return globalListCache.isMapExpanded;
+        return false;
+    }); // Map full-width (hide list) when true
     
     // Initialize lastFetchedParamsRef synchronously if cache is valid
     const lastFetchedParamsRef = useRef(() => {
@@ -215,9 +233,11 @@ const ListingsPage = () => {
             searchParamsString: searchParams.toString(),
             mapBounds,
             mapCenter,
-            mapZoom
+            mapZoom,
+            selectedListingId,
+            isMapExpanded
         };
-    }, [listings, page, total, searchParams, mapBounds, mapCenter, mapZoom]);
+    }, [listings, page, total, searchParams, mapBounds, mapCenter, mapZoom, selectedListingId, isMapExpanded]);
 
     // Track scroll position continuously
     useEffect(() => {
@@ -244,14 +264,13 @@ const ListingsPage = () => {
 
     // Save cache on unmount
     useEffect(() => {
-        const currentUrl = window.location.pathname + window.location.search;
         return () => {
             // Save state even if listings haven't loaded yet? 
             // Better to only save if we have some data to restore.
             if (stateCacheRef.current.listings.length > 0) {
                 globalListCache = {
                     ...stateCacheRef.current,
-                    url: currentUrl,
+                    url: currentUrlRef.current,
                     timestamp: Date.now(),
                     scrollY: scrollPositionRef.current
                 };
@@ -312,7 +331,6 @@ const ListingsPage = () => {
     }, [isGoogleMapOpen]);
     const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
     const [listHoveredListingId, setListHoveredListingId] = useState(null);
-    const [selectedListingId, setSelectedListingId] = useState(null);
     const [sheetOffset, setSheetOffset] = useState(48); // Percentage from top (48% = 52vh visible)
     const [showMapButton, setShowMapButton] = useState(false);
 
@@ -491,7 +509,6 @@ const ListingsPage = () => {
     const [isSidebarClosing, setIsSidebarClosing] = useState(false); // For close animation
     const [sidebarAnimateIn, setSidebarAnimateIn] = useState(false); // Start off-screen for open animation
     const [isMapSidebarOpen, setIsMapSidebarOpen] = useState(false); // Sidebar state for Map Overlay
-    const [isMapExpanded, setIsMapExpanded] = useState(false); // Map full-width (hide list) when true
 
     // Open sidebar filters when triggered from mobile nav search pill
     useEffect(() => {
@@ -1154,6 +1171,21 @@ const ListingsPage = () => {
     }, [loading, listings.length, total, hasMore]);
 
     const handleFilterChange = (key, value, shouldScroll = true) => {
+        if (key === 'map_center') {
+            const [lat, lng] = value.split(',').map(Number);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                setMapCenter({ lat, lng });
+                setMapZoom(17);
+                // Clear search term if it's currently a coordinate/link
+                const coords = extractCoordinates(searchTerm);
+                if (coords) {
+                    setSearchTerm('');
+                    setFilters(prev => ({ ...prev, search: '' }));
+                }
+                return;
+            }
+        }
+
         const safeValue = value != null && typeof value !== 'string' ? String(value) : (value ?? '');
         const newFilters = toSerializableFilters({ ...filters, [key]: safeValue });
         setFilters(newFilters);
@@ -1356,7 +1388,7 @@ const ListingsPage = () => {
     if (filters.min_price) activeFiltersList.push({ label: `Min: ฿${parseInt(filters.min_price).toLocaleString()}`, key: 'min_price' });
     if (filters.max_price) activeFiltersList.push({ label: `Max: ฿${parseInt(filters.max_price).toLocaleString()}`, key: 'max_price' });
     if (filters.max_distance_to_station) {
-        activeFiltersList.push({ label: `Near BTS/MRT (≤${filters.max_distance_to_station}m)`, key: 'max_distance_to_station' });
+        activeFiltersList.push({ label: `Near BTS/MRT (≤${formatDistance(filters.max_distance_to_station)})`, key: 'max_distance_to_station' });
     }
     if (filters.station_id) {
         // Use flatStations (already flat option objects) to find the label
@@ -1936,6 +1968,7 @@ const ListingsPage = () => {
                                                 center={mapCenter}
                                                 zoom={mapZoom}
                                                 onMarkerClick={(property) => {
+                                                    setSelectedListingId(property.id);
                                                     if (window.innerWidth >= 1024) {
                                                         navigate(`/listings/${property.id}`);
                                                     } else {
@@ -1950,6 +1983,8 @@ const ListingsPage = () => {
                                                 isVisible={isGoogleMapOpen}
                                                 onSaveClick={handleMapSaveClick}
                                                 savedListingIds={savedListingIds}
+                                                openedMarkerId={selectedListingId}
+                                                onOpenedMarkerChange={setSelectedListingId}
                                                 highlightedMarkerListingId={listHoveredListingId}
                                                 fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
                                                 showMapLoading={loading && fetchTriggeredByBoundsRef.current}
@@ -1959,10 +1994,10 @@ const ListingsPage = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsMapExpanded(false)}
-                                                    className="absolute top-4 right-4 z-[20] w-11 h-11 rounded-full bg-white dark:bg-dashboard-card shadow-lg border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all active:scale-95"
+                                                    className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[20] w-12 h-12 flex items-center justify-center bg-[#222222]/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/10 text-white hover:bg-[#222222]/95 transition-all active:scale-90"
                                                     aria-label="Close expanded map"
                                                 >
-                                                    <XMarkIcon className="w-6 h-6" />
+                                                    <XMarkIcon className="w-6 h-6 stroke-[2]" />
                                                 </button>
                                             )}
                                             {/* Map Overlays (hide when expanded so X is visible) */}
@@ -2016,12 +2051,12 @@ const ListingsPage = () => {
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-11 h-11 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border-none`}
+                                    className={`flex-shrink-0 relative w-14 h-14 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border border-[#222222]/15 shadow-sm`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -2036,15 +2071,15 @@ const ListingsPage = () => {
                         >
                             {/* Map Container - Sticky at the top, list slides over it */}
                             <div className="sticky top-0 w-full h-[100svh] z-[201] flex-shrink-0">
-                                {/* Floating Filter Button (Black at corner) - Hidden when header is shown */}
+                                {/* Floating Filter Button - Map Mode Only */}
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-900 dark:text-white border-none active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                    className={`absolute top-6 right-6 z-[210] w-14 h-14 bg-[#222222]/80 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/10 shadow-2xl active:scale-95 transition-all outline-none ${isMobileSheetExpanded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className="w-7 h-7" />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
+                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -2061,7 +2096,6 @@ const ListingsPage = () => {
                                     onBoundsChanged={handleMapBoundsChanged}
                                     onOpenedMarkerChange={setSelectedListingId}
                                     openedMarkerId={selectedListingId}
-                                    onClick={() => setSelectedListingId(null)}
                                     onSaveClick={handleMapSaveClick}
                                     savedListingIds={savedListingIds}
                                     highlightedMarkerListingId={selectedListingId || listHoveredListingId}
@@ -2165,14 +2199,37 @@ const ListingsPage = () => {
                                 {(() => {
                                     const property = listings.find(l => String(l.id) === String(selectedListingId));
                                     if (!property) return null;
+
+                                    // Find all listings at the same exact location (cluster)
+                                    const siblings = listings.filter(l => 
+                                        l.latitude === property.latitude && 
+                                        l.longitude === property.longitude
+                                    );
+                                    const isCluster = siblings.length > 1;
+                                    const currentIndex = siblings.findIndex(s => String(s.id) === String(selectedListingId));
+
+                                    const onNext = (e) => {
+                                        e.stopPropagation();
+                                        if (currentIndex < siblings.length - 1) {
+                                            setSelectedListingId(siblings[currentIndex + 1].id);
+                                        }
+                                    };
+                                    const onPrev = (e) => {
+                                        e.stopPropagation();
+                                        if (currentIndex > 0) {
+                                            setSelectedListingId(siblings[currentIndex - 1].id);
+                                        }
+                                    };
+
                                     return (
                                         <div className="relative">
+                                            {/* Main Card Container */}
                                             <div
-                                                className="bg-white dark:bg-dashboard-card rounded-[28px] border border-gray-100 dark:border-white/10 shadow-[0_12px_45px_rgba(0,0,0,0.15)] overflow-hidden flex items-center p-2.5 relative active:scale-[0.98] transition-all cursor-pointer"
+                                                className="bg-[#222222]/80 backdrop-blur-xl rounded-[28px] border border-white/10 shadow-[0_12px_45px_rgba(0,0,0,0.3)] overflow-hidden flex items-center p-2.5 relative active:scale-[0.98] transition-all cursor-pointer"
                                                 onClick={() => navigate(`/listings/${property.id}${location.search}`)}
                                             >
                                                 {/* Small Image at Left */}
-                                                <div className="w-28 h-28 rounded-[22px] overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-white/5">
+                                                <div className="w-28 h-28 rounded-[22px] overflow-hidden flex-shrink-0 bg-white/5">
                                                     <img
                                                         src={getMediaUrl((property.media || []).find(m => m.type === 'image')?.url || property.images?.[0])}
                                                         alt={property.title}
@@ -2182,34 +2239,63 @@ const ListingsPage = () => {
 
                                                 {/* Information at Right */}
                                                 <div className="ml-4 flex-1 min-w-0 pr-6">
-                                                    <h3 className="text-[15px] font-normal text-gray-900 dark:text-white truncate mb-1">
+                                                    <h3 className="text-[15px] font-normal text-white truncate mb-1">
                                                         {property.title}
                                                     </h3>
-                                                    <p className="text-[15px] font-normal text-gray-400 dark:text-gray-500 truncate mb-1.5">
+                                                    <p className="text-[15px] font-normal text-white truncate mb-1.5 opacity-80">
                                                         {[
-                                                            property.bedrooms > 0 ? `${property.bedrooms} Bed` : null,
+                                                            formatBedrooms(property.bedrooms),
                                                             property.bathrooms > 0 ? `${property.bathrooms} Bath` : null,
                                                             property.area > 0 ? `${property.area} Sqm` : null
                                                         ].filter(Boolean).join(' · ')}
                                                     </p>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-[15px] font-normal text-gray-900 dark:text-white">
+                                                        <span className="text-[15px] font-normal text-white">
                                                             ฿{Number(property.price).toLocaleString()}
                                                         </span>
-                                                        <span className="bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[11px] px-2 py-1 rounded">
+                                                        <span className="bg-white/10 text-white text-[10px] px-3 py-1 rounded-full font-medium">
                                                             {property.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Floating Close Button outside the overflow-hidden container */}
+                                            {/* Cluster Footer Switcher */}
+                                            {isCluster && (
+                                                <div className="mt-2.5 flex items-center justify-between bg-[#222222]/80 backdrop-blur-xl border border-white/5 rounded-full px-5 py-3 shadow-xl">
+                                                    <span className="text-white text-sm font-normal">
+                                                        {currentIndex + 1} of {siblings.length} properties
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={onPrev}
+                                                            disabled={currentIndex === 0}
+                                                            className={`p-1.5 rounded-full transition-all active:scale-90 ${currentIndex === 0 ? 'text-white/20 bg-white/5' : 'text-white bg-white/10 hover:bg-white/20'}`}
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            onClick={onNext}
+                                                            disabled={currentIndex === siblings.length - 1}
+                                                            className={`p-1.5 rounded-full transition-all active:scale-90 ${currentIndex === siblings.length - 1 ? 'text-white/20 bg-white/5' : 'text-white bg-white/10 hover:bg-white/20'}`}
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Floating Close Button */}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setSelectedListingId(null);
                                                 }}
-                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-white dark:bg-dashboard-card rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 shadow-2xl border border-gray-100 dark:border-white/10 active:bg-gray-50 dark:active:bg-white/5 z-[310]"
+                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-[#222222] rounded-full flex items-center justify-center text-gray-400 shadow-2xl border border-white/10 active:bg-white/5 z-[310]"
                                             >
                                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

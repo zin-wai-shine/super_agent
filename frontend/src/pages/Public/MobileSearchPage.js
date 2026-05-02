@@ -40,6 +40,7 @@ const MobileSearchPage = () => {
 
     const bedroomOptions = [
         { value: '', label: '🛏️ Any Beds' },
+        { value: '0', label: '🛏️ Studio' },
         { value: '1', label: '1+ Beds' },
         { value: '2', label: '2+ Beds' },
         { value: '3', label: '3+ Beds' },

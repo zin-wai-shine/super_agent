@@ -306,9 +306,10 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
     );
 };
 
+import { formatDistance, formatBedrooms } from '../../utils/format';
+
 const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
     if (!listing || Object.keys(listing).length === 0 || !listing.id) return null; // Defensive check for undefined listings
-    console.log('--- ListingCard Render ---', { id: listing.id, viewMode });
     const {
         id,
         title,
@@ -451,8 +452,10 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
     const nearestStationName = (station?.name_en || station_name || '').split('(')[0].trim() || '';
     const stationWithDistance = nearestStationName && (distance_to_station != null && distance_to_station !== '' && Number(distance_to_station) >= 0)
-        ? `${nearestStationName} (${Number(distance_to_station)}m)`
+        ? `${nearestStationName} (${formatDistance(distance_to_station)})`
         : nearestStationName;
+
+
 
     // Format price
     const formatPrice = (price) => {
@@ -569,7 +572,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             </h3>
                             <div className="mt-1 flex flex-col gap-0.5">
                                 <p className="text-[16px] md:text-[13px] text-[#222222]/70 dark:text-gray-300 font-medium">
-                                    {bedrooms} Bed · {bathrooms} Bath
+                                    {formatBedrooms(bedrooms)} · {bathrooms} Bath
                                 </p>
                             </div>
                         </Link>
@@ -656,7 +659,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                     )}
 
                     <p className="text-[16px] md:text-[14px] text-[#222222]/70 dark:text-gray-300 animate-fill-slow">
-                        {bedrooms} Bed · {bathrooms} Bath · {area} Sqm
+                        {formatBedrooms(bedrooms)} · {bathrooms} Bath · {area} Sqm
                     </p>
 
                     <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
@@ -742,7 +745,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 </div>
                             )}
                             <div className="flex gap-4 text-[16px] sm:text-sm text-[#222222]/70 dark:text-gray-300">
-                                <span>{bedrooms} Bed</span>
+                                <span>{formatBedrooms(bedrooms)}</span>
                                 <span>{bathrooms} Bath</span>
                                 <span>{area} sqm</span>
                             </div>

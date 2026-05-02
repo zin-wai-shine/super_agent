@@ -14,6 +14,7 @@ import { BsSearch } from 'react-icons/bs';
 import Button from './Button';
 import TransitMapFilter from '../TransitMap/TransitMapFilter';
 import Input from './Input';
+import { extractCoordinates, resolveShortLink } from '../../utils/map';
 
 const QUICK_SUGGESTIONS = [
     { icon: MapPinIcon, label: 'Near BTS / MRT stations', tag: 'transit' },
@@ -101,11 +102,33 @@ const FilterBar = ({
 
     const normalize = (str) => str?.toString().toLowerCase().trim().replace(/\s+/g, '') || '';
 
-    const handleSearch = useCallback(() => {
+    const handleSearch = useCallback(async () => {
         let finalStationIds = [...pendingStationIds];
 
+        let finalInput = inputValue;
+        if (inputValue.includes('maps.app.goo.gl') || inputValue.includes('goo.gl/maps')) {
+            const resolved = await resolveShortLink(inputValue);
+            if (resolved) {
+                finalInput = resolved;
+            }
+        }
+
+        // Robust extraction from various formats
+        const coords = extractCoordinates(finalInput);
+        if (coords) {
+            if (onFilterChange) {
+                onFilterChange('map_center', `${coords.lat},${coords.lng}`);
+            }
+            // If it's a pure coordinate string or a URL, we don't necessarily want to search for it as text
+            const isUrl = inputValue.includes('http') || inputValue.includes('maps.google.com') || inputValue.includes('maps.app.goo.gl');
+            if (isUrl || inputValue.includes(',')) {
+                // It was likely a location jump request, clear search term or keep it?
+                // For now, let's just trigger the location jump via onFilterChange
+            }
+        }
+
         // Auto-match station if not already selected from the map/modal
-        if (finalStationIds.length === 0 && inputValue.trim()) {
+        if (finalStationIds.length === 0 && inputValue.trim() && !coords) {
             const normalizedInput = normalize(inputValue);
             const match = (stations || []).find(s => 
                 normalize(s.name_en) === normalizedInput || 
@@ -130,7 +153,7 @@ const FilterBar = ({
         } else {
             inputRef.current && inputRef.current.blur();
         }
-    }, [inputValue, onSearchChange, onFilterChange, onSearchSubmit, pendingStationIds, isFocused, isClosing]);
+    }, [inputValue, onSearchChange, onFilterChange, onSearchSubmit, pendingStationIds, isFocused, isClosing, stations]);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {

@@ -20,6 +20,8 @@ import 'react-date-range/dist/theme/default.css';
 import { format, addMonths, subMonths, getYear, getMonth, setYear, setMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { getMediaUrl } from '../../utils/media';
+import { formatDistance } from '../../utils/format';
+import { extractCoordinates, resolveShortLink } from '../../utils/map';
 
 const availabilityOptions = [
     { value: 'ready', label: 'Ready to Move In' },
@@ -137,7 +139,7 @@ const CreateListing = () => {
         fetchFacilityGroups();
     }, []);
 
-    const handleLocationChange = (value) => {
+    const handleLocationChange = async (value) => {
         if (!value) return;
 
         // Check if it's a URL
@@ -147,22 +149,19 @@ const CreateListing = () => {
             setValue('map_url', value);
         }
 
-        // Robust extraction from various formats
-        const patterns = [
-            /@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng
-            /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng
-            /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng
-            /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng
-            /(-?\d+\.\d+),\s*(-?\d+\.\d+)/, // Plain lat, lng (anywhere)
-        ];
-
-        for (const pattern of patterns) {
-            const match = value.match(pattern);
-            if (match) {
-                setValue('latitude', match[1]);
-                setValue('longitude', match[2]);
-                break;
+        let finalValue = value;
+        // If it's a short link, resolve it first
+        if (value.includes('maps.app.goo.gl') || value.includes('goo.gl/maps')) {
+            const resolved = await resolveShortLink(value);
+            if (resolved) {
+                finalValue = resolved;
             }
+        }
+
+        const coords = extractCoordinates(finalValue);
+        if (coords) {
+            setValue('latitude', coords.lat, { shouldValidate: true, shouldDirty: true });
+            setValue('longitude', coords.lng, { shouldValidate: true, shouldDirty: true });
         }
     };
 
@@ -855,7 +854,14 @@ const CreateListing = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="input-label">Distance (meters)</label>
+                                    <label className="input-label flex items-center justify-between">
+                                        <span>Distance (meters)</span>
+                                        {fieldValues.distance_to_station >= 1000 && (
+                                            <span className="text-[10px] bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full font-bold">
+                                                ≈ {formatDistance(fieldValues.distance_to_station)}
+                                            </span>
+                                        )}
+                                    </label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">🚶</span>
                                         <input
@@ -1002,14 +1008,25 @@ const CreateListing = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div>
-                            <label className="input-label">Bedrooms</label>
+                            <label className="input-label flex items-center justify-between">
+                                <span>Bedrooms</span>
+                                <label className="flex items-center gap-1.5 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        className="w-3.5 h-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 transition-all"
+                                        checked={parseInt(fieldValues.bedrooms) === 0}
+                                        onChange={(e) => setValue('bedrooms', e.target.checked ? 0 : 1)}
+                                    />
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${parseInt(fieldValues.bedrooms) === 0 ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`}>Studio</span>
+                                </label>
+                            </label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">
                                     <MdBed />
                                 </span>
                                 <input
                                     type="number"
-                                    className="input-field pl-12"
+                                    className={`input-field pl-12 ${parseInt(fieldValues.bedrooms) === 0 ? 'bg-gray-50 dark:bg-gray-800/50 text-gray-400' : ''}`}
                                     placeholder="0"
                                     min="0"
                                     {...register('bedrooms', { min: 0 })}

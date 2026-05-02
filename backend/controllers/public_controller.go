@@ -95,7 +95,11 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		bedVals := strings.Split(bedrooms, ",")
 		if len(bedVals) == 1 {
 			if beds, err := strconv.Atoi(bedVals[0]); err == nil {
-				query = query.Where("bedrooms >= ?", beds)
+				if beds == 0 {
+					query = query.Where("bedrooms = 0")
+				} else {
+					query = query.Where("bedrooms >= ?", beds)
+				}
 			}
 		} else {
 			var bedInts []int
@@ -677,7 +681,11 @@ func (pc *PublicController) ServeListingMeta(c *gin.Context) {
 		priceDisplay += " / mo"
 	}
 	
-	fullDescription := fmt.Sprintf("%d Bed / %d Bath / %.0f sqm / %s", listing.Bedrooms, listing.Bathrooms, listing.Area, priceDisplay)
+	bedDisplay := fmt.Sprintf("%d Bed", listing.Bedrooms)
+	if listing.Bedrooms == 0 {
+		bedDisplay = "Studio"
+	}
+	fullDescription := fmt.Sprintf("%s / %d Bath / %.0f sqm / %s", bedDisplay, listing.Bathrooms, listing.Area, priceDisplay)
 	
 	if listing.Description != "" {
 		cleanDesc := listing.Description
@@ -856,4 +864,43 @@ func (pc *PublicController) ServeAgentMeta(c *gin.Context) {
 </html>`, title, title, description, image, scheme, host, title, title, description, image, scheme, host, title, description, image)
 
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+}
+
+// ResolveURL follows redirects for a given URL and returns the final destination
+func (pc *PublicController) ResolveURL(c *gin.Context) {
+	targetURL := c.Query("url")
+	if targetURL == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "url query parameter is required"})
+		return
+	}
+
+	// Pattern check for security (only allow maps.app.goo.gl and goo.gl/maps)
+	if !strings.Contains(targetURL, "maps.app.goo.gl") && !strings.Contains(targetURL, "goo.gl/maps") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only google maps short links are allowed"})
+		return
+	}
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 {
+				return fmt.Errorf("too many redirects")
+			}
+			return nil
+		},
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Head(targetURL)
+	if err != nil {
+		// Try GET if HEAD fails (some servers block HEAD)
+		resp, err = client.Get(targetURL)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to resolve URL", "details": err.Error()})
+			return
+		}
+		defer resp.Body.Close()
+	}
+
+	finalURL := resp.Request.URL.String()
+	c.JSON(http.StatusOK, gin.H{"url": finalURL})
 }

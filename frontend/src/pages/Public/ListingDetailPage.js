@@ -50,6 +50,7 @@ import {
     ExclamationCircleIcon as SolidExclamationCircleIcon,
 } from '@heroicons/react/24/solid';
 import { getMediaUrl } from '../../utils/media';
+import { formatDistance, formatBedrooms } from '../../utils/format';
 import ListingCard from '../../components/Listings/ListingCard';
 import PropertyShare from '../../components/Listings/PropertyShare';
 import Button from '../../components/ui/Button';
@@ -1700,7 +1701,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     </div>
                                                     <div className="flex flex-col gap-2">
                                                         <div className="text-[17px] text-gray-600 dark:text-gray-400 font-medium flex items-center gap-2">
-                                                            <span>{listing.bedrooms} bed</span>
+                                                            <span>{formatBedrooms(listing.bedrooms)}</span>
                                                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
                                                             <span>{listing.bathrooms} bath</span>
                                                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
@@ -2272,7 +2273,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                                 <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bedrooms || 0} Bedrooms</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{formatBedrooms(listing.bedrooms)}</div>
                                                 </div>
                                             </div>
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none md:border-t-0 border-gray-100 dark:border-white/5">
@@ -2325,7 +2326,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div>
                                                     <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
                                                         {(listing.station_id || listing.station_name)
-                                                            ? `${listing.distance_to_station || 0}m to ${listing.station_name || listing.station?.name_en || 'Station'}`
+                                                            ? `${formatDistance(listing.distance_to_station)} to ${listing.station_name || listing.station?.name_en || 'Station'}`
                                                             : 'Near Transit'}
                                                     </div>
                                                 </div>
@@ -2707,7 +2708,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             <div className="flex items-center text-[14px] text-gray-500 dark:text-gray-400 border-l border-gray-100 dark:border-white/10 pl-6">
                                                                 <TbTrain className="w-5 h-5 mr-2 text-primary-600" />
                                                                 <span className="font-bold text-primary-900 dark:text-white">{listing.station_name}</span>
-                                                                <span className="ml-2 font-medium text-gray-400 dark:text-gray-500">({listing.distance_to_station}m)</span>
+                                                                <span className="ml-2 font-medium text-gray-400 dark:text-gray-500">({formatDistance(listing.distance_to_station)})</span>
                                                             </div>
                                                         )}
                                                     </div>

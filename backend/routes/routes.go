@@ -67,6 +67,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.POST("/appointments", appointmentController.CreateAppointment)
 			public.GET("/collections", collectionController.GetCollections)
 			public.GET("/collections/:id", collectionController.GetCollection)
+			public.GET("/resolve-url", publicController.ResolveURL)
 
 			// Share routes (for social media crawlers)
 			share := public.Group("/share")

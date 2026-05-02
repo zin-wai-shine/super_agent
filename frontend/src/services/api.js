@@ -139,6 +139,7 @@ export const publicApi = {
     getPublicBanners: (params) => api.get('/public/banners', { params }),
     getPublicBanner: (id) => api.get(`/public/banners/${id}`),
     getPlans: () => api.get('/public/plans'),
+    resolveUrl: (url) => api.get('/public/resolve-url', { params: { url } }),
 };
 
 // Agent API
