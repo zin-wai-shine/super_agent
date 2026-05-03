@@ -102,6 +102,39 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w
     );
 };
 
+// Internal component for smooth, flicker-free image loading
+const GracefulImage = ({ src, alt, className }) => {
+    const [isLoaded, setIsLoaded] = React.useState(false);
+    
+    // Check if image is already in cache
+    React.useEffect(() => {
+        const img = new Image();
+        img.src = src;
+        if (img.complete) {
+            setIsLoaded(true);
+        }
+    }, [src]);
+
+    return (
+        <div className="relative w-full h-full bg-gray-100/50 dark:bg-white/5 overflow-hidden">
+            {/* Shimmer Placeholder */}
+            {!isLoaded && (
+                <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 dark:via-white/5 to-transparent animate-shimmer"
+                    style={{ backgroundSize: '200% 100%' }}
+                />
+            )}
+            <img
+                src={src}
+                alt={alt}
+                onLoad={() => setIsLoaded(true)}
+                className={`${className} transition-opacity duration-700 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading="lazy"
+            />
+        </div>
+    );
+};
+
 export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3', initialIndex = 0, onImageClick, isGalleryMode = false, showArrows = true, showDots = true }) => {
     const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
     const [showIndicator, setShowIndicator] = React.useState(() => {
@@ -216,10 +249,10 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                                 }
                             }}
                         >
-                            <img
+                            <GracefulImage
                                 src={img}
                                 alt={`${title} - image ${i + 1}`}
-                                className={`w-full h-full select-none pointer-events-none transition-all duration-300 ${isGalleryMode ? 'object-contain rounded-[32px] md:rounded-[23px]' : 'object-cover'}`}
+                                className={`w-full h-full select-none pointer-events-none ${isGalleryMode ? 'object-contain rounded-[32px] md:rounded-[23px]' : 'object-cover'}`}
                             />
                         </Link>
                     </div>

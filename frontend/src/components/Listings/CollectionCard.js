@@ -18,6 +18,8 @@ const CollectionCard = ({
     const navigate = useNavigate();
     const firstImage = collection.media?.find(m => m.type === 'image')?.url;
 
+    const [isLoaded, setIsLoaded] = React.useState(false);
+
     // Reduced stagger delay (from 200ms to 100ms) to make revealed cards pop in faster
     const delay = `${index * 100}ms`;
 
@@ -39,13 +41,24 @@ const CollectionCard = ({
             <div className={`relative aspect-[1/1] md:aspect-[4/3] rounded-[23px] overflow-hidden mb-3 transition-all duration-300 ${isSelected ? 'ring-1 ring-primary-500/20' : ''}`}>
                 {/* Image Section: Slides left-to-right INSIDE the container */}
                 {firstImage ? (
-                    <div 
-                        className={`w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 ${animateEntrance ? 'opacity-0 animate-reveal-left' : ''}`} 
-                        style={{ 
-                            backgroundImage: `url(${getMediaUrl(firstImage)})`,
-                            animationDelay: animateEntrance ? delay : '0ms'
-                        }}
-                    />
+                    <div className="relative w-full h-full overflow-hidden bg-gray-100/50 dark:bg-white/5">
+                         {/* Shimmer Placeholder */}
+                         {!isLoaded && (
+                            <div 
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 dark:via-white/5 to-transparent animate-shimmer"
+                                style={{ backgroundSize: '200% 100%' }}
+                            />
+                        )}
+                        <img 
+                            src={getMediaUrl(firstImage)}
+                            alt={collection.name}
+                            onLoad={() => setIsLoaded(true)}
+                            className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${animateEntrance ? 'opacity-0 animate-reveal-left' : ''} ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
+                            style={{ 
+                                animationDelay: animateEntrance ? delay : '0ms'
+                            }}
+                        />
+                    </div>
                 ) : (
                     <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 text-gray-300 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
                          style={animateEntrance ? { animationDelay: delay } : {}}>
