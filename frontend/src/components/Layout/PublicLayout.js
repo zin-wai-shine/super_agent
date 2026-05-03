@@ -77,7 +77,6 @@ const PublicLayout = () => {
     }, [isDarkMode]);
 
     const { isMainDomain, agent, loading: tenantLoading } = useTenant();
-    console.log('PublicLayout State:', { isMainDomain, agent, tenantLoading });
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
     const closeTimeoutRef = useRef(null);

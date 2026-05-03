@@ -34,9 +34,7 @@ export const TenantProvider = ({ children }) => {
             try {
                 // Use api instance so base URL and X-Tenant (for subdomain.superealestate.IP) are correct
                 const apiUrl = api.defaults.baseURL;
-                console.log('Fetching tenant config from:', apiUrl);
                 const response = await api.get('/public/tenant/config', { timeout: 8000 });
-                console.log('Tenant config received:', response.data);
                 
                 // Cache the config to prevent unnecessary reloads
                 sessionStorage.setItem(cacheKey, JSON.stringify(response.data));

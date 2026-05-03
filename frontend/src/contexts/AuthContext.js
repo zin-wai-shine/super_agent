@@ -29,7 +29,8 @@ export const AuthProvider = ({ children }) => {
     const fetchSavedListings = useCallback(async () => {
         try {
             const response = await api.get('/saved-listings');
-            setSavedListingIds((response.data || []).map(l => String(l.id)));
+            const listingsArray = response.data?.data || [];
+            setSavedListingIds(listingsArray.map(l => String(l.id)));
         } catch (err) {
             console.error('Failed to fetch global saved listings', err);
         }

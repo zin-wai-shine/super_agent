@@ -131,7 +131,6 @@ function App() {
 
 const AppRoutes = () => {
     const { isMainDomain, agent } = useTenant();
-    console.log('AppRoutes State:', { isMainDomain, agent });
 
     // Handle invalid subdomain access
     if (!isMainDomain && !agent) {
