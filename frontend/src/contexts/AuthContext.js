@@ -22,7 +22,17 @@ export const AuthProvider = ({ children }) => {
         }
     });
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [savedListingIds, setSavedListingIds] = useState([]);
+
+    // Helper to fetch saved listings
+    const fetchSavedListings = useCallback(async () => {
+        try {
+            const response = await api.get('/saved-listings');
+            setSavedListingIds((response.data || []).map(l => String(l.id)));
+        } catch (err) {
+            console.error('Failed to fetch global saved listings', err);
+        }
+    }, []);
 
     // Initialize auth state from localStorage
     useEffect(() => {
@@ -35,6 +45,7 @@ export const AuthProvider = ({ children }) => {
                     const userData = response.data;
                     setUser(userData);
                     localStorage.setItem('user', JSON.stringify(userData));
+                    await fetchSavedListings();
                 } catch (err) {
                     // Only clear session if the error is 401 (Unauthorized)
                     if (err.response?.status === 401) {
@@ -43,17 +54,19 @@ export const AuthProvider = ({ children }) => {
                         localStorage.removeItem('google_picture');
                         localStorage.removeItem('user');
                         setUser(null);
+                        setSavedListingIds([]);
                     }
                 }
             } else {
                 setUser(null);
+                setSavedListingIds([]);
                 localStorage.removeItem('user');
             }
             
             setLoading(false);
         };
         initAuth();
-    }, []);
+    }, [fetchSavedListings]);
 
     const login = useCallback(async (email, password) => {
         try {
@@ -65,6 +78,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('refresh_token', refresh_token);
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
+            await fetchSavedListings();
 
             return { success: true, user };
         } catch (err) {
@@ -72,7 +86,7 @@ export const AuthProvider = ({ children }) => {
             setError(message);
             return { success: false, error: message };
         }
-    }, []);
+    }, [fetchSavedListings]);
 
     const register = useCallback(async (userData) => {
         try {
@@ -84,6 +98,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('refresh_token', refresh_token);
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
+            await fetchSavedListings();
 
             return { success: true, user };
         } catch (err) {
@@ -91,12 +106,13 @@ export const AuthProvider = ({ children }) => {
             setError(message);
             return { success: false, error: message };
         }
-    }, []);
+    }, [fetchSavedListings]);
 
     const loginWithToken = useCallback((userData) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-    }, []);
+        fetchSavedListings();
+    }, [fetchSavedListings]);
 
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
@@ -104,6 +120,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('google_picture');
         localStorage.removeItem('user');
         setUser(null);
+        setSavedListingIds([]);
     }, []);
 
     const updateProfile = useCallback(async (data) => {
@@ -139,6 +156,8 @@ export const AuthProvider = ({ children }) => {
         isSuperAdmin: user?.role === 'super_admin',
         isAgent: user?.role === 'agent',
         isSubAgent: user?.role === 'sub_agent',
+        savedListingIds,
+        setSavedListingIds,
         login,
         loginWithToken,
         register,

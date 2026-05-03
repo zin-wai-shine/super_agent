@@ -433,21 +433,19 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, savedListingIds, setSavedListingIds } = useAuth();
     const { isMainDomain } = useTenant();
 
+    // Use global saved state to avoid N+1 API calls
     React.useEffect(() => {
-        const checkSavedStatus = async () => {
-            if (initialSaved || !isAuthenticated || !user) return;
-            try {
-                const response = await checkIfSaved(id);
-                setIsSaved(response.saved);
-            } catch (error) {
-                console.error('Error checking saved status:', error);
-            }
-        };
-        checkSavedStatus();
-    }, [id, isAuthenticated, user, initialSaved]);
+        if (initialSaved) {
+            setIsSaved(true);
+        } else if (isAuthenticated && savedListingIds) {
+            setIsSaved(savedListingIds.includes(String(id)));
+        } else {
+            setIsSaved(false);
+        }
+    }, [id, isAuthenticated, savedListingIds, initialSaved]);
 
     React.useEffect(() => {
         const handleStatusChange = (event) => {
@@ -468,10 +466,12 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
             if (isSaved) {
                 await unsaveListing(id);
                 setIsSaved(false);
+                if (setSavedListingIds) setSavedListingIds(prev => prev.filter(sid => String(sid) !== String(id)));
                 window.dispatchEvent(new CustomEvent('listing:saved-status-changed', { detail: { listingId: id, saved: false } }));
             } else {
                 await saveListing(id);
                 setIsSaved(true);
+                if (setSavedListingIds) setSavedListingIds(prev => prev.some(sid => String(sid) === String(id)) ? prev : [...prev, String(id)]);
                 window.dispatchEvent(new CustomEvent('listing:saved-status-changed', { detail: { listingId: id, saved: true } }));
             }
             if (onSaveToggle) onSaveToggle(!isSaved);

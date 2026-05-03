@@ -117,16 +117,32 @@ const getSelectedOption = (options, value) => {
 };
 
 const ListingsPage = () => {
-    const { user } = useAuth();
+    const { user, isAuthenticated, savedListingIds, setSavedListingIds } = useAuth();
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price, isMainDomain } = useTenant();
     const { theme } = useTheme();
+    const [viewMode, setViewMode] = useState(() => {
+        return localStorage.getItem('preferredView') || 'grid';
+    });
+    
+    // Add effect to sync local view mode with global preference changes
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setViewMode(localStorage.getItem('preferredView') || 'grid');
+        };
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('viewModeChanged', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('viewModeChanged', handleStorageChange);
+        };
+    }, []);
+
     const outletContext = useOutletContext() || {};
     const { navVisible, filterBarSlot, isScrolled: layoutScrolled, mobileBottomNavVisible, setMobileBottomNavVisible } = outletContext;
     const [searchParams, setSearchParams] = useSearchParams();
     const location = useLocation();
-    const [savedListingIds, setSavedListingIds] = useState([]);
-    
+
     // Synchronously check cache before any hooks to use in initial state
     const currentPathPlusSearch = location.pathname + location.search;
     const cachedEntry = globalListCacheRegistry[currentPathPlusSearch];
