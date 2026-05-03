@@ -22,6 +22,7 @@ import { formatDistance, formatBedrooms } from '../../utils/format';
 import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { BsHeart, BsFillHeartFill } from "react-icons/bs";
 import { IoSettingsOutline } from "react-icons/io5";
+import { PiBuildingApartmentBold } from "react-icons/pi";
 
 const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w-[32px] h-[32px] md:w-[26px] md:h-[26px]" }) => {
     const [animate, setAnimate] = React.useState(false);
@@ -147,10 +148,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                                 onClick={(e) => { e.stopPropagation(); onCardToggle(property); }}
                                 onPointerDown={(e) => e.stopPropagation()}
                             >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
-                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                    <polyline points="9 22 9 12 15 12 15 22" />
-                                </svg>
+                                <PiBuildingApartmentBold className="w-[22px] h-[22px]" />
                             </div>
                         ) : (
                             <div className={`resting-pill z-10 ${isFeatured ? 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-slate-900' : ''}`} 
@@ -195,7 +193,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                                     />
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onCloseCard(); }}
-                                        className="w-8 h-8 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/40 active:scale-90 shadow-sm ml-2"
+                                        className="w-9 h-9 rounded-full bg-[#333333]/90 backdrop-blur-xl flex items-center justify-center text-white transition-all hover:bg-[#222222] active:scale-90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] border border-white/10 ml-1"
                                     >
                                         <XMarkIcon className="w-5 h-5 stroke-[2.5]" />
                                     </button>
@@ -426,7 +424,7 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
                     />
                     <button
                         onClick={(e) => { e.stopPropagation(); onCloseCard(); }}
-                        className="w-8 h-8 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/40 active:scale-90 shadow-sm ml-2"
+                        className="w-9 h-9 rounded-full bg-[#333333]/90 backdrop-blur-xl flex items-center justify-center text-white transition-all hover:bg-[#222222] active:scale-90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] border border-white/10 ml-1"
                     >
                         <XMarkIcon className="w-5 h-5 stroke-[2.5]" />
                     </button>
@@ -463,8 +461,8 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
     );
 };
 
-const PADDING = { top: 60, right: 60, bottom: 60, left: 60 };
-const MOBILE_PADDING = { top: 150, right: 40, bottom: 250, left: 40 };
+const PADDING = { top: 100, right: 100, bottom: 100, left: 100 };
+const MOBILE_PADDING = { top: 180, right: 60, bottom: 320, left: 60 };
 const DEFAULT_ZOOM = 12;
 const DEFAULT_MOBILE_ZOOM = 10;
 
@@ -486,13 +484,15 @@ const GoogleMapComponent = ({
     hideControls = false,
     hideCustomControls = false,
     fitBoundsOnListingsChange = true,
+    fitBoundsNonce = 0,
     showMapLoading = false,
     openedMarkerId: externalOpenedMarkerId,
     onOpenedMarkerChange,
     onClick,
     disableMarkerExpansion = false,
     markerType = 'price',
-    hideSyncButton = false
+    hideSyncButton = false,
+    hideSettingsButton = false
 }) => {
     const isMobile = window.innerWidth < 768;
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -521,6 +521,7 @@ const GoogleMapComponent = ({
     const openedMarkerId = disableMarkerExpansion ? null : (externalOpenedMarkerId !== undefined ? externalOpenedMarkerId : internalOpenedMarkerId);
 
     const [displayLoading, setDisplayLoading] = useState(showMapLoading);
+    const [isFitted, setIsFitted] = useState(false);
     const [map, setMap] = useState(null);
 
     const { isLoaded } = useJsApiLoader({
@@ -575,6 +576,8 @@ const GoogleMapComponent = ({
     }, [onOpenedMarkerChange]);
 
     const boundsTimeoutRef = useRef(null);
+    const isDraggingRef = useRef(false);
+    const dragEndCooldownRef = useRef(null);
     const [useShortPrice, setUseShortPrice] = useState(true);
     const [useModernMap, setUseModernMap] = useState(true);
 
@@ -637,22 +640,52 @@ const GoogleMapComponent = ({
         }
     }, [zoom, map]);
 
+    // Initial reveal if fitBounds is not going to run or if map is idle
+    useEffect(() => {
+        if (!map) return;
+        const listener = window.google.maps.event.addListener(map, 'idle', () => {
+            setIsFitted(true);
+            window.google.maps.event.removeListener(listener);
+        });
+        // Safety timeout to reveal map even if idle event is delayed
+        const timer = setTimeout(() => setIsFitted(true), 1500);
+        return () => {
+            window.google.maps.event.removeListener(listener);
+            clearTimeout(timer);
+        };
+    }, [map]);
+
     const listingsWithCoords = useMemo(() => listings.filter(l => l.latitude != null && l.longitude != null), [listings]);
     const listingsBoundsKey = useMemo(() => listingsWithCoords.map(l => `${l.id}-${l.latitude}-${l.longitude}`).join(','), [listingsWithCoords]);
 
     useEffect(() => {
         if (!fitBoundsOnListingsChange || !map || !window.google?.maps) return;
         
-        // CRITICAL FIX: If the user just moved the map manually, DO NOT snap back to result bounds
+        // CRITICAL FIX: If the user is actively dragging, DO NOT snap back to result bounds.
         // This prevents the "panning then jumping back" issue when API results return.
-        if (internalMoveRef.current || (Date.now() - lastMoveTimestampRef.current < 1500)) return;
+        // We only block during active drags (internalMoveRef). The drag cooldown and
+        // debounce in handleBoundsChanged already handle the timing — no need for timestamp guard.
+        if (internalMoveRef.current) return;
 
         const withCoords = listingsWithCoords;
-        if (withCoords.length === 0) return;
+        if (withCoords.length === 0) {
+            setIsFitted(true);
+            return;
+        }
         const bounds = new window.google.maps.LatLngBounds();
         withCoords.forEach(l => bounds.extend({ lat: parseFloat(l.latitude), lng: parseFloat(l.longitude) }));
         map.fitBounds(bounds, effectivePadding);
-    }, [map, listingsBoundsKey, fitBoundsOnListingsChange, effectivePadding, listingsWithCoords]);
+        
+        // Capping zoom level after fitBounds (especially important for single results)
+        // so it doesn't zoom in "to the end".
+        const listener = window.google.maps.event.addListener(map, 'idle', () => {
+            if (map.getZoom() > 14) {
+                map.setZoom(14);
+            }
+            window.google.maps.event.removeListener(listener);
+            setIsFitted(true);
+        });
+    }, [map, listingsBoundsKey, fitBoundsOnListingsChange, fitBoundsNonce, effectivePadding, listingsWithCoords]);
     const { isDarkMode: themeDarkMode, theme } = useTheme();
     const isDarkMode = themeDarkMode || document.documentElement.classList.contains('dark');
     const primaryColor = theme?.primaryColor || '#0b6732'; // Default primary green
@@ -733,6 +766,10 @@ const GoogleMapComponent = ({
     const handleBoundsChanged = useCallback(() => {
         if (!map || !onBoundsChanged) return;
         
+        // AIRBNB-STYLE: If the user is still actively dragging, do NOT process.
+        // We wait until the drag has fully ended AND a cooldown has passed.
+        if (isDraggingRef.current) return;
+        
         const bounds = map.getBounds();
         const center = map.getCenter();
         const zoom = map.getZoom();
@@ -760,7 +797,12 @@ const GoogleMapComponent = ({
 
         if (boundsTimeoutRef.current) clearTimeout(boundsTimeoutRef.current);
         
+        // AIRBNB-STYLE: 600ms debounce — gives user time to start another drag
+        // before we commit to fetching. This is the key to smooth rapid panning.
         boundsTimeoutRef.current = setTimeout(() => {
+            // Double-check: user may have started dragging again during the debounce
+            if (isDraggingRef.current) return;
+            
             lastReportedBoundsRef.current = data;
             if (data.center) lastReportedCenterRef.current = data.center;
             
@@ -773,7 +815,7 @@ const GoogleMapComponent = ({
             setTimeout(() => { 
                 internalMoveRef.current = false; 
             }, 300);
-        }, 200);
+        }, 600);
     }, [map, onBoundsChanged, cancelPendingFetch]);
 
     const mapCenter = useMemo(() => {
@@ -901,7 +943,7 @@ const GoogleMapComponent = ({
     if (!isLoaded) return <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">Loading Maps...</div>;
 
     return (
-        <div className="relative w-full h-full">
+        <div className={`relative w-full h-full transition-opacity duration-700 ease-in-out ${isFitted ? 'opacity-100' : 'opacity-0'}`}>
             <style>{`
                 .marker-group {
                     will-change: transform;
@@ -946,7 +988,7 @@ const GoogleMapComponent = ({
                     box-shadow: 
                         0 4px 15px rgba(0,0,0,0.3),
                         inset 0 1px 1px rgba(255,255,255,0.2);
-                    border: 1.5px solid rgba(255,255,255,0.8);
+                    border: 1.5px solid #222222;
                     color: white;
                     transition: all 0.3s ease;
                     cursor: pointer;
@@ -1046,13 +1088,33 @@ const GoogleMapComponent = ({
                 options={mapOptions}
                 onIdle={handleBoundsChanged}
                 onDragStart={() => {
+                    isDraggingRef.current = true;
                     internalMoveRef.current = true;
                     lastMoveTimestampRef.current = Date.now();
                     cancelPendingFetch();
+                    // Clear any pending cooldown from a previous drag
+                    if (dragEndCooldownRef.current) {
+                        clearTimeout(dragEndCooldownRef.current);
+                        dragEndCooldownRef.current = null;
+                    }
                 }}
                 onDrag={() => {
                     // Constant update to lastMoveTimestamp while dragging to keep the lock active
                     lastMoveTimestampRef.current = Date.now(); 
+                }}
+                onDragEnd={() => {
+                    // AIRBNB-STYLE: Don't immediately allow onIdle to fire.
+                    // Wait 500ms after finger lifts — if user starts a new drag within
+                    // this window, the cooldown is cleared and no fetch happens.
+                    lastMoveTimestampRef.current = Date.now();
+                    if (dragEndCooldownRef.current) clearTimeout(dragEndCooldownRef.current);
+                    dragEndCooldownRef.current = setTimeout(() => {
+                        isDraggingRef.current = false;
+                        dragEndCooldownRef.current = null;
+                        // Now manually trigger the idle handler since the real onIdle
+                        // may have already fired (and been suppressed) while we were in cooldown
+                        handleBoundsChanged();
+                    }, 500);
                 }}
                 onZoomChanged={() => {
                     internalMoveRef.current = true;
@@ -1067,7 +1129,7 @@ const GoogleMapComponent = ({
 
 
             {/* Settings Button (Mobile Only) - Placed under the filter button */}
-            {isMobile && map && (
+            {isMobile && !hideSettingsButton && map && (
                 <div className="absolute top-[92px] right-6 z-[210]" ref={settingsRef}>
                     <button
                         onClick={() => setIsSettingsOpen(!isSettingsOpen)}
@@ -1084,7 +1146,7 @@ const GoogleMapComponent = ({
                 <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-3">
                     
                     {/* Settings Button (Desktop Only) */}
-                    {!isMobile && (
+                    {!isMobile && !hideSettingsButton && (
                         <div className="relative" ref={settingsRef}>
                             <button
                                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}

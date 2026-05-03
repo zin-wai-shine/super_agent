@@ -335,35 +335,37 @@ const FilterBar = ({
                                             type="button"
                                             onClick={onOpenFilters}
                                             className="h-[44px] min-w-[90px] lg:min-w-0 lg:w-[26px] lg:justify-center xl:min-w-[90px] xl:px-1 xl:gap-2 flex items-center gap-1.5 pl-1 pr-1 rounded-full flex-shrink-0
-                                              transition-all duration-200 ease-out
+                                              transition-all duration-300 ease-out
                                               bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80
-                                              hover:bg-gray-50 dark:hover:bg-dashboard-hover sm:hover:bg-gray-100
+                                              hover:bg-white dark:hover:bg-dashboard-hover sm:hover:bg-white
                                               border border-gray-200 dark:border-white/10 sm:border-primary-500/30
+                                              hover:border-[#222222] dark:hover:border-white/40
+                                              hover:shadow-md hover:-translate-y-[1px]
                                               active:scale-[0.98]
                                               focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2
                                               relative group"
                                             aria-label="Filters"
                                         >
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 relative ${activeFilterCount > 0 ? 'bg-transparent' : 'bg-transparent'}`}>
-                                                    <AdjustmentsHorizontalIcon className={`text-gray-800 dark:text-white w-5 h-5`} />
+                                                    <AdjustmentsHorizontalIcon className={`text-gray-800 dark:text-white w-[22px] h-[22px]`} />
                                                     {activeFilterCount > 0 && (
                                                         <span className="absolute -top-[3px] -right-[3px] min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-primary-600 text-white text-[9px] font-semibold border-2 border-white shadow-md leading-none">
                                                             {activeFilterCount > 99 ? '99+' : activeFilterCount}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span className="text-[13px] font-medium text-gray-900 dark:text-white group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors lg:hidden xl:inline">Filters</span>
+                                                <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors lg:hidden xl:inline">Filters</span>
                                             </button>
                                         </div>
 
                                     {/* Map View switch — moved after Filters; hidden on mobile */}
                                     {showMapToggle && onToggleMapView && (
-                                        <div className="hidden md:flex h-[44px] items-center justify-between gap-2.5 pl-3 pr-1.5 lg:pl-1 lg:pr-1 xl:pl-3 xl:pr-1.5 lg:min-w-0 py-1 rounded-full bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80 border border-gray-200 dark:border-white/10 sm:border-primary-500/30 hover:bg-gray-50 hover:dark:bg-dashboard-hover sm:hover:bg-gray-100 transition-all duration-300 flex-shrink-0 ml-3">
+                                        <div className="hidden md:flex h-[44px] items-center justify-between gap-2.5 pl-3 pr-1.5 lg:pl-1 lg:pr-1 xl:pl-3 xl:pr-1.5 lg:min-w-0 py-1 rounded-full bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80 border border-gray-200 dark:border-white/10 sm:border-primary-500/30 hover:bg-white hover:dark:bg-dashboard-hover sm:hover:bg-white hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 flex-shrink-0 ml-3 group/mapview">
                                                 <div className="flex items-center gap-1.5 lg:gap-1 xl:gap-1.5">
                                                     <div className="flex items-center justify-center flex-shrink-0">
-                                                        <MapIcon className={`w-5 h-5 text-gray-800 dark:text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />
+                                                        <MapIcon className={`w-[22px] h-[22px] text-gray-800 dark:text-white ${isMapTransitioning ? 'animate-pulse' : ''}`} />
                                                     </div>
-                                                    <span className="text-[13px] font-medium text-gray-900 dark:text-white lg:hidden xl:inline">Map View</span>
+                                                    <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white group-hover/mapview:text-black dark:group-hover/mapview:text-white transition-colors lg:hidden xl:inline">Map View</span>
                                                 </div>
                                                 <button
                                                     type="button"

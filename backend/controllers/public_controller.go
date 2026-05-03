@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sync"
 	"unicode"
 
 	"super_real_estate/models"
@@ -17,16 +18,38 @@ import (
 	"gorm.io/gorm"
 )
 
+type cacheEntry struct {
+	data      interface{}
+	expiresAt time.Time
+}
+
 type PublicController struct {
-	db *gorm.DB
+	db    *gorm.DB
+	cache map[string]cacheEntry
+	mu    sync.RWMutex
 }
 
 func NewPublicController(db *gorm.DB) *PublicController {
-	return &PublicController{db: db}
+	return &PublicController{
+		db:    db,
+		cache: make(map[string]cacheEntry),
+	}
 }
 
 // GetListings returns published listings with optional filters
 func (pc *PublicController) GetListings(c *gin.Context) {
+	// Generate cache key from full URL
+	cacheKey := "listings:" + c.Request.URL.String()
+	
+	// Check cache
+	pc.mu.RLock()
+	entry, found := pc.cache[cacheKey]
+	pc.mu.RUnlock()
+	if found && time.Now().Before(entry.expiresAt) {
+		c.JSON(http.StatusOK, entry.data)
+		return
+	}
+
 	var listings []models.Listing
 	query := pc.db.Model(&models.Listing{}).
 		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
@@ -150,22 +173,22 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 	// Geographic bounds filtering (for map-based search)
 	if minLat := c.Query("min_lat"); minLat != "" {
 		if lat, err := strconv.ParseFloat(minLat, 64); err == nil {
-			query = query.Where("CAST(latitude AS DECIMAL) >= ?", lat)
+			query = query.Where("latitude >= ?", lat)
 		}
 	}
 	if maxLat := c.Query("max_lat"); maxLat != "" {
 		if lat, err := strconv.ParseFloat(maxLat, 64); err == nil {
-			query = query.Where("CAST(latitude AS DECIMAL) <= ?", lat)
+			query = query.Where("latitude <= ?", lat)
 		}
 	}
 	if minLng := c.Query("min_lng"); minLng != "" {
 		if lng, err := strconv.ParseFloat(minLng, 64); err == nil {
-			query = query.Where("CAST(longitude AS DECIMAL) >= ?", lng)
+			query = query.Where("longitude >= ?", lng)
 		}
 	}
 	if maxLng := c.Query("max_lng"); maxLng != "" {
 		if lng, err := strconv.ParseFloat(maxLng, 64); err == nil {
-			query = query.Where("CAST(longitude AS DECIMAL) <= ?", lng)
+			query = query.Where("longitude <= ?", lng)
 		}
 	}
 
@@ -209,11 +232,32 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		return
 	}
 
-	// For each listing with a facility_name, inject the facility's first image if listing has no own images
+	// Optimized injection: collect all facility names and agent IDs to do a single query (avoid N+1)
+	facilityMap := make(map[string][]models.FacilityMedia)
+	var facilityNames []string
+	var agentIDs []uuid.UUID
+	
+	for _, l := range listings {
+		if l.FacilityName != "" {
+			facilityNames = append(facilityNames, l.FacilityName)
+			agentIDs = append(agentIDs, l.AgentID)
+		}
+	}
+	
+	if len(facilityNames) > 0 {
+		var allFacilityMedia []models.FacilityMedia
+		pc.db.Where("agent_id IN ? AND name IN ?", agentIDs, facilityNames).Order("sort_order ASC").Find(&allFacilityMedia)
+		for _, fm := range allFacilityMedia {
+			key := fmt.Sprintf("%s:%s", fm.AgentID, fm.Name)
+			facilityMap[key] = append(facilityMap[key], fm)
+		}
+	}
+
 	for i := range listings {
 		if listings[i].FacilityName == "" {
 			continue
 		}
+		
 		// Only inject if listing has no locally uploaded images
 		hasOwnImages := false
 		for _, m := range listings[i].Media {
@@ -222,18 +266,24 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 				break
 			}
 		}
+		
 		if !hasOwnImages {
-			var facilityMedia []models.FacilityMedia
-			pc.db.Where("agent_id = ? AND name = ?", listings[i].AgentID, listings[i].FacilityName).Order("sort_order ASC").Limit(1).Find(&facilityMedia)
-			
-			// Use a map for fast lookup of existing URLs
-			existingUrls := make(map[string]bool)
-			for _, m := range listings[i].Media {
-				existingUrls[m.URL] = true
-			}
-
-			for _, fm := range facilityMedia {
-				if !existingUrls[fm.URL] {
+			key := fmt.Sprintf("%s:%s", listings[i].AgentID, listings[i].FacilityName)
+			fMedia := facilityMap[key]
+			if len(fMedia) > 0 {
+				// Use only the first image if multiple exist (as per original logic Limit(1))
+				fm := fMedia[0]
+				
+				// Prevent duplicates
+				exists := false
+				for _, m := range listings[i].Media {
+					if m.URL == fm.URL {
+						exists = true
+						break
+					}
+				}
+				
+				if !exists {
 					listings[i].Media = append(listings[i].Media, models.Media{
 						URL:      fm.URL,
 						Type:     "image",
@@ -245,13 +295,23 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response := gin.H{
 		"listings": listings,
 		"total":    total,
 		"page":     page,
 		"limit":    limit,
 		"pages":    (total + int64(limit) - 1) / int64(limit),
-	})
+	}
+
+	// Save to cache (2 minute TTL)
+	pc.mu.Lock()
+	pc.cache[cacheKey] = cacheEntry{
+		data:      response,
+		expiresAt: time.Now().Add(2 * time.Minute),
+	}
+	pc.mu.Unlock()
+
+	c.JSON(http.StatusOK, response)
 }
 
 // GetProjects returns published projects with optional filters

@@ -65,7 +65,12 @@ import Logo from '../../components/Common/Logo';
 // Static Options moved outside to prevent recreation
 // Module-level cache to preserve list state and scroll position across navigations
 // on the same browser tab without relying on heavy global context.
-export let globalListCache = null;
+// Multi-entry cache to allow instant back-navigation and filter switching
+export let globalListCacheRegistry = {};
+const MAX_CACHE_ITEMS = 20;
+
+// For backward compatibility and specific logic, we still keep a reference to the "current" one
+export let globalListCache = null; 
 const propertyTypeOptions = [
     { value: '', label: 'All Types' },
     { value: 'condo', label: 'Condo' },
@@ -124,18 +129,22 @@ const ListingsPage = () => {
     
     // Synchronously check cache before any hooks to use in initial state
     const currentPathPlusSearch = location.pathname + location.search;
-    const isCacheValidSync = globalListCache && globalListCache.url === currentPathPlusSearch;
+    const cachedEntry = globalListCacheRegistry[currentPathPlusSearch];
+    const isCacheValidSync = !!cachedEntry;
+    
+    // Update legacy pointer for other components if needed
+    if (isCacheValidSync) globalListCache = cachedEntry;
 
     const [listings, setListings] = useState(() => {
-        if (isCacheValidSync && globalListCache?.listings) return globalListCache.listings;
+        if (isCacheValidSync && cachedEntry?.listings) return cachedEntry.listings;
         return [];
     });
     const [total, setTotal] = useState(() => {
-        if (isCacheValidSync && globalListCache?.total) return globalListCache.total;
+        if (isCacheValidSync && cachedEntry?.total) return cachedEntry.total;
         return 0;
     });
     const [page, setPage] = useState(() => {
-        if (isCacheValidSync && globalListCache?.page) return globalListCache.page;
+        if (isCacheValidSync && cachedEntry?.page) return cachedEntry.page;
         return 1;
     });
     const [initialLoading, setInitialLoading] = useState(() => {
@@ -144,18 +153,25 @@ const ListingsPage = () => {
     });
     
     const [mapCenter, setMapCenter] = useState(() => {
-        if (isCacheValidSync && globalListCache?.mapCenter) return globalListCache.mapCenter;
-        // Default to Bangkok center for new sessions to ensure map initializes and reports bounds
+        if (isCacheValidSync && cachedEntry?.mapCenter) return cachedEntry.mapCenter;
+        
+        // fallback: check if we have ANY listings in the registry to avoid Bangkok "blank space"
+        const anyEntry = Object.values(globalListCacheRegistry).find(e => e.listings?.length > 0);
+        if (anyEntry) {
+            const first = anyEntry.listings.find(l => l.latitude && l.longitude);
+            if (first) return { lat: parseFloat(first.latitude), lng: parseFloat(first.longitude) };
+        }
         return { lat: 13.7563, lng: 100.5018 };
     });
     const [mapZoom, setMapZoom] = useState(() => {
-        if (isCacheValidSync && globalListCache?.mapZoom) return globalListCache.mapZoom;
+        if (isCacheValidSync && cachedEntry?.mapZoom) return cachedEntry.mapZoom;
         return 12; // Default zoom level for initial load
     });
     const [mapBounds, setMapBounds] = useState(() => {
-        if (isCacheValidSync && globalListCache?.mapBounds) return globalListCache.mapBounds;
+        if (isCacheValidSync && cachedEntry?.mapBounds) return cachedEntry.mapBounds;
         return null;
     });
+    const [fitBoundsNonce, setFitBoundsNonce] = useState(0);
 
     const [loading, setLoading] = useState(false);
     const [isExiting, setIsExiting] = useState(false);
@@ -172,18 +188,18 @@ const ListingsPage = () => {
     }, [location]);
 
     const [selectedListingId, setSelectedListingId] = useState(() => {
-        if (isCacheValidSync && globalListCache?.selectedListingId) return globalListCache.selectedListingId;
+        if (isCacheValidSync && cachedEntry?.selectedListingId) return cachedEntry.selectedListingId;
         return null;
     });
 
     const [isMapExpanded, setIsMapExpanded] = useState(() => {
-        if (isCacheValidSync && globalListCache?.isMapExpanded) return globalListCache.isMapExpanded;
+        if (isCacheValidSync && cachedEntry?.isMapExpanded) return cachedEntry.isMapExpanded;
         return false;
     }); // Map full-width (hide list) when true
     
     // Initialize lastFetchedParamsRef synchronously if cache is valid
     const lastFetchedParamsRef = useRef(() => {
-        if (isCacheValidSync && globalListCache) {
+        if (isCacheValidSync && cachedEntry) {
             const filterParams = {};
             const keys = ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'];
             const savedFilters = JSON.parse(localStorage.getItem('listing_filters') || '{}');
@@ -191,13 +207,13 @@ const ListingsPage = () => {
                 filterParams[k] = searchParams.get(k) || savedFilters[k] || '';
             });
 
-            const params = { ...filterParams, page: globalListCache.page, limit: 12 };
+            const params = { ...filterParams, page: cachedEntry.page, limit: 12 };
 
-            if (globalListCache.mapBounds && localStorage.getItem('show_google_map') === 'true') {
-                params.min_lat = globalListCache.mapBounds.min_lat;
-                params.max_lat = globalListCache.mapBounds.max_lat;
-                params.min_lng = globalListCache.mapBounds.min_lng;
-                params.max_lng = globalListCache.mapBounds.max_lng;
+            if (cachedEntry.mapBounds && localStorage.getItem('show_google_map') === 'true') {
+                params.min_lat = cachedEntry.mapBounds.min_lat;
+                params.max_lat = cachedEntry.mapBounds.max_lat;
+                params.min_lng = cachedEntry.mapBounds.min_lng;
+                params.max_lng = cachedEntry.mapBounds.max_lng;
             }
             return JSON.stringify(params);
         }
@@ -206,6 +222,7 @@ const ListingsPage = () => {
     const lastFetchedBoundsRef = useRef(null); // The actual bounds used in the last buffered fetch
     const hasFullResultsForLastBoundsRef = useRef(false); // Whether the last buffered fetch returned ALL items in that area
     const currentFetchIdRef = useRef(0); // For race condition handling and interaction locks
+    const filterAppliedRef = useRef(false); // True when user explicitly applies filters — triggers fitBounds
 
     const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
     const [isMobileSheetExpanded, setIsMobileSheetExpanded] = useState(false);
@@ -262,27 +279,44 @@ const ListingsPage = () => {
         };
     }, []);
 
-    // Save cache on unmount
-    useEffect(() => {
-        return () => {
-            // Save state even if listings haven't loaded yet? 
-            // Better to only save if we have some data to restore.
-            if (stateCacheRef.current.listings.length > 0) {
-                globalListCache = {
-                    ...stateCacheRef.current,
-                    url: currentUrlRef.current,
-                    timestamp: Date.now(),
-                    scrollY: scrollPositionRef.current
-                };
+    // Save cache on unmount or before fetch
+    const saveToCache = useCallback(() => {
+        if (listings.length > 0) {
+            const entry = {
+                listings,
+                total,
+                page,
+                mapCenter,
+                mapZoom,
+                mapBounds,
+                selectedListingId,
+                isMapExpanded,
+                url: currentPathPlusSearch,
+                timestamp: Date.now(),
+                scrollY: scrollPositionRef.current
+            };
+            
+            globalListCacheRegistry[currentPathPlusSearch] = entry;
+            globalListCache = entry;
+
+            // Simple LRU: if registry too large, delete oldest
+            const keys = Object.keys(globalListCacheRegistry);
+            if (keys.length > MAX_CACHE_ITEMS) {
+                const oldestKey = keys.sort((a, b) => globalListCacheRegistry[a].timestamp - globalListCacheRegistry[b].timestamp)[0];
+                delete globalListCacheRegistry[oldestKey];
             }
-        };
-    }, []);
+        }
+    }, [listings, total, page, mapCenter, mapZoom, mapBounds, selectedListingId, isMapExpanded, currentPathPlusSearch]);
+
+    useEffect(() => {
+        return () => saveToCache();
+    }, [saveToCache]);
 
     // Restore scroll position once data is mounted from cache
     // Use useLayoutEffect to perform restoration BEFORE paint, avoiding the "start from start" flash.
     React.useLayoutEffect(() => {
-        if (isCacheValidSync && globalListCache && !hasRestoredScrollRef.current && listings.length > 0) {
-            const pos = globalListCache.scrollY;
+        if (isCacheValidSync && cachedEntry && !hasRestoredScrollRef.current && listings.length > 0) {
+            const pos = cachedEntry.scrollY;
             if (pos > 0) {
                 // Restoration should be instant to avoid visible scrolling
                 window.scrollTo({ top: pos, behavior: 'instant' });
@@ -989,8 +1023,34 @@ const ListingsPage = () => {
         prevMapBoundsRef.current = mapBounds;
         const isBoundsTriggeredFetch = !!boundsJustChanged;
 
+        // FILTER-FIT: If filters were just applied, force fitBounds by ensuring
+        // this is NOT treated as a bounds-triggered fetch
+        const isFilterApplied = filterAppliedRef.current;
+        if (isFilterApplied) {
+            fetchTriggeredByBoundsRef.current = false;
+            filterAppliedRef.current = false;
+        }
+
         const controller = new AbortController();
+        // AIRBNB-STYLE: For bounds-triggered fetches, add a debounce delay.
+        // If the user starts another drag within this window, the effect cleanup
+        // will abort this controller, preventing stale data from causing re-renders.
+        let boundsDebounceTimer = null;
         const fetchListings = async () => {
+            // If this fetch was triggered by a map pan, add a small buffer
+            // so rapid successive pans don't cause multiple API calls + marker re-renders
+            if (isBoundsTriggeredFetch) {
+                await new Promise((resolve, reject) => {
+                    boundsDebounceTimer = setTimeout(resolve, 300);
+                    // If aborted during the wait, reject to stop the fetch
+                    controller.signal.addEventListener('abort', () => {
+                        clearTimeout(boundsDebounceTimer);
+                        reject(new Error('Aborted during debounce'));
+                    }, { once: true });
+                }).catch(() => { return; }); // Silently bail if aborted during debounce
+                // Check if we were aborted during the debounce wait
+                if (controller.signal.aborted) return;
+            }
             const params = { 
                 ...filters, 
                 page, 
@@ -1062,8 +1122,10 @@ const ListingsPage = () => {
             // This prevents "showing all properties" flash on reload in Map View.
             // Optimistic loading: If map is open but bounds aren't ready or valid, wait.
             // This prevents "showing all properties" flash on reload in Map View.
+            // EXCEPTION: If filters were just applied (isFilterApplied), we intentionally
+            // cleared mapBounds to fetch ALL matching results globally.
             const hasValidBounds = mapBounds && mapBounds.min_lat !== undefined;
-            if (isGoogleMapOpen && !hasValidBounds) {
+            if (isGoogleMapOpen && !hasValidBounds && !isFilterApplied) {
                 // We MUST wait for the map to report bounds to prevent global results flash.
                 // The map will report its bounds as soon as it initializes (using our default center if no cache).
                 if (initialLoading) {
@@ -1154,7 +1216,10 @@ const ListingsPage = () => {
             }
         };
         fetchListings();
-        return () => controller.abort();
+        return () => {
+            if (boundsDebounceTimer) clearTimeout(boundsDebounceTimer);
+            controller.abort();
+        };
     }, [filters, page, user, mapBounds, isGoogleMapOpen]);
 
     useEffect(() => {
@@ -1312,6 +1377,14 @@ const ListingsPage = () => {
         const next = toSerializableFilters(raw);
         const filtersUnchanged = FILTER_KEYS.every(k => (filters[k] || '') === (next[k] || ''));
         skipNextUrlSyncRef.current = true; // prevent URL sync from overwriting filters with stale params
+
+        // FILTER-FIT: Whenever user explicitly applies filters (clicks the button),
+        // we want the map to zoom to fit the results, even if filters didn't change
+        // (e.g. user panned then clicked show).
+        filterAppliedRef.current = true;
+        setMapBounds(null);
+        setFitBoundsNonce(prev => prev + 1);
+
         if (!filtersUnchanged) {
             setFilters(next);
             setPendingFilters(next);
@@ -1335,6 +1408,9 @@ const ListingsPage = () => {
     };
 
     const clearFilters = () => {
+        filterAppliedRef.current = true;
+        setMapBounds(null);
+        setFitBoundsNonce(prev => prev + 1);
         setFilters({
             type: '',
             listing_type: '',
@@ -1987,6 +2063,7 @@ const ListingsPage = () => {
                                                 onOpenedMarkerChange={setSelectedListingId}
                                                 highlightedMarkerListingId={listHoveredListingId}
                                                 fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
+                                                fitBoundsNonce={fitBoundsNonce}
                                                 showMapLoading={loading && fetchTriggeredByBoundsRef.current}
                                             />
                                             {/* X close when map expanded full width */}
@@ -2003,13 +2080,12 @@ const ListingsPage = () => {
                                             {/* Map Overlays (hide when expanded so X is visible) */}
                                             {!isMapExpanded && (
                                                 <div className="absolute top-4 right-4 z-10 pointer-events-none">
-                                                    <div className="bg-white/70 dark:bg-dashboard-card/80 backdrop-blur-xl px-4 py-2 rounded-full shadow-2xl border border-white/50 dark:border-white/10 flex items-center gap-3">
-                                                        <div className="bg-slate-100/50 dark:bg-white/10 p-2 rounded-full border border-white/40 dark:border-white/10">
-                                                            <GlobeAltIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                                    <div className="bg-white/70 dark:bg-dashboard-card/80 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-sm border border-gray-200/50 dark:border-white/10 flex items-center gap-2">
+                                                        <div className="bg-slate-100/50 dark:bg-white/10 p-1.5 rounded-full border border-white/40 dark:border-white/10">
+                                                            <GlobeAltIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-bold" style={{ color: '#222222' }}>Map Mode</p>
-                                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{total} Properties</p>
+                                                            <p className="text-[13px] font-bold text-gray-900 dark:text-white">{total} Properties</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2101,6 +2177,7 @@ const ListingsPage = () => {
                                     highlightedMarkerListingId={selectedListingId || listHoveredListingId}
                                     isVisible={isGoogleMapOpen}
                                     fitBoundsOnListingsChange={!fetchTriggeredByBoundsRef.current}
+                                    fitBoundsNonce={fitBoundsNonce}
                                     showMapLoading={loading && fetchTriggeredByBoundsRef.current}
                                     hideControls={true}
                                     hideCustomControls={true}
@@ -2120,11 +2197,11 @@ const ListingsPage = () => {
                             <div className={`relative z-[205] bg-white dark:bg-dashboard-card px-4 pb-32 rounded-t-[20px] shadow-[0_-20px_60px_rgba(0,0,0,0.18)] border-t border-gray-100/30 dark:border-white/10 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedListingId && isGoogleMapOpen ? 'opacity-0 translate-y-20 pointer-events-none' : '-mt-[70px] opacity-100 translate-y-0'}`}>
                                 {/* Sheet Header Area - Simple text count below the handle */}
                                 <div
-                                    className="sticky top-0 z-[220] flex flex-col items-center justify-center h-[80px] gap-2 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
+                                    className="sticky top-0 z-[220] flex flex-col items-center justify-start h-[72px] pt-2.5 gap-2.5 cursor-pointer bg-white dark:bg-dashboard-card transition-colors rounded-t-[20px] border-b border-gray-50 dark:border-white/5"
                                     onClick={toggleMobileSheet}
                                 >
                                     {/* Handle at above */}
-                                    <div className="w-10 h-1.5 rounded-full bg-gray-200/80 dark:bg-white/10" />
+                                    <div className="w-10 h-1 rounded-full bg-gray-200/80 dark:bg-white/10" />
 
                                     {/* Simple Count Text (No Box) - Hidden when a marker is selected on mobile */}
                                     {!(isGoogleMapOpen && selectedListingId) && (
@@ -2295,7 +2372,7 @@ const ListingsPage = () => {
                                                     e.stopPropagation();
                                                     setSelectedListingId(null);
                                                 }}
-                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-[#222222] rounded-full flex items-center justify-center text-gray-400 shadow-2xl border border-white/10 active:bg-white/5 z-[310]"
+                                                className="absolute -top-1.5 -right-1.5 w-9 h-9 bg-[#222222] rounded-full flex items-center justify-center text-white shadow-2xl border border-white/10 active:bg-white/5 z-[310]"
                                             >
                                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

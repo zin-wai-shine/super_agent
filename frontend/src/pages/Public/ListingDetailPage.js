@@ -2528,6 +2528,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 isVisible={true}
                                                                 hideControls
                                                                 hideSyncButton
+                                                                hideSettingsButton
                                                                 fitBoundsOnListingsChange={false}
                                                             />
                                                         </div>
@@ -2910,8 +2911,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     ${isContactOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
-                                                    className="shrink-0 w-full flex justify-center py-5 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] group/handle rounded-t-[20px]"
+                                                    className="shrink-0 w-full flex justify-center pt-2.5 pb-4 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] group/handle rounded-t-[20px]"
                                                 >
+                                                    <div className="w-10 h-1 rounded-full bg-gray-200/80 dark:bg-white/10" />
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -2976,12 +2978,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     ${isStatusOverlayOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'}`}
                                             >
                                                 <div
-                                                    className="w-full flex justify-center py-3 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
+                                                    className="w-full flex justify-center pt-2.5 pb-4 sticky top-0 bg-white/90 dark:bg-dashboard-card/90 backdrop-blur-sm z-[110] cursor-pointer group/handle rounded-t-[20px]"
                                                     onClick={() => {
                                                         setIsStatusOverlayOpen(false);
                                                         setTimeout(() => setIsCancelModalOpen(false), 500);
                                                     }}
                                                 >
+                                                    <div className="w-10 h-1 rounded-full bg-gray-200/80 dark:bg-white/10" />
                                                     <div className="absolute top-4 right-4 flex items-center gap-2">
                                                         <button
                                                             onClick={(e) => {

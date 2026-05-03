@@ -285,19 +285,19 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
                     {currentIndex > 0 && (
                         <button
                             onClick={prevImage}
-                            className={`absolute ${isGalleryMode ? 'left-6 lg:left-20' : `left-${arrowPadding}`} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute ${isGalleryMode ? 'left-6 lg:left-20' : `left-${arrowPadding}`} top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 hidden md:flex items-center justify-center text-gray-700 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 hover:bg-white/90 active:scale-95 pointer-events-auto shadow-md`}
                             aria-label="Previous image"
                         >
-                            <ChevronLeftIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
+                            <ChevronLeftIcon className="w-[18px] h-[18px] drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                     {currentIndex < images.length - 1 && (
                         <button
                             onClick={nextImage}
-                            className={`absolute ${isGalleryMode ? 'right-6 lg:right-20' : `right-${arrowPadding}`} top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white hidden md:flex items-center justify-center text-gray-900 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 active:scale-95 pointer-events-auto shadow-xl`}
+                            className={`absolute ${isGalleryMode ? 'right-6 lg:right-20' : `right-${arrowPadding}`} top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 hidden md:flex items-center justify-center text-gray-700 opacity-0 md:group-hover/slider:opacity-100 transition-all duration-300 z-30 hover:scale-110 hover:bg-white/90 active:scale-95 pointer-events-auto shadow-md`}
                             aria-label="Next image"
                         >
-                            <ChevronRightIcon className="w-6 h-6 drop-shadow-sm" strokeWidth={2.5} />
+                            <ChevronRightIcon className="w-[18px] h-[18px] drop-shadow-sm" strokeWidth={2.5} />
                         </button>
                     )}
                 </>
