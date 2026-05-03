@@ -121,22 +121,6 @@ const ListingsPage = () => {
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price, isMainDomain } = useTenant();
     const { theme } = useTheme();
-    const [viewMode, setViewMode] = useState(() => {
-        return localStorage.getItem('preferredView') || 'grid';
-    });
-    
-    // Add effect to sync local view mode with global preference changes
-    useEffect(() => {
-        const handleStorageChange = () => {
-            setViewMode(localStorage.getItem('preferredView') || 'grid');
-        };
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('viewModeChanged', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('viewModeChanged', handleStorageChange);
-        };
-    }, []);
 
     const outletContext = useOutletContext() || {};
     const { navVisible, filterBarSlot, isScrolled: layoutScrolled, mobileBottomNavVisible, setMobileBottomNavVisible } = outletContext;
@@ -605,6 +589,8 @@ const ListingsPage = () => {
         }, 300);
         return () => clearTimeout(t);
     }, [isSidebarClosing]);
+
+    const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 100000000 });
     const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
