@@ -605,8 +605,6 @@ const ListingsPage = () => {
         }, 300);
         return () => clearTimeout(t);
     }, [isSidebarClosing]);
-
-    const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 100000000 });
     const [priceFormat, setPriceFormat] = useState('short');
     const [agentId, setAgentId] = useState(null);
