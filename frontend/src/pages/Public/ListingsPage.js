@@ -2013,7 +2013,7 @@ const ListingsPage = () => {
                                                     </div>
                                                 ))}
                                                 {/* Desktop Loading/End State */}
-                                                <div ref={observerTarget} className="py-12 flex flex-col items-center justify-center min-h-[120px]">
+                                                <div ref={observerTarget} className="py-16 flex flex-col items-center justify-center min-h-[160px]">
                                                     {loading && listings.length > 0 && (
                                                         <div className="flex flex-col items-center gap-3">
                                                             <div className="w-8 h-8 border-3 border-gray-200 border-t-gray-800 dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
@@ -2023,12 +2023,12 @@ const ListingsPage = () => {
                                                     
                                                     {!loading && listings.length >= total && total > 0 && (
                                                         <div className="flex flex-col items-center gap-2 animate-fill-fast">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20 mb-1" />
-                                                            <p className="text-[14px] font-medium text-gray-400 dark:text-gray-500">
-                                                                You've reached the end of our listings
+                                                            <div className="w-8 h-px bg-gray-200 dark:bg-white/10 mb-2" />
+                                                            <p className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                                                You've seen all {total} properties
                                                             </p>
-                                                            <p className="text-[12px] text-gray-400/80 dark:text-gray-600">
-                                                                Can't find what you're looking for? Try adjusting your filters.
+                                                            <p className="text-[13px] text-gray-500 dark:text-gray-400 text-center max-w-[280px] leading-relaxed">
+                                                                That's all for now! Try adjusting your search or <button onClick={clearFilters} className="text-[#222222] dark:text-white underline font-semibold decoration-gray-300 underline-offset-4 hover:decoration-gray-900 transition-all">clear filters</button> to see more.
                                                             </p>
                                                         </div>
                                                     )}
@@ -2244,22 +2244,22 @@ const ListingsPage = () => {
                                     ))}
 
                                     {/* Mobile Loading/End State */}
-                                    <div className="py-10 flex flex-col items-center justify-center min-h-[100px]">
+                                    <div className="py-12 flex flex-col items-center justify-center min-h-[120px] mb-8">
                                         {loading && (
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className="w-7 h-7 border-3 border-gray-200 border-t-[#222222] dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
-                                                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading...</span>
+                                                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading properties...</span>
                                             </div>
                                         )}
                                         
                                         {!loading && listings.length >= total && total > 0 && (
-                                            <div className="flex flex-col items-center gap-2 text-center px-6 animate-fill-fast">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-white/10 mb-1" />
-                                                <p className="text-[14px] font-medium text-gray-400 dark:text-gray-500">
-                                                    No more properties to show
+                                            <div className="flex flex-col items-center gap-2.5 text-center px-8 animate-fill-fast">
+                                                <div className="w-6 h-px bg-gray-200 dark:bg-white/10 mb-1" />
+                                                <p className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                                    You've seen all {total} listings
                                                 </p>
-                                                <p className="text-[12px] text-gray-400/70 dark:text-gray-600">
-                                                    Adjust your search to see more results
+                                                <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                                                    Adjust your search or <button onClick={clearFilters} className="font-bold text-[#222222] dark:text-white underline decoration-gray-300 underline-offset-4">clear filters</button> to discover more.
                                                 </p>
                                             </div>
                                         )}
