@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import Modal from '../ui/Modal';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import AllPhotosModalContent from './AllPhotosModalContent';
@@ -19,11 +19,13 @@ const ListingDetailModal = () => {
     const status = searchParams.get('status') || location.state?.status;
     const isOpen = !!listingId;
 
-    const handleClose = () => {
-        const next = new URLSearchParams(searchParams);
-        next.delete('detail');
-        setSearchParams(next);
-    };
+    const handleClose = useCallback(() => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            next.delete('detail');
+            return next;
+        });
+    }, [setSearchParams]);
 
     const [modalTitle, setModalTitle] = useState(bookingId ? 'Appointment Details' : 'Property Details');
     const [headerLeading, setHeaderLeading] = useState(
