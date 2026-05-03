@@ -1026,8 +1026,12 @@ const ListingsPage = () => {
              Math.abs(prev.max_lat - mapBounds.max_lat) > 0.00001 ||
              Math.abs(prev.min_lng - mapBounds.min_lng) > 0.00001 || 
              Math.abs(prev.max_lng - mapBounds.max_lng) > 0.00001);
-        
-        fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
+        // Only update the ref when bounds actually changed (user panned/zoomed).
+        // For pagination-only changes, preserve the existing value so fitBounds
+        // doesn't zoom out and destroy the user's map position.
+        if (boundsJustChanged) {
+            fetchTriggeredByBoundsRef.current = true;
+        }
         prevMapBoundsRef.current = mapBounds;
         const isBoundsTriggeredFetch = !!boundsJustChanged;
 
