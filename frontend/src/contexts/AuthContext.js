@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
         }
     });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [savedListingIds, setSavedListingIds] = useState([]);
 
     // Helper to fetch saved listings
