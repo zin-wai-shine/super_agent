@@ -353,7 +353,6 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         gestureHandling: 'cooperative',
         disableDefaultUI: false,
         zoomControl: true,
-        styles: [],
         mapId: 'DEMO_MAP_ID'
     }), []);
 
@@ -637,7 +636,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 }));
             }
         } catch (error) {
-            console.error('Save listing error:', error);
+            // console.error('Save listing error:', error);
 
             // Handle authentication errors
             if (error.error === 'Unauthorized' || error.message?.includes('token')) {
@@ -698,7 +697,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             }
             setCancelReason('');
         } catch (error) {
-            console.error('Failed to cancel appointment:', error);
+            // console.error('Failed to cancel appointment:', error);
             alert('Failed to cancel appointment. Please try again.');
         } finally {
             setCancelling(false);
@@ -837,7 +836,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             }
                         }
                     } catch (error) {
-                        console.error('Failed to fetch user-specific listing data:', error);
+                        // console.error('Failed to fetch user-specific listing data:', error);
                     }
                 }
 
@@ -858,12 +857,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         setRelatedListings(shuffled);
                     })
                     .catch(err => {
-                        if (!axios.isCancel(err)) console.error('Failed to fetch related listings:', err);
+                        // if (!axios.isCancel(err)) console.error('Failed to fetch related listings:', err);
                     });
 
             } catch (error) {
                 if (axios.isCancel(error)) return;
-                console.error('Failed to fetch listing details:', error);
+                // console.error('Failed to fetch listing details:', error);
                 if (error.response?.status === 404) {
                     setError('Property not found');
                 } else {
@@ -909,7 +908,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     if (active) setActiveBooking(active);
                     else setActiveBooking(null);
                 } catch (err) {
-                    console.error('Failed to update appointments on notification:', err);
+                    // console.error('Failed to update appointments on notification:', err);
                 }
             };
             reFetchBooking();
@@ -983,7 +982,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     });
                     setAvailableSlots(response.data.slots || []);
                 } catch (error) {
-                    console.error('Failed to fetch slots:', error);
+                    // console.error('Failed to fetch slots:', error);
                 } finally {
                     setFetchingSlots(false);
                 }

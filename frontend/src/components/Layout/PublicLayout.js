@@ -175,7 +175,7 @@ const PublicLayout = () => {
                 const response = await publicApi.getStations();
                 setStations(response.data.stations || []);
             } catch (error) {
-                console.error('Failed to fetch stations:', error);
+                // console.error('Failed to fetch stations:', error);
             }
         };
         fetchStations();

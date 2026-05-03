@@ -644,7 +644,7 @@ const ListingsPage = () => {
                 window.dispatchEvent(new CustomEvent('listing:saved-status-changed', { detail: { listingId: id, saved: true } }));
             }
         } catch (err) {
-            console.error('Save listing error:', err);
+            // console.error('Save listing error:', err);
         }
     }, [user, navigate]);
 
@@ -848,7 +848,7 @@ const ListingsPage = () => {
                 if (response.data.price_format) setPriceFormat(response.data.price_format);
                 setAgentId(urlAgentId || response.data.id);
             } catch (error) {
-                console.error('Failed to fetch agent info:', error);
+                // console.error('Failed to fetch agent info:', error);
             }
         };
 
@@ -873,7 +873,7 @@ const ListingsPage = () => {
                 setFlatStations(flat);
                 setStationsLoaded(true);
             } catch (error) {
-                console.error('Failed to fetch stations:', error);
+                // console.error('Failed to fetch stations:', error);
             }
         };
         fetchStationsData();
@@ -890,7 +890,7 @@ const ListingsPage = () => {
                 setDevelopers(devRes.data.developers || []);
                 setProjectsList(projRes.data.projects || []);
             } catch (error) {
-                console.error('Failed to fetch advanced filter data:', error);
+                // console.error('Failed to fetch advanced filter data:', error);
             }
         };
         fetchAdvancedFilterData();
@@ -1205,7 +1205,7 @@ const ListingsPage = () => {
                 lastFetchedParamsRef.current = currentParamsKey;
             } catch (error) {
                 if (axios.isCancel(error)) return;
-                console.error('Failed to fetch listings', error);
+                // console.error('Failed to fetch listings', error);
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);

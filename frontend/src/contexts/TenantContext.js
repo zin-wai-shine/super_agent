@@ -40,7 +40,7 @@ export const TenantProvider = ({ children }) => {
                 sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
                 setTenantConfig(response.data);
             } catch (err) {
-                console.error('Failed to fetch tenant configuration:', err);
+                // console.error('Failed to fetch tenant configuration:', error);
 
                 // If the error is a 404 (from our middleware), clear the cache as the agent is invalid/suspended
                 if (err.response?.status === 404) {

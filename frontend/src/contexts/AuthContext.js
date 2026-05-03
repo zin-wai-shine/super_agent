@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
             const savedUser = localStorage.getItem('user');
             return savedUser ? JSON.parse(savedUser) : null;
         } catch (err) {
-            console.error('Error parsing user from localStorage:', err);
+            // console.error('Error parsing user from localStorage:', err);
             return null;
         }
     });
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
             const listingsArray = response.data?.data || [];
             setSavedListingIds(listingsArray.map(l => String(l.id)));
         } catch (err) {
-            console.error('Failed to fetch global saved listings', err);
+            // console.error('Failed to fetch global saved listings', err);
         }
     }, []);
 

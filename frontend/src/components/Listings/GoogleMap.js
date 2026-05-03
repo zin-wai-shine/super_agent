@@ -733,15 +733,16 @@ const GoogleMapComponent = ({
     ], []);
 
     const mapOptions = useMemo(() => {
+        const hasMapId = options?.mapId || customOptions?.mapId;
         return {
             ...options,
             ...customOptions,
             backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-            styles: useModernMap 
+            styles: hasMapId ? undefined : (useModernMap 
                 ? (isDarkMode 
                     ? darkStyle 
                     : (customOptions?.styles && customOptions.styles.length > 0 ? customOptions.styles : premiumStandardStyle))
-                : [],
+                : []),
             ...(hideControls ? {
                 zoomControl: false,
                 mapTypeControl: false,
@@ -749,7 +750,7 @@ const GoogleMapComponent = ({
                 fullscreenControl: false,
             } : {})
         };
-    }, [customOptions, hideControls, isDarkMode, darkStyle, premiumStandardStyle, useModernMap]);
+    }, [options, customOptions, hideControls, isDarkMode, darkStyle, premiumStandardStyle, useModernMap]);
 
     // Force style update when theme changes
     useEffect(() => {
