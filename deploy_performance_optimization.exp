@@ -1,0 +1,47 @@
+#!/usr/bin/expect -f
+set timeout 300
+set password "-4V2HOvVFF,q7Bx2"
+set server "root@187.77.140.205"
+set remote_dir "/root/super_real_estate"
+set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
+
+# List of files to copy (Performance Optimization)
+set files {
+    "frontend/src/pages/Public/ListingsPage.js"
+    "frontend/src/components/Listings/ListingCard.js"
+    "frontend/src/components/Listings/ProjectCard.js"
+}
+
+# 1. Copy files
+foreach f $files {
+    puts "Copying $f..."
+    spawn scp -o StrictHostKeyChecking=no "$local_dir/$f" "$server:$remote_dir/$f"
+    expect {
+        "password:" {
+            send -- "$password\r"
+            exp_continue
+        }
+        eof
+    }
+}
+
+puts "\nFiles copied successfully! Starting build on server...\n"
+
+# 2. Build frontend on server
+spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && \
+docker compose build frontend && \
+docker compose up -d frontend && \
+echo 'Frontend performance update complete!'"
+
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for build..."
+    }
+    eof
+}
+
+puts "\nDeployment complete!"

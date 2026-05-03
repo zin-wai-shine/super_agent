@@ -9,7 +9,7 @@ import {
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain } from "react-icons/tb";
 
-const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
+const ProjectCard = ({ project = {}, viewMode = 'grid', to, index = 0 }) => {
     const {
         id,
         name,
@@ -49,6 +49,8 @@ const ProjectCard = ({ project, viewMode = 'grid', to, index = 0 }) => {
         setCurrentImageIndex((i) => (i + 1) % projectImages.length);
     };
     const [searchParams] = useSearchParams();
+    
+    if (!id || Object.keys(project).length === 0) return null;
 
     const handleCopyLink = async (e) => {
         e.preventDefault();

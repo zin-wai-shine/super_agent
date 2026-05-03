@@ -207,7 +207,9 @@ const ListingsPage = () => {
                 filterParams[k] = searchParams.get(k) || savedFilters[k] || '';
             });
 
-            const params = { ...filterParams, page: cachedEntry.page, limit: 12 };
+            const isMobile = window.innerWidth < 1024;
+            const limit = isGoogleMapOpen ? 500 : (isMobile ? 10 : 20);
+            const params = { ...filterParams, page: cachedEntry.page, limit: limit };
 
             if (cachedEntry.mapBounds && localStorage.getItem('show_google_map') === 'true') {
                 params.min_lat = cachedEntry.mapBounds.min_lat;
@@ -599,6 +601,7 @@ const ListingsPage = () => {
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
     const prevMapBoundsRef = useRef(null);
+    const ignoreBoundsChangeRef = useRef(false);
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
     const handleMapBoundsChanged = React.useCallback((data) => {
@@ -610,6 +613,11 @@ const ListingsPage = () => {
             lastBoundsRef.current.max_lng === data.max_lng;
 
         if (!isSame) {
+            if (ignoreBoundsChangeRef.current) {
+                // Silently sync the ref so the next event doesn't think the map 'panned'
+                lastBoundsRef.current = data;
+                return;
+            }
             lastBoundsRef.current = data;
             fetchTriggeredByBoundsRef.current = true; // Sync update to block fitBounds immediately
             setMapBounds(data);
@@ -1051,10 +1059,12 @@ const ListingsPage = () => {
                 // Check if we were aborted during the debounce wait
                 if (controller.signal.aborted) return;
             }
+            const isMobile = window.innerWidth < 1024;
+            const limit = isGoogleMapOpen ? 500 : (isMobile ? 10 : 20);
             const params = { 
                 ...filters, 
-                page, 
-                limit: isGoogleMapOpen ? 40 : 12
+                page: isGoogleMapOpen ? 1 : page, 
+                limit: limit
             };
             let bufferedBounds = null;
 
@@ -1076,34 +1086,13 @@ const ListingsPage = () => {
                 params.max_lng = bufferedBounds.max_lng;
             }
 
-            // Client-side Buffer Check:
-            // If we are in Map View and moving the screen, check if the new screen 
-            // is still entirely within our last buffered fetch area AND we have all data for that area.
-            if (isGoogleMapOpen && isBoundsTriggeredFetch && lastFetchedBoundsRef.current && hasFullResultsForLastBoundsRef.current) {
-                const isContained = 
-                    mapBounds.min_lat >= lastFetchedBoundsRef.current.min_lat &&
-                    mapBounds.max_lat <= lastFetchedBoundsRef.current.max_lat &&
-                    mapBounds.min_lng >= lastFetchedBoundsRef.current.min_lng &&
-                    mapBounds.max_lng <= lastFetchedBoundsRef.current.max_lng;
-
-                // Also check if filters other than bounds have changed
-                const filtersKey = JSON.stringify(filters);
-                const lastFiltersKey = lastFetchedParamsRef.current ? JSON.parse(lastFetchedParamsRef.current) : null;
-                const filtersMatch = lastFiltersKey && JSON.stringify({ ...lastFiltersKey, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined }) === 
-                                                 JSON.stringify({ ...filters, min_lat: undefined, max_lat: undefined, min_lng: undefined, max_lng: undefined });
-
-                if (isContained && filtersMatch) {
-                    setIsMapRefetching(false);
-                    setLoading(false);
-                    return;
-                }
-            }
 
             // Check if we already have this data (e.g. just closing a detail modal)
             const currentParamsKey = JSON.stringify(params);
 
             // Bypass fetch if we already restored this exact state from cache
-            if (isCacheValidSync && page === globalListCache.page) {
+            // IMPORTANT: In map mode, skip this if bounds have changed (user panned) - always re-fetch
+            if (isCacheValidSync && page === globalListCache.page && !isBoundsTriggeredFetch) {
                 lastFetchedParamsRef.current = currentParamsKey;
                 setLoading(false);
                 setInitialLoading(false);
@@ -1158,7 +1147,8 @@ const ListingsPage = () => {
 
                 const data = response.data;
                 const newItems = data.listings || [];
-                const limit = isGoogleMapOpen ? 40 : 12;
+                const isMobile = window.innerWidth < 1024;
+                const limit = isGoogleMapOpen ? 500 : 10;
 
                 // Stop loading more if the current response returned fewer items than the limit
                 if (newItems.length < limit || newItems.length === 0) {
@@ -1199,10 +1189,15 @@ const ListingsPage = () => {
                     
                     setInitialLoading(false);
                 } else {
-                    updateListingsUnique(newItems, false); // Unique append for pagination
+                    updateListingsUnique(newItems, true); // Replace for pagination
                 }
 
-                setTotal(data.total || 0);
+                const newTotal = data.total || 0;
+                setTotal(newTotal);
+                setPage(p => {
+                    const maxPage = Math.ceil(newTotal / 10) || 1;
+                    return p > maxPage ? maxPage : p;
+                });
                 lastFetchedParamsRef.current = currentParamsKey;
             } catch (error) {
                 if (axios.isCancel(error)) return;
@@ -1222,18 +1217,7 @@ const ListingsPage = () => {
         };
     }, [filters, page, user, mapBounds, isGoogleMapOpen]);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            entries => {
-                if (entries[0].isIntersecting && !loading && hasMore && (listings.length > 0 && listings.length < total)) {
-                    setPage(prev => prev + 1);
-                }
-            },
-            { threshold: 0.1 }
-        );
-        if (observerTarget.current) observer.observe(observerTarget.current);
-        return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-    }, [loading, listings.length, total, hasMore]);
+    // IntersectionObserver removed for pagination UI
 
     const handleFilterChange = (key, value, shouldScroll = true) => {
         if (key === 'map_center') {
@@ -1881,7 +1865,7 @@ const ListingsPage = () => {
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card ${activeFiltersList.length > 0 ? 'border border-gray-200 dark:border-white/10' : 'border border-transparent'}`}
+                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
                             aria-label="Open filters"
                         >
                             <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[26px] h-[26px]' : 'w-8 h-8'} text-gray-800 dark:text-white`} />
@@ -1991,7 +1975,7 @@ const ListingsPage = () => {
                                     ) : (listings || []).length > 0 ? (
                                         <div className="relative">
                                             <div className={`grid gap-4 transition-all duration-500 opacity-100 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
-                                                {(listings || []).map((l, i) => (
+                                                {(listings || []).slice(isGoogleMapOpen ? (page - 1) * 10 : 0, isGoogleMapOpen ? page * 10 : 10).map((l, i) => (
                                                     <div
                                                         key={l.id}
                                                         onMouseEnter={() => isGoogleMapOpen && setListHoveredListingId(l.id)}
@@ -2012,27 +1996,54 @@ const ListingsPage = () => {
                                                         />
                                                     </div>
                                                 ))}
-                                                {/* Desktop Loading/End State */}
-                                                <div ref={observerTarget} className="py-16 flex flex-col items-center justify-center min-h-[160px]">
-                                                    {loading && listings.length > 0 && (
-                                                        <div className="flex flex-col items-center gap-3">
-                                                            <div className="w-8 h-8 border-3 border-gray-200 border-t-gray-800 dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
-                                                            <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading more properties...</span>
+                                                {/* Pagination Controls */}
+                                                {total > 10 && (
+                                                    <div className="py-16 flex flex-col items-center justify-center min-h-[160px] w-full col-span-full">
+                                                        <div className="flex items-center gap-6">
+                                                            <button
+                                                                onClick={() => {
+                                                                    ignoreBoundsChangeRef.current = true;
+                                                                    setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                    setPage(p => Math.max(1, p - 1));
+                                                                    window.scrollTo({ top: 0, behavior: 'instant' });
+                                                                }}
+                                                                disabled={page === 1}
+                                                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page === 1 ? 'bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/5 text-gray-300 dark:text-gray-600 cursor-not-allowed shadow-sm' : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#333333] dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] active:scale-95'}`}
+                                                                aria-label="Previous Page"
+                                                            >
+                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                                                    <path d="M15 18l-6-6 6-6" />
+                                                                </svg>
+                                                            </button>
+
+                                                            <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 min-w-[80px] text-center">
+                                                                Page {page} of {Math.ceil(total / 10)}
+                                                            </div>
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    ignoreBoundsChangeRef.current = true;
+                                                                    setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                    setPage(p => p + 1);
+                                                                    window.scrollTo({ top: 0, behavior: 'instant' });
+                                                                }}
+                                                                disabled={page >= Math.ceil(total / 10)}
+                                                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page >= Math.ceil(total / 10) ? 'bg-[#333333]/50 backdrop-blur-md dark:bg-white/5 border border-white/10 opacity-50 text-white cursor-not-allowed' : 'bg-[#333333]/85 backdrop-blur-xl border border-white/10 text-white dark:bg-[#222222]/80 dark:border-white/10 dark:text-white hover:bg-[#222222] dark:hover:bg-[#1a1a1a] shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.3)] active:scale-95'}`}
+                                                                aria-label="Next Page"
+                                                            >
+                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
+                                                                    <path d="M9 18l6-6-6-6" />
+                                                                </svg>
+                                                            </button>
                                                         </div>
-                                                    )}
-                                                    
-                                                    {!loading && listings.length >= total && total > 0 && (
-                                                        <div className="flex flex-col items-center gap-2 animate-fill-fast">
-                                                            <div className="w-8 h-px bg-gray-200 dark:bg-white/10 mb-2" />
-                                                            <p className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                                                You've seen all {total} properties
-                                                            </p>
-                                                            <p className="text-[13px] text-gray-500 dark:text-gray-400 text-center max-w-[280px] leading-relaxed">
-                                                                That's all for now! Try adjusting your search or <button onClick={clearFilters} className="text-[#222222] dark:text-white underline font-semibold decoration-gray-300 underline-offset-4 hover:decoration-gray-900 transition-all">clear filters</button> to see more.
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                        
+                                                        {loading && (
+                                                            <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
+                                                                Loading properties...
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ) : (
@@ -2140,7 +2151,7 @@ const ListingsPage = () => {
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-14 h-14 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border border-[#222222]/15 shadow-sm`}
+                                    className={`flex-shrink-0 relative w-14 h-14 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
                                     aria-label="Open filters"
                                 >
                                     <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -2229,7 +2240,7 @@ const ListingsPage = () => {
 
                                 {/* Listings List */}
                                 <div className="flex flex-col gap-6 max-w-lg mx-auto">
-                                    {listings.filter(p => p && p.id).map((property) => (
+                                    {listings.filter(p => p && p.id).slice(isGoogleMapOpen ? (page - 1) * 10 : 0, isGoogleMapOpen ? page * 10 : 10).map((property) => (
                                         <ListingCard
                                             key={property.id}
                                             listing={property}
@@ -2243,27 +2254,62 @@ const ListingsPage = () => {
                                         />
                                     ))}
 
-                                    {/* Mobile Loading/End State */}
-                                    <div className="py-12 flex flex-col items-center justify-center min-h-[120px] mb-8">
-                                        {loading && (
-                                            <div className="flex flex-col items-center gap-3">
-                                                <div className="w-7 h-7 border-3 border-gray-200 border-t-[#222222] dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
-                                                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading properties...</span>
+                                    {/* Mobile Pagination Controls */}
+                                    {total > 10 && (
+                                        <div className="py-12 flex flex-col items-center justify-center min-h-[160px] w-full mb-8">
+                                            <div className="flex items-center gap-6">
+                                                <button
+                                                    onClick={() => {
+                                                        ignoreBoundsChangeRef.current = true;
+                                                        setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                        setPage(p => Math.max(1, p - 1));
+                                                        if (isGoogleMapOpen && window.innerWidth < 1024) {
+                                                            window.scrollTo({ top: window.innerHeight * 0.42, behavior: 'instant' });
+                                                        } else {
+                                                            window.scrollTo({ top: 0, behavior: 'instant' });
+                                                        }
+                                                    }}
+                                                    disabled={page === 1}
+                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page === 1 ? 'bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/5 text-gray-300 dark:text-gray-600 cursor-not-allowed shadow-sm' : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#333333] dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] active:scale-95'}`}
+                                                    aria-label="Previous Page"
+                                                >
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                                        <path d="M15 18l-6-6 6-6" />
+                                                    </svg>
+                                                </button>
+
+                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 min-w-[80px] text-center">
+                                                    Page {page} of {Math.ceil(total / 10)}
+                                                </div>
+
+                                                <button
+                                                    onClick={() => {
+                                                        ignoreBoundsChangeRef.current = true;
+                                                        setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                        setPage(p => p + 1);
+                                                        if (isGoogleMapOpen && window.innerWidth < 1024) {
+                                                            window.scrollTo({ top: window.innerHeight * 0.42, behavior: 'instant' });
+                                                        } else {
+                                                            window.scrollTo({ top: 0, behavior: 'instant' });
+                                                        }
+                                                    }}
+                                                    disabled={page >= Math.ceil(total / 10)}
+                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page >= Math.ceil(total / 10) ? 'bg-[#333333]/50 backdrop-blur-md dark:bg-white/5 border border-white/10 opacity-50 text-white cursor-not-allowed' : 'bg-[#333333]/85 backdrop-blur-xl border border-white/10 text-white dark:bg-[#222222]/80 dark:border-white/10 dark:text-white hover:bg-[#222222] dark:hover:bg-[#1a1a1a] shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.3)] active:scale-95'}`}
+                                                    aria-label="Next Page"
+                                                >
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
+                                                        <path d="M9 18l6-6-6-6" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        )}
-                                        
-                                        {!loading && listings.length >= total && total > 0 && (
-                                            <div className="flex flex-col items-center gap-2.5 text-center px-8 animate-fill-fast">
-                                                <div className="w-6 h-px bg-gray-200 dark:bg-white/10 mb-1" />
-                                                <p className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                                    You've seen all {total} listings
-                                                </p>
-                                                <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                    Adjust your search or <button onClick={clearFilters} className="font-bold text-[#222222] dark:text-white underline decoration-gray-300 underline-offset-4">clear filters</button> to discover more.
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
+                                            
+                                            {loading && (
+                                                <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
+                                                    Loading properties...
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Removed watermark logo per user request */}
                                 </div>
