@@ -93,14 +93,29 @@ const CollectionDetailPage = () => {
 
     const heroImages = React.useMemo(() => {
         let urls = [];
+        // 1. Check collection's own media
         if (collection?.media && collection.media.length > 0) {
             urls = collection.media.filter(m => m.type === 'image').map(m => getMediaUrl(m.url));
         } else if (collection?.image) {
             urls = [getMediaUrl(collection.image)];
         }
+        
+        // 2. Fallback to images from the first few listings if collection has no media
+        if (urls.length === 0 && listings.length > 0) {
+            // Get images from the first 5 listings to populate a decent gallery
+            listings.slice(0, 5).forEach(listing => {
+                if (listing.media && listing.media.length > 0) {
+                    const listingImages = listing.media
+                        .filter(m => m.type === 'image')
+                        .map(m => getMediaUrl(m.url));
+                    urls = [...urls, ...listingImages];
+                }
+            });
+        }
+        
         // Deduplicate
         return [...new Set(urls)];
-    }, [collection]);
+    }, [collection, listings]);
 
     const openGallery = (index = 0) => {
         setGalleryIndex(index);
@@ -167,14 +182,10 @@ const CollectionDetailPage = () => {
                         onClick={() => openGallery(0)}
                     >
                         {heroImages.length > 0 ? (
-                            <ListingImageSlider 
-                                images={heroImages} 
-                                title={collection?.name} 
-                                cardLink="#" 
-                                onImageClick={openGallery}
-                                showArrows={false}
-                                showDots={true}
-                                className="w-full h-full"
+                            <img 
+                                src={heroImages[0]} 
+                                alt={collection?.name}
+                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">
