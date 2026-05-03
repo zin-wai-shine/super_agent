@@ -2012,15 +2012,28 @@ const ListingsPage = () => {
                                                         />
                                                     </div>
                                                 ))}
-                                                {loading && !initialLoading && !isGoogleMapOpen && (
-                                                    <div className="contents animate-fill-fast">
-                                                        {[...Array(Math.min(viewMode === 'grid' ? 6 : 3, total - listings.length))].map((_, i) => (
-                                                            <ListingSkeleton key={`more-${i}`} index={i} viewMode={viewMode} />
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                {/* Desktop Loading/End State */}
+                                                <div ref={observerTarget} className="py-12 flex flex-col items-center justify-center min-h-[120px]">
+                                                    {loading && listings.length > 0 && (
+                                                        <div className="flex flex-col items-center gap-3">
+                                                            <div className="w-8 h-8 border-3 border-gray-200 border-t-gray-800 dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
+                                                            <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading more properties...</span>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {!loading && listings.length >= total && total > 0 && (
+                                                        <div className="flex flex-col items-center gap-2 animate-fill-fast">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20 mb-1" />
+                                                            <p className="text-[14px] font-medium text-gray-400 dark:text-gray-500">
+                                                                You've reached the end of our listings
+                                                            </p>
+                                                            <p className="text-[12px] text-gray-400/80 dark:text-gray-600">
+                                                                Can't find what you're looking for? Try adjusting your filters.
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div ref={observerTarget} className="h-20" />
                                         </div>
                                     ) : (
                                         <div className={`flex flex-col items-center justify-center py-24 px-4 bg-gray-50/50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[24px] animate-fill-med flex-1 ${isGoogleMapOpen ? 'h-full min-h-[50vh]' : 'min-h-[50vh]'}`}>
@@ -2230,22 +2243,27 @@ const ListingsPage = () => {
                                         />
                                     ))}
 
-                                    {loading && (
-                                        <div className="flex flex-col gap-6 w-full animate-fill-fast">
-                                            {[...Array(Math.min(2, total - listings.length))].map((_, i) => (
-                                                <ListingSkeleton key={`mob-more-${i}`} />
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {!loading && listings.length < total && (
-                                        <button
-                                            onClick={() => setPage(p => p + 1)}
-                                            className="w-full py-5 text-center font-bold text-primary-600 dark:text-primary-400 mt-4 rounded-2xl border border-primary-100 dark:border-primary-900/30 bg-primary-50 dark:bg-primary-950/20 active:scale-[0.98] transition-all"
-                                        >
-                                            View More Results
-                                        </button>
-                                    )}
+                                    {/* Mobile Loading/End State */}
+                                    <div className="py-10 flex flex-col items-center justify-center min-h-[100px]">
+                                        {loading && (
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="w-7 h-7 border-3 border-gray-200 border-t-[#222222] dark:border-white/10 dark:border-t-white rounded-full animate-spin" />
+                                                <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Loading...</span>
+                                            </div>
+                                        )}
+                                        
+                                        {!loading && listings.length >= total && total > 0 && (
+                                            <div className="flex flex-col items-center gap-2 text-center px-6 animate-fill-fast">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-white/10 mb-1" />
+                                                <p className="text-[14px] font-medium text-gray-400 dark:text-gray-500">
+                                                    No more properties to show
+                                                </p>
+                                                <p className="text-[12px] text-gray-400/70 dark:text-gray-600">
+                                                    Adjust your search to see more results
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* Removed watermark logo per user request */}
                                 </div>
