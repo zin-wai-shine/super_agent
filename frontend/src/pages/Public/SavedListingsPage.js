@@ -370,13 +370,13 @@ const SavedListingsPage = () => {
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="px-5 pt-6 pb-24">
                                             {initialLoading || !activeGroup ? (
-                                                <div className="grid grid-cols-2 gap-3 animate-fill-fast">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 animate-fill-fast">
                                                     {[...Array(getSkeletonCount())].map((_, i) => (
                                                         <ListingSkeleton key={`mob-skel-${i}`} viewMode="grid" />
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <div className="grid grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                     {activeGroup.items.map((listing) => (
                                                         <div key={listing.id} className={removingId === listing.id ? 'animate-fadeOutDown' : ''}>
                                                             <ListingCard
@@ -398,17 +398,19 @@ const SavedListingsPage = () => {
                             {currentGroup && isDesktop ? (
                                 <div className="flex flex-col animate-fill-fast">
                                     {/* Desktop Sub-header: Centered title, Right count */}
-                                    <div className="mb-6 flex items-center justify-between relative min-h-[48px]">
-                                        <button
-                                            onClick={() => {
-                                                const newParams = new URLSearchParams(searchParams);
-                                                newParams.delete('group');
-                                                setSearchParams(newParams);
-                                            }}
-                                            className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
-                                        >
-                                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
-                                        </button>
+                                    <div className={`hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-20 py-6 sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md -mx-4 md:-mx-8 lg:-mx-20 transition-all duration-300 ${layoutScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
+                                        <div className="flex items-center gap-6">
+                                            <button
+                                                onClick={() => {
+                                                    const newParams = new URLSearchParams(searchParams);
+                                                    newParams.delete('group');
+                                                    setSearchParams(newParams);
+                                                }}
+                                                className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                                            >
+                                                <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                                            </button>
+                                        </div>
 
                                         <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
                                             <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight">{currentGroup}</h1>
@@ -419,15 +421,17 @@ const SavedListingsPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Desktop Listings Grid */}
+                                    {/* Add some top padding to content so it doesn't jump under sticky header */}
+                                    <div className="pt-8">
+                                        {/* Desktop Listings Grid */}
                                     {initialLoading || !activeGroup ? (
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fill-fast">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fill-fast">
                                             {[...Array(getSkeletonCount())].map((_, i) => (
                                                 <ListingSkeleton key={`group-skel-${i}`} viewMode="grid" />
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                             {activeGroup.items.map((listing) => (
                                                 <div
                                                     key={listing.id}
@@ -445,6 +449,7 @@ const SavedListingsPage = () => {
                                             ))}
                                         </div>
                                     )}
+                                    </div>
                                 </div>
                             ) : !currentGroup && (
                                 /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */

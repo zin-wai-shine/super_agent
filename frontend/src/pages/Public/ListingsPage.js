@@ -50,6 +50,7 @@ import {
     KeyIcon,
     HomeIcon,
     ChevronLeftIcon,
+    ChevronRightIcon,
     MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { BsSearch } from 'react-icons/bs';
@@ -601,6 +602,7 @@ const ListingsPage = () => {
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
     const prevMapBoundsRef = useRef(null);
+    const resultsRef = useRef(null);
     const ignoreBoundsChangeRef = useRef(false);
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
@@ -1199,7 +1201,8 @@ const ListingsPage = () => {
                 const newTotal = data.total || 0;
                 setTotal(newTotal);
                 setPage(p => {
-                    const maxPage = Math.ceil(newTotal / 10) || 1;
+                    const pageSize = isGoogleMapOpen ? 10 : 20;
+                    const maxPage = Math.ceil(newTotal / pageSize) || 1;
                     return p > maxPage ? maxPage : p;
                 });
                 lastFetchedParamsRef.current = currentParamsKey;
@@ -1869,7 +1872,7 @@ const ListingsPage = () => {
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
+                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-[0.98] transition-all duration-300 ease-out hover:shadow-md ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
                             aria-label="Open filters"
                         >
                             <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[26px] h-[26px]' : 'w-8 h-8'} text-gray-800 dark:text-white`} />
@@ -1960,7 +1963,7 @@ const ListingsPage = () => {
                                     )}
 
                                     {/* Header: Results Count */}
-                                    <div className="mb-4 mt-1 flex justify-start">
+                                    <div className="mb-1 mt-0 flex justify-start">
                                         {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
                                             <div className="h-7 w-32 bg-gray-100 dark:bg-white/5 rounded animate-fill-fast" />
                                         ) : (listings || []).length > 0 ? (
@@ -1972,14 +1975,14 @@ const ListingsPage = () => {
                                         ) : null}
                                     </div>
 
-                                    {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
-                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
+                                     {(initialLoading || (isMapRefetching && !isGoogleMapOpen)) ? (
+                                        <div className={`grid gap-4 ${isGoogleMapOpen ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
                                             {[...Array(isGoogleMapOpen ? 6 : 12)].map((_, i) => <ListingSkeleton key={i} index={i} viewMode={isGoogleMapOpen ? 'map-list' : viewMode} isExiting={isExiting} />)}
                                         </div>
                                     ) : (listings || []).length > 0 ? (
-                                        <div className="relative">
-                                            <div className={`grid gap-4 transition-all duration-500 opacity-100 ${isGoogleMapOpen ? 'grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : (viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}`}>
-                                                {(listings || []).slice(isGoogleMapOpen ? (page - 1) * 10 : 0, isGoogleMapOpen ? page * 10 : 10).map((l, i) => (
+                                        <div ref={resultsRef} className="relative w-full">
+                                            <div className={`grid gap-4 transition-all duration-500 opacity-100 ${isGoogleMapOpen ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+                                                {(listings || []).slice(isGoogleMapOpen ? (page - 1) * 10 : 0, isGoogleMapOpen ? page * 10 : listings.length).map((l, i) => (
                                                     <div
                                                         key={l.id}
                                                         onMouseEnter={() => isGoogleMapOpen && setListHoveredListingId(l.id)}
@@ -2001,45 +2004,59 @@ const ListingsPage = () => {
                                                     </div>
                                                 ))}
                                                 {/* Pagination Controls */}
-                                                {total > 10 && (
-                                                    <div className="py-16 flex flex-col items-center justify-center min-h-[160px] w-full col-span-full">
-                                                        <div className="flex items-center gap-6">
-                                                            <button
-                                                                onClick={() => {
-                                                                    ignoreBoundsChangeRef.current = true;
-                                                                    setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
-                                                                    setPage(p => Math.max(1, p - 1));
-                                                                    window.scrollTo({ top: 0, behavior: 'instant' });
-                                                                }}
-                                                                disabled={page === 1}
-                                                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page === 1 ? 'bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/5 text-gray-300 dark:text-gray-600 cursor-not-allowed shadow-sm' : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#333333] dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] active:scale-95'}`}
-                                                                aria-label="Previous Page"
-                                                            >
-                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                                                    <path d="M15 18l-6-6 6-6" />
-                                                                </svg>
-                                                            </button>
-
-                                                            <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 min-w-[80px] text-center">
-                                                                Page {page} of {Math.ceil(total / 10)}
-                                                            </div>
-
-                                                            <button
-                                                                onClick={() => {
-                                                                    ignoreBoundsChangeRef.current = true;
-                                                                    setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
-                                                                    setPage(p => p + 1);
-                                                                    window.scrollTo({ top: 0, behavior: 'instant' });
-                                                                }}
-                                                                disabled={page >= Math.ceil(total / 10)}
-                                                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page >= Math.ceil(total / 10) ? 'bg-[#333333]/50 backdrop-blur-md dark:bg-white/5 border border-white/10 opacity-50 text-white cursor-not-allowed' : 'bg-[#333333]/85 backdrop-blur-xl border border-white/10 text-white dark:bg-[#222222]/80 dark:border-white/10 dark:text-white hover:bg-[#222222] dark:hover:bg-[#1a1a1a] shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.3)] active:scale-95'}`}
-                                                                aria-label="Next Page"
-                                                            >
-                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
-                                                                    <path d="M9 18l6-6-6-6" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
+                                                {total > (isGoogleMapOpen ? 10 : 20) && (
+                                                     <div className="py-16 flex flex-col items-center justify-center min-h-[160px] w-full col-span-full">
+                                                         <div className="flex items-center gap-8">
+                                                             <button
+                                                                 onClick={() => {
+                                                                     ignoreBoundsChangeRef.current = true;
+                                                                     setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                     setPage(p => Math.max(1, p - 1));
+                                                                     setTimeout(() => {
+                                                                         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                         document.documentElement.scrollTop = 0;
+                                                                         document.body.scrollTop = 0;
+                                                                     }, 10);
+                                                                 }}
+                                                                 disabled={page === 1}
+                                                                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                                     page === 1 
+                                                                     ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                                     : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                                 }`}
+                                                                 aria-label="Previous Page"
+                                                             >
+                                                                 <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
+                                                             </button>
+ 
+                                                             <div className="flex flex-col items-center">
+                                                                 <span className="text-[15px] font-semibold text-gray-900 dark:text-white min-w-[100px] text-center">
+                                                                     Page {page} of {Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
+                                                                 </span>
+                                                             </div>
+ 
+                                                             <button
+                                                                 onClick={() => {
+                                                                     ignoreBoundsChangeRef.current = true;
+                                                                     setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                     setPage(p => p + 1);
+                                                                     setTimeout(() => {
+                                                                         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                         document.documentElement.scrollTop = 0;
+                                                                         document.body.scrollTop = 0;
+                                                                     }, 10);
+                                                                 }}
+                                                                 disabled={page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
+                                                                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                                     page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))
+                                                                     ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                                     : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                                 }`}
+                                                                 aria-label="Next Page"
+                                                             >
+                                                                 <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
+                                                             </button>
+                                                         </div>
                                                         
                                                         {loading && (
                                                             <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
@@ -2270,20 +2287,28 @@ const ListingsPage = () => {
                                                         if (isGoogleMapOpen && window.innerWidth < 1024) {
                                                             window.scrollTo({ top: window.innerHeight * 0.42, behavior: 'instant' });
                                                         } else {
-                                                            window.scrollTo({ top: 0, behavior: 'instant' });
+                                                            setTimeout(() => {
+                                                                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                document.documentElement.scrollTop = 0;
+                                                                document.body.scrollTop = 0;
+                                                            }, 10);
                                                         }
                                                     }}
                                                     disabled={page === 1}
-                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page === 1 ? 'bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/5 text-gray-300 dark:text-gray-600 cursor-not-allowed shadow-sm' : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#333333] dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] active:scale-95'}`}
+                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                        page === 1 
+                                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                    }`}
                                                     aria-label="Previous Page"
                                                 >
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                                        <path d="M15 18l-6-6 6-6" />
-                                                    </svg>
+                                                    <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
                                                 </button>
 
-                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 min-w-[80px] text-center">
-                                                    Page {page} of {Math.ceil(total / 10)}
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                                        Page {page} of {Math.ceil(total / 10)}
+                                                    </span>
                                                 </div>
 
                                                 <button
@@ -2294,16 +2319,22 @@ const ListingsPage = () => {
                                                         if (isGoogleMapOpen && window.innerWidth < 1024) {
                                                             window.scrollTo({ top: window.innerHeight * 0.42, behavior: 'instant' });
                                                         } else {
-                                                            window.scrollTo({ top: 0, behavior: 'instant' });
+                                                            setTimeout(() => {
+                                                                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                document.documentElement.scrollTop = 0;
+                                                                document.body.scrollTop = 0;
+                                                            }, 10);
                                                         }
                                                     }}
                                                     disabled={page >= Math.ceil(total / 10)}
-                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${page >= Math.ceil(total / 10) ? 'bg-[#333333]/50 backdrop-blur-md dark:bg-white/5 border border-white/10 opacity-50 text-white cursor-not-allowed' : 'bg-[#333333]/85 backdrop-blur-xl border border-white/10 text-white dark:bg-[#222222]/80 dark:border-white/10 dark:text-white hover:bg-[#222222] dark:hover:bg-[#1a1a1a] shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.3)] active:scale-95'}`}
+                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                        page >= Math.ceil(total / 10)
+                                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                    }`}
                                                     aria-label="Next Page"
                                                 >
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
-                                                        <path d="M9 18l6-6-6-6" />
-                                                    </svg>
+                                                    <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
                                                 </button>
                                             </div>
                                             

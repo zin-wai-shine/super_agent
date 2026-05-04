@@ -411,11 +411,25 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsDesktopView(window.innerWidth >= 1024);
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        
+        const handleScroll = () => {
+            if (window.scrollY > 10) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     const rawImages = listing?.media?.filter((m) => m.type === 'image') || [];
@@ -1861,22 +1875,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         href={href}
                         target={isCall ? undefined : "_blank"}
                         rel={isCall ? undefined : "noopener noreferrer"}
-                        className="flex items-center gap-4 p-3 rounded-full border border-gray-100 dark:border-white/10 hover:border-primary-100 dark:hover:border-white/20 hover:bg-primary-50/30 dark:hover:bg-white/5 transition-all group relative overflow-hidden"
+                        className="flex items-center gap-4 h-[64px] px-4 rounded-full border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 group active:scale-[0.98] overflow-hidden bg-white dark:bg-dashboard-card"
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] pointer-events-none" />
-                        <div className="text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3" style={{ backgroundColor: config.color }}>
+                        <div className="text-white w-10 h-10 rounded-full shadow-md flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: config.color }}>
                             <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex flex-col flex-1">
-                            <span className="font-bold text-base text-gray-900 dark:text-white leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                            <span className="font-semibold text-[14px] text-[#222222] dark:text-white leading-tight transition-colors">
                                 {isCall ? 'Call Us Now' : `Chat on ${link.platform}`}
                             </span>
-                            <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium mt-1">
+                            <span className="text-[12.5px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
                                 {isCall ? link.value : `Join us on ${link.platform}`}
                             </span>
                         </div>
-                        <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 dark:bg-white/10 flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-white/20 transition-colors">
-                            <ChevronRightIcon className="w-4 h-4 text-gray-400 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-white" />
+                        <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 dark:bg-white/10 flex items-center justify-center transition-colors">
+                            <ChevronRightIcon className="w-4 h-4 text-gray-400 dark:text-gray-300 group-hover:text-[#222222] dark:group-hover:text-white" />
                         </div>
                     </a>
                 );
@@ -2009,33 +2023,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark overflow-hidden px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none shadow-[0_-20px_50px_rgba(0,0,0,0.1)] lg:shadow-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
-                                        <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-0 pb-5 pt-0 group/nav relative">
+                                        <div className={`hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-20 py-6 sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md -mx-4 md:-mx-8 lg:-mx-20 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
                                             <div className="flex items-center gap-6">
                                                 <button
                                                     onClick={() => navigate(-1)}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
+                                                    className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
                                                 >
-                                                    <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                                                    <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
                                                 </button>
 
                                                 <div className="flex items-center gap-2">
-                                                    <div
-                                                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border ${listing.listing_type === 'sale'
-                                                            ? 'bg-primary-500/10 border-primary-500/20 text-primary-700'
-                                                            : 'bg-transparent dark:bg-white/10 border-indigo-400/20 text-indigo-700 dark:text-white'
-                                                            }`}
-                                                    >
-                                                        {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
-                                                    </div>
-                                                    {listing.is_featured && (
-                                                        <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border bg-transparent dark:bg-white/10 border-amber-400/20 text-amber-700 dark:text-white flex items-center gap-1">
-                                                            <SparklesIcon className="w-3 h-3 text-amber-500" />
-                                                            FEATURED
-                                                        </div>
-                                                    )}
+                                                    {/* Badges removed from desktop header for a cleaner look */}
                                                 </div>
                                             </div>
 
@@ -2045,10 +2046,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div className="flex items-center gap-2 pr-2">
                                                     <button
                                                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
-                                                        className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
+                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                     >
-                                                        <PhoneIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
-                                                        <span className="text-[13px] font-normal text-gray-900 dark:text-white">Contact</span>
+                                                        <PhoneIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                        <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Contact</span>
                                                     </button>
                                                     {activeBooking ? (
                                                         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 transition-all whitespace-nowrap">
@@ -2058,17 +2059,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     ) : (
                                                         <button
                                                             onClick={handleBookingClick}
-                                                            className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
+                                                            className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                         >
                                                             {listing?.allow_viewing_requests === false ? (
                                                                 <>
-                                                                    <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
-                                                                    <span className="text-[13px] font-normal text-gray-900 dark:text-white">Direct Message</span>
+                                                                    <ChatBubbleOvalLeftEllipsisIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                                    <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Direct Message</span>
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <CalendarDaysIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all" />
-                                                                    <span className="text-[13px] font-normal text-gray-900 dark:text-white">Book Viewing</span>
+                                                                    <CalendarDaysIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                                    <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Book Viewing</span>
                                                                 </>
                                                             )}
                                                         </button>
@@ -2079,25 +2080,25 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     <button
                                                         onClick={handleToggleSave}
                                                         disabled={savingListing}
-                                                        className="flex items-center justify-center gap-2.5 min-w-[88px] px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn disabled:opacity-50 whitespace-nowrap"
+                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 min-w-[100px] rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn disabled:opacity-50 whitespace-nowrap"
                                                     >
                                                         <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
                                                             {isSaved ? (
-                                                                <BsFillHeartFill className="w-[20px] h-[20px] text-rose-500" />
+                                                                <BsFillHeartFill className="w-[22px] h-[22px] text-rose-500" />
                                                             ) : (
-                                                                <BsHeart className="w-[20px] h-[20px] text-gray-900 dark:text-white opacity-60" />
+                                                                <BsHeart className="w-[22px] h-[22px] text-gray-800 dark:text-white opacity-60" />
                                                             )}
                                                         </div>
-                                                        <span className={`text-[13px] font-normal transition-all ${isSaved ? 'text-rose-600' : 'text-gray-900 dark:text-white'}`}>
+                                                        <span className={`text-[12.5px] font-semibold transition-all ${isSaved ? 'text-rose-600' : 'text-[#222222] dark:text-white'}`}>
                                                             {isSaved ? 'Saved' : 'Save'}
                                                         </span>
                                                     </button>
                                                     <PropertyShare
                                                         property={listing}
-                                                        className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group/btn whitespace-nowrap"
+                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                         showLabel
-                                                        labelClassName="text-[13px] font-normal text-gray-900 dark:text-white"
-                                                        iconClassName="w-5 h-5 text-gray-900 dark:text-white group-hover/btn:scale-110 transition-all"
+                                                        labelClassName="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors"
+                                                        iconClassName="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -2238,20 +2239,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         alt="Gallery 5"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
-                                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors pointer-events-none">
-                                                        <span className="bg-white/90 dark:bg-dashboard-card/90 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 w-fit">
-                                                            <Square2StackIcon className="w-5 h-5" />
-                                                            Show all photos
-                                                        </span>
-                                                    </div>
+                                                    <div className="absolute inset-0 bg-black/10 flex items-center justify-center group-hover:bg-black/20 transition-colors pointer-events-none">
+                                                         <span className="h-[44px] px-6 bg-white dark:bg-dashboard-card text-[#222222] dark:text-white rounded-full font-semibold text-[12.5px] shadow-md border border-gray-200 dark:border-white/10 flex items-center gap-2 w-fit transition-all duration-300 group-hover:-translate-y-[1px]">
+                                                             <Square2StackIcon className="w-[22px] h-[22px]" />
+                                                             Show all photos
+                                                         </span>
+                                                     </div>
                                                 </>
                                             ) : (
                                                 <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                                                    <span className="bg-white dark:bg-dashboard-card text-gray-900 dark:text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors flex items-center gap-2 pointer-events-none">
-                                                        <Square2StackIcon className="w-5 h-5" />
-                                                        Show all {images.length} photos
-                                                    </span>
-                                                </div>
+                                                     <span className="h-[44px] px-6 bg-white dark:bg-dashboard-card text-[#222222] dark:text-white rounded-full font-semibold text-[12.5px] shadow-md border border-gray-200 dark:border-white/10 flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-[1px]">
+                                                         <Square2StackIcon className="w-[22px] h-[22px]" />
+                                                         Show all {images.length} photos
+                                                     </span>
+                                                 </div>
                                             )}
                                         </div>
                                     </div>
@@ -2491,21 +2492,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div className="mb-8 flex flex-wrap items-center gap-3">
                                                     <button
                                                         onClick={() => setActiveMapTab('google')}
-                                                        className={`px-6 py-2.5 rounded-full font-bold text-[14px] transition-all ${
-                                                            activeMapTab === 'google'
-                                                                ? 'bg-[#222222] text-white shadow-lg'
-                                                                : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
-                                                        }`}
+                                                        className={`h-[44px] px-6 rounded-full text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.98] ${activeMapTab === 'google'
+                                                            ? 'bg-[#222222] text-white border border-[#222222] shadow-md -translate-y-[1px]'
+                                                            : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]'
+                                                            }`}
                                                     >
                                                         Google Map
                                                     </button>
                                                     <button
                                                         onClick={() => setActiveMapTab('transit')}
-                                                        className={`px-6 py-2.5 rounded-full font-bold text-[14px] transition-all ${
-                                                            activeMapTab === 'transit'
-                                                                ? 'bg-[#222222] text-white shadow-lg'
-                                                                : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
-                                                        }`}
+                                                        className={`h-[44px] px-6 rounded-full text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.98] ${activeMapTab === 'transit'
+                                                            ? 'bg-[#222222] text-white border border-[#222222] shadow-md -translate-y-[1px]'
+                                                            : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]'
+                                                            }`}
                                                     >
                                                         Transit Map
                                                     </button>
@@ -2716,7 +2715,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         href={(listing.map_url && listing.map_url.startsWith('http')) ? listing.map_url : `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="px-5 py-2.5 rounded-full bg-white dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] flex items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-100 dark:border-white/10"
+                                                        className="h-[44px] px-6 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-semibold text-[12.5px] flex items-center hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                                                     >
                                                         View on Google Maps
                                                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2757,7 +2756,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                 {/* Related Listings Section — carousel: 1 card (swipe) on mobile, 2 on md, 3 on lg+ */}
                                 {!bookingId && relatedListings.length > 0 && (
-                                    <div className="hidden md:block w-full py-12 border-t border-gray-100 dark:border-white/10">
+                                    <div className="hidden md:block w-full py-12 border-b border-gray-100 dark:border-white/10">
                                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 px-4 lg:px-8">You might also like</h2>
                                         {isMapView ? (
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 px-4 lg:px-8">
@@ -2822,7 +2821,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 setLinkCopied(true);
                                                                 setTimeout(() => setLinkCopied(false), 2000);
                                                             }}
-                                                            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium text-[15px] transition-colors"
+                                                            className="w-full h-[44px] flex items-center justify-center gap-2 px-6 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-semibold text-[12.5px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                                                         >
                                                             {linkCopied ? (
                                                                 <>
@@ -2831,7 +2830,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <DocumentDuplicateIcon className="w-5 h-5" />
+                                                                    <DocumentDuplicateIcon className="w-[22px] h-[22px]" />
                                                                     Copy Property Link
                                                                 </>
                                                             )}
@@ -2942,7 +2941,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     setLinkCopied(true);
                                                                     setTimeout(() => setLinkCopied(false), 2000);
                                                                 }}
-                                                                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium text-[15px] transition-colors"
+                                                                className="w-full h-[44px] flex items-center justify-center gap-2 px-6 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-semibold text-[12.5px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                                                             >
                                                                 {linkCopied ? (
                                                                     <>
@@ -3288,28 +3287,7 @@ const ListingDetailPage = () => {
         return (
             <div className="min-h-screen bg-white dark:bg-dashboard-dark">
                 <div className="w-full min-h-screen bg-white dark:bg-dashboard-dark relative">
-                    {filterBarSlot && createPortal(
-                        <div className="flex items-center justify-center h-full">
-                            <span className="text-[16px] font-normal text-gray-900 dark:text-white tracking-[0.02em]">
-                                {galleryOpen ? (
-                                    <>
-                                        <span className="font-bold">Photo</span> <span>Tour</span>
-                                    </>
-                                ) : (isBookingOpen ? (
-                                    'Book Viewing'
-                                ) : (modalTitle === 'Property Details' ? (
-                                    <>
-                                        <span className="font-bold">Property</span> <span>Details</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="font-bold">Viewing</span> <span>Request</span>
-                                    </>
-                                )))}
-                            </span>
-                        </div>,
-                        filterBarSlot
-                    )}
+                    {/* Center title portal removed for minimalist desktop navbar */}
                     <div className="w-full">
                         {galleryOpen && galleryPayload ? (
                             <AllPhotosModalContent

@@ -28,8 +28,21 @@ const CollectionDetailPage = () => {
     const [headerSticky, setHeaderSticky] = useState(false);
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
-    const [visibleCount, setVisibleCount] = useState(12);
-    const observerTarget = React.useRef(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
+    const scrollContainerRef = useRef(null);
+    const resultsRef = useRef(null);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        // Use a small timeout to ensure the DOM has updated before scrolling
+        setTimeout(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            // Fallback for some browsers/layouts
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 10);
+    };
 
     useEffect(() => {
         fetchCollectionData();
@@ -57,20 +70,10 @@ const CollectionDetailPage = () => {
         };
     }, [galleryOpen]);
 
+    // Reset to page 1 when id changes
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            entries => {
-                if (entries[0].isIntersecting && !loading && visibleCount < listings.length) {
-                    setTimeout(() => {
-                        setVisibleCount(prev => prev + 12);
-                    }, 500);
-                }
-            },
-            { threshold: 0.1, rootMargin: '100px' }
-        );
-        if (observerTarget.current) observer.observe(observerTarget.current);
-        return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
-    }, [loading, listings.length, visibleCount]);
+        setCurrentPage(1);
+    }, [id]);
 
     const fetchCollectionData = async () => {
         setLoading(true);
@@ -141,43 +144,60 @@ const CollectionDetailPage = () => {
             ` }} />
             {isIconType ? (
                 /* --- ICON TYPE --- */
-                <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
-                    <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-5 sm:mb-10 flex items-center justify-between relative min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
-                        <div className="flex items-center gap-4">
+                <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20">
+                    <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark h-16 md:h-24 flex items-center justify-between relative -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5">
+                        {/* Mobile Left Section: Back + Title */}
+                        <div className="flex items-center gap-3 lg:gap-4 overflow-hidden flex-1">
                             <button
                                 onClick={() => navigate(-1)}
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all group"
+                                className="w-12 h-12 lg:w-10 lg:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50/50 dark:bg-white/5 active:scale-95 transition-all group"
                             >
-                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" strokeWidth={2} />
                             </button>
-                        </div>
-
-                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center min-w-0 px-4">
-                            <div className="flex flex-col">
-                                <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                            
+                            {/* Mobile Title: Left-aligned */}
+                            <div className="lg:hidden truncate">
+                                <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate">
                                     {collection?.name}
                                 </h1>
-                                <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
-                                    {listings.length} properties
-                                </span>
                             </div>
                         </div>
-                        <div className="w-10" />
+
+                        {/* Desktop Center Title */}
+                        <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-baseline gap-2 text-center pointer-events-none min-w-0 px-4">
+                            <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                                {collection?.name}
+                            </h1>
+                            <span className="text-[12px] text-gray-400 font-medium tracking-wide whitespace-nowrap">
+                                ({listings?.length} {listings?.length === 1 ? 'property' : 'properties'})
+                            </span>
+                        </div>
+
+                        {/* Right Section: Mobile Property Count Pill */}
+                        <div className="flex items-center gap-2">
+                            <div className="lg:hidden flex items-center px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400">
+                                <span className="text-[13px] font-semibold">{listings?.length} properties</span>
+                            </div>
+                            <div className="hidden lg:block w-10" />
+                        </div>
                     </div>
 
-                    <ListingsGrid 
-                        listings={listings} 
-                        visibleCount={visibleCount}
-                        navigate={navigate} 
-                        observerTarget={observerTarget}
-                    />
+                    <div ref={resultsRef} className="mt-5 md:mt-10">
+                        <ListingsGrid 
+                            listings={listings} 
+                            currentPage={currentPage}
+                            itemsPerPage={itemsPerPage}
+                            setCurrentPage={handlePageChange}
+                            navigate={navigate} 
+                        />
+                    </div>
                 </div>
             ) : (
                 /* --- CARD TYPE --- */
                 <div className="relative">
                     {/* Hero Section */}
                     <div 
-                        className="fixed top-0 left-0 right-0 w-full h-[65vh] lg:h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0 cursor-pointer"
+                        className="fixed top-0 left-0 right-0 w-full h-[65vh] lg:h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0 cursor-pointer max-w-[2520px] mx-auto"
                         style={{ overflowX: 'hidden' }}
                         onClick={() => openGallery(0)}
                     >
@@ -198,26 +218,40 @@ const CollectionDetailPage = () => {
 
                     {/* Nav Header */}
                     <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || headerSticky ? 'bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/10' : 'bg-transparent'}`}>
-                        <div className="max-w-[1440px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between relative">
-                            <div className="flex items-center gap-4">
+                        <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-16 md:h-24 flex items-center justify-between relative">
+                            {/* Mobile Left Section: Back + Title */}
+                            <div className="flex items-center gap-3 lg:gap-4 overflow-hidden flex-1">
                                 <button
                                     onClick={() => navigate(-1)}
-                                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white' : 'bg-white text-gray-900 shadow-md'}`}
+                                    className={`w-12 h-12 lg:w-10 lg:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 ${scrolled || headerSticky ? 'text-gray-900 dark:text-white bg-gray-50/50 dark:bg-white/5' : 'bg-white text-gray-900 shadow-md'}`}
                                 >
-                                    <ArrowLeftIcon className="w-6 h-6" />
+                                    <ArrowLeftIcon className="w-6 h-6" strokeWidth={2} />
                                 </button>
-
-                                <div className={`flex flex-col transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-100 lg:opacity-0 translate-y-0 lg:-translate-y-2 pointer-events-none'}`}>
-                                    <h1 className={`text-[17px] lg:text-[18px] font-bold truncate max-w-[50vw] transition-colors ${scrolled || headerSticky ? 'text-gray-900 dark:text-white' : 'text-white drop-shadow-md'}`}>
+                                
+                                {/* Mobile Title: Left-aligned, bold white when not scrolled */}
+                                <div className="lg:hidden truncate">
+                                    <h1 className={`text-[17px] font-bold tracking-tight truncate ${scrolled || headerSticky ? 'text-gray-900 dark:text-white' : 'text-white drop-shadow-sm'}`}>
                                         {collection?.name}
                                     </h1>
                                 </div>
                             </div>
 
+                            {/* Desktop Center Title (Shows when scrolled) */}
+                            <div className={`hidden lg:flex absolute left-1/2 -translate-x-1/2 items-baseline gap-2 text-center transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+                                <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                                    {collection?.name}
+                                </h1>
+                                <span className="text-[12px] text-gray-400 font-medium tracking-wide whitespace-nowrap">
+                                    ({listings?.length} {listings?.length === 1 ? 'property' : 'properties'})
+                                </span>
+                            </div>
+
                             <div className="flex items-center gap-2">
-                                <div className={`lg:hidden h-10 px-4 flex items-center justify-center rounded-full font-bold text-[13px] transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white' : 'bg-white text-gray-900 shadow-md'}`}>
-                                    {listings.length} properties
+                                {/* Mobile Properties Pill: Right-aligned, solid white pill when not scrolled */}
+                                <div className={`lg:hidden flex items-center px-4 py-2 rounded-full transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-50/50 dark:bg-white/5 text-gray-600 dark:text-gray-400' : 'bg-white text-gray-900 font-bold shadow-md'}`}>
+                                    <span className="text-[13px] font-bold tracking-tight">{listings?.length} properties</span>
                                 </div>
+
                                 <button onClick={() => openGallery(0)} className={`hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${scrolled || headerSticky ? 'bg-gray-900 text-white' : 'bg-white text-gray-900 shadow-lg'}`}>
                                     <FiImage className="w-4 h-4" />
                                     <span className="text-[13px] font-bold">View Images</span>
@@ -247,12 +281,13 @@ const CollectionDetailPage = () => {
                                 <div className="w-12 h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full" />
                             </div>
                             
-                            <div className="max-w-[1440px] mx-auto px-5 lg:px-20 pt-2 lg:pt-6 pb-20">
+                            <div ref={resultsRef} className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pt-2 lg:pt-6 pb-20">
                                 <ListingsGrid 
                                     listings={listings} 
-                                    visibleCount={visibleCount}
+                                    currentPage={currentPage}
+                                    itemsPerPage={itemsPerPage}
+                                    setCurrentPage={handlePageChange}
                                     navigate={navigate} 
-                                    observerTarget={observerTarget}
                                 />
                             </div>
                         </div>
@@ -278,19 +313,19 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
             <div className="bg-white dark:bg-dashboard-dark min-h-screen animate-pulse">
                 {/* Minimal Header Skeleton */}
                 <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-dashboard-dark/90 backdrop-blur-md border-b border-gray-100 dark:border-white/10">
-                    <div className="max-w-[1440px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between relative">
+                    <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-12 md:h-16 flex items-center justify-between relative">
                         <div className="w-11 h-11 rounded-full bg-gray-100 dark:bg-white/10" />
-                        <div className="flex flex-col items-center gap-2">
+                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                             <div className="h-4 w-32 bg-gray-100 dark:bg-white/10 rounded-full" />
-                            <div className="h-3 w-20 bg-gray-50 dark:bg-white/5 rounded-full" />
+                            <div className="h-3 w-16 bg-gray-100 dark:bg-white/10 rounded-full" />
                         </div>
                         <div className="w-11 h-11 rounded-full bg-gray-100 dark:bg-white/10 lg:w-24 lg:h-10 lg:rounded-full" />
                     </div>
                 </div>
                 
                 {/* Content Area */}
-                <div className="pt-24 max-w-[1440px] mx-auto px-5 lg:px-20 pb-20">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                <div className="pt-24 max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
                         {[...Array(8)].map((_, i) => (
                             <ListingSkeleton key={i} viewMode="grid" index={i} />
                         ))}
@@ -308,12 +343,12 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
             </div>
 
             {/* Header Skeleton */}
-            <div className="fixed top-0 left-0 right-0 z-50">
-                <div className="max-w-[1440px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between relative">
+            <div className={`fixed top-0 left-0 right-0 z-50`}>
+                <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-12 md:h-16 flex items-center justify-between relative">
                     <div className="w-11 h-11 rounded-full bg-white dark:bg-white/10 shadow-sm" />
-                    <div className="flex flex-col items-center gap-2">
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                         <div className="h-4 w-32 bg-white/20 rounded-full" />
-                        <div className="h-3 w-20 bg-white/10 rounded-full" />
+                        <div className="h-3 w-16 bg-white/20 rounded-full" />
                     </div>
                     <div className="w-24 h-10 rounded-full bg-white dark:bg-white/10 shadow-sm" />
                 </div>
@@ -327,8 +362,8 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
                         <div className="w-16 h-1 bg-gray-100 dark:bg-white/5 rounded-full" />
                     </div>
                     
-                    <div className="max-w-[1440px] mx-auto px-5 lg:px-20 pt-1 lg:pt-6 pb-20">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                    <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pt-1 lg:pt-6 pb-20">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
                             {[...Array(8)].map((_, i) => (
                                 <ListingSkeleton key={i} viewMode="grid" index={i} />
                             ))}
@@ -340,29 +375,61 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
     );
 };
 
-const ListingsGrid = ({ listings, visibleCount, navigate, observerTarget }) => {
-    const visibleListings = listings.slice(0, visibleCount);
-    const hasMore = visibleCount < listings.length;
+const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, navigate }) => {
+    const totalPages = Math.ceil(listings.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const visibleListings = listings.slice(startIndex, startIndex + itemsPerPage);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
     return (
         <div className="relative min-h-[400px]">
             {listings.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
                         {visibleListings.map((listing, idx) => (
                             <div key={listing.id} className="animate-fadeInUp" style={{ animationDelay: `${(idx % 4) * 100}ms` }}>
                                 <ListingCard listing={listing} viewMode="grid" showSave={true} />
                             </div>
                         ))}
-                        
-                        {hasMore && (
-                            [...Array(4)].map((_, i) => (
-                                <div key={`skeleton-${i}`} ref={i === 0 ? observerTarget : null}>
-                                    <ListingSkeleton viewMode="grid" index={i} />
-                                </div>
-                            ))
-                        )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="mt-16 flex items-center justify-center gap-8">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
+                                    currentPage === 1 
+                                    ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                    : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                }`}
+                            >
+                                <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
+                            </button>
+
+                            <div className="flex flex-col items-center">
+                                <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
+                                    currentPage === totalPages 
+                                    ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                    : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                }`}
+                            >
+                                <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
+                            </button>
+                        </div>
+                    )}
                 </>
             ) : (
                 <div className="text-center py-24 animate-fadeInUp">

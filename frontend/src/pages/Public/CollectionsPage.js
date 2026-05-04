@@ -20,6 +20,15 @@ const CollectionsPage = () => {
     const [categories, setCategories] = useState(globalCategoriesCache || []);
     const [loading, setLoading] = useState(!globalCollectionsCache);
     const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -80,7 +89,7 @@ const CollectionsPage = () => {
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
             <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
                 {/* Header Section: Back button, Centered Title, Categories Button */}
-                <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-5 sm:mb-10 flex items-center justify-between relative min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
+                <div className={`sticky top-0 z-40 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md py-5 mb-5 md:mb-10 flex items-center justify-between min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate(-1)}
@@ -114,7 +123,7 @@ const CollectionsPage = () => {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 md:gap-x-6 gap-y-6 md:gap-y-12">
                             {[...Array(loading && collections.length === 0 ? 6 : collections.length)].map((_, i) => (
                                 <div key={collections[i]?.id || `slot-${i}`} className="relative h-full">
                                     {(loading || !collections[i]) && (
