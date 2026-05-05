@@ -412,6 +412,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [cancelReason, setCancelReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [bookingScrolled, setBookingScrolled] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsDesktopView(window.innerWidth >= 1024);
@@ -1301,11 +1302,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </button>
                     {activeBooking ? (
                         <button
-                            disabled
-                            className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed transition-all duration-300 whitespace-nowrap"
+                            onClick={() => setIsStatusOverlayOpen(true)}
+                            className={`flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full transition-all duration-300 active:scale-95 whitespace-nowrap border
+                                ${activeBooking.status === 'confirmed'
+                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-600'
+                                    : activeBooking.status === 'cancelled'
+                                    ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-600 hover:bg-rose-100 hover:border-rose-600'
+                                    : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-600 hover:bg-amber-100 hover:border-amber-600'
+                                }`}
                         >
-                            <LuCalendarCheck2 className="w-[18px] h-[18px] text-emerald-600 flex-shrink-0" />
-                            <span className="text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 capitalize">{activeBooking.status || 'Requested'}</span>
+                            <LuCalendarCheck2 className="w-[18px] h-[18px] flex-shrink-0" />
+                            <span className="text-[13px] font-semibold capitalize">{activeBooking.status || 'Requested'}</span>
                         </button>
                     ) : (
                         <button
@@ -1370,7 +1377,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {/* Header */}
                 {!success && (
                     <div
-                        className={`relative flex items-center justify-between px-4 md:px-8 py-3 lg:py-6 shrink-0 ${isDesktopPage ? 'lg:px-0 bg-transparent' : 'lg:px-20 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark'}`}
+                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 ${isDesktopPage ? 'lg:h-[80px] lg:px-0 bg-transparent' : `h-[76px] lg:h-[80px] px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}`}
                     >
                         {isDesktopPage ? (
                             <div className="w-full flex items-center justify-between relative group/nav">
@@ -1383,31 +1390,34 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 <div className="w-10" />
                             </div>
                         ) : (
-                            <>
+                            <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between relative">
+                                {/* Back Button */}
                                 <button
                                     onClick={() => setIsBookingOverlayOpen(false)}
-                                    className="z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all group"
+                                    className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98] transition-all duration-300 group"
                                 >
-                                    <ArrowLeftIcon className="w-7 h-7 md:w-6 md:h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                                    <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white stroke-[2]" />
                                 </button>
 
                                 {/* Centered Title */}
                                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
-                                    <span
-                                        className="text-lg font-semibold truncate pointer-events-auto text-gray-900 dark:text-white"
-                                    >
+                                    <span className="text-[17px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
                                         Book Viewing
                                     </span>
                                 </div>
 
-                                <div className="w-[44px] md:w-auto" /> {/* Spacer to help centering if icons differ */}
-                            </>
+                                <div className="w-[44px]" /> 
+                            </div>
                         )}
                     </div>
                 )}
 
                 {/* Content Area - mobile: full width; desktop: centered (max-w-[1400px]); z-[60] so scroll lock skips this container */}
-                <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div 
+                    className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} 
+                    style={{ WebkitOverflowScrolling: 'touch' }}
+                    onScroll={(e) => setBookingScrolled(e.currentTarget.scrollTop > 10)}
+                >
                     <div className={`mx-auto w-full ${success ? 'h-full p-0 flex items-center justify-center max-w-none' : `max-w-[1440px] px-6 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'}`}`}>
                         {success ? (
                             <div className="h-full w-full flex flex-col items-center p-6 sm:p-12 relative overflow-hidden animate-in fade-in duration-700">
@@ -1504,7 +1514,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <button
                                                             key={opt.value}
                                                             type="button"
-                                                            className="py-2.5 px-5 rounded-full text-sm font-semibold transition-all bg-[#222222] text-white border-none shadow-none"
+                                                            className="h-[44px] px-6 rounded-full text-[13px] font-semibold transition-all duration-300 bg-[#222222] dark:bg-white text-white dark:text-dashboard-dark border border-[#222222] dark:border-white shadow-md hover:-translate-y-[1px] active:scale-[0.98]"
                                                         >
                                                             {opt.label}
                                                         </button>
@@ -1594,12 +1604,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 type="button"
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
-                                                                className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-[#222222] text-white shadow-none border-transparent'
+                                                                className={`h-[44px] px-5 rounded-full text-[13px] font-semibold transition-all duration-300 border flex items-center justify-center ${isSelected
+                                                                    ? 'bg-[#222222] dark:bg-white text-white dark:text-dashboard-dark border-[#222222] dark:border-white shadow-md hover:-translate-y-[1px]'
                                                                     : disabled
-                                                                        ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                                        : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                                    }`}
+                                                                        ? 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                                        : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-300 hover:border-[#222222] dark:hover:border-white/40 hover:bg-white dark:hover:bg-dashboard-hover hover:shadow-md hover:-translate-y-[1px]'
+                                                                    } active:scale-[0.98]`}
                                                             >
                                                                 {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
                                                             </button>
@@ -1626,12 +1636,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 type="button"
                                                                 disabled={disabled}
                                                                 onClick={() => !disabled && handleTimeSelect(time)}
-                                                                className={`py-2.5 px-4 rounded-full text-base font-normal transition-all border ${isSelected
-                                                                    ? 'bg-[#222222] text-white shadow-none border-transparent'
+                                                                className={`h-[44px] px-5 rounded-full text-[13px] font-semibold transition-all duration-300 border flex items-center justify-center ${isSelected
+                                                                    ? 'bg-[#222222] dark:bg-white text-white dark:text-dashboard-dark border-[#222222] dark:border-white shadow-md hover:-translate-y-[1px]'
                                                                     : disabled
-                                                                        ? 'border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                                        : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                                    }`}
+                                                                        ? 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                                        : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-300 hover:border-[#222222] dark:hover:border-white/40 hover:bg-white dark:hover:bg-dashboard-hover hover:shadow-md hover:-translate-y-[1px]'
+                                                                    } active:scale-[0.98]`}
                                                             >
                                                                 {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
                                                             </button>
@@ -1810,16 +1820,21 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             {bookingErrors.confirm && (
                                 <p className="text-sm text-red-600 font-medium">{bookingErrors.confirm}</p>
                             )}
-                            <Button
+                             <button
                                 onClick={handleBookingSubmit}
-                                isLoading={submitting}
-                                disabled={!confirmedDateTime}
-                                variant="primary"
-                                size="lg"
-                                className={`w-auto max-w-[240px] font-normal py-3 px-6 rounded-full transition-all hover:translate-y-[-2px] active:scale-[0.98] !text-lg ${!confirmedDateTime ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                disabled={!confirmedDateTime || submitting}
+                                className={`h-[48px] px-10 rounded-full text-[15px] font-semibold transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98]
+                                    ${!confirmedDateTime || submitting
+                                        ? 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-white/10 cursor-not-allowed'
+                                        : 'bg-primary-600 border border-primary-600 text-white hover:bg-primary-700 hover:border-primary-700 hover:shadow-lg hover:shadow-primary-600/20 hover:-translate-y-[1px]'
+                                    }`}
                             >
-                                Send Request
-                            </Button>
+                                {submitting ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    'Send Request'
+                                )}
+                            </button>
                         </div>
                     </div>
                 )}
@@ -2086,10 +2101,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Contact</span>
                                                     </button>
                                                     {activeBooking ? (
-                                                        <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 transition-all whitespace-nowrap">
+                                                        <button
+                                                            onClick={() => setIsStatusOverlayOpen(true)}
+                                                            className={`h-[44px] flex items-center justify-center gap-2.5 px-5 rounded-full transition-all duration-300 active:scale-[0.98] whitespace-nowrap border hover:shadow-md hover:-translate-y-[1px]
+                                                                ${activeBooking.status === 'confirmed'
+                                                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-600'
+                                                                    : activeBooking.status === 'cancelled'
+                                                                    ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-600 hover:bg-rose-100 hover:border-rose-600'
+                                                                    : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-600 hover:bg-amber-100 hover:border-amber-600'
+                                                                }`}
+                                                        >
                                                             <LuCalendarCheck2 className="w-5 h-5" />
-                                                            <span className="text-[13px] font-normal capitalize">{activeBooking.status || 'Requested'}</span>
-                                                        </div>
+                                                            <span className="text-[13px] font-bold capitalize">{activeBooking.status || 'Requested'}</span>
+                                                        </button>
                                                     ) : (
                                                         <button
                                                             onClick={handleBookingClick}
@@ -2875,50 +2899,148 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                         <Modal
                                             isOpen={isStatusOverlayOpen}
-                                            onClose={() => setIsStatusOverlayOpen(false)}
-                                            title="Request Details"
+                                            onClose={() => {
+                                                setIsStatusOverlayOpen(false);
+                                                setTimeout(() => setIsCancelModalOpen(false), 500);
+                                            }}
+                                            title={isCancelModalOpen ? "Cancel Viewing?" : "Request Details"}
                                             size="md"
                                         >
-                                            <div className="p-8 space-y-8">
-                                                <div className="pb-6 border-b border-gray-100 dark:border-white/10 text-center">
-                                                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">{listing.title}</div>
-                                                </div>
+                                            <div className="p-8 space-y-8 animate-in fade-in duration-300">
+                                                {!isCancelModalOpen ? (
+                                                    <>
+                                                        <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
+                                                            <div className="text-lg font-bold text-[#222222] dark:text-white mb-1">{listing.title}</div>
+                                                        </div>
 
-                                                <div className="grid grid-cols-2 gap-8">
-                                                    <div>
-                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Status</div>
-                                                        <div className={`font-bold text-xl capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
-                                                            {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                        {/* Large Date Display (matches mobile) */}
+                                                        <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
+                                                            <div className="flex flex-col items-center text-center">
+                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-wider">Preferred Date</div>
+                                                                <span className="text-[84px] font-black leading-none text-[#222222] dark:text-white tracking-tighter">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
+                                                                </span>
+                                                                <span className="text-2xl font-black text-[#222222]/80 dark:text-white/80 mt-2 flex items-center gap-3">
+                                                                    {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '---'}
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20" />
+                                                                    <span className="text-gray-500/80 dark:text-gray-400/80">
+                                                                        {(() => {
+                                                                            const time = (viewedBooking || activeBooking)?.preferred_time;
+                                                                            if (!time) return '---';
+                                                                            const [hours, minutes] = time.split(':');
+                                                                            let hour = parseInt(hours);
+                                                                            const ampm = hour >= 12 ? 'PM' : 'AM';
+                                                                            hour = hour % 12;
+                                                                            hour = hour ? hour : 12;
+                                                                            return `${hour}:${minutes} ${ampm}`;
+                                                                        })()}
+                                                                    </span>
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested On</div>
-                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
-                                                            {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                <div className="grid grid-cols-2 gap-8">
-                                                    <div>
-                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Preferred Date</div>
-                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
-                                                            {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                                                        {/* Status & Requested On Grid */}
+                                                        <div className="grid grid-cols-2 gap-4 pt-4">
+                                                            <div className="text-center border-r border-gray-100 dark:border-white/10">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                                                                <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
+                                                                    {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
+                                                                <div className="font-bold text-lg text-gray-900 dark:text-white">
+                                                                    {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">Preferred Time</div>
-                                                        <div className="font-bold text-xl text-gray-900 dark:text-white">
-                                                            {(viewedBooking || activeBooking)?.preferred_time || '---'}
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                {(viewedBooking || activeBooking)?.message && (
-                                                    <div className="pt-6 border-t border-gray-100 dark:border-white/10">
-                                                        <div className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-3">Your Message</div>
-                                                        <div className="text-xl italic text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
-                                                            "{(viewedBooking || activeBooking).message}"
+                                                        {(viewedBooking || activeBooking)?.message && (
+                                                            <div className="pt-6 border-t border-gray-100 dark:border-white/10">
+                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">Your Message</div>
+                                                                <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed italic">
+                                                                    "{(viewedBooking || activeBooking).message}"
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Desktop Action Buttons */}
+                                                        {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
+                                                            <div className="flex gap-3 pt-4">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const booking = viewedBooking || activeBooking;
+                                                                        if (booking) {
+                                                                            const bookingDate = booking.preferred_date ? new Date(booking.preferred_date) : null;
+                                                                            const today = new Date();
+                                                                            today.setHours(0, 0, 0, 0);
+                                                                            const isPastBooking = bookingDate && bookingDate < today;
+
+                                                                            setBookingForm({
+                                                                                full_name: booking.full_name || '',
+                                                                                email: booking.email || '',
+                                                                                phone: booking.phone || '',
+                                                                                preferred_date: isPastBooking ? '' : (booking.preferred_date || ''),
+                                                                                preferred_time: isPastBooking ? '' : (booking.preferred_time || ''),
+                                                                                purpose: booking.purpose || (listing?.listing_type === 'sale' ? 'buy' : 'rent'),
+                                                                                message: booking.message || '',
+                                                                            });
+                                                                            setConfirmedDateTime(!isPastBooking);
+                                                                            setCalendarMonth(isPastBooking ? new Date() : (bookingDate || new Date()));
+                                                                        }
+                                                                        setIsStatusOverlayOpen(false);
+                                                                        setIsBookingOverlayOpen(true);
+                                                                    }}
+                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap text-[#222222] dark:text-white font-bold text-[13px]"
+                                                                >
+                                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setIsCancelModalOpen(true)}
+                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:border-rose-600 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="animate-in slide-in-from-right-4 duration-300">
+                                                        <div className="text-center mb-8">
+                                                            <p className="text-gray-500 dark:text-gray-400 font-medium">Please let us know why you need to cancel this appointment.</p>
+                                                        </div>
+
+                                                        <div className="mb-8">
+                                                            <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">Reason for cancellation</label>
+                                                            <textarea
+                                                                value={cancelReason}
+                                                                onChange={(e) => setCancelReason(e.target.value)}
+                                                                placeholder="e.g., Change of plans, found another property..."
+                                                                className="w-full h-48 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400 shadow-inner"
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex gap-3">
+                                                            <button
+                                                                onClick={() => setIsCancelModalOpen(false)}
+                                                                disabled={cancelling}
+                                                                className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-bold text-[13px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
+                                                            >
+                                                                Go Back
+                                                            </button>
+                                                            <button
+                                                                onClick={handleCancelAppointment}
+                                                                disabled={cancelling || !cancelReason.trim()}
+                                                                className={`flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full font-bold text-[13px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap border
+                                                                    ${cancelReason.trim() 
+                                                                        ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700 hover:border-rose-700 hover:shadow-md hover:-translate-y-[1px]' 
+                                                                        : 'bg-gray-100 dark:bg-white/10 border-transparent text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
+                                                            >
+                                                                {cancelling ? (
+                                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                ) : 'Confirm Cancellation'}
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 )}
@@ -3144,7 +3266,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             setIsStatusOverlayOpen(false);
                                                                             setIsBookingOverlayOpen(true);
                                                                         }}
-                                                                        className="flex-1 py-4 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap text-[#222222] dark:text-white font-bold text-[13px]"
                                                                     >
                                                                         <PencilSquareIcon className="w-4 h-4" />
                                                                         Edit
@@ -3154,7 +3276,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             e.stopPropagation();
                                                                             setIsCancelModalOpen(true);
                                                                         }}
-                                                                        className="flex-1 py-4 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[14px] active:scale-95 transition-all"
+                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:border-rose-600 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
                                                                     >
                                                                         Cancel
                                                                     </button>
@@ -3166,14 +3288,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             <button
                                                                 onClick={() => setIsCancelModalOpen(false)}
                                                                 disabled={cancelling}
-                                                                className="flex-1 py-4 rounded-full bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white font-bold text-[14px] active:scale-95 transition-all"
+                                                                className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-bold text-[13px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                             >
                                                                 Go Back
                                                             </button>
                                                             <button
                                                                 onClick={handleCancelAppointment}
-                                                                disabled={cancelling}
-                                                                className={`flex-1 py-4 rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 ${cancelReason.trim() ? '!bg-rose-600 !text-white' : ''}`}
+                                                                disabled={cancelling || !cancelReason.trim()}
+                                                                className={`flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full font-bold text-[13px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap border
+                                                                    ${cancelReason.trim() 
+                                                                        ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700 hover:border-rose-700 hover:shadow-md hover:-translate-y-[1px]' 
+                                                                        : 'bg-gray-100 dark:bg-white/10 border-transparent text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
                                                             >
                                                                 {cancelling ? (
                                                                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
@@ -3215,7 +3340,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsContactOverlayOpen(true)}
-                        className="bg-gray-900 dark:bg-white active:bg-black dark:active:bg-gray-200 active:scale-[0.98] transition-all text-white dark:text-dashboard-dark font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap"
+                        className="h-[44px] px-5 rounded-full text-[13px] font-semibold
+                            bg-[#222222] dark:bg-white
+                            border border-[#222222] dark:border-white
+                            text-white dark:text-dashboard-dark
+                            hover:bg-black dark:hover:bg-gray-100
+                            hover:border-black dark:hover:border-gray-100
+                            hover:shadow-md hover:-translate-y-[1px]
+                            transition-all duration-300 ease-out active:scale-[0.98]
+                            flex items-center justify-center whitespace-nowrap"
                     >
                         <span>Contact</span>
                     </button>
@@ -3223,11 +3356,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     {activeBooking ? (
                         <button
                             onClick={() => setIsStatusOverlayOpen(true)}
-                            className={`${
-                                activeBooking.status === 'confirmed' ? 'bg-emerald-600' : 
-                                activeBooking.status === 'cancelled' ? 'bg-rose-600' : 
-                                'bg-amber-600'
-                            } active:opacity-90 active:scale-[0.98] transition-all text-white font-bold text-[14px] px-5 py-3 rounded-full min-h-[48px] flex items-center justify-center whitespace-nowrap gap-2 shadow-none`}
+                            className={`h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                border transition-all duration-300 ease-out active:scale-[0.98]
+                                flex items-center justify-center whitespace-nowrap gap-2
+                                hover:shadow-md hover:-translate-y-[1px]
+                                text-white
+                                ${activeBooking.status === 'confirmed'
+                                    ? 'bg-emerald-600 border-emerald-600 hover:bg-emerald-700 hover:border-emerald-700'
+                                    : activeBooking.status === 'cancelled'
+                                    ? 'bg-rose-600 border-rose-600 hover:bg-rose-700 hover:border-rose-700'
+                                    : 'bg-amber-600 border-amber-600 hover:bg-amber-700 hover:border-amber-700'
+                                }`}
                         >
                             <LuCalendarCheck2 className="w-5 h-5 text-white" />
                             <span className="capitalize">{activeBooking.status || 'Requested'}</span>
@@ -3235,7 +3374,13 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     ) : (
                         <button
                             onClick={handleBookingClick}
-                            className="bg-primary-600 active:bg-primary-700 active:scale-[0.98] transition-all text-white font-bold text-[14px] px-4 py-3 rounded-full min-h-[48px] whitespace-nowrap"
+                            className="h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                bg-primary-600 border border-primary-600
+                                text-white
+                                hover:bg-primary-700 hover:border-primary-700
+                                hover:shadow-md hover:-translate-y-[1px]
+                                transition-all duration-300 ease-out active:scale-[0.98]
+                                whitespace-nowrap"
                         >
                             {listing?.allow_viewing_requests === false ? 'Direct Message' : 'Book Viewing'}
                         </button>

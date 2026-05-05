@@ -79,6 +79,7 @@ const ListingDetailModal = () => {
                 useBackButton={true}
                 hideHeaderOnMobile={true}
                 className={MODAL_SIZE_CLASS}
+                overlayZIndex={250}
             >
                 <div className="h-full relative bg-white dark:bg-dashboard-dark">
                     <div 

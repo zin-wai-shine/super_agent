@@ -147,14 +147,14 @@ const CollectionDetailPage = () => {
             {isIconType ? (
                 /* --- ICON TYPE --- */
                 <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20">
-                    <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark h-16 md:h-24 flex items-center justify-between relative -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5">
+                    <div className={`sticky top-0 z-40 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md h-[76px] lg:h-[80px] flex items-center justify-between relative -mx-6 px-6 md:mx-0 md:px-0 transition-all duration-300 border-b border-gray-50 dark:border-white/5`}>
                         {/* Mobile Left Section: Back + Title */}
-                        <div className="flex items-center gap-3 lg:gap-4 overflow-hidden flex-1">
+                        <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
                             <button
                                 onClick={() => navigate(-1)}
-                                className="w-12 h-12 lg:w-10 lg:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50/50 dark:bg-white/5 active:scale-95 transition-all group"
+                                className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                             >
-                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" strokeWidth={2} />
+                                <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                             </button>
                             
                             {/* Mobile Title: Left-aligned */}
@@ -180,7 +180,7 @@ const CollectionDetailPage = () => {
                             <div className="lg:hidden flex items-center px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400">
                                 <span className="text-[13px] font-semibold">{listings?.length} properties</span>
                             </div>
-                            <div className="hidden lg:block w-10" />
+                            <div className="hidden lg:block w-[44px]" />
                         </div>
                     </div>
 
@@ -332,18 +332,17 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
             <div className="bg-white dark:bg-dashboard-dark min-h-screen animate-pulse">
                 {/* Minimal Header Skeleton */}
                 <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-dashboard-dark/90 backdrop-blur-md border-b border-gray-100 dark:border-white/10">
-                    <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-12 md:h-16 flex items-center justify-between relative">
-                        <div className="w-11 h-11 rounded-full bg-gray-100 dark:bg-white/10" />
-                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-                            <div className="h-4 w-32 bg-gray-100 dark:bg-white/10 rounded-full" />
-                            <div className="h-3 w-16 bg-gray-100 dark:bg-white/10 rounded-full" />
+                    <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-[76px] lg:h-[80px] flex items-center justify-between relative">
+                        <div className="w-[44px] h-[44px] rounded-full bg-gray-100 dark:bg-white/10 animate-pulse" />
+                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+                            <div className="h-5 w-32 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                         </div>
-                        <div className="w-11 h-11 rounded-full bg-gray-100 dark:bg-white/10 lg:w-24 lg:h-10 lg:rounded-full" />
+                        <div className="hidden lg:block w-[44px] h-[44px] rounded-full bg-gray-100 dark:bg-white/10 animate-pulse" />
                     </div>
                 </div>
                 
                 {/* Content Area */}
-                <div className="pt-24 max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pb-20">
+                <div className="pt-[100px] max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pb-20">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
                         {[...Array(8)].map((_, i) => (
                             <ListingSkeleton key={i} viewMode="grid" index={i} />
@@ -363,13 +362,12 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
 
             {/* Header Skeleton */}
             <div className={`fixed top-0 left-0 right-0 z-50`}>
-                <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-12 md:h-16 flex items-center justify-between relative">
-                    <div className="w-11 h-11 rounded-full bg-white dark:bg-white/10 shadow-sm" />
-                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-                        <div className="h-4 w-32 bg-white/20 rounded-full" />
-                        <div className="h-3 w-16 bg-white/20 rounded-full" />
+                <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-[76px] lg:h-[80px] flex items-center justify-between relative">
+                    <div className="w-[44px] h-[44px] rounded-full bg-white dark:bg-white/10 shadow-sm animate-pulse" />
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+                        <div className="h-5 w-32 bg-white/20 rounded-full animate-pulse" />
                     </div>
-                    <div className="w-24 h-10 rounded-full bg-white dark:bg-white/10 shadow-sm" />
+                    <div className="hidden lg:block w-[44px] h-[44px] rounded-full bg-white dark:bg-white/10 shadow-sm animate-pulse" />
                 </div>
             </div>
 
@@ -555,21 +553,21 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
                 <div className="absolute inset-0 bg-black/50" />
             </div>
 
-            {/* Header — no border, transparent */}
-            <header className="relative flex-none z-10">
-                <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-20">
+            {/* Header — standard size */}
+            <header className="relative flex-none z-10 h-[76px] lg:h-[80px]">
+                <div className="max-w-[2520px] mx-auto w-full h-full flex items-center justify-between px-4 md:px-6 lg:px-20">
                     <button
                         onClick={() => setGalleryOpen(false)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
+                        className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
                     >
-                        <ArrowLeftIcon className="w-6 h-6 md:w-5 md:h-5 text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform" />
+                        <ArrowLeftIcon className="w-5 h-5 text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
                     </button>
 
-                    <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-white truncate max-w-[50vw] pointer-events-none">
+                    <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-bold text-white truncate max-w-[50vw] pointer-events-none">
                         {collection?.name}
                     </span>
 
-                    <div className="w-10" />
+                    <div className="w-[44px]" />
                 </div>
             </header>
 

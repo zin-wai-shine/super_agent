@@ -88,25 +88,33 @@ const CollectionsPage = () => {
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
             <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
-                {/* Header Section: Back button, Centered Title, Categories Button */}
-                <div className={`sticky top-0 z-40 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md py-5 mb-5 md:mb-10 flex items-center justify-between min-h-[48px] -mx-6 px-6 md:mx-0 md:px-0 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
+                {/* Header Section: Standardized Navigation with Loading Skeleton */}
+                <div className={`sticky top-0 z-40 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md mb-5 md:mb-10 flex items-center justify-between h-[76px] lg:h-[80px] -mx-6 px-6 md:mx-0 md:px-0 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all group"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
+                        {loading ? (
+                            <div className="w-[44px] h-[44px] rounded-full bg-gray-100 dark:bg-white/10 animate-pulse" />
+                        ) : (
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
+                            >
+                                <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
+                            </button>
+                        )}
                     </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none text-center min-w-0 px-4">
-                        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
-                            {activeCategoryName || categories[0]?.name || 'Popular Collections'}
-                        </h1>
+                        {loading ? (
+                            <div className="h-5 w-32 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
+                        ) : (
+                            <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                                {activeCategoryName || categories[0]?.name || 'Popular Collections'}
+                            </h1>
+                        )}
                     </div>
 
                     {/* Categories Trigger Button placeholder to maintain centering */}
-                    <div className="w-10 h-10"></div>
+                    <div className="w-[44px] h-[44px]"></div>
                 </div>
 
                 {/* Staggered Per-Card Discovery Grid */}

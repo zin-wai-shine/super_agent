@@ -38,8 +38,24 @@ const BannerDetail = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+            <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark pb-20 animate-pulse">
+                {/* Header Skeleton */}
+                <div className="bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 sticky top-0 z-10">
+                    <div className="max-w-4xl mx-auto px-4 h-[76px] flex items-center justify-between">
+                        <div className="w-[44px] h-[44px] rounded-full bg-gray-100 dark:bg-white/10" />
+                        <div className="w-32 h-5 rounded-full bg-gray-100 dark:bg-white/10" />
+                        <div className="w-[44px] h-[44px] rounded-full bg-gray-100 dark:bg-white/10" />
+                    </div>
+                </div>
+                <div className="max-w-4xl mx-auto px-4 mt-8">
+                    <div className="bg-white dark:bg-dashboard-card rounded-2xl overflow-hidden shadow-xl border border-gray-100 dark:border-white/10 h-[300px] bg-gray-100 dark:bg-white/5" />
+                    <div className="mt-8 bg-white dark:bg-dashboard-card rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-white/10 space-y-4">
+                        <div className="h-8 w-2/3 bg-gray-100 dark:bg-white/5 rounded-full" />
+                        <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full" />
+                        <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full" />
+                        <div className="h-4 w-3/4 bg-gray-100 dark:bg-white/5 rounded-full" />
+                    </div>
+                </div>
             </div>
         );
     }
@@ -59,19 +75,19 @@ const BannerDetail = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-dashboard-dark pb-20">
             {/* Header / Navigation */}
             <div className="bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-4xl mx-auto px-4 h-[76px] lg:h-[80px] flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 transition-all -ml-2 group"
+                        className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                     >
-                        <ArrowLeftIcon className="w-5 h-5 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+                        <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                     </button>
                     <button
                         onClick={handleShare}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+                        className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98]"
                         title="Share"
                     >
-                        <ShareIcon className="w-5 h-5" />
+                        <ShareIcon className="w-5 h-5 text-gray-800 dark:text-white" />
                     </button>
                 </div>
             </div>

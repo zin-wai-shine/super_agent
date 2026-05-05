@@ -121,6 +121,7 @@ const SavedListingsPage = () => {
     });
     const [removingId, setRemovingId] = useState(null);
     const [isDesktop, setIsDesktop] = useState(false);
+    const [mobileScrolled, setMobileScrolled] = useState(false);
     
     // Persistent group counts to prevent skeleton flicker on navigation/reload
     const [cachedCounts] = useState(() => {
@@ -333,8 +334,9 @@ const SavedListingsPage = () => {
                             {currentGroup && !isDesktop && (
                                 <div className="fixed inset-0 z-[200] bg-white dark:bg-dashboard-dark flex flex-col h-[100dvh]">
                                     {/* App-style Mobile Header */}
-                                    <div className="flex-shrink-0 sticky top-0 bg-white/90 dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 z-20">
-                                        <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 relative">
+                                    <div className={`flex-shrink-0 sticky top-0 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b transition-colors duration-300 ${mobileScrolled ? 'border-gray-100 dark:border-white/10' : 'border-transparent'} z-20`}>
+                                        <div className="max-w-[1440px] mx-auto w-full h-[76px] flex items-center justify-between px-4 relative">
+                                            {/* Back Button */}
                                             <button
                                                 onClick={() => {
                                                     const newParams = new URLSearchParams(searchParams);
@@ -342,24 +344,26 @@ const SavedListingsPage = () => {
                                                     setSearchParams(newParams);
                                                 }}
                                                 disabled={initialLoading}
-                                                className={`flex items-center justify-center min-w-[42px] min-h-[42px] -ml-2 rounded-full text-gray-900 dark:text-white transition-all ${initialLoading || !activeGroup ? 'bg-white dark:bg-dashboard-card shadow-sm animate-pulse' : 'bg-white dark:bg-dashboard-card shadow-sm hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95'}`}
+                                                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full border transition-all duration-300 active:scale-[0.98] ${initialLoading || !activeGroup ? 'bg-gray-100 dark:bg-white/10 border-transparent animate-pulse' : 'bg-white dark:bg-dashboard-card border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]'}`}
                                             >
-                                                {initialLoading || !activeGroup ? (
-                                                    <div className="w-5 h-0.5 bg-gray-200 dark:bg-white/10 rounded-full" />
-                                                ) : (
-                                                    <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                                                {!(initialLoading || !activeGroup) && (
+                                                    <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white" strokeWidth={2} />
                                                 )}
                                             </button>
+
+                                            {/* Centered Title */}
                                             <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
                                                 {initialLoading || !activeGroup ? (
-                                                    <div className="h-5 w-24 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="h-5 w-24 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                                                 ) : (
-                                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
+                                                    <h2 className="text-[17px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
                                                 )}
                                             </div>
-                                            <div className="text-[13px] font-semibold text-gray-500 whitespace-nowrap -mr-1">
+
+                                            {/* Right: Count */}
+                                            <div className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                 {initialLoading || !activeGroup ? (
-                                                    <div className="h-4 w-12 bg-gray-200 dark:bg-white/10 rounded-full animate-pulse" />
+                                                    <div className="h-4 w-14 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                                                 ) : (
                                                     <>{activeGroup?.items.length || 0} places</>
                                                 )}
@@ -367,7 +371,10 @@ const SavedListingsPage = () => {
                                         </div>
                                     </div>
                                     {/* Scrollable Content */}
-                                    <div className="flex-1 overflow-y-auto">
+                                    <div
+                                        className="flex-1 overflow-y-auto"
+                                        onScroll={(e) => setMobileScrolled(e.currentTarget.scrollTop > 10)}
+                                    >
                                         <div className="px-5 pt-6 pb-24">
                                             {initialLoading || !activeGroup ? (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 animate-fill-fast">
@@ -385,6 +392,7 @@ const SavedListingsPage = () => {
                                                                 showSave={true}
                                                                 initialSaved={true}
                                                                 onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
+                                                                to={`?detail=${listing.id}`}
                                                             />
                                                         </div>
                                                     ))}

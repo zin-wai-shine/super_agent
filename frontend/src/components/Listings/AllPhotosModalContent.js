@@ -297,18 +297,18 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                     <div className="absolute inset-0 bg-black/50" />
                 </div>
 
-                {/* Header — no border, transparent */}
-                <header className="relative flex-none z-10">
-                    <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 h-[64px] md:px-8 lg:px-20">
+                {/* Header — standard size */}
+                <header className="relative flex-none z-10 h-[76px] lg:h-[80px]">
+                    <div className="max-w-[2520px] mx-auto w-full h-full flex items-center justify-between px-4 md:px-6 lg:px-20">
                         <button
                             type="button"
                             onClick={() => setFocusedImageIndex(null)}
                             className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
                         >
-                            <ArrowLeftIcon className="w-5 h-5 text-white transition-transform" strokeWidth={2.5} />
+                            <ArrowLeftIcon className="w-5 h-5 text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
                         </button>
 
-                        <span className="absolute left-1/2 -translate-x-1/2 text-[16px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
+                        <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
                             {focusedSectionTitle}
                         </span>
 

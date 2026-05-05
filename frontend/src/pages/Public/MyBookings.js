@@ -164,9 +164,9 @@ const MyBookings = () => {
                         </p>
                     </div>
 
-                    {/* Status filter — pill chips (no select box) */}
+                    {/* Status filter — pill chips matching FilterBar button design */}
                     <div className="w-full">
-                        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+                        <div className="flex flex-wrap gap-2.5" role="tablist" aria-label="Filter by status">
                             {[
                                 { value: 'all', label: 'All' },
                                 { value: 'pending', label: 'Pending' },
@@ -180,9 +180,18 @@ const MyBookings = () => {
                                     role="tab"
                                     aria-selected={filter === value}
                                     onClick={() => setFilter(value)}
-                                    className={`min-h-[44px] px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-[0.98] ${filter === value
-                                        ? 'bg-slate-900 text-white shadow-md dark:bg-white dark:text-dashboard-dark'
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
+                                    className={`h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                        transition-all duration-300 ease-out
+                                        active:scale-[0.98]
+                                        focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2
+                                        ${filter === value
+                                            ? 'bg-[#222222] dark:bg-white text-white dark:text-dashboard-dark border border-[#222222] dark:border-white shadow-md'
+                                            : `bg-white dark:bg-dashboard-card sm:bg-[#F9FAFC] dark:sm:bg-dashboard-card/80
+                                               border border-gray-200 dark:border-white/10 sm:border-primary-500/30
+                                               text-[#222222] dark:text-white
+                                               hover:bg-white dark:hover:bg-dashboard-hover sm:hover:bg-white
+                                               hover:border-[#222222] dark:hover:border-white/40
+                                               hover:shadow-md hover:-translate-y-[1px]`
                                         }`}
                                 >
                                     {label}
@@ -322,14 +331,29 @@ const MyBookings = () => {
                                                         e.stopPropagation();
                                                         setCancellationModal({ open: true, appointmentId: appointment.id, reason: '', submitting: false });
                                                     }}
-                                                    className="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-sm font-bold rounded-full transition-all duration-300"
+                                                    className="h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                                        bg-white dark:bg-dashboard-card
+                                                        border border-gray-200 dark:border-white/10
+                                                        text-rose-500 dark:text-rose-400
+                                                        hover:border-rose-400 dark:hover:border-rose-400/60
+                                                        hover:bg-rose-50 dark:hover:bg-rose-500/10
+                                                        hover:shadow-md hover:-translate-y-[1px]
+                                                        transition-all duration-300 ease-out active:scale-[0.98]"
                                                 >
                                                     Cancel
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => navigate(`/listings/${appointment.listing_id}?bookingId=${appointment.id}`)}
-                                                className="px-5 py-2.5 bg-[#222] hover:bg-black text-white text-sm font-bold rounded-full transition-all duration-300 flex items-center gap-2 group/btn"
+                                                className="h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                                    bg-[#222222] dark:bg-white
+                                                    border border-[#222222] dark:border-white
+                                                    text-white dark:text-dashboard-dark
+                                                    hover:bg-black dark:hover:bg-gray-100
+                                                    hover:border-black dark:hover:border-gray-100
+                                                    hover:shadow-md hover:-translate-y-[1px]
+                                                    transition-all duration-300 ease-out active:scale-[0.98]
+                                                    flex items-center gap-2 group/btn"
                                             >
                                                 View Details
                                                 <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
@@ -395,18 +419,32 @@ const MyBookings = () => {
                                 <button
                                     disabled={cancellationModal.submitting}
                                     onClick={() => setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false })}
-                                    className="flex-1 px-5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 font-bold rounded-full transition-all duration-300 active:scale-95 text-sm"
+                                    className="flex-1 h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                        bg-white dark:bg-dashboard-card
+                                        border border-gray-200 dark:border-white/10
+                                        text-[#222222] dark:text-white
+                                        hover:border-[#222222] dark:hover:border-white/40
+                                        hover:shadow-md hover:-translate-y-[1px]
+                                        transition-all duration-300 ease-out active:scale-[0.98]
+                                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                                 >
                                     Go Back
                                 </button>
                                 <button
                                     disabled={!cancellationModal.reason.trim() || cancellationModal.submitting}
                                     onClick={handleCancelSubmit}
-                                    className={`flex-1 px-5 py-3.5 font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 text-sm ${
-                                        !cancellationModal.reason.trim() || cancellationModal.submitting
-                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 active:scale-[0.98]'
-                                    }`}
+                                    className={`flex-1 h-[44px] px-5 rounded-full text-[13px] font-semibold
+                                        transition-all duration-300 ease-out
+                                        flex items-center justify-center gap-2
+                                        ${!cancellationModal.reason.trim() || cancellationModal.submitting
+                                            ? 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-white/10 cursor-not-allowed'
+                                            : `bg-rose-600 dark:bg-rose-600
+                                               border border-rose-600 dark:border-rose-600
+                                               text-white
+                                               hover:bg-rose-700 hover:border-rose-700
+                                               hover:shadow-md hover:shadow-rose-600/20 hover:-translate-y-[1px]
+                                               active:scale-[0.98]`
+                                        }`}
                                 >
                                     {cancellationModal.submitting ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

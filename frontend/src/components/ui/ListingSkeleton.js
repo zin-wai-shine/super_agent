@@ -106,106 +106,112 @@ const GroupedSavedCategorySkeleton = () => {
 
 const DetailSkeleton = ({ status }) => {
     const skeletonStyle = { opacity: 1 };
-    const getStatusColor = (s) => {
-        if (!s) return 'bg-emerald-100/40 dark:bg-emerald-900/10';
-        const statusLower = s.toLowerCase();
-        if (statusLower === 'confirmed' || statusLower === 'completed') return 'bg-emerald-500 text-white';
-        if (statusLower === 'pending') return 'bg-amber-500 text-white';
-        if (statusLower === 'cancelled' || statusLower === 'rejected') return 'bg-red-500 text-white';
-        return 'bg-gray-100 dark:bg-white/10';
-    };
 
     return (
         <div className="w-full flex flex-col min-h-screen bg-white dark:bg-dashboard-dark" style={skeletonStyle}>
-            <div className="hidden lg:flex items-center justify-between px-20 py-8 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark">
-                <div className="h-10 w-10 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-fast" />
-                <div className="h-6 w-32 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-med" />
-                <div className="flex gap-4">
-                    <div className="h-10 w-10 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                    <div className="h-10 w-10 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+            {/* Desktop Header Skeleton */}
+            <div className="hidden lg:flex items-center justify-between px-20 h-[80px] border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark sticky top-0 z-[100]">
+                <div className="flex items-center gap-2">
+                    {/* Back button & Home button group */}
+                    <div className="h-[44px] w-[44px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-fast" />
+                    <div className="h-[44px] w-[120px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
                 </div>
-            </div>
-
-            <div className="lg:hidden relative w-full h-[55vh] bg-gray-100 dark:bg-white/5 animate-fill-fast overflow-hidden">
-                {/* Back Button Skeleton */}
-                <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                    <div className="w-5 h-0.5 bg-gray-100 dark:bg-white/10 rounded-full" />
-                </div>
-                <div className="absolute top-4 right-4 flex gap-2">
-                    <div className="w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                        <div className="w-4 h-4 bg-gray-100 dark:bg-white/10 rounded-full" />
+                <div className="flex items-center gap-6">
+                    {/* Contact & Booking group */}
+                    <div className="flex items-center gap-2 pr-2">
+                        <div className="h-[44px] w-[110px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                        <div className="h-[44px] w-[130px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-white dark:bg-white/20 shadow-sm animate-pulse flex items-center justify-center">
-                        <div className="w-4 h-4 bg-gray-100 dark:bg-white/10 rounded-full" />
+                    {/* Save & Share group */}
+                    <div className="flex items-center gap-2">
+                        <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                        <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-[1440px] mx-auto w-full px-0 md:px-12 lg:px-20 relative z-10">
-                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-20 lg:mt-0 px-0 py-10 lg:px-0 lg:py-8 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] lg:shadow-none min-h-[60vh]">
-                    <div className="flex flex-col gap-4 mb-8 px-6 lg:px-0">
-                        <div className="hidden lg:block h-6 w-24 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-fast" />
-                        <div className="h-9 lg:h-12 w-3/4 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+            {/* Mobile Hero / Gallery Placeholder */}
+            <div className="lg:hidden relative w-full h-[45vh] bg-gray-100 dark:bg-white/5 animate-fill-fast overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[76px] px-4 flex items-center justify-between z-10">
+                    <div className="w-[44px] h-[44px] rounded-full bg-white/40 dark:bg-white/20 animate-pulse shadow-sm" />
+                    <div className="flex items-center gap-2">
+                        <div className="w-[44px] h-[44px] rounded-full bg-white/40 dark:bg-white/20 animate-pulse shadow-sm" />
+                        <div className="w-[44px] h-[44px] rounded-full bg-white/40 dark:bg-white/20 animate-pulse shadow-sm" />
+                    </div>
+                </div>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 h-6 w-16 bg-black/20 rounded-full animate-pulse" />
+            </div>
+
+            <div className="max-w-[1440px] mx-auto w-full px-0 md:px-8 lg:px-20 relative z-10">
+                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-10 lg:mt-0 px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 min-h-[60vh]">
+                    
+                    {/* Title & Info Section */}
+                    <div className="flex flex-col gap-1 mb-8 px-4 lg:px-0">
+                        {/* Title */}
+                        <div className="h-9 lg:h-11 w-3/4 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med mb-2" />
                         
-                        <div className="flex flex-col gap-5">
+                        {/* Price & Badge */}
+                        <div className="flex flex-col gap-6">
                             <div className="flex items-baseline gap-2">
-                                <div className="h-8 w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                                <div className="h-4 w-12 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-slow" />
+                                <div className="h-9 w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                                <div className="h-5 w-16 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-slow" />
                             </div>
                             
-                            {/* Flush Badge */}
-                            <div className="-mx-0">
-                                <div className="h-12 w-[55%] bg-gray-100/50 dark:bg-white/5 rounded-r-full flex items-center pl-0 pr-4 animate-pulse">
-                                    <div className="h-6 w-6 bg-gray-200/50 dark:bg-white/10 rounded-full mr-2 ml-4" />
-                                    <div className="h-3 w-24 bg-gray-200/50 dark:bg-white/10 rounded-full" />
+                            {/* Standard Pill Badge */}
+                            <div className="h-[44px] w-[180px] bg-gray-50 dark:bg-white/10 rounded-full animate-fill-fast" />
+                        </div>
+                    </div>
+
+                    {/* Gallery - Desktop Bento Grid */}
+                    <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] w-full rounded-[24px] overflow-hidden mb-12 shadow-sm border border-gray-100 dark:border-white/5">
+                        <div className="col-span-2 row-span-2 bg-gray-100 dark:bg-white/5 animate-fill-fast" />
+                        <div className="col-span-1 row-span-1 bg-gray-50 dark:bg-white/10 animate-fill-med" />
+                        <div className="col-span-1 row-span-1 bg-gray-50 dark:bg-white/10 animate-fill-med" />
+                        <div className="col-span-1 row-span-1 bg-gray-50 dark:bg-white/10 animate-fill-slow" />
+                        <div className="col-span-1 row-span-1 bg-gray-50 dark:bg-white/10 animate-fill-slow flex items-center justify-center">
+                            <div className="h-[44px] w-32 bg-white/10 rounded-full" />
+                        </div>
+                    </div>
+
+                    {/* Features Card Layout */}
+                    <div className="px-4 lg:px-0 mb-12">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 border border-gray-100 dark:border-white/10 rounded-[24px] divide-x-0 lg:divide-x divide-gray-100 dark:divide-white/5 overflow-hidden">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={`feat-${i}`} className="p-6 flex items-center gap-4">
+                                    <div className="h-8 w-8 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-slow" />
+                                    <div className="h-5 w-24 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-slow" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Description Area */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 px-4 lg:px-0">
+                        <div className="lg:col-span-8 space-y-10">
+                            <div className="space-y-6">
+                                <div className="h-7 w-48 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                                <div className="space-y-4">
+                                    <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
+                                    <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
+                                    <div className="h-4 w-4/5 bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="px-6 lg:px-0">
-                        <div className="hidden lg:grid grid-cols-4 grid-rows-2 gap-3 h-[400px] w-full rounded-[24px] overflow-hidden mb-12">
-                            <div className="col-span-2 row-span-2 bg-gray-100 dark:bg-white/5 animate-fill-fast" />
-                            <div className="bg-gray-50 dark:bg-white/10 animate-fill-med" />
-                            <div className="bg-gray-50 dark:bg-white/10 animate-fill-med" />
-                            <div className="bg-gray-50 dark:bg-white/10 animate-fill-slow" />
-                            <div className="bg-gray-50 dark:bg-white/10 animate-fill-slow" />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        <div className="lg:col-span-8 space-y-10">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-8 pt-4">
-                                {[...Array(6)].map((_, i) => (
-                                    <div key={`feat-${i}`} className="flex items-center gap-3">
-                                        <div className="h-6 w-6 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-slow" />
-                                        <div className="h-4 w-24 bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="border-t border-gray-100 dark:border-white/10 pt-10 space-y-4">
-                                <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
-                                <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
-                                <div className="h-4 w-2/3 bg-gray-50 dark:bg-white/5 rounded-full animate-fill-slow" />
-                            </div>
-                        </div>
+                        {/* Sidebar map/info box skeleton */}
                         <div className="hidden lg:block lg:col-span-4 h-[400px] bg-gray-50 dark:bg-white/5 rounded-[32px] animate-fill-slow" />
                     </div>
                 </div>
             </div>
 
+            {/* Mobile Bottom Bar Fixed Skeleton */}
             <div className="lg:hidden fixed bottom-0 left-0 right-0 h-[80px] bg-white dark:bg-dashboard-card border-t border-gray-100 dark:border-white/10 px-6 py-4 flex items-center justify-between z-[100]">
                 <div className="flex flex-col gap-1">
                     <div className="h-6 w-24 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
                     <div className="h-3 w-12 bg-gray-50 dark:bg-white/10 rounded-full animate-fill-slow" />
                 </div>
                 <div className="flex gap-2">
-                    <div className="h-12 w-24 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center relative overflow-hidden">
-                        <div className="h-2 w-12 bg-black/10 dark:bg-white/10 rounded-[100px] animate-pulse" />
-                    </div>
-                    <div className="h-12 w-32 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center relative overflow-hidden">
-                        <div className="h-2 w-16 bg-black/10 dark:bg-white/10 rounded-[100px] animate-pulse" />
-                    </div>
+                    <div className="h-[44px] w-24 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                    <div className="h-[44px] w-32 bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
                 </div>
             </div>
         </div>
