@@ -111,13 +111,15 @@ const DashboardLayout = () => {
                 <div className="flex items-center lg:hidden z-20">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 -ml-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                        className="p-2 -ml-2 w-12 h-12 flex items-center justify-center rounded-full text-gray-500 bg-gray-100 dark:bg-dashboard-card hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 ease-out border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[0.5px] active:scale-[0.98]"
                     >
-                        {sidebarOpen ? (
-                            <XMarkIcon className="w-7 h-7" />
-                        ) : (
-                            <Bars3Icon className="w-7 h-7" />
-                        )}
+                        <div className={`transition-transform duration-300 ${sidebarOpen ? 'rotate-90' : 'rotate-0'}`}>
+                            {sidebarOpen ? (
+                                <XMarkIcon className="w-7 h-7" />
+                            ) : (
+                                <Bars3Icon className="w-7 h-7" />
+                            )}
+                        </div>
                     </button>
                 </div>
 

@@ -1,5 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { ArrowLeftIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { TbSmartHome } from "react-icons/tb";
+import { useNavigate } from 'react-router-dom';
 import Logo from '../Common/Logo';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
@@ -112,6 +114,7 @@ function getSectionTitleForImage(img) {
 }
 
 export default function AllPhotosModalContent({ images, initialIndex, onClose, isDesktop = false }) {
+    const navigate = useNavigate();
     const scrollRef = useRef(null);
     const sectionRefs = useRef({});
     const [activeSectionTitle, setActiveSectionTitle] = useState('');
@@ -199,12 +202,15 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         }
     };
 
+    const [scrolled, setScrolled] = useState(false);
+
     // Show section title in nav bar center based on scroll position (list view only)
     useEffect(() => {
         const container = scrollRef.current;
         if (!container || !sections.length || focusedImageIndex !== null) return;
         const updateActiveSection = () => {
             const scrollTop = container.scrollTop;
+            setScrolled(scrollTop > 20);
             const offset = 120;
             let active = sections[0]?.title ?? '';
             for (const section of sections) {
@@ -293,20 +299,20 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
                 {/* Header — no border, transparent */}
                 <header className="relative flex-none z-10">
-                    <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 py-3 md:px-8 md:py-4 lg:px-20">
+                    <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 h-[64px] md:px-8 lg:px-20">
                         <button
                             type="button"
                             onClick={() => setFocusedImageIndex(null)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
+                            className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
                         >
-                            <ArrowLeftIcon className={`${isDesktop ? 'w-5 h-5' : 'w-6 h-6 md:w-6 md:h-6'} text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform`} />
+                            <ArrowLeftIcon className="w-5 h-5 text-white transition-transform" strokeWidth={2.5} />
                         </button>
 
-                        <span className={`absolute left-1/2 -translate-x-1/2 ${isDesktop ? 'text-base font-normal' : 'text-lg md:text-base font-semibold'} text-white truncate max-w-[50vw] pointer-events-none`}>
+                        <span className="absolute left-1/2 -translate-x-1/2 text-[16px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
                             {focusedSectionTitle}
                         </span>
 
-                        <div className="w-10" />
+                        <div className="w-[44px]" />
                     </div>
                 </header>
 
@@ -341,7 +347,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
                                         className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
                                     >
-                                        <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" strokeWidth={2} />
+                                        <ChevronLeftIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
                                 )}
                                 {currentIdx < total - 1 && (
@@ -350,7 +356,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         onClick={(e) => { e.stopPropagation(); goNextImage(); }}
                                         className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
                                     >
-                                        <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                                        <ChevronRightIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
                                 )}
                             </>
@@ -393,19 +399,35 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             ` }} />
-            {!isDesktop && (
-            <header className="relative flex-none z-20 bg-white dark:bg-dashboard-dark shrink-0">
-                    <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 py-3 lg:py-4">
-                        <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-transparent dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/20 rounded-full group">
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white stroke-[1.5] group-hover:-translate-x-0.5 transition-transform" />
+            <header className={`sticky top-0 flex-none z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md transition-all duration-300 border-b ${scrolled ? 'border-gray-100 dark:border-white/5' : 'border-transparent'}`}>
+                <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 h-[64px] lg:h-[80px]">
+                    <div className="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
+                        >
+                            <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white transition-transform" strokeWidth={2} />
                         </button>
-                        <span className="absolute left-1/2 -translate-x-1/2 text-lg md:text-base font-semibold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none">
-                            {activeSectionTitle || 'Photo tour'}
-                        </span>
-                        <div className="w-10" />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose && onClose();
+                                navigate('/');
+                            }}
+                            className="hidden lg:flex px-5 h-[44px] items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
+                            title="Go to Home"
+                        >
+                            <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
+                        </button>
                     </div>
-                </header>
-            )}
+                    <span className="absolute left-1/2 -translate-x-1/2 text-[16px] lg:text-[18px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none text-center">
+                        {activeSectionTitle || 'Photo tour'}
+                    </span>
+                    <div className="w-[44px]" />
+                </div>
+            </header>
 
             <div ref={scrollRef} className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`} style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">
@@ -415,13 +437,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         <div className="min-h-full md:flex md:flex-col">
                             <div className="md:flex-shrink-0 md:min-h-[30%]">
                                 <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between relative">
-                                    {isDesktop && (
-                                        <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 group">
-                                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
-                                        </button>
-                                    )}
                                     {!isDesktop && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Photo tour</h1>}
-                                    {isDesktop && <div className="w-10" />}
                                 </div>
                                 <div className="pb-4 md:py-4">
                                     <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>

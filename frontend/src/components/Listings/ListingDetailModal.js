@@ -81,7 +81,12 @@ const ListingDetailModal = () => {
                 className={MODAL_SIZE_CLASS}
             >
                 <div className="h-full relative bg-white dark:bg-dashboard-dark">
-                    <div className="h-full overflow-y-auto modal-scrollable">
+                    <div 
+                        className="h-full overflow-y-auto modal-scrollable bg-white dark:bg-dashboard-dark"
+                        onScroll={(e) => {
+                            window.dispatchEvent(new CustomEvent('modalScroll', { detail: { scrollTop: e.target.scrollTop } }));
+                        }}
+                    >
                         <Suspense fallback={
                             <div className="h-full bg-white dark:bg-dashboard-dark">
                                 <ListingSkeleton viewMode="detail" status={status} />

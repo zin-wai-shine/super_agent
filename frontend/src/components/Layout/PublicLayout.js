@@ -90,6 +90,8 @@ const PublicLayout = () => {
     const isListingsPath = (pathname) =>
         pathname === '/listings' || (!isMainDomain && pathname === '/');
     const isOnListings = isListingsPath(location.pathname);
+    const isCollectionsPath = location.pathname === '/collections';
+    const isListingDetailPage = location.pathname.startsWith('/listings/') && !location.pathname.endsWith('/edit');
     const [navButtonVisible, setNavButtonVisible] = React.useState(isListingsPath(location.pathname));
     const [showViewPanel, setShowViewPanel] = React.useState(false);
 
@@ -630,7 +632,7 @@ const PublicLayout = () => {
 
             {/* Desktop: nav bar and filter bar — hidden on login/register; on mobile also hidden for Profile/Bookings/Saved via hideNavOnPage */}
             {!isAuthPage && !isCollectionDetailPage && !hideLayout && (
-                <div className={`hidden md:block z-[150] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${isCollectionDetailPage ? 'fixed w-full top-0' : 'sticky top-0'} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : `bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-none' : 'border-b border-transparent shadow-none'}`}`}>
+                <div className={`hidden md:block z-[150] transition-all duration-300 ${(isCollectionsPath || isListingDetailPage || (isSavedPage && searchParams.has('group'))) ? '' : (isVisible ? 'translate-y-0' : '-translate-y-full')} ${isCollectionDetailPage ? 'fixed w-full top-0' : (isCollectionsPath || isListingDetailPage || (isSavedPage && searchParams.has('group')) ? 'relative' : 'sticky top-0')} ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent border-transparent' : `bg-white dark:bg-dashboard-dark/80 backdrop-blur-xl ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-none' : 'border-b border-transparent shadow-none'}`}`}>
                     <nav
                         className={`transition-all duration-300 ${(!isScrolled && isCollectionDetailPage) ? 'bg-transparent backdrop-blur-none' : 'bg-white/80 dark:bg-transparent backdrop-blur-md'} ${activeMenu ? 'relative z-[300]' : ''} ${(appMenuOpen || userMenuOpen) ? 'relative z-[200]' : ''}`}
                         onMouseLeave={closeMenu}
@@ -737,11 +739,17 @@ const PublicLayout = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => setAppMenuOpen(!appMenuOpen)}
-                                                            className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dashboard-hover transition-colors shadow-sm dark:border dark:border-dashboard-border"
+                                                            className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-dashboard-card text-gray-700 dark:text-gray-400 hover:bg-white dark:hover:bg-dashboard-hover transition-all duration-300 ease-out border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98]"
                                                             aria-label="Open menu"
                                                             aria-expanded={appMenuOpen}
                                                         >
-                                                            <Bars3Icon className="w-6 h-6" strokeWidth={1.5} />
+                                                            <div className={`transition-transform duration-300 ${appMenuOpen ? 'rotate-90' : 'rotate-0'}`}>
+                                                                {appMenuOpen ? (
+                                                                    <XMarkIcon className="w-6 h-6" strokeWidth={1.5} />
+                                                                ) : (
+                                                                    <Bars3Icon className="w-6 h-6" strokeWidth={1.5} />
+                                                                )}
+                                                            </div>
                                                         </button>
                                                         {appMenuOpen && (
                                                             <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-dashboard-card rounded-[24px] border border-gray-100 dark:border-dashboard-border shadow-[0_10px_40px_-5px_rgba(0,0,0,0.15)] py-3 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[200]">

@@ -70,9 +70,9 @@ const CollectionGroup = ({
     if (groupCollections.length === 0) return null;
 
     return (
-        <div className="collection-group-section mb-8">
+        <div className="collection-group-section mb-2">
             {/* Header Section */}
-            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
+            <div className="flex items-center justify-between mb-2 px-6 md:px-1">
                 <div className="flex items-center gap-2">
                     <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                         {title}
@@ -116,7 +116,7 @@ const CollectionGroup = ({
             <div className="relative">
                 <div 
                     ref={scrollRef}
-                    className="flex overflow-x-auto gap-5 md:gap-5 pb-6 scrollbar-hide scroll-smooth px-6 md:px-1 scroll-px-6 md:scroll-px-1"
+                    className="flex overflow-x-auto gap-5 md:gap-5 pt-2 pb-6 scrollbar-hide scroll-smooth px-6 md:px-1 scroll-px-6 md:scroll-px-1"
                 >
                     {groupCollections.map((collection, i) => (
                         <div key={collection.id} className="relative flex-shrink-0 w-[180px] md:w-[200px]">
@@ -221,8 +221,8 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
     if (categories.length === 0) return null;
 
     return (
-        <div className="mb-8">
-            <div className="flex items-center justify-between mb-4 px-6 md:px-1">
+        <div className="mb-2">
+            <div className="flex items-center justify-between mb-2 px-6 md:px-1">
                 <div className="flex items-center gap-2">
                     <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
                         {title}
@@ -264,7 +264,7 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
 
             <div 
                 ref={categoriesScrollRef}
-                className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide px-6 md:px-1 scroll-smooth"
+                className="flex overflow-x-auto gap-4 pt-2 pb-6 scrollbar-hide px-6 md:px-1 scroll-smooth"
             >
                 {categories.slice(0, 10).map((category) => {
                     const Icon = MdIcons[category.icon] || 
@@ -279,7 +279,7 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                             onClick={() => onNavigate(`/collections/${category.id}`, { state: { loadingType: 'icon' } })}
                             className="flex-shrink-0 group cursor-pointer"
                         >
-                            <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white/80 dark:bg-dashboard-card/80 backdrop-blur-md border border-[#222222]/10 dark:border-white/5 flex flex-row items-center gap-3 transition-all duration-300 hover:bg-gray-50/80 dark:hover:bg-white/5 group-active:scale-95">
+                            <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-white dark:bg-dashboard-card/80 backdrop-blur-md border border-gray-200 dark:border-white/10 flex flex-row items-center gap-3 transition-all duration-300 ease-out hover:bg-white dark:hover:bg-dashboard-hover hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98]">
                                 <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
                                     <Icon className="w-5 h-5" />
                                 </div>
@@ -296,7 +296,7 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                         onClick={() => setIsAllOpen(true)}
                         className="flex-shrink-0 group cursor-pointer"
                     >
-                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 hover:opacity-90 group-active:scale-95 shadow-none">
+                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 ease-out hover:opacity-95 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98] shadow-none">
                             <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
                                 <FiGrid className="w-5 h-5" />
                             </div>
@@ -373,7 +373,7 @@ const CollectionBar = ({
     }, [collections]);
 
     return (
-        <div className="collection-section pt-4 pb-0 mb-2 -mx-6 md:mx-0">
+        <div className="collection-section pt-1 pb-0 mb-2 -mx-6 md:mx-0">
             {loading ? (
                 <div className="px-6 md:px-1 overflow-hidden">
                     {/* A. Popular Collections Skeleton Section */}

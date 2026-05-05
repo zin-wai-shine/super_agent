@@ -9,6 +9,8 @@ import {
     SparklesIcon,
     MapIcon,
     ChevronRightIcon,
+    Squares2X2Icon,
+    ListBulletIcon,
 } from '@heroicons/react/24/outline';
 import { BsSearch } from 'react-icons/bs';
 import Button from './Button';
@@ -330,7 +332,7 @@ const FilterBar = ({
                                 {/* Filters — now right after search box; honors isFocused (hidden when searching) */}
                                 {!isFocused && (
                                     <>
-                                    <div className={`h-[44px] flex items-center flex-shrink-0 ml-4 hidden ${isGoogleMapOpen ? 'md:flex' : 'lg:flex'}`}>
+                                    <div className={`h-[44px] flex items-center flex-shrink-0 ml-4 ${isGoogleMapOpen ? 'hidden md:flex' : 'flex'}`}>
                                         <button
                                             type="button"
                                             onClick={onOpenFilters}

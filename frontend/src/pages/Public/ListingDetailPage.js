@@ -72,7 +72,7 @@ import FilterBar from '../../components/ui/FilterBar';
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { TransitMapSVG } from '../../components/TransitMap/transit_map.svg.js';
-import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree, TbHammer } from "react-icons/tb";
+import { TbTrain, TbCurrencyBaht, TbAirConditioning, TbToolsKitchen2, TbPool, TbTree, TbHammer, TbSmartHome } from "react-icons/tb";
 import { LiaBedSolid } from "react-icons/lia";
 import { PiBathtub, PiWavesLight } from "react-icons/pi";
 import { RiStairsLine, RiFridgeLine } from "react-icons/ri";
@@ -416,19 +416,36 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     useEffect(() => {
         const handleResize = () => setIsDesktopView(window.innerWidth >= 1024);
         window.addEventListener('resize', handleResize);
-        
-        const handleScroll = () => {
-            if (window.scrollY > 10) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
+
+        let observer = null;
+
+        const handleModalScroll = (e) => {
+            setIsScrolled(e.detail.scrollTop > 10);
         };
-        window.addEventListener('scroll', handleScroll);
+
+        if (isModal) {
+            window.addEventListener('modalScroll', handleModalScroll);
+        } else {
+            observer = new IntersectionObserver(
+                ([entry]) => {
+                    setIsScrolled(!entry.isIntersecting);
+                },
+                { threshold: 0 }
+            );
+            
+            // Wait for next tick to ensure DOM is ready
+            setTimeout(() => {
+                const topElement = document.getElementById(`scroll-detector-${id}`);
+                if (topElement) observer.observe(topElement);
+            }, 100);
+        }
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            window.removeEventListener('scroll', handleScroll);
+            if (isModal) {
+                window.removeEventListener('modalScroll', handleModalScroll);
+            }
+            if (observer) observer.disconnect();
         };
     }, []);
 
@@ -1926,42 +1943,49 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
 
     return (
-        <div key={id} className={`min-h-screen bg-white dark:bg-dashboard-dark ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'} pb-24 lg:pb-0`}>
+        <div id={`listing-view-${id}`} key={id} className={`min-h-screen bg-white dark:bg-dashboard-dark ${!isModal ? 'animate-in fade-in duration-500 relative' : 'relative'} pb-24 lg:pb-0`}>
+            {/* Scroll Detector */}
+            {!isModal && <div id={`scroll-detector-${id}`} className="absolute top-[15px] left-0 right-0 h-[1px] pointer-events-none" />}
             {renderBookingOverlay()}
+            {/* Mobile Sticky Header */}
+            <div className={`lg:hidden fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-dashboard-dark shadow-sm border-b border-gray-100 dark:border-white/10' : 'bg-transparent border-b border-transparent'}`}>
+                <div className="flex items-center justify-between px-4 h-[76px]">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onClose ? onClose() : navigate(-1)}
+                            className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-[0.98] ${isScrolled ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222]' : 'bg-white dark:bg-dashboard-card shadow-md border border-transparent'}`}
+                        >
+                            <ArrowLeftIcon className="w-5 h-5 text-gray-900 dark:text-white" strokeWidth={2} />
+                        </button>
+                    </div>
+
+                    <h1 className={`text-[16px] font-bold text-gray-900 dark:text-white truncate px-4 text-center flex-1 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'}`}>
+                        {listing?.title ? (listing.title.length > 15 ? listing.title.substring(0, 15) + '.....' : listing.title) : ''}
+                    </h1>
+
+                    <div className="flex items-center gap-2">
+                        <PropertyShare
+                            property={listing}
+                            className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-[0.98] ${isScrolled ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222]' : 'bg-white dark:bg-dashboard-card shadow-md border border-transparent'}`}
+                            iconClassName="w-5 h-5 text-gray-900 dark:text-white"
+                        />
+                        <HeartButton
+                            isSaved={isSaved}
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-[0.98] ${isScrolled ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222]' : 'bg-white dark:bg-dashboard-card shadow-md border border-transparent'}`}
+                            iconSize={20}
+                        />
+                    </div>
+                </div>
+            </div>
+
             {/* Mobile Header (White Nav & Image Carousel) - Visible only on mobile/tablet */}
             {!isBookingOverlayOpen && (
                 <div 
                     className="lg:hidden w-full flex flex-col relative"
                     style={{ marginTop: 'calc(-1 * env(safe-area-inset-top))' }}
                 >
-                    {/* Float Top Nav for Mobile - Buttons over image */}
-                    <div 
-                        className="absolute top-0 left-0 right-0 w-full flex justify-between items-center px-4 z-[60] bg-transparent pointer-events-none"
-                        style={{ paddingTop: 'max(20px, calc(env(safe-area-inset-top) + 12px))' }}
-                    >
-                        <button
-                            onClick={() => onClose ? onClose() : navigate(-1)}
-                            className="flex items-center justify-center min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all pointer-events-auto"
-                            aria-label="Back"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
-                        </button>
-                        <div className="flex items-center gap-2 pointer-events-auto">
-                            <PropertyShare
-                                property={listing}
-                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all flex items-center justify-center"
-                                iconClassName="w-6 h-6 text-gray-900 dark:text-white"
-                            />
-                            <HeartButton
-                                isSaved={isSaved}
-                                onClick={handleToggleSave}
-                                disabled={savingListing}
-                                className="min-w-[42px] min-h-[42px] bg-white dark:bg-dashboard-card shadow-sm rounded-full text-gray-900 dark:text-white active:scale-90 transition-all flex items-center justify-center"
-                                iconSize={24}
-                            />
-                        </div>
-                    </div>
-
                     {/* Image Carousel - Native horizontal scroll with snapping */}
                     <div className="relative w-full h-[55vh] min-h-[380px] overflow-hidden">
                         <div
@@ -2028,12 +2052,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     {!isModal && (
                                         <div className={`hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-20 py-6 sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md -mx-4 md:-mx-8 lg:-mx-20 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
                                             <div className="flex items-center gap-6">
-                                                <button
-                                                    onClick={() => navigate(-1)}
-                                                    className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
-                                                >
-                                                    <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => navigate(-1)}
+                                                        className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                                                    >
+                                                        <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => navigate('/')}
+                                                        className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                                                        title="Go to Home"
+                                                    >
+                                                        <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                                                        <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
+                                                    </button>
+                                                </div>
 
                                                 <div className="flex items-center gap-2">
                                                     {/* Badges removed from desktop header for a cleaner look */}

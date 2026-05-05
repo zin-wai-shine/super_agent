@@ -38,7 +38,7 @@ const CollectionCard = ({
             className={`flex-shrink-0 group cursor-pointer ${className}`}
             onClick={handleClick}
         >
-            <div className={`relative aspect-[1/1] md:aspect-[4/3] rounded-[23px] overflow-hidden mb-3 transition-all duration-300 ${isSelected ? 'ring-1 ring-primary-500/20' : ''}`}>
+            <div className={`relative aspect-[1/1] md:aspect-[4/3] rounded-[23px] overflow-hidden mb-3 transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98] ${isSelected ? 'ring-1 ring-primary-500/20' : ''}`}>
                 {/* Image Section: Slides left-to-right INSIDE the container */}
                 {firstImage ? (
                     <div className="relative w-full h-full overflow-hidden bg-gray-100/50 dark:bg-white/5">

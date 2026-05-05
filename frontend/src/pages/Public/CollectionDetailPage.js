@@ -6,6 +6,8 @@ import ListingCard, { ListingImageSlider } from '../../components/Listings/Listi
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { ArrowLeftIcon, Square2StackIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { FiHome, FiImage } from "react-icons/fi";
+import { IoImagesOutline } from "react-icons/io5";
+import { TbSmartHome } from "react-icons/tb";
 import { getMediaUrl } from '../../utils/media';
 
 const CollectionDetailPage = () => {
@@ -197,7 +199,7 @@ const CollectionDetailPage = () => {
                 <div className="relative">
                     {/* Hero Section */}
                     <div 
-                        className="fixed top-0 left-0 right-0 w-full h-[65vh] lg:h-[500px] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0 cursor-pointer max-w-[2520px] mx-auto"
+                        className="fixed lg:static top-0 left-0 right-0 w-full h-[65vh] lg:h-[450px] overflow-hidden bg-gray-100 dark:bg-gray-800 z-0 cursor-pointer"
                         style={{ overflowX: 'hidden' }}
                         onClick={() => openGallery(0)}
                     >
@@ -212,21 +214,35 @@ const CollectionDetailPage = () => {
                                 <FiImage className="w-16 h-16 text-gray-300" />
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none" />
-                        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-20 pointer-events-none" />
+                        {/* Overlays - Hidden on desktop as per user request */}
+                        <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none lg:hidden" />
+                        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-20 pointer-events-none lg:hidden" />
+
+                        {/* Cinematic 'Shuttle' Blend Gradient (Desktop Only) */}
+                        <div className="hidden lg:block absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#F7F7F7] via-[#F7F7F7]/60 dark:from-dashboard-dark dark:via-dashboard-dark/60 to-transparent z-10 pointer-events-none" />
                     </div>
 
                     {/* Nav Header */}
                     <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || headerSticky ? 'bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/10' : 'bg-transparent'}`}>
-                        <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-16 md:h-24 flex items-center justify-between relative">
+                        <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 h-[76px] lg:h-[80px] flex items-center justify-between relative overflow-visible">
                             {/* Mobile Left Section: Back + Title */}
-                            <div className="flex items-center gap-3 lg:gap-4 overflow-hidden flex-1">
-                                <button
-                                    onClick={() => navigate(-1)}
-                                    className={`w-12 h-12 lg:w-10 lg:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 ${scrolled || headerSticky ? 'text-gray-900 dark:text-white bg-gray-50/50 dark:bg-white/5' : 'bg-white text-gray-900 shadow-md'}`}
-                                >
-                                    <ArrowLeftIcon className="w-6 h-6" strokeWidth={2} />
-                                </button>
+                            <div className="flex items-center gap-3 lg:gap-4 overflow-visible flex-1">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300 active:scale-[0.98] group ${scrolled || headerSticky ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]' : 'bg-white text-gray-900 shadow-md border border-transparent hover:-translate-y-[1px]'}`}
+                                    >
+                                        <ArrowLeftIcon className={`w-5 h-5 transition-transform ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`} strokeWidth={2} />
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/')}
+                                        className={`hidden lg:flex px-5 h-[44px] flex-shrink-0 items-center justify-center gap-2 rounded-full transition-all duration-300 active:scale-[0.98] group ${scrolled || headerSticky ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]' : 'bg-white text-gray-900 shadow-md border border-transparent hover:-translate-y-[1px]'}`}
+                                        title="Go to Home"
+                                    >
+                                        <TbSmartHome className={`w-[22px] h-[22px] transition-transform ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`} />
+                                        <span className={`text-[13px] font-bold tracking-tight ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`}>Go to Home</span>
+                                    </button>
+                                </div>
                                 
                                 {/* Mobile Title: Left-aligned, bold white when not scrolled */}
                                 <div className="lg:hidden truncate">
@@ -238,7 +254,7 @@ const CollectionDetailPage = () => {
 
                             {/* Desktop Center Title (Shows when scrolled) */}
                             <div className={`hidden lg:flex absolute left-1/2 -translate-x-1/2 items-baseline gap-2 text-center transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
-                                <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
+                                <h1 className="text-[17px] lg:text-[18px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
                                     {collection?.name}
                                 </h1>
                                 <span className="text-[12px] text-gray-400 font-medium tracking-wide whitespace-nowrap">
@@ -252,16 +268,19 @@ const CollectionDetailPage = () => {
                                     <span className="text-[13px] font-bold tracking-tight">{listings?.length} properties</span>
                                 </div>
 
-                                <button onClick={() => openGallery(0)} className={`hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105 active:scale-95 ${scrolled || headerSticky ? 'bg-gray-900 text-white' : 'bg-white text-gray-900 shadow-lg'}`}>
-                                    <FiImage className="w-4 h-4" />
-                                    <span className="text-[13px] font-bold">View Images</span>
+                                <button 
+                                    onClick={() => openGallery(0)} 
+                                    className={`hidden lg:flex items-center justify-center gap-2 px-6 h-[44px] rounded-full transition-all duration-300 active:scale-[0.98] group ${scrolled || headerSticky ? 'bg-[#1A1A1A] text-white border border-transparent hover:shadow-md hover:-translate-y-[1px]' : 'bg-white text-gray-900 shadow-md border border-transparent hover:-translate-y-[1px]'}`}
+                                >
+                                    <IoImagesOutline className="w-[22px] h-[22px]" />
+                                    <span className="text-[13px] font-bold tracking-tight">View Images</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     {/* Desktop Center Title Overlay */}
-                    <div className={`hidden lg:flex fixed top-[200px] left-0 right-0 z-20 flex-col items-center pointer-events-none transition-all duration-500 ${scrolled || headerSticky ? 'opacity-0 scale-95 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
+                    <div className={`hidden lg:flex absolute top-[180px] left-0 right-0 z-20 flex-col items-center pointer-events-none transition-all duration-500 ${scrolled || headerSticky ? 'opacity-0 scale-95 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
                         <h2 className="text-5xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] tracking-tight text-center">
                             {collection?.name}
                         </h2>
@@ -271,17 +290,17 @@ const CollectionDetailPage = () => {
                     </div>
 
                     {/* Content Section */}
-                    <div className="relative z-30 pointer-events-none">
-                        {/* High-Overlap Content Container */}
-                        <div className="h-[60vh] lg:h-[420px]" /> {/* Spacer */}
+                    <div className="relative z-30 pointer-events-none lg:pointer-events-auto">
+                        {/* High-Overlap Content Container - Reduced on desktop since hero is not fixed */}
+                        <div className="h-[60vh] lg:hidden" /> 
                         
-                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[28px] shadow-[0_-25px_60px_rgba(0,0,0,0.2)] min-h-screen relative -mt-16 lg:-mt-10 overflow-hidden pointer-events-auto">
+                        <div className="bg-[#F7F7F7] dark:bg-dashboard-dark rounded-t-[28px] lg:rounded-none shadow-[0_-25px_60px_rgba(0,0,0,0.2)] lg:shadow-none min-h-screen relative -mt-16 lg:mt-0 overflow-hidden pointer-events-auto">
                             {/* Mobile Drag Handle Area */}
                             <div className="lg:hidden flex flex-col items-center pt-4 pb-2">
                                 <div className="w-12 h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full" />
                             </div>
                             
-                            <div ref={resultsRef} className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pt-2 lg:pt-6 pb-20">
+                            <div ref={resultsRef} className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pt-2 lg:pt-12 pb-20">
                                 <ListingsGrid 
                                     listings={listings} 
                                     currentPage={currentPage}
