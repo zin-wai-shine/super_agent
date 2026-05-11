@@ -672,3 +672,51 @@ func (uc *UploadController) LinkFacilityMedia(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Facility images linked successfully", "count": len(facilityMedia)})
 }
 
+// ReorderMedia updates sort orders for multiple listing media records
+func (uc *UploadController) ReorderMedia(c *gin.Context) {
+	agentID, ok := middleware.GetAgentID(c)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent ID not found"})
+		return
+	}
+
+	var req []struct {
+		ID        string `json:"id"`
+		SortOrder int    `json:"sort_order"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := uc.db.Transaction(func(tx *gorm.DB) error {
+		for _, item := range req {
+			// Verify ownership through listing
+			var media models.Media
+			if err := tx.First(&media, "id = ?", item.ID).Error; err != nil {
+				return err
+			}
+
+			var listing models.Listing
+			if err := tx.Where("id = ? AND agent_id = ?", media.ListingID, agentID).First(&listing).Error; err != nil {
+				return fmt.Errorf("unauthorized")
+			}
+
+			if err := tx.Model(&models.Media{}).Where("id = ?", item.ID).Update("sort_order", item.SortOrder).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to reorder some media"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reorder media"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Media reordered successfully"})
+}

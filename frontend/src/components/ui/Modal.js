@@ -124,7 +124,7 @@ const Modal = ({
                 >
                     {hasHeader && (
                         <div className={`sticky top-0 z-[60] bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-white/10 flex-shrink-0 ${hideHeaderOnMobile ? 'hidden lg:flex' : 'flex'}`}>
-                            <div className={`relative flex items-center justify-between py-4 w-full max-w-[1440px] mx-auto min-h-[64px] ${fullBleedDesktop ? 'px-4 md:px-8 lg:px-20' : 'px-5 md:px-6'}`}>
+                            <div className={`relative flex items-center justify-between py-3 w-full max-w-[1440px] mx-auto min-h-[56px] ${fullBleedDesktop ? 'px-4 md:px-8 lg:px-20' : 'px-8'}`}>
                                 <div className="flex items-center gap-4 min-w-0 flex-1 z-20">
                                     {useBackButton && (
                                         <button
@@ -140,7 +140,7 @@ const Modal = ({
                                         </div>
                                     )}
                                     {title && (
-                                        <h3 className={`text-[17px] font-bold text-gray-900 dark:text-white truncate flex-shrink-0 ${(centerTitle || rightTitle || useBackButton) ? 'hidden' : 'block'}`}>
+                                        <h3 className={`text-[16px] font-bold text-gray-900 dark:text-white truncate flex-shrink-0 ${(centerTitle || rightTitle || useBackButton) ? 'hidden' : 'block'}`}>
                                             {title}
                                         </h3>
                                     )}
@@ -151,7 +151,7 @@ const Modal = ({
 
                                 {(centerTitle || useBackButton) && title && (
                                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[50%] z-10">
-                                        <h3 className="text-[17px] font-bold text-gray-900 dark:text-white truncate text-center">
+                                        <h3 className="text-[16px] font-bold text-gray-900 dark:text-white truncate text-center">
                                             {title}
                                         </h3>
                                     </div>

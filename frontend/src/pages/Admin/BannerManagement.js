@@ -381,7 +381,7 @@ const BannerManagement = () => {
 
                 return (
                     <div className="flex items-center space-x-4 py-1 whitespace-nowrap">
-                        <div className="w-24 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="w-24 h-14 bg-gray-100 dark:bg-gray-800 rounded-admin overflow-hidden border-admin shadow-sm">
                             <img src={fullImageUrl} alt={banner.title} className="w-full h-full object-cover" />
                         </div>
                         <div>
@@ -401,7 +401,7 @@ const BannerManagement = () => {
             header: 'Target',
             accessorKey: 'target_role',
             cell: ({ getValue }) => (
-                <span className="capitalize px-2 py-1 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border dark:border-gray-700 whitespace-nowrap">
+                <span className="capitalize px-2 py-1 rounded-admin text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-admin whitespace-nowrap">
                     {getValue()}
                 </span>
             )
@@ -410,7 +410,7 @@ const BannerManagement = () => {
             header: 'Status',
             accessorKey: 'is_active',
             cell: ({ getValue }) => (
-                <span className={`inline-flex items-center px-2 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${getValue() ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                <span className={`inline-flex items-center px-2 py-1 rounded-admin text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${getValue() ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
                     {getValue() ? 'Active' : 'Inactive'}
                 </span>
             )
@@ -435,21 +435,21 @@ const BannerManagement = () => {
                 <div className="flex items-center justify-end whitespace-nowrap gap-2.5">
                     <button
                         onClick={() => handlePreview(row.original)}
-                        className="p-2.5 text-gray-500 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition-all border border-gray-100/30 dark:border-gray-700 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-gray-500 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-admin transition-all border border-gray-100/30 dark:border-gray-700 shadow-sm flex items-center justify-center"
                         title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
                         title="Edit Banner"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete Banner"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -486,7 +486,7 @@ const BannerManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
                             <MegaphoneIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Banner Management
@@ -514,6 +514,24 @@ const BannerManagement = () => {
                             onChange={(val) => table.setPageSize(val)}
                             isSearchable={false}
                             components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
+                            }}
                         />
                     </div>
                 </div>
@@ -576,15 +594,15 @@ const BannerManagement = () => {
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-admin transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Clear Date Filter"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
-                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                            <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-admin overflow-hidden border-admin bg-white dark:bg-dashboard-card w-[350px]">
+                                <div className="flex items-center justify-between p-3 border-b border-admin">
                                     <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500"><ChevronLeftIcon className="w-5 h-5" /></button>
                                     <div className="flex items-center gap-2">
                                         <div className="w-32">
@@ -639,7 +657,7 @@ const BannerManagement = () => {
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-xl shadow-none hover:shadow-none transform-none"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[34px] text-[12px] rounded-admin shadow-none hover:shadow-none transform-none"
                     >
                         <PlusIcon className="w-4 h-4" />
                         <span>Add Banner</span>
@@ -648,7 +666,7 @@ const BannerManagement = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                 {banners.length === 0 ? (
                     <div className="py-20">
                         <EmptyState
@@ -659,12 +677,12 @@ const BannerManagement = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50/50 dark:bg-gray-800/20 border-b dark:border-gray-800">
+                        <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                            <thead className="bg-gray-50/50 dark:bg-gray-800/20">
                                 {table.getHeaderGroups().map(headerGroup => (
                                     <tr key={headerGroup.id}>
                                         {headerGroup.headers.map(header => (
-                                            <th key={header.id} className="px-8 py-5 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                                            <th key={header.id} className="px-8 py-3 text-[10px] font-extrabold text-gray-400 tracking-[0.2em] whitespace-nowrap">
                                                 <div className={`flex items-center gap-1 group ${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`} onClick={header.column.getToggleSortingHandler()}>
                                                     {flexRender(header.column.columnDef.header, header.getContext())}
                                                     {header.column.getCanSort() && (
@@ -693,28 +711,28 @@ const BannerManagement = () => {
                         </table>
 
                         {/* Pagination */}
-                        <div className="px-8 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 dark:bg-gray-800/10">
-                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                        <div className="px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 dark:bg-gray-800/10">
+                            <div className="text-[11px] text-gray-500 font-bold tracking-normal">
                                 <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
                                 <div className="flex items-center gap-2 mx-2">
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -724,22 +742,22 @@ const BannerManagement = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                                     />
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
 
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -752,26 +770,20 @@ const BannerManagement = () => {
             {/* Creation Modal */}
             {showModal && createPortal(
                 <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-admin border-admin w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
 
-                    <div className="bg-white dark:bg-dashboard-card shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-xl border border-gray-200 dark:border-gray-700 w-full max-w-5xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
-
-                        {/* Premium Header with Gradient - Compacted */}
-                        <div className="relative z-20 shadow-none overflow-hidden flex items-center justify-between p-5 bg-gradient-to-r from-primary-600 to-indigo-700 text-white">
-                            <div className="relative z-10 flex items-center gap-4">
-                                <div className="p-1.5 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30 shadow-none">
-                                    <SparklesIcon className="w-6 h-6 text-white animate-pulse" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 tracking-tight">
-                                        {viewMode === 'create'
-                                            ? (isSuperAdmin ? 'Platform Campaign Studio' : 'Banner Design Studio')
-                                            : viewMode === 'edit' ? 'Edit Campaign' : 'Campaign Details'}
-                                    </h2>
-                                    <p className="text-white/60 text-[10px] font-medium tracking-wide uppercase">Craft high-impact visual campaigns</p>
-                                </div>
+                        {/* Premium Header with Gradient - Standardized */}
+                        <div className="relative z-20 shadow-none overflow-hidden flex items-center justify-between px-8 py-3 bg-gradient-to-r from-primary-600 to-indigo-700 text-white sticky top-0">
+                            <div className="relative z-10 flex items-center gap-3">
+                                <SparklesIcon className="w-5 h-5 text-white/80" />
+                                <h2 className="text-[16px] font-bold text-white tracking-tight">
+                                    {viewMode === 'create'
+                                        ? (isSuperAdmin ? 'Platform Campaign Studio' : 'Banner Design Studio')
+                                        : viewMode === 'edit' ? 'Edit Campaign' : 'Campaign Details'}
+                                </h2>
                             </div>
                             <button onClick={() => handleCloseModal()} className="relative z-10 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all duration-300">
-                                <XMarkIcon className="w-6 h-6" />
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -779,7 +791,7 @@ const BannerManagement = () => {
                             <form onSubmit={handleSubmit(onSubmit)} className="w-full">
                                 <div className="w-full">
                                     {/* Unified Unified Card */}
-                                    <div className="bg-white dark:bg-dashboard-card border-b border-gray-200 dark:border-gray-800 space-y-10 p-10">
+                                    <div className="bg-white dark:bg-dashboard-card border-b border-admin space-y-10 p-10">
 
                                         {/* Row 1: Visual Asset */}
                                         <div className="space-y-4">
@@ -794,7 +806,7 @@ const BannerManagement = () => {
                                                 ) : (
                                                     <input
                                                         type="url"
-                                                        className="input-field rounded-xl h-[46px] border-gray-200 dark:border-gray-700"
+                                                        className="input-field rounded-admin h-[46px] border-admin"
                                                         placeholder="https://images.unsplash.com/..."
                                                         {...register('image_url', { required: 'Image URL is required' })}
                                                     />
@@ -804,19 +816,19 @@ const BannerManagement = () => {
                                                     {viewMode !== 'view' && (
                                                         <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" />
                                                     )}
-                                                    <div className={`aspect-video sm:aspect-[16/6] rounded-xl flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
+                                                    <div className={`aspect-video sm:aspect-[16/6] rounded-admin flex flex-col items-center justify-center transition-all duration-500 ${previewUrl ? '' : 'border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800/20 glass-effect hover:border-primary-400'}`}>
                                                         {previewUrl ? (
                                                             <div className="relative w-full h-full">
-                                                                <img src={previewUrl} className="w-full h-full object-cover rounded-xl" alt="Preview" />
+                                                                <img src={previewUrl} className="w-full h-full object-cover rounded-admin" alt="Preview" />
                                                                 {viewMode !== 'view' && (
-                                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl backdrop-blur-[2px]">
+                                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-admin backdrop-blur-[2px]">
                                                                         <ArrowPathIcon className="w-8 h-8 text-white animate-spin-slow" />
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <div className="p-5 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-2xl shadow-xl text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                                <div className="p-5 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-admin shadow-xl text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                                                     <ArrowUpTrayIcon className="w-8 h-8" />
                                                                 </div>
                                                                 <span className="text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-tighter">Click to Upload Graphic</span>
@@ -844,7 +856,7 @@ const BannerManagement = () => {
                                                         ) : (
                                                             <input
                                                                 type="text"
-                                                                className="input-field rounded-xl h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
+                                                                className="input-field rounded-admin h-[46px] pr-10 border-gray-200 dark:border-gray-700 focus:border-primary-500 transition-all font-medium"
                                                                 placeholder="E.g. Exclusive Waterfront Properties"
                                                                 {...register('title')}
                                                             />
@@ -861,12 +873,12 @@ const BannerManagement = () => {
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Visibility Duration</label>
                                                             <div className="relative">
                                                                 {viewMode === 'view' ? (
-                                                                    <div className="h-[46px] flex items-center px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                                    <div className="h-[46px] flex items-center px-4 rounded-admin border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300">
                                                                         {watch('days_active')} Days
                                                                     </div>
                                                                 ) : (
                                                                     <>
-                                                                        <input type="number" className="input-field rounded-xl h-[46px] pr-12" {...register('days_active')} />
+                                                                        <input type="number" className="input-field rounded-admin h-[46px] pr-12" {...register('days_active')} />
                                                                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Days</span>
                                                                     </>
                                                                 )}
@@ -875,7 +887,7 @@ const BannerManagement = () => {
                                                         <div className="space-y-3">
                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Targeting</label>
                                                             {viewMode === 'view' ? (
-                                                                <div className="h-[46px] flex items-center px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 capitalize">
+                                                                <div className="h-[46px] flex items-center px-4 rounded-admin border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 capitalize">
                                                                     {watch('target_role') === 'all' ? 'Everyone' : watch('target_role') === 'agent' ? 'Agents' : 'Visitors'}
                                                                 </div>
                                                             ) : (
@@ -929,15 +941,15 @@ const BannerManagement = () => {
                                                     <div className="space-y-3">
                                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-tight">Action Destination (URL)</label>
                                                         <div className="relative group">
-                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md rounded-xl group-focus-within:bg-primary-50/50 transition-colors">
+                                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md rounded-admin group-focus-within:bg-primary-50/50 transition-colors">
                                                                 <LinkIcon className="w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
                                                             </div>
                                                             {viewMode === 'view' ? (
-                                                                <div className="h-[46px] flex items-center px-4 pl-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-primary-600 truncate">
+                                                                <div className="h-[46px] flex items-center px-4 pl-12 rounded-admin border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-primary-600 truncate">
                                                                     {watch('link_url')}
                                                                 </div>
                                                             ) : (
-                                                                <input type="url" className="input-field pl-12 rounded-xl h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
+                                                                <input type="url" className="input-field pl-12 rounded-admin h-[46px] border-gray-200 dark:border-gray-700" placeholder="https://app.example.com/listings/123" {...register('link_url')} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -950,10 +962,10 @@ const BannerManagement = () => {
                                         {/* Row 3: Rich Details */}
                                         <div className="space-y-4">
                                             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest block">3. Storytelling & Details</label>
-                                            <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden group">
+                                            <div className="bg-white dark:bg-gray-950 rounded-admin border border-gray-200 dark:border-gray-800 overflow-hidden group">
                                                 {viewMode === 'view' ? (
                                                     <div
-                                                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-700 dark:text-gray-300 min-h-[250px] prose dark:prose-invert max-w-none"
+                                                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-admin text-gray-700 dark:text-gray-300 min-h-[250px] prose dark:prose-invert max-w-none"
                                                         dangerouslySetInnerHTML={{ __html: watch('description') }}
                                                     />
                                                 ) : (
@@ -998,14 +1010,14 @@ const BannerManagement = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleCloseModal()}
-                                                    className="h-[38px] px-6 text-[11px] font-black text-white hover:text-white/80 uppercase tracking-widest bg-gray-900 dark:bg-gray-700 rounded-xl transition-colors"
+                                                    className="h-[38px] px-6 text-[11px] font-black text-white hover:text-white/80 uppercase tracking-widest bg-gray-900 dark:bg-gray-700 rounded-admin transition-colors"
                                                 >
                                                     Close
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setViewMode('edit')}
-                                                    className="h-[38px] px-8 bg-primary-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-primary-700 transition-colors flex items-center gap-2"
+                                                    className="h-[38px] px-8 bg-primary-600 text-white rounded-admin text-[11px] font-black uppercase tracking-widest hover:bg-primary-700 transition-colors flex items-center gap-2"
                                                 >
                                                     <PencilSquareIcon className="w-4 h-4" />
                                                     Edit Campaign
@@ -1019,7 +1031,7 @@ const BannerManagement = () => {
                                                 <button
                                                     type="submit"
                                                     disabled={loading || uploading || (!isSuperAdmin && !bannerFile && viewMode === 'create')}
-                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
+                                                    className="h-[38px] group relative overflow-hidden bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 rounded-admin text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
                                                 >
                                                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[-20deg]" />
                                                     {loading ? (
@@ -1049,7 +1061,7 @@ const BannerManagement = () => {
             {showConfirmClose && createPortal(
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-fade-in pointer-events-auto">
 
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-gray-700 animate-slide-down relative overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-admin shadow-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-gray-700 animate-slide-down relative overflow-hidden">
 
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
                         <div className="flex gap-4">
@@ -1070,7 +1082,7 @@ const BannerManagement = () => {
                                     </button>
                                     <button
                                         onClick={confirmClose}
-                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-all"
+                                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-admin transition-all"
                                     >
                                         Discard Changes
                                     </button>

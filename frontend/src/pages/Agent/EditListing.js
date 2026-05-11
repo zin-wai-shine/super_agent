@@ -22,11 +22,81 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { format, addMonths, subMonths, getYear, getMonth, setYear, setMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    TouchSensor,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    rectSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const availabilityOptions = [
     { value: 'ready', label: '✅ Ready to Move In' },
     { value: 'date', label: '📅 Rented / Unavailable until...' }
 ];
+
+const SortablePhoto = ({ item, flatIndex, setLightboxIndex, handleDeleteMedia, getMediaUrl }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: item.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-grab active:cursor-grabbing"
+            onClick={(e) => {
+                // If it was a drag, don't trigger click
+                if (transform && (Math.abs(transform.x) > 5 || Math.abs(transform.y) > 5)) {
+                    return;
+                }
+                setLightboxIndex(flatIndex);
+            }}
+        >
+            <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover pointer-events-none" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()} // Prevent drag when clicking delete
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteMedia(item.id);
+                }}
+                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-20"
+            >
+                <TrashIcon className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-2 left-2 p-1.5 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                <PhotoIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            </div>
+        </div>
+    );
+};
 
 const EditListing = () => {
     const { id } = useParams();
@@ -49,8 +119,97 @@ const EditListing = () => {
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const [facilityGroups, setFacilityGroups] = useState([]);
     const [allFacilityMedia, setAllFacilityMedia] = useState([]);
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const WALKING_SPEED_MPM = 80; // Meters per minute
+
+    const handleDragEnd = async (event, roomTypeItems) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = roomTypeItems.findIndex((m) => m.id === active.id);
+        const newIndex = roomTypeItems.findIndex((m) => m.id === over.id);
+
+        const newItems = arrayMove(roomTypeItems, oldIndex, newIndex);
+
+        // Update local state immediately for responsiveness
+        const otherMedia = media.filter(m => !roomTypeItems.find(rm => rm.id === m.id));
+        
+        // We need to insert the reordered items back into the media array in a way that preserves overall structure
+        // but since they are grouped by roomType, we can just replace the old ones.
+        // However, the display order is PHOTO_ROOM_TYPES.
+        
+        // Let's just update the entire media list
+        const updatedMedia = [...media];
+        newItems.forEach((item, idx) => {
+            const targetIdx = updatedMedia.findIndex(m => m.id === item.id);
+            if (targetIdx !== -1) {
+                updatedMedia.splice(targetIdx, 1);
+            }
+        });
+        
+        // Find where to insert. This is tricky.
+        // A simpler way: update all media by replacing the ones of this room type
+        const filteredMedia = media.filter(m => 
+            !((m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos') === roomTypeItems[0]?.room_type
+            || m.type !== 'image'
+        );
+        
+        // Wait, the filter above is a bit broken if roomTypeItems is empty.
+        // Let's use the actual roomType
+        const roomType = (roomTypeItems[0]?.room_type && roomTypeItems[0]?.room_type.trim()) ? roomTypeItems[0]?.room_type.trim() : 'Additional Photos';
+        
+        const finalMedia = media.map(m => {
+            const rt = (m.room_type && m.room_type.trim()) ? m.room_type.trim() : 'Additional Photos';
+            if (rt === roomType && m.type === 'image') {
+                // Find this item in newItems
+                const newItem = newItems.find(ni => ni.id === m.id);
+                // We actually want to return the items in the new order.
+                // This map approach is not ideal for reordering.
+                return null;
+            }
+            return m;
+        }).filter(m => m !== null);
+        
+        // Re-insert at the right place? Or just append?
+        // The display logic uses PHOTO_ROOM_TYPES.map, so the actual order in 'media' doesn't matter much
+        // AS LONG AS they stay in the same roomType.
+        // BUT sort_order is what matters for the backend.
+        
+        setMedia(prev => {
+            const otherOnes = prev.filter(m => !roomTypeItems.find(ri => ri.id === m.id));
+            return [...otherOnes, ...newItems];
+        });
+
+        // Prepare reorder data for backend
+        const reorderData = newItems.map((item, index) => ({
+            id: item.id,
+            sort_order: index
+        }));
+
+        try {
+            await uploadApi.reorderMedia(reorderData);
+        } catch (error) {
+            console.error('Failed to save order:', error);
+            toast.error('Failed to save new order');
+            fetchData(); // Rollback
+        }
+    };
 
     // Options
 
@@ -409,7 +568,7 @@ const EditListing = () => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="space-y-6">
             <Link
                 to="/dashboard/listings"
                 className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
@@ -503,33 +662,33 @@ const EditListing = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {items.map((item, i) => {
-                                            const flatIndex = flatIndexOffset >= 0 ? flatIndexOffset + i : 0;
-                                            return (
-                                                <div
-                                                    key={item.id}
-                                                    className="relative aspect-video rounded-xl overflow-hidden group shadow-md border border-gray-100 dark:border-gray-800 cursor-pointer"
-                                                    onClick={() => setLightboxIndex(flatIndex)}
-                                                >
-                                                    <img src={getMediaUrl(item.url)} alt="" className="w-full h-full object-cover" />
-                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteMedia(item.id);
-                                                        }}
-                                                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
-                                                    >
-                                                        <TrashIcon className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                        
-                                        {/* Facility Images Preview */}
-                                        {roomType === 'Additional Photos' && fieldValues.facility_name && (
+                                    <DndContext
+                                        sensors={sensors}
+                                        collisionDetection={closestCenter}
+                                        onDragEnd={(event) => handleDragEnd(event, items)}
+                                    >
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <SortableContext
+                                                items={items.map(m => m.id)}
+                                                strategy={rectSortingStrategy}
+                                            >
+                                                {items.map((item, i) => {
+                                                    const flatIndex = flatIndexOffset >= 0 ? flatIndexOffset + i : 0;
+                                                    return (
+                                                        <SortablePhoto
+                                                            key={item.id}
+                                                            item={item}
+                                                            flatIndex={flatIndex}
+                                                            setLightboxIndex={setLightboxIndex}
+                                                            handleDeleteMedia={handleDeleteMedia}
+                                                            getMediaUrl={getMediaUrl}
+                                                        />
+                                                    );
+                                                })}
+                                            </SortableContext>
+                                            
+                                            {/* Facility Images Preview */}
+                                            {roomType === 'Additional Photos' && fieldValues.facility_name && (
                                             allFacilityMedia
                                                 .filter(m => m.name === (fieldValues.facility_name?.value || fieldValues.facility_name))
                                                 .map((item) => (
@@ -561,6 +720,7 @@ const EditListing = () => {
                                             />
                                         </label>
                                     </div>
+                                    </DndContext>
                                 </div>
                             );
                         })}

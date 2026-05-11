@@ -59,6 +59,16 @@
   }
 }
 
+:root {
+    --admin-radius: 12px;
+    --admin-border-color: #e5e7eb; /* gray-200 */
+    --admin-border-width: 1px;
+}
+
+.dark {
+    --admin-border-color: #374151; /* gray-700 */
+}
+
 /* Custom component styles */
 @layer components {
 
@@ -91,7 +101,7 @@
 
   /* Input styles — rounded-full, consistent height for UI */
   .input-field {
-    @apply w-full px-4 py-2 min-h-[38px] bg-white/80 dark:bg-dashboard-input/50 backdrop-blur-md border border-gray-200 dark:border-dashboard-border/50 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-30 focus:border-primary-500 transition-all duration-200;
+    @apply w-full px-4 py-2 min-h-[38px] bg-white/80 dark:bg-dashboard-input/50 backdrop-blur-md border border-gray-200 dark:border-dashboard-border/50 rounded-admin text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-30 focus:border-primary-500 transition-all duration-200;
   }
 
   .input-label {
@@ -876,21 +886,46 @@ body::-webkit-scrollbar-thumb,
 .dashboard-container .btn-primary,
 .dashboard-container .btn-secondary,
 .dashboard-container .btn-outline,
-.dashboard-container .input-field {
+.dashboard-container .input-field,
+.dashboard-container .rounded-xl,
+.dashboard-container .rounded-2xl {
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: none !important;
   box-shadow: none !important;
-  border-radius: 12px !important;
+  border-radius: var(--admin-radius) !important;
 }
 
 .dashboard-container button:hover,
 .dashboard-container .btn-primary:hover,
 .dashboard-container .btn-secondary:hover,
-.dashboard-container .btn-outline:hover {
-  box-shadow: none !important;
-  transform: none !important;
-  border-radius: 12px !important;
+.dashboard-container .btn-outline:hover,
+.dashboard-container .rounded-admin {
+    border-radius: var(--admin-radius) !important;
+}
+
+/* Global Admin Border Standard */
+.border-admin {
+    border-width: var(--admin-border-width) !important;
+    border-color: var(--admin-border-color) !important;
+    border-style: solid !important;
+}
+
+.dashboard-container .input-field {
+    border-radius: var(--admin-radius) !important;
+    border-width: var(--admin-border-width) !important;
+    border-color: var(--admin-border-color) !important;
+}
+
+/* Remove spin buttons from number inputs */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.no-spinner {
+    -moz-appearance: textfield;
 }
 
 .dashboard-container button:active,

@@ -357,7 +357,7 @@ const CreateListing = () => {
     );
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="space-y-6">
             <Link
                 to="/dashboard/listings"
                 className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
@@ -408,7 +408,7 @@ const CreateListing = () => {
 
             <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
                 {/* Media Selection — one section per room type, upload under each title */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">📸 Photos</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                         Upload photos under each section. Images added in a section use that section&apos;s type.
@@ -516,7 +516,7 @@ const CreateListing = () => {
                 </div>
 
                 {/* Basic Info */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Basic Information</h2>
 
                     <div className="space-y-6">
@@ -640,7 +640,7 @@ const CreateListing = () => {
                 </div>
 
                 {/* Pricing */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Pricing</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -668,7 +668,7 @@ const CreateListing = () => {
                 </div>
 
                 {/* Location */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Location</h2>
 
                     <div className="space-y-6">
@@ -978,7 +978,7 @@ const CreateListing = () => {
                                     </span>
                                 )}
                             </label>
-                            <div className="w-full h-[400px] rounded-[24px] overflow-hidden shadow-lg border-2 border-primary-50 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group relative">
+                            <div className="w-full h-[400px] rounded-admin overflow-hidden shadow-lg border-2 border-primary-50 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group relative">
                                 <LocationPicker
                                     value={{
                                         lat: fieldValues.latitude,
@@ -1003,7 +1003,7 @@ const CreateListing = () => {
                 </div>
 
                 {/* Features */}
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Features & Amenities</h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

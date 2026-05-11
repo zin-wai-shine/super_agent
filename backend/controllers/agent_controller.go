@@ -36,7 +36,9 @@ func (ac *AgentController) GetListings(c *gin.Context) {
 	}
 
 	var listings []models.Listing
-	query := ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").Where("agent_id = ?", agentID)
+	query := ac.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Project").Preload("Project.Developer").Where("agent_id = ?", agentID)
 
 	// Filter by published status
 	if status := c.Query("status"); status != "" {
@@ -137,7 +139,9 @@ func (ac *AgentController) GetListing(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	if err := ac.db.Preload("Media").Preload("Project").Preload("Project.Developer").Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
+	if err := ac.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Project").Preload("Project.Developer").Where("id = ? AND agent_id = ?", id, agentID).First(&listing).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Listing not found"})
 		return
 	}

@@ -18,7 +18,7 @@ const ModernSlider = ({
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {label}
                 </label>
-                <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+                <span className="text-[12px] font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-admin">
                     {valueLabel || value}
                 </span>
             </div>

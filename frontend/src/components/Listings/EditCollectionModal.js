@@ -176,16 +176,16 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
 
     const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
-            <div className={`bg-white dark:bg-dashboard-card w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-200 dark:border-gray-800 transition-all ${isParentType ? 'max-w-md' : 'max-w-5xl'}`}>
+            <div className={`bg-white dark:bg-dashboard-card w-full rounded-admin shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-200 dark:border-gray-800 transition-all ${isParentType ? 'max-w-md' : 'max-w-5xl'}`}>
                 
                 {/* Header Section */}
-                <div className="flex-none flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">
+                <div className="flex-none flex items-center justify-between px-8 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-dashboard-card sticky top-0 z-10">
+                    <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">
                         {isParentType ? 'Edit Main Category' : 'Edit Collection'}
                     </h3>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-white/5"
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -214,7 +214,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         placeholder={isParentType ? "e.g. Popular Collections" : "e.g. Luxury Condos"}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full px-4 py-2 bg-white dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-[13px] transition-all text-gray-900 dark:text-white"
+                                        className="w-full px-4 py-2 bg-white dark:bg-dashboard-dark border border-gray-200 dark:border-gray-700 rounded-admin focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-[13px] transition-all text-gray-900 dark:text-white"
                                         required
                                     />
                                 </div>
@@ -243,7 +243,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         <button
                                             type="button"
                                             onClick={() => isParentType && setCollectionType('image')}
-                                            className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${collectionType === 'image' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
+                                            className={`p-3 rounded-admin border transition-all flex flex-col items-center gap-2 ${collectionType === 'image' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
                                         >
                                             <PhotoIcon className={`w-5 h-5 ${collectionType === 'image' ? 'text-primary-600' : 'text-gray-400'}`} />
                                             <span className={`text-[10px] font-bold uppercase tracking-tight ${collectionType === 'image' ? 'text-primary-700' : 'text-gray-500'}`}>Image Based</span>
@@ -251,7 +251,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         <button
                                             type="button"
                                             onClick={() => isParentType && setCollectionType('icon')}
-                                            className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${collectionType === 'icon' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
+                                            className={`p-3 rounded-admin border transition-all flex flex-col items-center gap-2 ${collectionType === 'icon' ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-white/5'} ${!isParentType ? 'cursor-default opacity-80' : 'hover:border-gray-300'}`}
                                         >
                                             <CloudArrowUpIcon className={`w-5 h-5 ${collectionType === 'icon' ? 'text-primary-600' : 'text-gray-400'}`} />
                                             <span className={`text-[10px] font-bold uppercase tracking-tight ${collectionType === 'icon' ? 'text-primary-700' : 'text-gray-500'}`}>Icon Based</span>
@@ -277,7 +277,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                         
                                         {/* Facility Images Preview */}
                                         {facilityName && (
-                                            <div className="bg-primary-50/30 dark:bg-primary-500/5 p-3 rounded-xl border border-primary-100 dark:border-primary-500/10">
+                                            <div className="bg-primary-50/30 dark:bg-primary-500/5 p-3 rounded-admin border border-primary-100 dark:border-primary-500/10">
                                                 <p className="text-[9px] font-bold text-primary-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                                                     <SparklesIcon className="w-3 h-3" />
                                                     Shared Collection: {facilityName?.value || facilityName} (Display Only)
@@ -308,7 +308,7 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                                 {!isParentType && (collectionType === 'icon') && (
                                     <div className="space-y-2">
                                         <label className="text-[13px] font-bold text-gray-500 uppercase tracking-wider">Visual Icon</label>
-                                        <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                        <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-admin border border-gray-100 dark:border-gray-800">
                                             <IconPicker selectedIcon={icon} onSelect={setIcon} />
                                         </div>
                                     </div>
@@ -319,12 +319,12 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                             {!isParentType && (
                                 <div className="space-y-4">
                                     <label className="text-[13px] font-bold text-gray-500 uppercase tracking-wider block px-1">Preview Selection ({selectedListings.length})</label>
-                                    <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-gray-800 min-h-[350px]">
+                                    <div className="bg-gray-50 dark:bg-white/5 rounded-admin p-4 border border-gray-100 dark:border-gray-800 min-h-[350px]">
                                         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
                                             {selectedListings.map(item => {
                                                 const l = item.listing;
                                                 return (
-                                                    <div key={item.value} className="flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                    <div key={item.value} className="flex items-center gap-3 p-2 rounded-admin bg-white dark:bg-dashboard-dark border border-gray-100 dark:border-gray-700 shadow-sm">
                                                         <div className="w-12 h-12 rounded-[2px] overflow-hidden flex-shrink-0 bg-gray-100">
                                                             {l?.media?.[0]?.url ? (
                                                                 <img src={getMediaUrl(l.media[0].url)} alt="preview" className="w-full h-full object-cover" />
@@ -369,14 +369,14 @@ const EditCollectionModal = ({ isOpen, onClose, onSuccess, collection }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-[12px] hover:bg-gray-50 transition-colors"
+                            className="px-6 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-admin font-bold text-[12px] hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !name}
-                            className="px-8 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-xl font-bold text-[12px] transition-colors shadow-sm"
+                            className="px-8 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-admin font-bold text-[12px] transition-colors shadow-sm"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-2">

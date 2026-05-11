@@ -17,6 +17,7 @@ module.exports = {
         'xl': '3px',
         '2xl': '3px',
         '3xl': '0.75rem', // 12px
+        'admin': 'var(--admin-radius)',
         'full': '9999px',
       },
       colors: {

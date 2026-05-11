@@ -91,6 +91,13 @@ func (cc *CollectionController) GetCollections(c *gin.Context) {
 	type CollectionWithCount struct {
 		models.Collection
 		ListingsCount int64 `json:"listings_count"`
+		IsSelected    bool  `json:"is_selected"`
+	}
+
+	listingIDStr := c.Query("listing_id")
+	var listingUUID uuid.UUID
+	if listingIDStr != "" {
+		listingUUID, _ = uuid.Parse(listingIDStr)
 	}
 
 	// Pre-fetch facility media
@@ -124,9 +131,17 @@ func (cc *CollectionController) GetCollections(c *gin.Context) {
 			}
 		}
 
+		var isSelected bool
+		if listingUUID != uuid.Nil {
+			var matchCount int64
+			cc.db.Model(&models.CollectionListing{}).Where("collection_id = ? AND listing_id = ?", col.ID, listingUUID).Count(&matchCount)
+			isSelected = matchCount > 0
+		}
+
 		result = append(result, CollectionWithCount{
 			Collection:    col,
 			ListingsCount: count,
+			IsSelected:    isSelected,
 		})
 	}
 

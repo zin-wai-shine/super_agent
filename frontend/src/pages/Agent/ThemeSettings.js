@@ -311,12 +311,14 @@ const ThemeSettings = () => {
 
     const tabs = [
         { id: 'brand', label: 'Identity', icon: GlobeAltIcon },
+        { id: 'logos', label: 'Logos & Scale', icon: PhotoIcon },
+        { id: 'browser', label: 'Browser & Social', icon: GlobeAltIcon },
         { id: 'colors', label: 'Colors & Type', icon: SwatchIcon },
     ];
 
     return (
         <>
-        <div className="max-w-7xl mx-auto space-y-6 pb-20">
+        <div className="space-y-6 pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -351,73 +353,93 @@ const ThemeSettings = () => {
                 </div>
             </div>
 
-            <div className="h-[calc(100vh-200px)] min-h-[600px] w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col overflow-hidden">
-                {/* Header Tabs Navigation */}
-                <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm z-20">
+            <div className="h-[calc(100vh-200px)] min-h-[600px] w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex overflow-hidden">
+                {/* Sidebar Navigation - Compact Style */}
+                <div className="w-64 flex-none border-r border-gray-100 dark:border-gray-700 bg-white dark:bg-transparent py-6 flex flex-col">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`px-8 py-5 flex items-center gap-2 transition-all relative group h-full ${activeTab === tab.id
-                                ? 'text-primary-600 dark:text-primary-400 bg-white dark:bg-primary-600/10'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-primary-600/5'
+                            className={`flex items-center gap-3 px-6 py-3 text-[14px] font-medium transition-colors ${activeTab === tab.id
+                                ? 'text-primary-500'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                 }`}
                         >
-                            <span className={`text-[10px] font-extrabold uppercase tracking-widest transition-colors ${activeTab === tab.id ? 'text-primary-500' : 'text-gray-400'}`}>
-                                {tab.label}
-                            </span>
-
-                            {activeTab === tab.id && (
-                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-500 shadow-[0_-2px_10px_rgba(38,99,235,0.3)]" />
-                            )}
+                            {React.createElement(tab.icon, { className: "w-4 h-4" })}
+                            {tab.label}
                         </button>
                     ))}
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar bg-white dark:bg-transparent">
-                    {/* Section Label Header */}
-                    <div className="mb-6 pb-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
-                        <h2 className="text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
-                            <div className="p-2 bg-primary-600/10 rounded-xl">
-                                {React.createElement(tabs.find(t => t.id === activeTab).icon, { className: "w-5 h-5 text-primary-500" })}
-                            </div>
-                            {tabs.find(t => t.id === activeTab).label}
-                        </h2>
-                    </div>
+                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-white dark:bg-transparent">
+
 
                     {activeTab === 'brand' && (
-                        <div className="space-y-8 animate-fadeIn">
+                        <div className="space-y-10 animate-fadeIn max-w-3xl">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Header Site Title</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => resetField('header_text')}
+                                        className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
+                                        title="Reset Title"
+                                    >
+                                        <ArrowPathIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    className="input-field rounded-admin h-12 text-sm"
+                                    placeholder="Super Real Estate"
+                                    {...register('header_text')}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Footer Attribution</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => resetField('footer_text')}
+                                        className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
+                                        title="Reset Footer"
+                                    >
+                                        <ArrowPathIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    className="input-field rounded-admin h-12 text-sm"
+                                    placeholder="© 2024 Your Name"
+                                    {...register('footer_text')}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'logos' && (
+                        <div className="space-y-10 animate-fadeIn max-w-4xl">
                             {/* Navbar Preview Section */}
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center px-1">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Website Navbar Preview</label>
-                                        <p className="text-[11px] text-gray-400">Preview of your public header.</p>
+                                        <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Website Navbar Preview</label>
+                                        <p className="text-[12px] text-gray-500 dark:text-gray-400">Adjust how your logo appears in the site header.</p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <button
                                             type="button"
                                             onClick={() => logoInputRef.current?.click()}
-                                            className="text-[10px] font-bold text-primary-500 uppercase tracking-widest hover:text-primary-600 transition-colors"
+                                            className="text-[12px] font-medium text-primary-500 hover:text-primary-600 transition-colors"
                                         >
                                             {watchAll.logo_url ? 'Change Logo' : 'Upload Logo'}
                                         </button>
-                                        {watchAll.logo_url && (
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('logo_url')}
-                                                className="p-1 text-gray-400 hover:text-primary-500 transition-colors"
-                                                title="Reset Logo"
-                                            >
-                                                <ArrowPathIcon className="w-3.5 h-3.5" />
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
 
-                                <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden">
-                                    <div className="h-20 md:h-28 flex items-center px-6 md:px-12 justify-between">
+                                <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-admin overflow-hidden bg-gray-50/50">
+                                    <div className="h-28 flex items-center px-12 justify-between">
                                         <div className="flex items-center">
                                             <img
                                                 src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
@@ -429,309 +451,117 @@ const ThemeSettings = () => {
                                                 }}
                                             />
                                         </div>
-                                        <div className="hidden md:flex items-center gap-6 opacity-30 pointer-events-none">
+                                        <div className="flex items-center gap-6 opacity-30 pointer-events-none">
                                             <div className="h-2 w-16 bg-gray-300 rounded-full" />
                                             <div className="h-2 w-16 bg-gray-200 rounded-full" />
-                                            <div className="h-2 w-16 bg-gray-200 rounded-full" />
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shadow-sm">
-                                                <Bars3Icon className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Logo Scale Adjustment - Positioned directly under nav bar, no container */}
-                                <div className="px-1 pt-2 max-w-2xl">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex-1">
-                                            <ModernSlider
-                                                label="Logo Display Scale"
-                                                value={preview.navbar_logo_height}
-                                                min={10}
-                                                max={150}
-                                                step={1}
-                                                unit="%"
-                                                onChange={(val) => setValue('navbar_logo_height', val)}
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => resetField('navbar_logo_height')}
-                                            className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
-                                            title="Reset Scale"
-                                        >
-                                            <ArrowPathIcon className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                    <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the public website header.</p>
-                                </div>
-
-                                {/* Loading Screen Preview Section */}
-                                <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-white/5">
-                                    <div className="flex justify-between items-center px-1">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Loading Screen Logo</label>
-                                            <p className="text-[11px] text-gray-400">Preview of your splash screen logo.</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden h-64 flex flex-col items-center justify-center">
-                                        <div className="relative flex flex-col items-center justify-center transform transition-all duration-700" style={{ transform: `scale(${preview.page_logo_height / 100})` }}>
-                                            <img
-                                                src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
-                                                alt="Splash Logo Preview"
-                                                className="w-32 h-32 object-contain"
-                                            />
-                                        </div>
-                                        <div className="absolute bottom-6 flex gap-1">
-                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" />
-                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                                            <div className="w-1 h-1 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Page Logo Scale Adjustment */}
-                                    <div className="px-1 pt-2 max-w-2xl">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex-1">
-                                                <ModernSlider
-                                                    label="Splash Logo Scale"
-                                                    value={preview.page_logo_height}
-                                                    min={10}
-                                                    max={150}
-                                                    step={1}
-                                                    unit="%"
-                                                    onChange={(val) => setValue('page_logo_height', val)}
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('page_logo_height')}
-                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
-                                                title="Reset Scale"
-                                            >
-                                                <ArrowPathIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the initial loading screen.</p>
-                                    </div>
-                                </div>
-
-                                {/* Dashboard Preview Section */}
-                                <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-white/5">
-                                    <div className="flex justify-between items-center px-1">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Dashboard Sidebar Logo</label>
-                                            <p className="text-[11px] text-gray-400">Preview of your logo in the admin dashboard.</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden h-32 flex items-center px-8">
-                                        <div className="w-16 h-full border-r border-gray-200 dark:border-gray-800 flex flex-col pt-4 gap-4 opacity-30">
-                                            <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-800" />
-                                            <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-800" />
-                                        </div>
-                                        <div className="flex-1 flex items-center px-6">
-                                            <img
-                                                src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
-                                                alt="Dashboard Logo Preview"
-                                                className="h-16 w-auto object-contain transition-all duration-300"
-                                                style={{
-                                                    transformOrigin: 'left',
-                                                    transform: `scale(${preview.dashboard_logo_height / 100})`
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Dashboard Logo Scale Adjustment */}
-                                    <div className="px-1 pt-2 max-w-2xl">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex-1">
-                                                <ModernSlider
-                                                    label="Dashboard Logo Scale"
-                                                    value={preview.dashboard_logo_height}
-                                                    min={10}
-                                                    max={150}
-                                                    step={1}
-                                                    unit="%"
-                                                    onChange={(val) => setValue('dashboard_logo_height', val)}
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('dashboard_logo_height')}
-                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
-                                                title="Reset Scale"
-                                            >
-                                                <ArrowPathIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust your logo size for the admin dashboard sidebar.</p>
-                                    </div>
+                                <div className="px-1 pt-2">
+                                    <ModernSlider
+                                        label="Logo Display Scale"
+                                        value={preview.navbar_logo_height}
+                                        min={10}
+                                        max={150}
+                                        onChange={(val) => setValue('navbar_logo_height', val)}
+                                        unit="%"
+                                    />
                                 </div>
                             </div>
 
-                            {/* Main Branding Grid: Site Info + Social Share (Col 6) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-8 border-t border-gray-100 dark:border-white/5">
-                                {/* Left Col: Site Attributes */}
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Header Site Title</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('header_text')}
-                                                className="text-gray-400 hover:text-primary-500 transition-colors"
-                                                title="Reset Title"
-                                            >
-                                                <ArrowPathIcon className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            className="input-field rounded-xl h-12 text-sm"
-                                            placeholder="Super Real Estate"
-                                            {...register('header_text')}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Footer Attribution</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('footer_text')}
-                                                className="text-gray-400 hover:text-primary-500 transition-colors"
-                                                title="Reset Footer"
-                                            >
-                                                <ArrowPathIcon className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            className="input-field rounded-xl h-12 text-sm"
-                                            placeholder="© 2024 Your Name"
-                                            {...register('footer_text')}
-                                        />
-                                    </div>
+                            {/* Loading Screen Section */}
+                            <div className="space-y-4 pt-10 border-t border-gray-100 dark:border-white/5">
+                                <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Splash Screen Logo</label>
+                                <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-admin h-48 flex items-center justify-center">
+                                    <img
+                                        src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
+                                        alt="Splash Logo"
+                                        className="h-24 w-auto object-contain"
+                                        style={{ transform: `scale(${preview.page_logo_height / 100})` }}
+                                    />
                                 </div>
+                                <ModernSlider
+                                    label="Splash Logo Scale"
+                                    value={preview.page_logo_height}
+                                    min={10}
+                                    max={150}
+                                    onChange={(val) => setValue('page_logo_height', val)}
+                                    unit="%"
+                                />
+                            </div>
 
-                                {/* Right Col: Social Share Preview (Col 6) */}
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Browser Icon (Favicon)</label>
-                                        {watchAll.favicon_url && (
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('favicon_url')}
-                                                className="text-gray-400 hover:text-primary-500 transition-colors"
-                                                title="Reset Favicon"
-                                            >
-                                                <ArrowPathIcon className="w-3 h-3" />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div
-                                        onClick={() => faviconInputRef.current?.click()}
-                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[120px] flex-col items-center overflow-hidden"
-                                    >
-                                        <div className="w-full text-center">
-                                            {watchAll.favicon_url ? (
-                                                <div className="relative group-hover:scale-[1.01] transition-transform duration-300 flex flex-col items-center">
-                                                    <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-14 h-14 object-contain rounded-[16px] shadow-sm bg-white p-1.5" />
-                                                    <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-primary-500">Change Icon</div>
-                                                </div>
-                                            ) : (
-                                                <div className="py-4">
-                                                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mb-2 mx-auto">
-                                                        <GlobeAltIcon className="h-5 w-5 text-primary-400" />
-                                                    </div>
-                                                    <div className="text-[11px] font-bold text-primary-600 uppercase tracking-widest">Add Browser Icon</div>
-                                                    <p className="text-[10px] text-gray-400 mt-1">PNG or ICO (32x32px)</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                            {/* Dashboard Sidebar Section */}
+                            <div className="space-y-4 pt-10 border-t border-gray-100 dark:border-white/5">
+                                <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Dashboard Sidebar Logo</label>
+                                <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-admin h-32 flex items-center px-8">
+                                    <img
+                                        src={getMediaUrl(watchAll.logo_url || '/default_logo.png')}
+                                        alt="Dashboard Logo"
+                                        className="h-16 w-auto object-contain"
+                                        style={{ transformOrigin: 'left', transform: `scale(${preview.dashboard_logo_height / 100})` }}
+                                    />
+                                </div>
+                                <ModernSlider
+                                    label="Dashboard Logo Scale"
+                                    value={preview.dashboard_logo_height}
+                                    min={10}
+                                    max={150}
+                                    onChange={(val) => setValue('dashboard_logo_height', val)}
+                                    unit="%"
+                                />
+                            </div>
+                        </div>
+                    )}
 
-                                    <div
-                                        onClick={() => sharePreviewInputRef.current?.click()}
-                                        className="flex justify-center px-4 pt-4 pb-4 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all cursor-pointer group bg-gray-50/20 dark:bg-gray-900/10 min-h-[160px] flex-col items-center overflow-hidden"
-                                    >
-                                        <div className="w-full text-center">
-                                            {watchAll.share_preview_image ? (
-                                                <div className="relative w-full group-hover:scale-[1.01] transition-transform duration-300 flex justify-center items-center">
-                                                    <img 
-                                                        src={getMediaUrl(watchAll.share_preview_image)} 
-                                                        alt="Preview" 
-                                                        className="w-full h-auto object-cover rounded-xl shadow-sm transition-transform duration-300" 
-                                                        style={{ transform: `scale(${preview.share_preview_image_scale / 100})` }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors rounded-xl" />
-                                                    <div className="absolute bottom-3 text-[10px] font-bold uppercase tracking-widest text-white drop-shadow-md">Change Image</div>
-                                                </div>
-                                            ) : (
-                                                <div className="py-6">
-                                                    <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
-                                                        <PhotoIcon className="h-6 w-6 text-primary-400" />
-                                                    </div>
-                                                    <div className="text-[11px] font-bold text-primary-600 uppercase tracking-widest">Add Share Image</div>
-                                                    <p className="text-[10px] text-gray-400 mt-2">1200x630px recommended</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Share Image Scale Adjustment */}
-                                    <div className="pt-2">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex-1">
-                                                <ModernSlider
-                                                    label="Share Image Scale"
-                                                    value={preview.share_preview_image_scale}
-                                                    min={50}
-                                                    max={150}
-                                                    step={1}
-                                                    unit="%"
-                                                    onChange={(val) => setValue('share_preview_image_scale', val)}
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => resetField('share_preview_image_scale')}
-                                                className="mt-6 p-2 text-gray-400 hover:text-primary-500 transition-colors bg-gray-50 dark:bg-white/5 rounded-xl"
-                                                title="Reset Scale"
-                                            >
-                                                <ArrowPathIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <p className="mt-2 text-[10px] text-gray-400 italic">Adjust how your preview image appears in the live preview.</p>
-                                    </div>
+                    {activeTab === 'browser' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-fadeIn max-w-5xl">
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Browser Icon (Favicon)</label>
+                                </div>
+                                <div
+                                    onClick={() => faviconInputRef.current?.click()}
+                                    className="flex justify-center p-8 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin hover:border-primary-400 transition-all cursor-pointer bg-gray-50/20 dark:bg-gray-900/10 min-h-[200px] flex-col items-center"
+                                >
+                                    {watchAll.favicon_url ? (
+                                        <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-16 h-16 object-contain rounded-admin shadow-sm bg-white p-2" />
+                                    ) : (
+                                        <GlobeAltIcon className="h-10 w-10 text-gray-300" />
+                                    )}
+                                    <div className="mt-4 text-[12px] font-medium text-primary-500">Upload Icon</div>
                                 </div>
                             </div>
 
-                            <input
-                                type="file"
-                                ref={logoInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleLogoUpload}
-                            />
-                            <input
-                                type="file"
-                                ref={faviconInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleFaviconUpload}
-                            />
-                            <input
-                                type="file"
-                                ref={sharePreviewInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleSharePreviewUpload}
-                            />
+                            <div className="space-y-6">
+                                <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Social Share Image</label>
+                                <div
+                                    onClick={() => sharePreviewInputRef.current?.click()}
+                                    className="relative flex justify-center p-2 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin hover:border-primary-400 transition-all cursor-pointer bg-gray-50/20 dark:bg-gray-900/10 overflow-hidden group"
+                                >
+                                    {watchAll.share_preview_image ? (
+                                        <img 
+                                            src={getMediaUrl(watchAll.share_preview_image)} 
+                                            alt="Preview" 
+                                            className="w-full h-auto object-cover rounded-lg shadow-sm"
+                                            style={{ transform: `scale(${preview.share_preview_image_scale / 100})` }}
+                                        />
+                                    ) : (
+                                        <div className="py-12 flex flex-col items-center">
+                                            <PhotoIcon className="h-10 w-10 text-gray-300 mb-2" />
+                                            <div className="text-[12px] font-medium text-primary-500">Add Preview Image</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <ModernSlider
+                                    label="Share Image Preview Scale"
+                                    value={preview.share_preview_image_scale}
+                                    min={50}
+                                    max={150}
+                                    onChange={(val) => setValue('share_preview_image_scale', val)}
+                                    unit="%"
+                                />
+                            </div>
                         </div>
                     )}
 

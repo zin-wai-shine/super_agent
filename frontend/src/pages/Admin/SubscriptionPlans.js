@@ -14,7 +14,8 @@ import {
     TrashIcon,
     CreditCardIcon,
     CheckIcon,
-    InboxIcon
+    InboxIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 
@@ -131,7 +132,7 @@ const SubscriptionPlans = () => {
                 header: 'Plan Name',
                 cell: ({ row }) => (
                     <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-xl flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-admin flex items-center justify-center">
                             <CreditCardIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <span className="font-semibold text-gray-900 dark:text-white">{row.original.plan_name || row.original.name}</span>
@@ -189,7 +190,7 @@ const SubscriptionPlans = () => {
                     return (
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {features.map((f, i) => (
-                                <span key={i} className={`px-2 py-0.5 text-[10px] rounded-xl border ${f.enabled
+                                <span key={i} className={`px-2 py-0.5 text-[10px] rounded-admin border ${f.enabled
                                     ? 'bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
                                     : 'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700 opacity-50'
                                     }`}>
@@ -207,14 +208,14 @@ const SubscriptionPlans = () => {
                     <div className="flex items-center justify-end gap-2">
                         <button
                             onClick={() => openModal(row.original)}
-                            className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
+                            className="p-1.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 backdrop-blur-sm rounded-admin transition-all duration-200"
                             title="Edit Plan"
                         >
                             <PencilIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => handleDelete(row.original.id)}
-                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all duration-200"
+                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all duration-200"
                             title="Delete Plan"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -242,7 +243,7 @@ const SubscriptionPlans = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage plans and pricing for your agents</p>
                 </div>
-                <button onClick={() => openModal()} className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap h-[34px] text-[12px] px-4 rounded-xl">
+                <button onClick={() => openModal()} className="btn-primary w-full sm:w-auto flex items-center justify-center space-x-2 whitespace-nowrap h-[34px] text-[12px] px-4 rounded-admin">
                     <PlusIcon className="w-4 h-4" />
                     <span>Add Plan</span>
                 </button>
@@ -253,17 +254,17 @@ const SubscriptionPlans = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden">
                     {plans.length > 0 ? (
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     {getHeaderGroups().map((headerGroup) => (
                                         <tr key={headerGroup.id}>
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-                                                    className="text-left px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                                    className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider"
                                                 >
                                                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                                 </th>
@@ -303,11 +304,19 @@ const SubscriptionPlans = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-dashboard-card rounded-2xl w-full max-w-md p-6 animate-scale-in border dark:border-gray-700">
-                        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-                            {editingPlan ? 'Edit Plan' : 'Create Plan'}
-                        </h2>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="bg-white dark:bg-dashboard-card rounded-admin w-full max-w-md animate-scale-in border-admin overflow-hidden">
+                        <div className="flex items-center justify-between px-8 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-dashboard-card sticky top-0 z-10">
+                            <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">
+                                {editingPlan ? 'Edit Plan' : 'Create Plan'}
+                            </h3>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-4">
                             <div>
                                 <label className="input-label">Plan Name</label>
                                 <input type="text" className="input-field" {...register('name', { required: true })} />
@@ -346,29 +355,29 @@ const SubscriptionPlans = () => {
                                     <input type="number" className="input-field" {...register('max_sub_agents', { required: true })} />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-y-2 py-2 border-y border-gray-100 dark:border-gray-700">
+                            <div className="grid grid-cols-2 gap-y-2 py-2 border-y border-admin">
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_appointments')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_appointments')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Appointments</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_theme')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_theme')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Theme Customization</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_sub_agents')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_sub_agents')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Sub-Agents</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_notifications')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_notifications')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Notifications</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_banners')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_banners')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Banners</span>
                                 </label>
                                 <label className="flex items-center space-x-2 text-sm">
-                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <input type="checkbox" {...register('allow_custom_domain')} className="w-4 h-4 rounded-admin border-gray-300 text-primary-600 focus:ring-primary-500" />
                                     <span>Custom Domain</span>
                                 </label>
                             </div>

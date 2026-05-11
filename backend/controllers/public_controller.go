@@ -52,7 +52,9 @@ func (pc *PublicController) GetListings(c *gin.Context) {
 
 	var listings []models.Listing
 	query := pc.db.Model(&models.Listing{}).
-		Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").
+		Preload("Media", func(db *gorm.DB) *gorm.DB {
+			return db.Order("sort_order ASC")
+		}).Preload("Agent").Preload("Agent.Theme").Preload("Station").
 		Where("is_published = ?", true)
 
 	tenantIDObj, hasTenant := c.Get("tenant_id")
@@ -431,7 +433,9 @@ func (pc *PublicController) GetListing(c *gin.Context) {
 	id := c.Param("id")
 
 	var listing models.Listing
-	query := pc.db.Preload("Media").Preload("Agent").Preload("Agent.Theme").Preload("Station").Where("id = ?", id)
+	query := pc.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Agent").Preload("Agent.Theme").Preload("Station").Where("id = ?", id)
 
 	// Tenant filtering
 	if tenantID, exists := c.Get("tenant_id"); exists {
@@ -526,7 +530,9 @@ func (pc *PublicController) GetListingsByStation(c *gin.Context) {
 	stationID := c.Param("stationId")
 
 	var listings []models.Listing
-	query := pc.db.Preload("Media").Preload("Agent").Where("station_id = ? AND is_published = ?", stationID, true)
+	query := pc.db.Preload("Media", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort_order ASC")
+	}).Preload("Agent").Where("station_id = ? AND is_published = ?", stationID, true)
 
 	// Tenant filtering
 	if tenantID, exists := c.Get("tenant_id"); exists {

@@ -163,17 +163,17 @@ const DashboardLayout = () => {
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="h-[30px] px-2.5 flex items-center gap-1.5 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 bg-primary-50 lg:bg-primary-50/50 dark:bg-primary-900/20 rounded-lg transition-all border border-gray-100 lg:border-gray-200 dark:lg:border-gray-700 hover:border-primary-200"
+                        className="h-[30px] px-3 flex items-center gap-2 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-admin transition-all border-admin"
                         title="View Site"
                     >
-                        <span className="hidden lg:inline text-xs font-bold">View Site</span>
                         <ArrowTopRightOnSquareIcon className="w-6 h-6 lg:w-4 lg:h-4" />
+                        <span className="hidden lg:inline text-[11px] font-bold">View Site</span>
                     </a>
 
                     {/* Dark Mode Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="w-[30px] h-[30px] flex items-center justify-center rounded-lg text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700"
+                        className="w-[30px] h-[30px] flex items-center justify-center rounded-admin text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border-admin"
                         title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {isDarkMode ? (
@@ -211,7 +211,7 @@ const DashboardLayout = () => {
                     {/* Toggle Button - Desktop Only */}
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="hidden lg:flex absolute -right-5 top-6 z-50 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 shadow-sm transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                        className="hidden lg:flex absolute -right-5 top-6 z-50 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 p-1 rounded-admin text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 shadow-sm transition-opacity duration-200 opacity-0 group-hover:opacity-100"
                     >
                         {isCollapsed ? (
                             <ChevronRightIcon className="w-4 h-4" />
@@ -228,7 +228,7 @@ const DashboardLayout = () => {
                                 href="/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="lg:hidden flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/10 mb-4"
+                                className="lg:hidden flex items-center space-x-3 px-3 py-3 rounded-admin transition-all duration-200 text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/10 mb-4"
                             >
                                 <ArrowTopRightOnSquareIcon className="w-5 h-5 flex-shrink-0" />
                                 <span className="text-sm font-bold tracking-tight">View Public Website</span>
@@ -240,7 +240,7 @@ const DashboardLayout = () => {
                                     to={item.href}
                                     title={isCollapsed ? item.name : ''}
                                     onClick={() => setSidebarOpen(false)}
-                                    className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
+                                    className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-admin transition-all duration-200 ${isActive(item.href)
                                         ? 'bg-primary-50/50 dark:bg-transparent text-primary-700 dark:text-primary-400'
                                         : 'text-gray-600 dark:text-gray-400 hover:bg-primary-50/30 dark:hover:bg-white/5'
                                         }`}
@@ -253,7 +253,7 @@ const DashboardLayout = () => {
 
                         {/* User section */}
                         <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card transition-colors duration-200">
-                            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-2 py-2 bg-gray-50 dark:bg-gray-700/30 rounded-xl transition-colors`}>
+                            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-2 py-2 bg-gray-50 dark:bg-gray-700/30 rounded-admin transition-colors`}>
                                 <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                                     {user?.first_name?.[0]?.toUpperCase() || 'U'}
                                 </div>
@@ -271,7 +271,7 @@ const DashboardLayout = () => {
                             <button
                                 onClick={handleLogout}
                                 title={isCollapsed ? 'Logout' : ''}
-                                className={`mt-3 w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center space-x-2'} px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors`}
+                                className={`mt-3 w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center space-x-2'} px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-admin transition-colors`}
                             >
                                 <ArrowLeftOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
                                 {!isCollapsed && <span className="text-sm font-medium">Logout</span>}

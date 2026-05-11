@@ -60,33 +60,33 @@ const NotificationCenter = () => {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="-mb-px flex space-x-8">
-                    <button
-                        onClick={() => setActiveTab('send')}
-                        className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'send'
-                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                            }`}
-                    >
-                        Send Notification
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('history')}
-                        className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
-                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                            }`}
-                    >
-                        History
-                    </button>
-                </nav>
+            <div className="flex items-center gap-1 mb-8">
+                <button
+                    onClick={() => setActiveTab('send')}
+                    className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+                        activeTab === 'send'
+                            ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }`}
+                >
+                    Send Notification
+                </button>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+                        activeTab === 'history'
+                            ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }`}
+                >
+                    History
+                </button>
             </div>
 
             {activeTab === 'send' && (
-                <div className="bg-white dark:bg-dashboard-card shadow rounded-xl p-6 max-w-2xl border dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-8 max-w-2xl shadow-sm border border-gray-100 dark:border-white/5">
                     {successMessage && (
-                        <div className="mb-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center border border-green-100 dark:border-green-800">
+                        <div className="mb-4 p-4 rounded-admin bg-green-50 dark:bg-green-900/20 flex items-center border border-green-100 dark:border-green-800">
                             <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
                             <span className="text-green-700 dark:text-green-300">{successMessage}</span>
                         </div>
@@ -188,7 +188,7 @@ const NotificationCenter = () => {
             )}
 
             {activeTab === 'history' && (
-                <div className="bg-white dark:bg-dashboard-card shadow overflow-hidden sm:rounded-xl border dark:border-gray-700">
+                <div className="bg-white dark:bg-dashboard-card overflow-hidden sm:rounded-admin border border-gray-100 dark:border-white/5 shadow-sm">
                     {history.length === 0 ? (
                         <EmptyState
                             icon={InboxIcon}
@@ -197,21 +197,21 @@ const NotificationCenter = () => {
                         />
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Message</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Target</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400">Type</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400">Title</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400">Message</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400">Target</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-dashboard-card divide-y divide-gray-200 dark:divide-gray-700">
                                     {history.map((notification) => (
                                         <tr key={notification.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${notification.type === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-admin text-xs font-medium ${notification.type === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
                                                     notification.type === 'system' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
                                                         'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                                                     }`}>

@@ -10,10 +10,10 @@ import {
     PhotoIcon,
     XMarkIcon,
     ArrowsPointingOutIcon,
-    PencilSquareIcon,
     CheckIcon,
     InboxIcon,
 } from '@heroicons/react/24/outline';
+import { TbEdit } from "react-icons/tb";
 import {
     DndContext,
     closestCenter,
@@ -70,7 +70,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
         >
             <td className="py-5 pl-6 min-w-[300px]">
                 <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
                         <BuildingOfficeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div className="flex flex-col">
@@ -87,7 +87,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
                 </div>
             </td>
             <td className="py-5 px-4">
-                <div className="inline-flex items-center px-4 py-1.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-primary-100/50 dark:border-primary-500/20">
+                <div className="inline-flex items-center px-4 py-1.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-admin text-[10px] font-black uppercase tracking-wider border border-primary-100/50 dark:border-primary-500/20">
                     <PhotoIcon className="w-3.5 h-3.5 mr-2" />
                     {group.items.length} {group.items.length === 1 ? 'Image' : 'Images'}
                 </div>
@@ -96,14 +96,14 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
                 <div className="flex items-center justify-end gap-2.5">
                     <button
                         onClick={() => onEdit(group)}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                         title="Edit Collection"
                     >
-                        <PencilSquareIcon className="w-5 h-5" />
+                        <TbEdit className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => onDelete(group)}
-                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                         title="Delete Collection"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -139,7 +139,7 @@ const SortablePreviewItem = ({ id, url, index, onRemove }) => {
         <div
             ref={setNodeRef}
             style={style}
-            className="relative aspect-square rounded-2xl overflow-hidden group border border-gray-100 dark:border-gray-800 shadow-sm transition-all"
+            className="relative aspect-square rounded-admin overflow-hidden group border border-gray-100 dark:border-gray-800 shadow-sm transition-all"
         >
             <img src={url} alt="Preview" className="w-full h-full object-cover" />
             
@@ -155,7 +155,7 @@ const SortablePreviewItem = ({ id, url, index, onRemove }) => {
                     e.stopPropagation();
                     onRemove(index);
                 }}
-                className="absolute top-2 right-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-lg backdrop-blur-sm z-10"
+                className="absolute top-2 right-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-admin opacity-0 group-hover:opacity-100 transition-all shadow-lg backdrop-blur-sm z-10"
             >
                 <XMarkIcon className="w-4 h-4" />
             </button>
@@ -378,12 +378,12 @@ const FacilityManagement = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
                             <PhotoIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Facility & Building Images
@@ -458,19 +458,19 @@ const FacilityManagement = () => {
                     onAction={() => setIsUploadModalOpen(true)}
                 />
             ) : (
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
                     >
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                                 <thead>
-                                    <tr className="bg-[#F9FAFB] dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
-                                        <th className="px-6 py-4 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Unit Name</th>
-                                        <th className="px-6 py-4 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Image Count</th>
-                                        <th className="px-6 py-4 text-right text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    <tr className="bg-[#F9FAFB] dark:bg-gray-800/50">
+                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Unit Name</th>
+                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Image Count</th>
+                                        <th className="px-6 py-3 text-right text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <SortableContext
@@ -497,19 +497,19 @@ const FacilityManagement = () => {
                     </DndContext>
 
                     {/* Pagination */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5 border-t border-gray-50 dark:border-gray-800">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-3">
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                             Showing <span className="font-bold text-gray-900 dark:text-white">{pageIndex * pageSize + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min((pageIndex + 1) * pageSize, filteredGroups.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredGroups.length}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                            <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400 outline-none">
                                 <ChevronDoubleLeftIcon className="w-4 h-4" />
                             </button>
-                            <button onClick={() => setPageIndex(prev => Math.max(0, prev - 1))} disabled={pageIndex === 0} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                            <button onClick={() => setPageIndex(prev => Math.max(0, prev - 1))} disabled={pageIndex === 0} className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400 outline-none">
                                 <ChevronLeftIcon className="w-4 h-4" />
                             </button>
                             <div className="flex items-center space-x-2">
-                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Page</span>
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-wider">Page</span>
                                 <input 
                                     type="number" 
                                     min={1} 
@@ -519,14 +519,14 @@ const FacilityManagement = () => {
                                         const val = e.target.value ? Number(e.target.value) - 1 : 0;
                                         setPageIndex(Math.max(0, Math.min(val, pageCount - 1)));
                                     }} 
-                                    className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
+                                    className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner" 
                                 />
                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">of {pageCount || 1}</span>
                             </div>
-                            <button onClick={() => setPageIndex(prev => Math.min(pageCount - 1, prev + 1))} disabled={pageIndex >= pageCount - 1} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                            <button onClick={() => setPageIndex(prev => Math.min(pageCount - 1, prev + 1))} disabled={pageIndex >= pageCount - 1} className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400 outline-none">
                                 <ChevronRightIcon className="w-4 h-4" />
                             </button>
-                            <button onClick={() => setPageIndex(pageCount - 1)} disabled={pageIndex >= pageCount - 1} className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none transition-all">
+                            <button onClick={() => setPageIndex(pageCount - 1)} disabled={pageIndex >= pageCount - 1} className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400 outline-none">
                                 <ChevronDoubleRightIcon className="w-4 h-4" />
                             </button>
                         </div>
@@ -543,18 +543,18 @@ const FacilityManagement = () => {
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         onClick={() => setIsEditModalOpen(false)}
                     />
-                    <div className="relative bg-white dark:bg-dashboard-card w-full max-w-5xl h-[90vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
+                    <div className="relative bg-white dark:bg-dashboard-card w-full max-w-5xl h-[90vh] flex flex-col rounded-admin shadow-2xl overflow-hidden animate-scale-in">
                         {/* Header */}
-                        <div className="flex-none px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-dashboard-card z-10">
+                        <div className="flex-none px-8 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-dashboard-card z-10 sticky top-0">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Edit Collection</h3>
-                                <p className="text-xs text-gray-500 mt-0.5">Managing: <span className="text-primary-600 font-bold">{editingItem.name}</span></p>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white leading-tight">Edit Collection</h3>
+                                <p className="text-[10px] text-gray-500 mt-0.5">Managing: <span className="text-primary-600 font-bold">{editingItem.name}</span></p>
                             </div>
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
                             >
-                                <XMarkIcon className="w-6 h-6" />
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -579,11 +579,11 @@ const FacilityManagement = () => {
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             placeholder="e.g. Unit 101, Lobby, Swimming Pool"
-                                            className="input-field px-4 py-3"
+                                            className="input-field px-4 py-3 rounded-admin"
                                         />
                                     </div>
 
-                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-900/30">
+                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-admin border border-primary-100 dark:border-primary-900/30">
                                         <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
                                             <strong>Tip:</strong> Drag and drop images to change their display order. Changes are saved when you click Update.
                                         </p>
@@ -651,7 +651,7 @@ const FacilityManagement = () => {
                                                 {/* Add Button */}
                                                 <button
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
+                                                    className="aspect-square rounded-admin border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
                                                 >
                                                     <PlusIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
                                                     <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Add More</span>
@@ -679,7 +679,7 @@ const FacilityManagement = () => {
                                     setIsEditModalOpen(false);
                                     resetUploadState();
                                 }}
-                                className="px-8 h-12 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                className="px-8 h-12 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-admin"
                             >
                                 Cancel
                             </button>
@@ -718,7 +718,7 @@ const FacilityManagement = () => {
                                     }
                                 }}
                                 disabled={uploading}
-                                className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
+                                className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
                             >
                                 {uploading ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
@@ -748,21 +748,18 @@ const FacilityManagement = () => {
                             resetUploadState();
                         }}
                     />
-                    <div className="relative bg-white dark:bg-dashboard-card w-full max-w-5xl h-[85vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden animate-fade-up">
+                    <div className="relative bg-white dark:bg-dashboard-card w-full max-w-5xl h-[85vh] flex flex-col rounded-admin shadow-2xl overflow-hidden animate-fade-up">
                         {/* Header */}
-                        <div className="flex-none px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-dashboard-card z-10">
-
-
-
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Create New Collection</h3>
+                        <div className="flex-none px-8 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-dashboard-card z-10 sticky top-0">
+                            <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">Create New Collection</h3>
                             <button
                                 onClick={() => {
                                     setIsUploadModalOpen(false);
                                     resetUploadState();
                                 }}
-                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
                             >
-                                <XMarkIcon className="w-6 h-6" />
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -787,11 +784,11 @@ const FacilityManagement = () => {
                                             value={uploadName}
                                             onChange={(e) => setUploadName(e.target.value)}
                                             placeholder="e.g. Unit 101, Lobby, Swimming Pool"
-                                            className="input-field px-4 py-3"
+                                            className="input-field px-4 py-3 rounded-admin"
                                         />
                                     </div>
 
-                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-900/30">
+                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-admin border border-primary-100 dark:border-primary-900/30">
                                         <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
                                             <strong>Tip:</strong> You can reorder images by dragging them in the main gallery after uploading.
                                         </p>
@@ -828,7 +825,7 @@ const FacilityManagement = () => {
                                                 {/* Add Button integrated in grid */}
                                                 <button
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
+                                                    className="aspect-square rounded-admin border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
                                                 >
                                                     <PlusIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
                                                     <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Add More</span>
@@ -858,7 +855,7 @@ const FacilityManagement = () => {
                                     setIsUploadModalOpen(false);
                                     resetUploadState();
                                 }}
-                                className="px-8 h-12 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                className="px-8 h-12 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-admin"
                             >
                                 Cancel
                             </button>
@@ -866,7 +863,7 @@ const FacilityManagement = () => {
                                 onClick={handleUpload}
                                 disabled={selectedFiles.length === 0 || uploading}
                                 className={`
-                                    flex-1 sm:flex-none sm:min-w-[240px] h-12 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2
+                                    flex-1 sm:flex-none sm:min-w-[240px] h-12 rounded-admin text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2
                                     ${selectedFiles.length === 0 || uploading
                                         ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
                                         : 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-500/20 active:scale-[0.98]'}

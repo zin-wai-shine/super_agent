@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { TbEdit } from "react-icons/tb";
 import { useForm, Controller } from 'react-hook-form';
 import { adminApi } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -32,6 +33,7 @@ import {
     ArrowPathIcon,
     InboxIcon,
     UsersIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
 
@@ -372,9 +374,9 @@ const AgentManagement = () => {
                         <div className="flex items-center justify-end gap-2.5">
                             <button
                                 onClick={() => handleSuspend(agent.id || agent.ID, isActive)}
-                                className={`p-2.5 rounded-xl transition-all duration-200 border shadow-sm flex items-center justify-center ${isActive
-                                    ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 border-amber-100/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 dark:hover:bg-amber-500/20'
-                                    : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-100/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20'
+                                className={`p-2.5 rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center ${isActive
+                                    ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
+                                    : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
                                     }`}
                                 title={isActive ? 'Suspend Agent' : 'Reactivate Agent'}
                             >
@@ -382,14 +384,14 @@ const AgentManagement = () => {
                             </button>
                             <button
                                 onClick={() => openModal(agent)}
-                                className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                                className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                                 title="Edit Agent"
                             >
-                                <PencilSquareIcon className="w-5 h-5" />
+                                <TbEdit className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => handleDelete(agent.id || agent.ID)}
-                                className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                                 title="Delete Agent"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -428,7 +430,7 @@ const AgentManagement = () => {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
+                    <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
                         <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     Agent Management
@@ -459,6 +461,24 @@ const AgentManagement = () => {
                                 DropdownIndicator: () => null,
                                 IndicatorSeparator: () => null
                             }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                }),
+                                valueContainer: (base) => ({
+                                    ...base,
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    margin: '0',
+                                    textAlign: 'center',
+                                    width: '100%'
+                                })
+                            }}
                         />
                     </div>
                 </div>
@@ -483,7 +503,7 @@ const AgentManagement = () => {
                     {statusFilter !== 'all' && (
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-admin transition-colors -ml-1"
                             title="Reset Status"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -509,7 +529,7 @@ const AgentManagement = () => {
                     {planFilter !== 'all' && (
                         <button
                             onClick={() => setPlanFilter('all')}
-                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors -ml-1"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-admin transition-colors -ml-1"
                             title="Reset Plan"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -560,7 +580,7 @@ const AgentManagement = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-xl transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-600/10 backdrop-blur-sm rounded-admin transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
@@ -568,9 +588,9 @@ const AgentManagement = () => {
 
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-admin overflow-hidden border-admin bg-white dark:bg-dashboard-card w-[350px]">
                                 {/* Custom Header */}
-                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center justify-between p-3 border-b border-admin">
                                     <button
                                         onClick={() => setShownDate(subMonths(shownDate, 1))}
                                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400"
@@ -655,7 +675,7 @@ const AgentManagement = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                 {loading ? (
                     <div className="flex items-center justify-center h-48">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -663,14 +683,14 @@ const AgentManagement = () => {
                 ) : agents.length > 0 ? (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     {table.getHeaderGroups().map((headerGroup) => (
                                         <tr key={headerGroup.id}>
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-                                                    className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+                                                    className="text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400"
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div
@@ -738,8 +758,8 @@ const AgentManagement = () => {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-3 bg-gray-50 dark:bg-gray-800/50">
+                            <div className="text-[11px] text-gray-500 font-bold tracking-normal">
                                 <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
 
@@ -747,20 +767,20 @@ const AgentManagement = () => {
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
                                 <div className="flex items-center gap-2 mx-2">
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -770,22 +790,22 @@ const AgentManagement = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                                     />
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
 
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -811,11 +831,19 @@ const AgentManagement = () => {
             {
                 showModal && (
                     <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-dashboard-card border dark:border-gray-700 rounded-2xl w-full max-w-lg p-6 animate-scale-in">
-                            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-                                {editingAgent?.id || editingAgent?.ID ? 'Edit Agent' : 'Create Agent'}
-                            </h2>
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="bg-white dark:bg-dashboard-card rounded-admin w-full max-w-lg animate-scale-in border-admin overflow-hidden">
+                            <div className="flex items-center justify-between px-8 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-dashboard-card sticky top-0 z-10">
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">
+                                    {editingAgent?.id || editingAgent?.ID ? 'Edit Agent' : 'Create Agent'}
+                                </h3>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                                >
+                                    <XMarkIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-4">
                                 <div>
                                     <label className="input-label">Company Name *</label>
                                     <input

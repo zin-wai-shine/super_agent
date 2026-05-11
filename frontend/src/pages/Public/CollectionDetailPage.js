@@ -415,37 +415,41 @@ const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, nav
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                        <div className="mt-16 flex items-center justify-center gap-8">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
-                                    currentPage === 1 
-                                    ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
-                                    : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
-                                }`}
-                            >
-                                <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
-                            </button>
+                        <>
+                            <div className="mt-16 flex items-center justify-center gap-8">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
+                                        currentPage === 1 
+                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                    }`}
+                                >
+                                    <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
+                                </button>
 
-                            <div className="flex flex-col items-center">
-                                <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                    Page {currentPage} of {totalPages}
-                                </span>
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                </div>
+
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
+                                        currentPage === totalPages 
+                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                    }`}
+                                >
+                                    <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
+                                </button>
                             </div>
-
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className={`w-14 h-14 flex items-center justify-center rounded-full transition-all duration-300 border ${
-                                    currentPage === totalPages 
-                                    ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
-                                    : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
-                                }`}
-                            >
-                                <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
-                            </button>
-                        </div>
+                            {/* Mobile-only spacer so the bottom nav bar never overlaps the pagination */}
+                            <div className="block lg:hidden h-24" />
+                        </>
                     )}
                 </>
             ) : (

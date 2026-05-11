@@ -7,8 +7,8 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     control: (base, state) => ({
         ...base,
         minHeight: isDashboard ? '34px' : '38px',
-        borderRadius: '12px',
-        borderColor: state.isFocused ? 'var(--primary-color)' : (isDarkMode ? '#272E3B' : '#e5e7eb'),
+        borderRadius: 'var(--admin-radius, 12px)',
+        borderColor: state.isFocused ? 'var(--primary-color)' : 'var(--admin-border-color)',
         boxShadow: 'none',
         backgroundColor: state.isDisabled 
             ? (isDarkMode ? 'rgba(30, 35, 48, 0.5)' : '#f9fafb') 
@@ -43,19 +43,20 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
     }),
     menu: (base) => ({
         ...base,
-        borderRadius: '12px',
-        border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+        borderRadius: 'var(--admin-radius, 12px)',
+        border: '1px solid var(--admin-border-color)',
         backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
         overflow: 'hidden',
         zIndex: 9999,
         padding: '0',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         animation: 'slideIn 0.2s ease-out',
+        marginTop: '8px',
     }),
     menuList: (base) => ({
         ...base,
-        maxHeight: '180px',
-        padding: '0',
+        maxHeight: '300px',
+        padding: '6px 0',
         backgroundColor: 'transparent',
         '&::-webkit-scrollbar': {
             width: '2px',
@@ -104,7 +105,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
                 ? 'rgba(255, 90, 31, 1)'
                 : (isDarkMode ? '#9ca3af' : '#4b5563'),
             borderRadius: '0',
-            padding: '6px 16px',
+            padding: '10px 16px',
             fontSize: isDashboard ? '13px' : '14px',
             fontWeight: state.isSelected ? '600' : '500',
             textTransform: 'none',
@@ -185,7 +186,7 @@ const getCustomStyles = (isDarkMode, isDashboard = false) => ({
 // Custom theme that matches our design system
 const customTheme = (theme) => ({
     ...theme,
-    borderRadius: 12,
+    borderRadius: 12, // Default fallback, overridden by styles.control
     colors: {
         ...theme.colors,
         primary: 'var(--primary-color)',

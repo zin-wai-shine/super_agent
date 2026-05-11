@@ -61,7 +61,7 @@ const NotificationBell = () => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-[30px] h-[30px] flex items-center justify-center rounded-lg text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors relative border border-gray-100 dark:border-gray-700"
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-admin text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors relative border-admin"
             >
                 <BellIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                 {unreadCount > 0 && (
@@ -75,7 +75,7 @@ const NotificationBell = () => {
                         className="fixed inset-0 z-30"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-40 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-admin shadow-lg ring-1 ring-black ring-opacity-5 z-40 overflow-hidden">
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 className="font-medium text-gray-900">Notifications</h3>
                             <Link

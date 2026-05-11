@@ -10,6 +10,7 @@ import {
     AdjustmentsHorizontalIcon,
     EyeIcon,
     CheckIcon,
+    CheckBadgeIcon,
     XMarkIcon,
     TrashIcon,
     ClockIcon,
@@ -283,7 +284,7 @@ const AppointmentManagement = () => {
     const StatusBadge = ({ status }) => {
         const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-admin text-xs font-bold ${config.bg} ${config.text}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
                 {config.label}
             </span>
@@ -298,37 +299,42 @@ const AppointmentManagement = () => {
                     <>
                         <button
                             onClick={() => handleStatusChange(appointment, 'confirmed')}
-                            className="p-2.5 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20 rounded-xl transition-all border border-emerald-100/20 dark:border-emerald-500/20 shadow-sm flex items-center justify-center"
+                            className="px-3 py-2 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20 rounded-admin transition-all border border-emerald-100/20 dark:border-emerald-500/20 shadow-sm flex items-center gap-1.5"
                             title="Confirm"
                         >
-                            <CheckIcon className="w-5 h-5" />
+                            <CheckIcon className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Confirm</span>
                         </button>
                         <button
                             onClick={() => handleStatusChange(appointment, 'cancelled')}
-                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            className="px-3 py-2 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center gap-1.5"
                             title="Cancel"
                         >
-                            <XMarkIcon className="w-5 h-5" />
+                            <XMarkIcon className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Cancel</span>
                         </button>
                     </>
                 )}
                 {status === 'confirmed' && (
                     <button
                         onClick={() => handleStatusChange(appointment, 'completed')}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="px-3 py-2 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center gap-1.5"
                         title="Mark as Completed"
                     >
-                        <CheckBadgeIcon className="w-5 h-5" />
+                        <CheckBadgeIcon className="w-4 h-4" />
+                        <span className="text-xs font-semibold">Complete</span>
                     </button>
                 )}
                 {status === 'completed' && (
-                    <div className="p-2.5 text-gray-400 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-100/20 dark:border-gray-700/20 opacity-50 cursor-default flex items-center justify-center">
-                        <CheckBadgeIcon className="w-5 h-5" />
+                    <div className="px-3 py-2 text-gray-400 bg-gray-50/50 dark:bg-gray-800/50 rounded-admin border border-gray-100/20 dark:border-gray-700/20 opacity-50 cursor-default flex items-center gap-1.5">
+                        <CheckBadgeIcon className="w-4 h-4" />
+                        <span className="text-xs font-semibold">Done</span>
                     </div>
                 )}
                 {status === 'cancelled' && (
-                    <div className="p-2.5 text-red-400 bg-red-50/50 dark:bg-red-500/10 rounded-xl border border-red-100/20 dark:border-red-500/20 opacity-50 cursor-default flex items-center justify-center">
-                        <XMarkIcon className="w-5 h-5" />
+                    <div className="px-3 py-2 text-red-400 bg-red-50/50 dark:bg-red-500/10 rounded-admin border border-red-100/20 dark:border-red-500/20 opacity-50 cursor-default flex items-center gap-1.5">
+                        <XMarkIcon className="w-4 h-4" />
+                        <span className="text-xs font-semibold">Cancelled</span>
                     </div>
                 )}
             </div>
@@ -341,7 +347,7 @@ const AppointmentManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
                             <CalendarDaysIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Appointments
@@ -357,7 +363,7 @@ const AppointmentManagement = () => {
                         const count = stats[key] || 0;
                         return (
                             <div key={key} className="flex items-center space-x-3 transition-all hover:translate-y-[-2px] duration-300">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm border-2 border-white dark:border-gray-800 ${config.bg.replace('dark:', '')} bg-opacity-20`}>
+                                <div className={`w-10 h-10 rounded-admin flex items-center justify-center font-bold text-sm shadow-sm border-2 border-white dark:border-gray-800 ${config.bg.replace('dark:', '')} bg-opacity-20`}>
                                     <span className={config.text}>{count}</span>
                                 </div>
                                 <div className="flex flex-col">
@@ -490,15 +496,15 @@ const AppointmentManagement = () => {
 
                         <button
                             onClick={() => handleDatePresetChange('alltime')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-admin transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                             title="Reset Filters"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
-                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-admin overflow-hidden border-admin bg-white dark:bg-dashboard-card w-[350px]">
+                                <div className="flex items-center justify-between p-3 border-b border-admin">
                                     <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeftIcon className="w-5 h-5" /></button>
                                     <div className="flex items-center gap-2">
                                         <div className="w-32">
@@ -562,7 +568,7 @@ const AppointmentManagement = () => {
             </div>
 
             {/* Appointments Table */}
-            <div className="bg-white dark:bg-dashboard-card border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-dashboard-card border-admin rounded-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -579,16 +585,16 @@ const AppointmentManagement = () => {
                     <>
                         {/* Desktop Table */}
                         <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     <tr>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visitor</th>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Listing</th>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Booking Date</th>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Preferred Time</th>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                        <th className="text-left px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Decision</th>
-                                        <th className="text-right px-6 py-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Visitor</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Listing</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Booking Date</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Preferred Time</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Status</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Decision</th>
+                                        <th className="text-right px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -599,13 +605,13 @@ const AppointmentManagement = () => {
                                                     <div className="flex items-center gap-2">
                                                         <div className="font-semibold text-gray-900 dark:text-white text-sm whitespace-nowrap">{appointment.full_name}</div>
                                                         {appointment.is_registered && (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400 border border-blue-100 dark:border-blue-800" title="Registered Site User">
-                                                                <CheckCircleIcon className="w-2.5 h-2.5" />
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-admin text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-600/10 dark:text-blue-400 border border-blue-100 dark:border-blue-800 whitespace-nowrap" title="Registered Site User">
+                                                                <CheckCircleIcon className="w-2.5 h-2.5 flex-shrink-0" />
                                                                 <span>Site User</span>
                                                             </span>
                                                         )}
                                                         {appointment.late_cancellation_count >= 3 && (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-400/10 text-red-700 dark:text-red-400 text-[9px] font-bold animate-pulse border border-red-200 dark:border-red-800" title={`Warning: ${appointment.late_cancellation_count} late cancellations`}>
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-admin bg-red-100 dark:bg-red-400/10 text-red-700 dark:text-red-400 text-[9px] font-bold animate-pulse border border-red-200 dark:border-red-800" title={`Warning: ${appointment.late_cancellation_count} late cancellations`}>
                                                                 <ExclamationTriangleIcon className="w-2.5 h-2.5" />
                                                                 <span>Warning</span>
                                                             </div>
@@ -652,10 +658,11 @@ const AppointmentManagement = () => {
                                                     {appointment.status === 'cancelled' && appointment.cancellation_reason && (
                                                         <button 
                                                             onClick={() => openDetailModal(appointment)}
-                                                            className="text-red-500 hover:text-red-600 transition-colors"
+                                                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-admin text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 transition-all border border-red-100 dark:border-red-500/20"
                                                             title={`Reason: ${appointment.cancellation_reason}`}
                                                         >
-                                                            <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
+                                                            <ChatBubbleBottomCenterTextIcon className="w-3.5 h-3.5" />
+                                                            <span className="text-xs font-semibold">Reason</span>
                                                         </button>
                                                     )}
                                                 </div>
@@ -667,14 +674,14 @@ const AppointmentManagement = () => {
                                                 <div className="flex items-center justify-end gap-2.5">
                                                     <button
                                                         onClick={() => openDetailModal(appointment)}
-                                                        className="p-2.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/50 dark:border-primary-500/20 shadow-sm"
+                                                        className="p-2.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/50 dark:border-primary-500/20 shadow-sm"
                                                         title="View Details"
                                                     >
                                                         <EyeIcon className="w-5 h-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setShowDeleteConfirm(appointment.id)}
-                                                        className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/50 dark:border-red-500/20 shadow-sm"
+                                                        className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/50 dark:border-red-500/20 shadow-sm"
                                                         title="Delete"
                                                     >
                                                         <TrashIcon className="w-5 h-5" />
@@ -688,28 +695,28 @@ const AppointmentManagement = () => {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-3 bg-gray-50 dark:bg-gray-800/50">
+                            <div className="text-[11px] text-gray-500 font-bold tracking-normal">
                                 <span className="text-gray-900 dark:text-white">{total}</span> results
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setPage(1)}
                                     disabled={page === 1}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
                                 <div className="flex items-center gap-2 mx-2">
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -719,22 +726,22 @@ const AppointmentManagement = () => {
                                             const p = e.target.value ? Number(e.target.value) : 1;
                                             setPage(Math.min(Math.max(1, p), totalPages));
                                         }}
-                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                                     />
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {totalPages || 1}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal whitespace-nowrap">of {totalPages || 1}</span>
                                 </div>
 
                                 <button
                                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                     disabled={page === totalPages}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setPage(totalPages)}
                                     disabled={page === totalPages}
-                                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -748,14 +755,14 @@ const AppointmentManagement = () => {
             {showDetailModal && selectedAppointment && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDetailModal(false)} />
-                    <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
-                        <div className="flex-none bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-8 py-6 flex items-center justify-between z-10">
+                    <div className="relative bg-white dark:bg-dashboard-card rounded-admin shadow-2xl border-admin max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+                        <div className="flex-none bg-white dark:bg-dashboard-card border-b border-admin px-8 py-3 flex items-center justify-between z-10 sticky top-0">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Appointment Details</h3>
-                                <p className="text-xs text-gray-500 mt-0.5">ID: {selectedAppointment.id}</p>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white leading-tight">Appointment Details</h3>
+                                <p className="text-[10px] text-gray-500 mt-0.5">ID: {selectedAppointment.id}</p>
                             </div>
                             <button onClick={() => setShowDetailModal(false)} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
-                                <XMarkIcon className="w-6 h-6" />
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -769,7 +776,7 @@ const AppointmentManagement = () => {
 
                             {/* Cancellation Reason */}
                             {selectedAppointment.status === 'cancelled' && selectedAppointment.cancellation_reason && (
-                                <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-admin p-5 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <h4 className="text-xs font-bold text-rose-500 mb-2 flex items-center gap-2">
                                         <ExclamationTriangleIcon className="w-4 h-4" />
                                         Cancellation Reason
@@ -781,7 +788,7 @@ const AppointmentManagement = () => {
                             )}
 
                             {/* Visitor Info */}
-                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-3">
+                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-admin p-4 space-y-3">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Visitor</h4>
                                 <div className="flex items-center gap-3">
                                     <PiUser className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -798,7 +805,7 @@ const AppointmentManagement = () => {
                             </div>
 
                             {/* Appointment Info */}
-                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-3">
+                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-admin p-4 space-y-3">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Schedule</h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
@@ -817,7 +824,7 @@ const AppointmentManagement = () => {
                                     </div>
                                     <div>
                                         <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Purpose</div>
-                                        <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${selectedAppointment.purpose === 'buy'
+                                        <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-admin ${selectedAppointment.purpose === 'buy'
                                             ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
                                             : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300'
                                             }`}>
@@ -833,7 +840,7 @@ const AppointmentManagement = () => {
 
                             {/* Listing Info */}
                             {selectedAppointment.listing && (
-                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
+                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-admin p-4">
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Property</h4>
                                     <div className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{selectedAppointment.listing.title}</div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -845,7 +852,7 @@ const AppointmentManagement = () => {
 
                             {/* Message */}
                             {selectedAppointment.message && (
-                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
+                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-admin p-4">
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1">
                                         <ChatBubbleBottomCenterTextIcon className="w-3.5 h-3.5" /> Visitor Message
                                     </h4>
@@ -861,12 +868,12 @@ const AppointmentManagement = () => {
                                     onChange={(e) => setAgentNotes(e.target.value)}
                                     rows={3}
                                     placeholder="Add private notes about this appointment..."
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none resize-none"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-admin text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none resize-none"
                                 />
                                 <button
                                     onClick={handleSaveNotes}
                                     disabled={updating || agentNotes === (selectedAppointment.agent_notes || '')}
-                                    className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-admin hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     {updating ? 'Saving...' : 'Save Notes'}
                                 </button>
@@ -875,7 +882,7 @@ const AppointmentManagement = () => {
                         <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end">
                             <button 
                                 onClick={() => setShowDetailModal(false)}
-                                className="px-10 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-gray-900/10"
+                                className="px-10 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold rounded-admin hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-gray-900/10"
                             >
                                 Close
                             </button>
@@ -893,7 +900,7 @@ const AppointmentManagement = () => {
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(null)} />
 
 
-                    <div className="relative bg-white dark:bg-dashboard-card rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+                    <div className="relative bg-white dark:bg-dashboard-card rounded-admin shadow-2xl max-w-sm w-full p-6 text-center">
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
                         </div>
@@ -902,13 +909,13 @@ const AppointmentManagement = () => {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowDeleteConfirm(null)}
-                                className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-admin font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => handleDelete(showDeleteConfirm)}
-                                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors"
+                                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-admin font-semibold text-sm hover:bg-red-700 transition-colors"
                             >
                                 Delete
                             </button>

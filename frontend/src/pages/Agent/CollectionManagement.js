@@ -169,15 +169,15 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
 
             <div className="relative w-full max-w-xl bg-white dark:bg-dashboard-card rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
-                    <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between px-8 py-3 border-b border-gray-100 dark:border-white/5 bg-white dark:bg-dashboard-card sticky top-0 z-10">
+                    <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">
                         Adjust {parent ? `"${parent.name}"` : 'Main Categories'} Order
                     </h3>
                     <button 
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
                     >
-                        <BsIcons.BsX className="w-6 h-6" />
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -517,8 +517,8 @@ const CollectionManagement = () => {
     });
 
     const TablePagination = ({ table }) => (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-gray-800/30">
-            <div className="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3 bg-gray-50/50 dark:bg-gray-800/30">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 font-bold tracking-normal">
                 <span className="text-gray-900 dark:text-white">
                     {table.getFilteredRowModel().rows.length}
                 </span> results
@@ -528,20 +528,20 @@ const CollectionManagement = () => {
                 <button
                     onClick={() => table.setPageIndex(0)}
                     disabled={!table.getCanPreviousPage()}
-                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
-                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronLeftIcon className="w-4 h-4" />
                 </button>
 
                 <div className="flex items-center gap-2 mx-2">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                    <span className="text-[11px] font-bold text-gray-500 tracking-normal">Page</span>
                     <input
                         type="number"
                         min={1}
@@ -551,22 +551,22 @@ const CollectionManagement = () => {
                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                             table.setPageIndex(page);
                         }}
-                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                     />
-                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
+                    <span className="text-[11px] font-bold text-gray-500 tracking-normal whitespace-nowrap">of {table.getPageCount() || 1}</span>
                 </div>
 
                 <button
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
-                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronRightIcon className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                     disabled={!table.getCanNextPage()}
-                    className="p-2 border border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
+                    className="p-2 border-admin rounded-admin hover:bg-white dark:hover:bg-gray-800 disabled:opacity-30 transition-all text-gray-400"
                 >
                     <ChevronDoubleRightIcon className="w-4 h-4" />
                 </button>
@@ -575,7 +575,7 @@ const CollectionManagement = () => {
     );
 
     return (
-        <div className="space-y-6 max-w-[1600px] mx-auto">
+        <div className="space-y-6">
             {/* Header Area */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -742,9 +742,9 @@ const CollectionManagement = () => {
     );
 };
 
-const TableView = ({ table, loading, emptyTitle, colorTheme = "primary", pagination }) => {
+const TableView = ({ table, loading, emptyTitle, colorTheme = 'primary', pagination }) => {
     return (
-        <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden min-h-[400px] flex flex-col">
+        <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden min-h-[400px] flex flex-col divide-y divide-gray-100 dark:divide-gray-700">
             {loading ? (
                 <div className="flex-1 flex items-center justify-center p-12">
                     <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${colorTheme === 'primary' ? 'border-primary-600' : 'border-secondary-600'}`}></div>
@@ -752,14 +752,14 @@ const TableView = ({ table, loading, emptyTitle, colorTheme = "primary", paginat
             ) : table.getRowModel().rows.length > 0 ? (
                 <>
                     <div className="overflow-x-auto flex-1">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                             <thead className="bg-[#F9FAFB] dark:bg-gray-800/30">
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <tr key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
                                             <th
                                                 key={header.id}
-                                                className={`px-5 py-3 text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tight ${header.id === 'actions' ? 'text-right' : ''}`}
+                                                className={`px-5 py-3 text-[13px] font-medium text-gray-500 dark:text-gray-400 tracking-tight ${header.id === 'actions' ? 'text-right' : ''}`}
                                             >
                                                 {header.isPlaceholder ? null : (
                                                     <div

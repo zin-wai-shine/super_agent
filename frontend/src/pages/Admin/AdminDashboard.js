@@ -76,7 +76,7 @@ const AdminDashboard = () => {
             {/* Stats Grid - Clean Minimal Design */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((stat) => (
-                    <div key={stat.name} className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-5 border border-gray-200 dark:border-white/5 hover:shadow-md transition-all duration-300">
+                    <div key={stat.name} className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-admin p-5 border-admin transition-all duration-300">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{stat.name}</p>
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
                                     <span className="text-green-600 dark:text-green-500 font-medium">{stat.change}</span>
                                 </div>
                             </div>
-                            <div className={`p-2.5 rounded-xl ${stat.iconBg} dark:backdrop-blur-md border border-transparent dark:border-white/5`}>
+                            <div className={`p-2.5 rounded-admin ${stat.iconBg} dark:backdrop-blur-md border border-transparent dark:border-white/5`}>
                                 <stat.icon className="w-5 h-5" aria-hidden="true" />
                             </div>
                         </div>
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
             {/* Charts Grid - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
-                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-admin p-6 border-admin transition-all duration-300">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revenue Overview</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Monthly revenue performance</p>
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Activity Chart */}
-                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="bg-white dark:bg-[#1e2330]/40 dark:backdrop-blur-xl rounded-admin p-6 border-admin transition-all duration-300">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">User Activity</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly platform engagement</p>
@@ -117,7 +117,7 @@ const AdminDashboard = () => {
 
             {/* Quick Actions - Clean Minimal Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 border-admin transition-all duration-300 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-blue-500/10 transition-colors"></div>
                     <div className="relative z-10">
                         <div className="flex items-center space-x-3 mb-4">
@@ -129,14 +129,14 @@ const AdminDashboard = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm font-medium">Oversee all registered agents, manage approvals, and monitor system-wide activity.</p>
                         <Link
                             to="/admin/agents"
-                            className="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[12px] font-bold hover:bg-blue-700 transition-all duration-200"
+                            className="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-admin text-[12px] font-bold hover:bg-blue-700 transition-all duration-200"
                         >
                             View All Agents
                         </Link>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-dashboard-card rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <div className="bg-white dark:bg-dashboard-card rounded-admin p-6 border-admin transition-all duration-300 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-emerald-500/10 transition-colors"></div>
                     <div className="relative z-10">
                         <div className="flex items-center space-x-3 mb-4">
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm font-medium">Configure pricing tiers, update features, and manage billing cycles.</p>
                         <Link
                             to="/admin/plans"
-                            className="inline-flex items-center bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[12px] font-bold hover:bg-emerald-700 transition-all duration-200"
+                            className="inline-flex items-center bg-emerald-600 text-white px-5 py-2.5 rounded-admin text-[12px] font-bold hover:bg-emerald-700 transition-all duration-200"
                         >
                             Manage Plans
                         </Link>
@@ -157,14 +157,14 @@ const AdminDashboard = () => {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden">
+                <div className="p-5 border-b border-admin flex items-center justify-between">
                     <h2 className="text-base font-bold text-gray-900 dark:text-white">Recent Activity</h2>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                         <thead>
-                            <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
+                            <tr className="bg-gray-50/50 dark:bg-gray-800/30">
                                 <th className="px-6 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
                                 <th className="px-6 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">Time</th>
                                 <th className="px-6 py-3 text-[12px] font-semibold text-gray-500 uppercase tracking-wider text-right">Status</th>

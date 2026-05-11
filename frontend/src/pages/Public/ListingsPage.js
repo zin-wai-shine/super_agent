@@ -2005,65 +2005,69 @@ const ListingsPage = () => {
                                                 ))}
                                                 {/* Pagination Controls */}
                                                 {total > (isGoogleMapOpen ? 10 : 20) && (
-                                                     <div className="py-16 flex flex-col items-center justify-center min-h-[160px] w-full col-span-full">
-                                                         <div className="flex items-center gap-8">
-                                                             <button
-                                                                 onClick={() => {
-                                                                     ignoreBoundsChangeRef.current = true;
-                                                                     setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
-                                                                     setPage(p => Math.max(1, p - 1));
-                                                                     setTimeout(() => {
-                                                                         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                                                                         document.documentElement.scrollTop = 0;
-                                                                         document.body.scrollTop = 0;
-                                                                     }, 10);
-                                                                 }}
-                                                                 disabled={page === 1}
-                                                                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
-                                                                     page === 1 
-                                                                     ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
-                                                                     : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
-                                                                 }`}
-                                                                 aria-label="Previous Page"
-                                                             >
-                                                                 <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
-                                                             </button>
+                                                    <>
+                                                        <div className="py-16 flex flex-col items-center justify-center min-h-[160px] w-full col-span-full">
+                                                            <div className="flex items-center gap-8">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        ignoreBoundsChangeRef.current = true;
+                                                                        setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                        setPage(p => Math.max(1, p - 1));
+                                                                        setTimeout(() => {
+                                                                            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                            document.documentElement.scrollTop = 0;
+                                                                            document.body.scrollTop = 0;
+                                                                        }, 10);
+                                                                    }}
+                                                                    disabled={page === 1}
+                                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                                        page === 1 
+                                                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                                    }`}
+                                                                    aria-label="Previous Page"
+                                                                >
+                                                                    <ChevronLeftIcon className="w-5 h-5" strokeWidth={2.5} />
+                                                                </button>
  
-                                                             <div className="flex flex-col items-center">
-                                                                 <span className="text-[15px] font-semibold text-gray-900 dark:text-white min-w-[100px] text-center">
-                                                                     Page {page} of {Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
-                                                                 </span>
-                                                             </div>
+                                                                <div className="flex flex-col items-center">
+                                                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white min-w-[100px] text-center">
+                                                                        Page {page} of {Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
+                                                                    </span>
+                                                                </div>
  
-                                                             <button
-                                                                 onClick={() => {
-                                                                     ignoreBoundsChangeRef.current = true;
-                                                                     setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
-                                                                     setPage(p => p + 1);
-                                                                     setTimeout(() => {
-                                                                         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                                                                         document.documentElement.scrollTop = 0;
-                                                                         document.body.scrollTop = 0;
-                                                                     }, 10);
-                                                                 }}
-                                                                 disabled={page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
-                                                                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
-                                                                     page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))
-                                                                     ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
-                                                                     : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
-                                                                 }`}
-                                                                 aria-label="Next Page"
-                                                             >
-                                                                 <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
-                                                             </button>
-                                                         </div>
-                                                        
-                                                        {loading && (
-                                                            <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
-                                                                Loading properties...
+                                                                <button
+                                                                    onClick={() => {
+                                                                        ignoreBoundsChangeRef.current = true;
+                                                                        setTimeout(() => { ignoreBoundsChangeRef.current = false; }, 1500);
+                                                                        setPage(p => p + 1);
+                                                                        setTimeout(() => {
+                                                                            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                                                                            document.documentElement.scrollTop = 0;
+                                                                            document.body.scrollTop = 0;
+                                                                        }, 10);
+                                                                    }}
+                                                                    disabled={page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))}
+                                                                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border ${
+                                                                        page >= Math.ceil(total / (isGoogleMapOpen ? 10 : 20))
+                                                                        ? 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-300 cursor-not-allowed' 
+                                                                        : 'bg-[#222222] dark:bg-white border-transparent dark:border-transparent text-white dark:text-[#222222] hover:bg-black dark:hover:bg-gray-100 hover:shadow-md active:scale-95'
+                                                                    }`}
+                                                                    aria-label="Next Page"
+                                                                >
+                                                                    <ChevronRightIcon className="w-5 h-5" strokeWidth={2.5} />
+                                                                </button>
                                                             </div>
-                                                        )}
-                                                    </div>
+                                                           
+                                                           {loading && (
+                                                               <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
+                                                                   Loading properties...
+                                                               </div>
+                                                           )}
+                                                        </div>
+                                                        {/* Mobile-only spacer so the bottom nav bar never overlaps the pagination */}
+                                                        <div className="block lg:hidden h-24 col-span-full" />
+                                                    </>
                                                 )}
                                             </div>
                                         </div>

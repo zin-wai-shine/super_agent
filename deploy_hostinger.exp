@@ -7,9 +7,15 @@ set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
 
 # List of files modified today to sync
 set files {
-    "frontend/src/pages/Public/ListingsPage.js"
-    "frontend/src/components/Listings/ListingCard.js"
-    "frontend/src/components/ui/FilterBar.js"
+    "frontend/src/components/ui/ListingSkeleton.js"
+    "frontend/src/pages/Public/ListingDetailPage.js"
+    "frontend/src/components/Listings/AllPhotosModalContent.js"
+    "frontend/src/components/Listings/ListingDetailModal.js"
+    "frontend/src/pages/Public/BannerDetail.js"
+    "frontend/src/pages/Public/CollectionDetailPage.js"
+    "frontend/src/pages/Public/CollectionsPage.js"
+    "frontend/src/pages/Public/MyBookings.js"
+    "frontend/src/pages/Public/SavedListingsPage.js"
 }
 
 # 1. Copy files to server

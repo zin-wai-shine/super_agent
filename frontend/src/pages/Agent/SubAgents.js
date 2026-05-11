@@ -262,14 +262,14 @@ const SubAgents = () => {
                 <div className="flex justify-end space-x-2">
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
+                        className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 backdrop-blur-sm rounded-admin transition-all duration-200"
                         title="Edit"
                     >
                         <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 backdrop-blur-sm rounded-xl transition-all duration-200"
+                        className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 backdrop-blur-sm rounded-admin transition-all duration-200"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -322,7 +322,7 @@ const SubAgents = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
                             <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Sub-Agents
@@ -430,7 +430,7 @@ const SubAgents = () => {
 
                     <button
                         onClick={() => handleDatePresetChange('all')}
-                        className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
+                        className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-admin transition-colors ${!isDateFiltered ? 'invisible' : ''}`}
                         title="Reset Filters"
                     >
                         <ArrowPathIcon className="w-4 h-4" />
@@ -438,8 +438,8 @@ const SubAgents = () => {
 
                     {/* Custom Date Picker Popup - Smooth Version */}
                     {showDatePicker && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] bg-white dark:bg-dashboard-card rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden w-[350px]">
-                            <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] bg-white dark:bg-dashboard-card rounded-admin shadow-xl border-admin overflow-hidden w-[350px]">
+                            <div className="flex items-center justify-between p-3 border-b border-admin">
                                 <button onClick={() => setShownDate(subMonths(shownDate, 1))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400">
                                     <ChevronLeftIcon className="w-5 h-5" />
                                 </button>
@@ -512,7 +512,7 @@ const SubAgents = () => {
             </div>
 
             {/* Table Area */}
-            <div className="bg-white dark:bg-dashboard-card rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -520,14 +520,14 @@ const SubAgents = () => {
                 ) : subAgents.length > 0 ? (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-[#F9FAFB] dark:bg-gray-800/50 border-b dark:border-gray-700">
+                            <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                                <thead className="bg-[#F9FAFB] dark:bg-gray-800/50">
                                     {table.getHeaderGroups().map(headerGroup => (
                                         <tr key={headerGroup.id}>
                                             {headerGroup.headers.map(header => (
                                                 <th
                                                     key={header.id}
-                                                    className="px-6 py-4 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider"
+                                                    className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider"
                                                 >
                                                     <div
                                                         className={`flex items-center gap-2 ${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`}
@@ -561,7 +561,7 @@ const SubAgents = () => {
                         </div>
 
                         {/* Pagination Area - Exact Reference Design */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5 border-t border-gray-50 dark:border-gray-800">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-3">
                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                 Showing <span className="font-bold text-gray-900 dark:text-white">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span>
                             </div>
@@ -570,20 +570,20 @@ const SubAgents = () => {
                                 <button
                                     onClick={() => table.setPageIndex(0)}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border-admin rounded-admin hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronDoubleLeftIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.previousPage()}
                                     disabled={!table.getCanPreviousPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border-admin rounded-admin hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                 </button>
 
                                 <div className="flex items-center space-x-2">
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Page</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-wider">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -593,22 +593,22 @@ const SubAgents = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-12 h-8 text-center border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-bold bg-white dark:bg-dashboard-card text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                                     />
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">of {table.getPageCount()}</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-wider">of {table.getPageCount()}</span>
                                 </div>
 
                                 <button
                                     onClick={() => table.nextPage()}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border-admin rounded-admin hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                                     disabled={!table.getCanNextPage()}
-                                    className="p-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
+                                    className="p-2 border-admin rounded-admin hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 outline-none"
                                 >
                                     <ChevronDoubleRightIcon className="w-4 h-4" />
                                 </button>
@@ -640,9 +640,9 @@ const SubAgents = () => {
                         <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={handleCloseForm} />
 
 
-                        <div className="relative bg-white dark:bg-dashboard-card rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
-                            <div className="flex-none bg-white dark:bg-dashboard-card border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                        <div className="relative bg-white dark:bg-dashboard-card rounded-admin shadow-2xl border-admin max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+                            <div className="flex-none bg-white dark:bg-dashboard-card border-b border-admin px-8 py-3 flex items-center justify-between z-10 sticky top-0">
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">
                                     {editingSubAgent ? 'Edit Sub-Agent' : 'Create Sub-Agent'}
                                 </h3>
                                 <button onClick={handleCloseForm} className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
@@ -687,11 +687,11 @@ const SubAgents = () => {
                                     />
                                 </div>
                             </form>
-                            <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">
+                            <div className="flex-none p-6 border-t border-admin bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">
                                 <button type="button" onClick={handleCloseForm} className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" onClick={handleSubmit(onSubmit)} className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98]">
+                                <button type="submit" onClick={handleSubmit(onSubmit)} className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98]">
                                     {editingSubAgent ? 'Update' : 'Create'}
                                 </button>
                             </div>

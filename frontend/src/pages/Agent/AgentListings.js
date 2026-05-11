@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { agentApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -41,6 +41,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { collectionApi } from '../../services/api';
 import { FolderIcon } from '@heroicons/react/24/outline';
+import { TbEdit } from "react-icons/tb";
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, isWithinInterval, parseISO, subDays, startOfMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -51,6 +52,7 @@ import 'react-date-range/dist/theme/default.css';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 
 const AgentListings = () => {
+    const navigate = useNavigate();
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [globalFilter, setGlobalFilter] = useSessionState('listings_globalFilter', '');
@@ -285,7 +287,7 @@ const AgentListings = () => {
 
                 return (
                     <div className="flex items-center space-x-4">
-                        <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-admin overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-200 dark:border-gray-700">
                             {displayImage ? (
                                 <img
                                     src={getMediaUrl(displayImage)}
@@ -383,6 +385,31 @@ const AgentListings = () => {
             }
         },
         {
+            id: 'management',
+            header: 'Promotion',
+            cell: ({ row }) => {
+                const listing = row.original;
+                return (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setAddToCollectionId(listing.id)}
+                            className="px-3 py-2 text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all shadow-sm flex items-center gap-2 text-[11px] font-medium"
+                        >
+                            <FolderPlusIcon className="w-4 h-4" />
+                            <span>Collection</span>
+                        </button>
+                        <button
+                            onClick={() => handleRepost(listing.id)}
+                            className="px-3 py-2 text-indigo-600 bg-indigo-600/10 hover:bg-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-admin transition-all shadow-sm flex items-center gap-2 text-[11px] font-medium"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                            <span>Repost</span>
+                        </button>
+                    </div>
+                );
+            }
+        },
+        {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => {
@@ -390,17 +417,10 @@ const AgentListings = () => {
                 return (
                     <div className="flex items-center justify-end gap-2.5">
                         <button
-                            onClick={() => setAddToCollectionId(listing.id)}
-                            className="p-2.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-100/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
-                            title="Add to Collection"
-                        >
-                            <FolderPlusIcon className="w-5 h-5" />
-                        </button>
-                        <button
                             onClick={() => handlePublish(listing.id, listing.is_published)}
-                            className={`p-2.5 rounded-xl transition-all border shadow-sm flex items-center justify-center ${listing.is_published
-                                ? 'text-amber-600 bg-amber-50/50 hover:bg-amber-100/50 border-amber-100/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 dark:hover:bg-amber-500/20'
-                                : 'text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-100/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20'
+                            className={`p-2.5 rounded-admin transition-all shadow-sm flex items-center justify-center ${listing.is_published
+                                ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
+                                : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
                                 }`}
                             title={listing.is_published ? 'Unpublish' : 'Publish'}
                         >
@@ -411,22 +431,15 @@ const AgentListings = () => {
                             )}
                         </button>
                         <button
-                            onClick={() => handleRepost(listing.id)}
-                            className="p-2.5 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-xl transition-all border border-indigo-100/20 dark:border-indigo-500/20 shadow-sm flex items-center justify-center"
-                            title="Repost to Top"
-                        >
-                            <ArrowPathIcon className="w-5 h-5" />
-                        </button>
-                        <Link
-                            to={`/dashboard/listings/${listing.id}/edit`}
-                            className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                            onClick={() => navigate(`/dashboard/listings/${listing.id}/edit`)}
+                            className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
-                            <PencilSquareIcon className="w-5 h-5" />
-                        </Link>
+                            <TbEdit className="w-5 h-5" />
+                        </button>
                         <button
                             onClick={() => handleDelete(listing.id)}
-                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
                             title="Delete"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -457,7 +470,7 @@ const AgentListings = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         {selectedCollection ? `${selectedCollection.name}` : 'All Listings'}
@@ -591,16 +604,16 @@ const AgentListings = () => {
                         {/* Reset Button - only show if customized or not today */}
                         <button
                             onClick={() => handleDatePresetChange('today')}
-                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
+                            className={`p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-admin transition-colors ${datePreset === 'today' ? 'invisible' : ''}`}
                             title="Reset to Today"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                         </button>
 
                         {showDatePicker && (
-                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-white dark:bg-dashboard-card w-[350px]">
+                            <div className="absolute top-full left-0 mt-2 z-50 shadow-lg rounded-admin overflow-hidden border-admin bg-white dark:bg-dashboard-card w-[350px]">
                                 {/* Custom Header */}
-                                <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center justify-between p-3 border-b border-admin">
                                     <button
                                         onClick={() => setShownDate(subMonths(shownDate, 1))}
                                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400"
@@ -720,7 +733,7 @@ const AgentListings = () => {
             </div>
 
             {/* Listings Table Section */}
-            <div className="bg-white dark:bg-dashboard-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -728,14 +741,14 @@ const AgentListings = () => {
                 ) : listings.length > 0 ? (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
+                            <table className="w-full border-collapse divide-y divide-gray-100 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     {table.getHeaderGroups().map((headerGroup) => (
                                         <tr key={headerGroup.id}>
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-                                                    className={`text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400 ${header.id === 'actions' ? 'text-right' : ''}`}
+                                                    className={`text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 ${header.id === 'actions' ? 'text-right' : ''}`}
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div
@@ -795,8 +808,8 @@ const AgentListings = () => {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-3 bg-gray-50 dark:bg-gray-800/50">
+                            <div className="text-[11px] text-gray-500 font-bold tracking-normal">
                                 <span className="text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> results
                             </div>
 
@@ -817,7 +830,7 @@ const AgentListings = () => {
                                 </button>
 
                                 <div className="flex items-center gap-2 mx-2">
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Page</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal">Page</span>
                                     <input
                                         type="number"
                                         min={1}
@@ -827,9 +840,9 @@ const AgentListings = () => {
                                             const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                             table.setPageIndex(page);
                                         }}
-                                        className="w-12 h-9 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+                                        className="w-12 h-9 border-admin rounded-admin bg-white dark:bg-dashboard-input text-center text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all no-spinner"
                                     />
-                                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">of {table.getPageCount() || 1}</span>
+                                    <span className="text-[11px] font-bold text-gray-500 tracking-normal whitespace-nowrap">of {table.getPageCount() || 1}</span>
                                 </div>
 
                                 <button
