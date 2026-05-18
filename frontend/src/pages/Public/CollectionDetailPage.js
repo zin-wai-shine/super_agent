@@ -618,18 +618,32 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
                     )}
                 </div>
             </div>
-
             {/* Dots */}
             {total > 1 && (
                 <div className="flex-none min-h-[72px] pt-2 pb-4 flex flex-col justify-center items-center z-10">
                     <div className="flex items-center justify-center gap-2 mb-4 px-4 overflow-x-auto max-w-full" style={{ scrollbarWidth: 'none' }}>
-                        {Array.from({ length: total }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => scrollTo(i)}
-                                className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/40'}`}
-                            />
-                        ))}
+                        {(() => {
+                            const maxDots = 5;
+                            let startIndex = 0;
+                            if (total > maxDots) {
+                                startIndex = Math.max(0, Math.min(currentIdx - 2, total - maxDots));
+                            }
+                            return heroImages.slice(startIndex, startIndex + maxDots).map((_, i) => {
+                                const actualIndex = startIndex + i;
+                                const isActive = actualIndex === currentIdx;
+                                return (
+                                    <button
+                                        key={actualIndex}
+                                        onClick={() => scrollTo(actualIndex)}
+                                        className={`h-1.5 rounded-full flex-shrink-0 transition-all duration-300 ease-out ${
+                                            isActive 
+                                                ? 'w-5 bg-white shadow-sm' 
+                                                : 'w-1.5 bg-white/40'
+                                        }`}
+                                    />
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
             )}

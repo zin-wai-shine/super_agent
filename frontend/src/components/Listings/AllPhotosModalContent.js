@@ -355,14 +355,29 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
 
                 {total > 1 && (
                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-md pointer-events-auto">
-                        {Array.from({ length: total }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={(e) => { e.stopPropagation(); scrollToImage(i); }}
-                                className={`h-1.5 rounded-full transition-all duration-300 ease-out ${i === currentIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
-                                aria-label={`Go to photo ${i + 1}`}
-                            />
-                        ))}
+                        {(() => {
+                            const maxDots = 5;
+                            let startIndex = 0;
+                            if (total > maxDots) {
+                                startIndex = Math.max(0, Math.min(currentIdx - 2, total - maxDots));
+                            }
+                            return flatImages.slice(startIndex, startIndex + maxDots).map((_, i) => {
+                                const actualIndex = startIndex + i;
+                                const isActive = actualIndex === currentIdx;
+                                return (
+                                    <button
+                                        key={actualIndex}
+                                        onClick={(e) => { e.stopPropagation(); scrollToImage(actualIndex); }}
+                                        className={`rounded-full transition-all duration-300 ease-out ${
+                                            isActive 
+                                                ? 'w-5 h-1.5 bg-white shadow-sm' 
+                                                : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
+                                        }`}
+                                        aria-label={`Go to photo ${actualIndex + 1}`}
+                                    />
+                                );
+                            });
+                        })()}
                     </div>
                 )}
             </div>
