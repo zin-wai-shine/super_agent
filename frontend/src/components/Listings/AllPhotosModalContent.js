@@ -334,7 +334,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
-                                        className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                        className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
                                     >
                                         <ChevronLeftIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
@@ -343,7 +343,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); goNextImage(); }}
-                                        className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                        className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
                                     >
                                         <ChevronRightIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
