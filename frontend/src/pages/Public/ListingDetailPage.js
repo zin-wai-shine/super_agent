@@ -1372,12 +1372,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
         return (
             <div
-                className={`flex flex-col overflow-hidden ${success ? 'h-full' : `bg-white dark:bg-dashboard-dark ${isDesktopPage ? '' : 'h-full rounded-[32px]'}`}`}
+                className={`flex flex-col ${isDesktopPage ? '' : 'overflow-hidden h-full rounded-[32px] bg-white dark:bg-dashboard-dark'}`}
             >
                 {/* Header */}
                 {!success && (
                     <div
-                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 py-6 px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b -mx-4 md:-mx-8 lg:-mx-20 ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}
+                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 py-6 px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b -mx-4 md:-mx-8 lg:-mx-20 ${(isDesktopPage ? isScrolled : bookingScrolled) ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}
                     >
                         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between relative">
                             <div className="flex items-center">
@@ -1404,9 +1404,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                 {/* Content Area - mobile: full width; desktop: centered (max-w-[1400px]); z-[60] so scroll lock skips this container */}
                 <div 
-                    className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} 
-                    style={{ WebkitOverflowScrolling: 'touch' }}
-                    onScroll={(e) => setBookingScrolled(e.currentTarget.scrollTop > 10)}
+                    className={isDesktopPage ? "w-full overflow-x-hidden" : `flex-1 min-h-0 overflow-y-auto overflow-x-hidden modal-scrollable z-[60] ${success ? 'flex items-center justify-center' : ''}`} 
+                    style={isDesktopPage ? {} : { WebkitOverflowScrolling: 'touch' }}
+                    onScroll={isDesktopPage ? undefined : (e) => setBookingScrolled(e.currentTarget.scrollTop > 10)}
                 >
                     <div className={`mx-auto w-full ${success ? 'h-full p-0 flex items-center justify-center max-w-none' : `max-w-[1440px] px-6 md:px-8 py-6 sm:py-8 lg:py-8 ${isDesktopPage ? 'lg:px-0' : 'lg:px-20'}`}`}>
                         {success ? (
