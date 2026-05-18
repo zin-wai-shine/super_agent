@@ -118,9 +118,28 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
     })() : '';
 
     const listingImages = useMemo(() => {
-        return (property.media || [])
-            .filter(m => m.type === 'image')
-            .map(m => getMediaUrl(m.url));
+        const safeMedia = Array.isArray(property.media) ? property.media : [];
+        const featuredImage = getMediaUrl(safeMedia.find((m) => m.type === 'image')?.url);
+        const images = safeMedia.filter(m => m.type === 'image');
+        if (!images.length) return featuredImage ? [featuredImage] : [];
+        const order = (rt) => {
+            if (!rt) return 7;
+            const normalized = rt.trim().toLowerCase();
+            const idx = [
+                'bedroom',
+                'living room',
+                'dining area',
+                'shared full bathroom',
+                'laundry area',
+                'exterior',
+                'additional photos'
+            ].findIndex(type => 
+                type === normalized || 
+                (normalized === 'bed room' && type === 'bedroom')
+            );
+            return idx >= 0 ? idx : 7;
+        };
+        return [...images].sort((a, b) => order(a.room_type) - order(b.room_type)).map(m => getMediaUrl(m.url));
     }, [property.media]);
 
     const cardLink = `/listings/${property.id}`;
@@ -173,7 +192,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                         <div className="flex flex-col w-[300px] md:w-[320px] bg-transparent rounded-none border-none drop-shadow-2xl">
                             <div className="relative">
                                 <div className="relative aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block shadow-lg">
-                                    <ListingImageSlider images={listingImages} title={property.title} cardLink={cardLink} />
+                                    <ListingImageSlider images={listingImages} title={property.title} cardLink={cardLink} shouldLoadFirst={true} />
                                 </div>
                                 
                                 {/* Status Badge */}
@@ -392,9 +411,28 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
     })() : '';
 
     const listingImages = useMemo(() => {
-        return (property.media || [])
-            .filter(m => m.type === 'image')
-            .map(m => getMediaUrl(m.url));
+        const safeMedia = Array.isArray(property.media) ? property.media : [];
+        const featuredImage = getMediaUrl(safeMedia.find((m) => m.type === 'image')?.url);
+        const images = safeMedia.filter(m => m.type === 'image');
+        if (!images.length) return featuredImage ? [featuredImage] : [];
+        const order = (rt) => {
+            if (!rt) return 7;
+            const normalized = rt.trim().toLowerCase();
+            const idx = [
+                'bedroom',
+                'living room',
+                'dining area',
+                'shared full bathroom',
+                'laundry area',
+                'exterior',
+                'additional photos'
+            ].findIndex(type => 
+                type === normalized || 
+                (normalized === 'bed room' && type === 'bedroom')
+            );
+            return idx >= 0 ? idx : 7;
+        };
+        return [...images].sort((a, b) => order(a.room_type) - order(b.room_type)).map(m => getMediaUrl(m.url));
     }, [property.media]);
 
     const cardLink = `/listings/${property.id}`;
@@ -404,7 +442,7 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
         <div className="flex flex-col w-[300px] md:w-[320px] bg-transparent rounded-none border-none drop-shadow-2xl">
             <div className="relative">
                 <div className="relative aspect-[4/3.7] w-full overflow-hidden rounded-[23px] block shadow-lg">
-                    <ListingImageSlider images={listingImages} title={property.title} cardLink={cardLink} />
+                    <ListingImageSlider images={listingImages} title={property.title} cardLink={cardLink} shouldLoadFirst={true} />
                 </div>
                 
                 {/* Status Badge */}
