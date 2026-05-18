@@ -1377,7 +1377,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {/* Header */}
                 {!success && (
                     <div
-                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 py-6 px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}
+                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 py-6 px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b -mx-4 md:-mx-8 lg:-mx-20 ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}
                     >
                         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between relative">
                             <div className="flex items-center">
