@@ -340,7 +340,7 @@ const BookAppointment = () => {
 
                     {/* Centered Title */}
                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
-                        <span className="text-[22px] lg:text-[24px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
+                        <span className="text-[16px] lg:text-[18px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
                             Book Viewing
                         </span>
                     </div>
