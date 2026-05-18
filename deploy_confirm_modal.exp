@@ -5,14 +5,11 @@ set server "root@187.77.140.205"
 set remote_dir "/root/super_real_estate"
 set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
 
-# Files modified in this session
 set files {
-    "frontend/src/index.js"
-    "frontend/src/pages/Agent/AgentListings.js"
-    "frontend/src/components/Layout/DashboardLayout.js"
+    "frontend/src/components/ui/ConfirmModal.js"
 }
 
-# 1. Copy files to server
+# 1. Copy file to server
 foreach f $files {
     puts "Copying $f to Hostinger..."
     spawn scp -o StrictHostKeyChecking=no "$local_dir/$f" "$server:$remote_dir/$f"
@@ -27,15 +24,15 @@ foreach f $files {
 
 puts "\nFiles synced! Rebuilding frontend on Hostinger...\n"
 
-# 2. Rebuild only frontend
-spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && docker compose build frontend && docker compose up -d frontend"
+# 2. Restart frontend
+spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && docker compose restart frontend"
 expect {
     "password:" {
         send -- "$password\r"
         exp_continue
     }
     timeout {
-        puts "Build timed out."
+        puts "Restart timed out."
     }
     eof
 }

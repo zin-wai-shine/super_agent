@@ -82,7 +82,7 @@ const CreateListing = () => {
             listing_type: listingTypeOptions[1], // Default to Rent
             availability_status: 'Ready to Move In',
             facility_name: null,
-            allow_viewing_requests: true,
+            allow_viewing_requests: false,
         }
     });
     const fieldValues = watch();
@@ -259,7 +259,7 @@ const CreateListing = () => {
                 project_id: null,
                 station_id: null,
                 facility_name: null,
-                allow_viewing_requests: true
+                allow_viewing_requests: false
             });
             setImageSections(initialImageSections());
             setWalkingTime('');

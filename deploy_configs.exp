@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+set timeout 300
+set password "-4V2HOvVFF,q7Bx2"
+set server "root@187.77.140.205"
+set remote_dir "/root/super_real_estate"
+set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
+
+set files {
+    "frontend/tailwind.config.js"
+    "frontend/package.json"
+}
+
+foreach f $files {
+    puts "Copying $f to server..."
+    spawn scp -o StrictHostKeyChecking=no "$local_dir/$f" "$server:$remote_dir/$f"
+    expect {
+        "password:" { send -- "$password\r"; exp_continue }
+        eof
+    }
+}
+
+puts "\nRestarting frontend container...\n"
+spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && docker compose stop frontend && docker compose rm -f frontend && docker compose up -d frontend"
+expect {
+    "password:" { send -- "$password\r"; exp_continue }
+    timeout { puts "Timed out." }
+    eof
+}
+
+puts "\nDone!"

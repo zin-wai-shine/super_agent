@@ -1,0 +1,59 @@
+#!/usr/bin/expect -f
+set timeout 900
+set password "-4V2HOvVFF,q7Bx2"
+set server "root@187.77.140.205"
+set remote_dir "/root/super_real_estate"
+set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
+
+puts "\n=== Step 1: Syncing full frontend/src to server... ===\n"
+
+# Full rsync of frontend/src (excludes node_modules and build)
+spawn rsync -avz --delete \
+    -e "ssh -o StrictHostKeyChecking=no" \
+    --exclude="node_modules" \
+    --exclude="build" \
+    "$local_dir/frontend/src/" \
+    "$server:$remote_dir/frontend/src/"
+
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n=== Step 2: Syncing frontend/public to server... ===\n"
+
+spawn rsync -avz --delete \
+    -e "ssh -o StrictHostKeyChecking=no" \
+    --exclude="node_modules" \
+    --exclude="build" \
+    "$local_dir/frontend/public/" \
+    "$server:$remote_dir/frontend/public/"
+
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n=== Step 3: Rebuilding frontend container (DB untouched)... ===\n"
+
+spawn ssh -o StrictHostKeyChecking=no "$server" \
+    "cd $remote_dir && docker compose build frontend && docker compose up -d frontend"
+
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Build timed out."
+    }
+    eof
+}
+
+puts "\n=== Full sync & rebuild complete! ==="

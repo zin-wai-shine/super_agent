@@ -5,14 +5,23 @@ set server "root@187.77.140.205"
 set remote_dir "/root/super_real_estate"
 set local_dir "/Users/zinwaishine/Desktop/super_real_estate"
 
-# Files modified in this session
+# Files to sync
 set files {
-    "frontend/src/index.js"
-    "frontend/src/pages/Agent/AgentListings.js"
-    "frontend/src/components/Layout/DashboardLayout.js"
+    "frontend/src/assets/images/properties_not_fount/pro_desktop_not_found.png"
+    "frontend/src/assets/images/properties_not_fount/pro_mobile_not_found.png"
 }
 
-# 1. Copy files to server
+# 1. Create directory on server first just in case
+spawn ssh -o StrictHostKeyChecking=no "$server" "mkdir -p $remote_dir/frontend/src/assets/images/properties_not_fount"
+expect {
+    "password:" {
+        send -- "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# 2. Copy files to server
 foreach f $files {
     puts "Copying $f to Hostinger..."
     spawn scp -o StrictHostKeyChecking=no "$local_dir/$f" "$server:$remote_dir/$f"
@@ -27,15 +36,15 @@ foreach f $files {
 
 puts "\nFiles synced! Rebuilding frontend on Hostinger...\n"
 
-# 2. Rebuild only frontend
-spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && docker compose build frontend && docker compose up -d frontend"
+# 3. Rebuild only frontend
+spawn ssh -o StrictHostKeyChecking=no "$server" "cd $remote_dir && docker compose restart frontend"
 expect {
     "password:" {
         send -- "$password\r"
         exp_continue
     }
     timeout {
-        puts "Build timed out."
+        puts "Restart timed out."
     }
     eof
 }
