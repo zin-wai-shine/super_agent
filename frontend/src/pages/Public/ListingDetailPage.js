@@ -424,12 +424,18 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             setIsScrolled(e.detail.scrollTop > 10);
         };
 
+        const handleWindowScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+
         if (isModal) {
             window.addEventListener('modalScroll', handleModalScroll);
         } else {
+            window.addEventListener('scroll', handleWindowScroll, { passive: true });
+            
             observer = new IntersectionObserver(
                 ([entry]) => {
-                    setIsScrolled(!entry.isIntersecting);
+                    setIsScrolled(!entry.isIntersecting || window.scrollY > 10);
                 },
                 { threshold: 0 }
             );
@@ -445,6 +451,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             window.removeEventListener('resize', handleResize);
             if (isModal) {
                 window.removeEventListener('modalScroll', handleModalScroll);
+            } else {
+                window.removeEventListener('scroll', handleWindowScroll);
             }
             if (observer) observer.disconnect();
         };
