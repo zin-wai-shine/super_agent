@@ -327,24 +327,25 @@ const BookAppointment = () => {
     return (
         <div className="min-h-screen bg-gray-50/50 dark:bg-dashboard-dark pb-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:text-white">
             {/* Sticky Navigation Sub-Header Bar */}
-            <div className={`sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 mb-6 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-sm' : 'border-b border-transparent'}`}>
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            <div className={`sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md py-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 mb-6 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-sm' : 'border-b border-transparent'}`}>
+                <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+                    <div className="flex items-center">
                         <button
                             onClick={() => navigate(-1)}
                             className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
                         >
                             <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
                         </button>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
-                            title="Go to Home"
-                        >
-                            <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
-                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
-                        </button>
                     </div>
+
+                    {/* Centered Title */}
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
+                        <span className="text-[22px] lg:text-[24px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
+                            Book Viewing
+                        </span>
+                    </div>
+
+                    <div className="w-[44px]" />
                 </div>
             </div>
 
