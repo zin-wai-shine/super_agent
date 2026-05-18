@@ -64,7 +64,18 @@ func main() {
 	// Ensure missing columns are added (fallback for AutoMigrate quirks)
 	db.Exec("ALTER TABLE appointments ADD COLUMN IF NOT EXISTS cancellation_reason TEXT")
 
-	log.Println("Database migration completed successfully")
+	// Ensure high-performance database indexes exist for immediate data retrieval (Airbnb-level loading speeds)
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_agent_id ON listings (agent_id)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_is_published ON listings (is_published)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_property_type ON listings (property_type)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_listing_type ON listings (listing_type)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_price ON listings (price)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_bedrooms ON listings (bedrooms)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_listings_bathrooms ON listings (bathrooms)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_media_listing_id ON media (listing_id)")
+	db.Exec("CREATE INDEX IF NOT EXISTS idx_facility_media_name ON facility_media (name)")
+
+	log.Println("Database migration and indexing completed successfully")
 
 	// Seed initial data (subscription plans, admin user, default agents, transit stations)
 	seedInitialData(db)

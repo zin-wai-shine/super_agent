@@ -179,23 +179,22 @@ type Project struct {
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
-
 // Listing represents a property listing
 type Listing struct {
 	ID                 uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	AgentID            uuid.UUID      `gorm:"type:uuid;not null" json:"agent_id"`
+	AgentID            uuid.UUID      `gorm:"type:uuid;not null;index" json:"agent_id"`
 	Agent              *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
 	CreatedBy          uuid.UUID      `gorm:"type:uuid;not null" json:"created_by"`
 	ProjectID          *uuid.UUID     `gorm:"type:uuid;index" json:"project_id,omitempty"`
 	Project            *Project       `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
 	Title              string         `gorm:"size:255;not null" json:"title"`
 	Description        string         `gorm:"type:text" json:"description,omitempty"`
-	PropertyType       string         `gorm:"size:50" json:"property_type"` // condo, house, land, etc.
-	ListingType        string         `gorm:"size:20" json:"listing_type"`  // sale, rent
-	Price              float64        `gorm:"type:decimal(15,2)" json:"price"`
+	PropertyType       string         `gorm:"size:50;index" json:"property_type"` // condo, house, land, etc.
+	ListingType        string         `gorm:"size:20;index" json:"listing_type"`  // sale, rent
+	Price              float64        `gorm:"type:decimal(15,2);index" json:"price"`
 	PriceUnit          string         `gorm:"size:20;default:'THB'" json:"price_unit"`
-	Bedrooms           int            `gorm:"default:0" json:"bedrooms"`
-	Bathrooms          int            `gorm:"default:0" json:"bathrooms"`
+	Bedrooms           int            `gorm:"default:0;index" json:"bedrooms"`
+	Bathrooms          int            `gorm:"default:0;index" json:"bathrooms"`
 	Area               float64        `gorm:"type:decimal(10,2)" json:"area"` // sqm
 	Floor              string         `gorm:"size:50" json:"floor,omitempty"` // e.g., "G", "12A", "PH"
 	Road               string         `gorm:"size:255" json:"road,omitempty"`
@@ -213,8 +212,8 @@ type Listing struct {
 	YearBuilt          int            `gorm:"default:0" json:"year_built"`
 	Station            *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
 	Features           string         `gorm:"type:text" json:"features,omitempty"` // JSON array
-	IsPublished          bool           `gorm:"default:false" json:"is_published"`
-	IsFeatured           bool           `gorm:"default:false" json:"is_featured"`
+	IsPublished          bool           `gorm:"default:false;index" json:"is_published"`
+	IsFeatured           bool           `gorm:"default:false;index" json:"is_featured"`
 	AllowViewingRequests bool           `gorm:"default:true" json:"allow_viewing_requests"`
 	ViewCount            int            `gorm:"default:0" json:"view_count"`
 	FacilityName         string         `gorm:"size:255" json:"facility_name,omitempty"`
@@ -238,7 +237,7 @@ const (
 // Media represents images and videos for listings
 type Media struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	ListingID uuid.UUID `gorm:"type:uuid;not null" json:"listing_id"`
+	ListingID uuid.UUID `gorm:"type:uuid;not null;index" json:"listing_id"`
 	Type      string    `gorm:"size:20;not null" json:"type"` // image, video
 	URL       string    `gorm:"size:500;not null" json:"url"`
 	Thumbnail string    `gorm:"size:500" json:"thumbnail,omitempty"`
@@ -386,12 +385,11 @@ type UniqueView struct {
 	ListingID   uuid.UUID `gorm:"type:uuid;primaryKey;index"`
 	Fingerprint string    `gorm:"size:255;primaryKey;index"` // Hash or combined IP + UA
 	CreatedAt   time.Time
-}
-// FacilityMedia represents general property building/facility images for an agent
+}// FacilityMedia represents general property building/facility images for an agent
 type FacilityMedia struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	AgentID   uuid.UUID `gorm:"type:uuid;not null;index" json:"agent_id"`
-	Name      string    `gorm:"size:255" json:"name"`
+	Name      string    `gorm:"size:255;index" json:"name"`
 	URL       string    `gorm:"size:500;not null" json:"url"`
 	SortOrder int       `gorm:"default:0" json:"sort_order"`
 	CreatedAt time.Time `json:"created_at"`
