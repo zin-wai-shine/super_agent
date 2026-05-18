@@ -1377,20 +1377,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {/* Header */}
                 {!success && (
                     <div
-                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 ${isDesktopPage ? 'lg:h-[80px] lg:px-0 bg-transparent' : `h-[76px] lg:h-[80px] px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}`}
+                        className={`sticky top-0 z-[80] flex items-center shrink-0 transition-all duration-300 h-[76px] lg:h-[80px] px-4 md:px-8 lg:px-20 bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md border-b ${bookingScrolled ? 'border-gray-100 dark:border-white/10 shadow-sm' : 'border-transparent'}`}
                     >
-                        {isDesktopPage ? (
-                            <div className="w-full flex items-center justify-between relative group/nav">
-                                <button
-                                    onClick={() => setIsBookingOverlayOpen(false)}
-                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 active:scale-95 transition-all z-10 group"
-                                >
-                                    <ArrowLeftIcon className="w-5 h-5 text-gray-700 dark:text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
-                                </button>
-                                <div className="w-10" />
-                            </div>
-                        ) : (
-                            <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between relative">
+                        <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between relative">
+                            <div className="flex items-center gap-3">
                                 {/* Back Button */}
                                 <button
                                     onClick={() => setIsBookingOverlayOpen(false)}
@@ -1398,17 +1388,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 >
                                     <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white stroke-[2]" />
                                 </button>
-
-                                {/* Centered Title */}
-                                <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
-                                    <span className="text-[17px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
-                                        Book Viewing
-                                    </span>
-                                </div>
-
-                                <div className="w-[44px]" /> 
+                                {/* Go to Home Button */}
+                                <button
+                                    onClick={() => navigate('/')}
+                                    className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
+                                    title="Go to Home"
+                                >
+                                    <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                                    <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
+                                </button>
                             </div>
-                        )}
+
+                            {/* Centered Title */}
+                            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
+                                <span className="text-[17px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
+                                    Book Viewing
+                                </span>
+                            </div>
+
+                            <div className="w-[44px]" /> 
+                        </div>
                     </div>
                 )}
 
