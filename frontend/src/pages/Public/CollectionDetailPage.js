@@ -469,50 +469,41 @@ const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, nav
 
 const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, galleryIndex }) => {
     const [currentIdx, setCurrentIdx] = useState(galleryIndex ?? 0);
-    const scrollRef = useRef(null);
-    const isScrolling = useRef(false);
     const total = heroImages?.length ?? 0;
+    const touchStartX = useRef(0);
 
     // Sync initial index when opened
     useEffect(() => {
         if (galleryOpen) setCurrentIdx(galleryIndex ?? 0);
     }, [galleryOpen, galleryIndex]);
 
-    // Scroll to current index without animation on open
-    useEffect(() => {
-        if (galleryOpen && scrollRef.current && total > 0) {
-            const timeout = setTimeout(() => {
-                if (scrollRef.current) {
-                    scrollRef.current.scrollTo({ left: (galleryIndex ?? 0) * scrollRef.current.offsetWidth, behavior: 'auto' });
-                }
-            }, 50);
-            return () => clearTimeout(timeout);
+    const scrollTo = useCallback((idx) => {
+        if (idx >= 0 && idx < total) {
+            setCurrentIdx(idx);
         }
-    }, [galleryOpen]);
-
-    const scrollTo = useCallback((idx, smooth = true) => {
-        if (!scrollRef.current) return;
-        isScrolling.current = true;
-        scrollRef.current.scrollTo({ left: idx * scrollRef.current.offsetWidth, behavior: smooth ? 'smooth' : 'auto' });
-        setCurrentIdx(idx);
-        setTimeout(() => { isScrolling.current = false; }, 500);
-    }, []);
+    }, [total]);
 
     const goPrev = useCallback(() => {
-        if (currentIdx <= 0) return;
-        scrollTo(currentIdx - 1);
-    }, [currentIdx, scrollTo]);
+        if (currentIdx > 0) setCurrentIdx(currentIdx - 1);
+    }, [currentIdx]);
 
     const goNext = useCallback(() => {
-        if (currentIdx >= total - 1) return;
-        scrollTo(currentIdx + 1);
-    }, [currentIdx, total, scrollTo]);
+        if (currentIdx < total - 1) setCurrentIdx(currentIdx + 1);
+    }, [currentIdx, total]);
 
-    const handleScroll = () => {
-        if (!scrollRef.current || isScrolling.current) return;
-        const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
-        if (idx !== currentIdx && idx >= 0 && idx < total) setCurrentIdx(idx);
-    };
+    const handleTouchStart = useCallback((e) => {
+        touchStartX.current = e.touches[0].clientX;
+    }, []);
+
+    const handleTouchEnd = useCallback((e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const deltaX = touchEndX - touchStartX.current;
+        if (deltaX > 50) {
+            goPrev();
+        } else if (deltaX < -50) {
+            goNext();
+        }
+    }, [goPrev, goNext]);
 
     // Keyboard navigation
     useEffect(() => {
@@ -525,14 +516,6 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [galleryOpen, goPrev, goNext, total, setGalleryOpen]);
-
-    const handleShare = async () => {
-        if (navigator.share) {
-            try { await navigator.share({ url: window.location.href }); } catch (e) {}
-        } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(window.location.href);
-        }
-    };
 
     if (!galleryOpen || !heroImages?.length) return null;
 
@@ -579,21 +562,30 @@ const GalleryModal = ({ galleryOpen, setGalleryOpen, heroImages, collection, gal
             <div className="relative flex-1 min-h-0 flex items-center justify-center z-10">
                 <div className="w-full h-full relative overflow-hidden">
                     <div
-                        ref={scrollRef}
-                        onScroll={handleScroll}
-                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none gallery-no-scroll"
-                        style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        className="w-full h-full mx-auto relative overflow-hidden flex items-center justify-center"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
                     >
-                        {heroImages.map((img, i) => (
-                            <div key={i} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4">
-                                <img
-                                    src={img}
-                                    alt=""
-                                    className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-2xl pointer-events-none rounded-2xl md:rounded-[23px]"
-                                    draggable={false}
-                                />
-                            </div>
-                        ))}
+                        {heroImages.map((img, i) => {
+                            const isActive = i === currentIdx;
+                            return (
+                                <div
+                                    key={i}
+                                    className={`absolute inset-0 flex items-center justify-center p-4 select-none transition-all duration-500 ease-out ${
+                                        isActive 
+                                            ? 'opacity-100 scale-100 z-10 pointer-events-auto' 
+                                            : 'opacity-0 scale-[0.97] z-0 pointer-events-none'
+                                    }`}
+                                >
+                                    <img
+                                        src={img}
+                                        alt=""
+                                        className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-2xl pointer-events-none rounded-2xl md:rounded-[23px]"
+                                        draggable={false}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {total > 1 && (
