@@ -36,6 +36,7 @@ import {
     XMarkIcon
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, subDays, startOfMonth, isWithinInterval } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -48,6 +49,8 @@ const AgentManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingAgent, setEditingAgent] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [agentToDelete, setAgentToDelete] = useState(null);
     const [plans, setPlans] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
 
@@ -249,14 +252,22 @@ const AgentManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this agent? This cannot be undone.')) return;
+    const handleDelete = (id) => {
+        setAgentToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!agentToDelete) return;
         try {
-            await adminApi.deleteAgent(id);
+            await adminApi.deleteAgent(agentToDelete);
             toast.success('Agent deleted');
             fetchAgents();
         } catch (error) {
             toast.error('Failed to delete');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setAgentToDelete(null);
         }
     };
 
@@ -374,9 +385,9 @@ const AgentManagement = () => {
                         <div className="flex items-center justify-end gap-2.5">
                             <button
                                 onClick={() => handleSuspend(agent.id || agent.ID, isActive)}
-                                className={`p-2.5 rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center ${isActive
-                                    ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
-                                    : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
+                                className={`p-2.5 rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center border ${isActive
+                                    ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-600/20 dark:border-amber-500/20'
+                                    : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-600/20 dark:border-emerald-500/20'
                                     }`}
                                 title={isActive ? 'Suspend Agent' : 'Reactivate Agent'}
                             >
@@ -384,14 +395,14 @@ const AgentManagement = () => {
                             </button>
                             <button
                                 onClick={() => openModal(agent)}
-                                className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                                className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
                                 title="Edit Agent"
                             >
                                 <TbEdit className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => handleDelete(agent.id || agent.ID)}
-                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
                                 title="Delete Agent"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -690,7 +701,7 @@ const AgentManagement = () => {
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-                                                    className="text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400"
+                                                    className="text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap"
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div
@@ -987,6 +998,19 @@ const AgentManagement = () => {
                     </div>
                 )
             }
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setAgentToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Agent"
+                message="Are you sure you want to delete this agent? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div >
     );
 };

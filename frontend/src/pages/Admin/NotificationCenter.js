@@ -55,8 +55,15 @@ const NotificationCenter = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notification Center</h1>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
+                <div className="lg:min-w-[280px]">
+                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
+                            <BellIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        Notification Center
+                    </h1>
+                </div>
             </div>
 
             {/* Tabs */}
@@ -65,7 +72,7 @@ const NotificationCenter = () => {
                     onClick={() => setActiveTab('send')}
                     className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
                         activeTab === 'send'
-                            ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20'
+                            ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] text-primary-600 dark:text-primary-400 shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                 >
@@ -75,7 +82,7 @@ const NotificationCenter = () => {
                     onClick={() => setActiveTab('history')}
                     className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
                         activeTab === 'history'
-                            ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20'
+                            ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] text-primary-600 dark:text-primary-400 shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                 >

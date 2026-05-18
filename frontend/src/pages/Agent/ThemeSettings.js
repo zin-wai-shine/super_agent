@@ -32,6 +32,7 @@ import ModernCornerRadiusInput from '../../components/ui/ModernCornerRadiusInput
 import ModernShadowPicker from '../../components/ui/ModernShadowPicker';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../../utils/cropImage';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const ThemeSettings = () => {
     const { user } = useAuth();
@@ -41,6 +42,7 @@ const ThemeSettings = () => {
     const [uploadingFavicon, setUploadingFavicon] = useState(false);
     const [uploadingSharePreview, setUploadingSharePreview] = useState(false);
     const [activeTab, setActiveTab] = useState('brand');
+    const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
     const logoInputRef = useRef(null);
     const faviconInputRef = useRef(null);
     const sharePreviewInputRef = useRef(null);
@@ -283,10 +285,14 @@ const ThemeSettings = () => {
     };
 
     const resetToDefaults = () => {
-        if (!window.confirm('Reset all theme settings to defaults?')) return;
+        setResetConfirmOpen(true);
+    };
+
+    const confirmReset = () => {
         reset(DEFAULT_THEME);
         setValue('font_family', fontOptions[0]);
         toast.success('Reset to defaults');
+        setResetConfirmOpen(false);
     };
 
     const hexToRgba = (hex, opacity) => {
@@ -666,6 +672,16 @@ const ThemeSettings = () => {
                     </div>
                 </div>
             )}
+            <ConfirmModal
+                isOpen={resetConfirmOpen}
+                onClose={() => setResetConfirmOpen(false)}
+                onConfirm={confirmReset}
+                title="Reset Theme Settings"
+                message="Are you sure you want to reset all theme settings to defaults? This will discard your current customizations."
+                confirmText="Reset"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </>
     );
 };

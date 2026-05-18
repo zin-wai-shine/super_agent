@@ -44,28 +44,28 @@ const AdminDashboard = () => {
             value: stats?.total_agents || 0,
             icon: UsersIcon,
             change: '+12%',
-            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+            iconBg: 'bg-blue-50/50 border border-blue-100/40 dark:bg-blue-500/10 dark:border-blue-500/20 text-blue-600 dark:text-blue-400'
         },
         {
             name: 'Active Subscriptions',
             value: stats?.active_subscriptions || 0,
             icon: CurrencyDollarIcon,
             change: '+5%',
-            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            iconBg: 'bg-emerald-50/50 border border-emerald-100/40 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
         },
         {
             name: 'Total Listings',
             value: stats?.total_listings || 0,
             icon: BuildingOfficeIcon,
             change: '+18%',
-            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+            iconBg: 'bg-purple-50/50 border border-purple-100/40 dark:bg-purple-500/10 dark:border-purple-500/20 text-purple-600 dark:text-purple-400'
         },
         {
             name: 'Monthly Revenue',
             value: `฿${(stats?.monthly_revenue || 0).toLocaleString()}`,
             icon: ChartBarIcon,
             change: '+8%',
-            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+            iconBg: 'bg-amber-50/50 border border-amber-100/40 dark:bg-amber-500/10 dark:border-amber-500/20 text-amber-600 dark:text-amber-400'
         },
     ];
 
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
                                     <span className="text-green-600 dark:text-green-500 font-medium">{stat.change}</span>
                                 </div>
                             </div>
-                            <div className={`p-2.5 rounded-admin ${stat.iconBg} dark:backdrop-blur-md border border-transparent dark:border-white/5`}>
+                            <div className={`p-2.5 rounded-admin ${stat.iconBg} dark:backdrop-blur-md`}>
                                 <stat.icon className="w-5 h-5" aria-hidden="true" />
                             </div>
                         </div>

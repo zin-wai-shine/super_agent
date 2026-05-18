@@ -29,12 +29,15 @@ import {
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const DeveloperManagement = () => {
     const [developers, setDevelopers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingDev, setEditingDev] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [devToDelete, setDevToDelete] = useState(null);
     const [globalFilter, setGlobalFilter] = useSessionState('devman_globalFilter', '');
     const [sorting, setSorting] = useSessionState('devman_sorting', []);
     const [pagination, setPagination] = useSessionState('devman_pagination', { pageIndex: 0, pageSize: 10 });
@@ -105,14 +108,22 @@ const DeveloperManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this developer? This cannot be undone.')) return;
+    const handleDelete = (id) => {
+        setDevToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!devToDelete) return;
         try {
-            await developerApi.deleteDeveloper(id);
+            await developerApi.deleteDeveloper(devToDelete);
             toast.success('Developer deleted');
             fetchDevelopers();
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to delete developer');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setDevToDelete(null);
         }
     };
 
@@ -122,7 +133,7 @@ const DeveloperManagement = () => {
             header: 'Developer Name',
             cell: ({ getValue }) => (
                 <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                    <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                         <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <span className="font-bold text-gray-900 dark:text-white text-sm">{getValue()}</span>
@@ -152,14 +163,14 @@ const DeveloperManagement = () => {
                 <div className="flex justify-end space-x-2.5">
                     <button
                         onClick={() => handleOpenForm(row.original)}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                         title="Edit"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -188,7 +199,7 @@ const DeveloperManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Developers
@@ -430,6 +441,19 @@ const DeveloperManagement = () => {
             )}
 
 
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setDevToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Developer"
+                message="Are you sure you want to delete this developer? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

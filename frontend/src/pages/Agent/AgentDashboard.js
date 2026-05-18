@@ -62,35 +62,35 @@ const AgentDashboard = () => {
             name: 'Total Listings',
             value: stats?.total_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-primary-50/50 text-primary-600 dark:bg-primary-600/10 dark:text-primary-400',
+            iconBg: 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 dark:text-primary-400',
             trend: '+2 this week'
         },
         {
             name: 'Total Views',
             value: stats?.total_views || 0,
             icon: EyeIcon,
-            iconBg: 'bg-blue-50/50 text-blue-600 dark:bg-blue-600/10 dark:text-blue-400',
+            iconBg: 'bg-blue-50/50 border border-blue-100/40 dark:bg-blue-500/10 dark:border-blue-500/20 text-blue-600 dark:text-blue-400',
             trend: 'Lifetime'
         },
         {
             name: 'Published',
             value: stats?.published_listings || 0,
             icon: BuildingOfficeIcon,
-            iconBg: 'bg-emerald-50/50 text-emerald-600 dark:bg-emerald-600/10 dark:text-emerald-400',
+            iconBg: 'bg-emerald-50/50 border border-emerald-100/40 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
             trend: 'Active'
         },
         {
             name: 'Sub-Agents',
             value: stats?.total_sub_agents || 0,
             icon: UsersIcon,
-            iconBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-600/10 dark:text-indigo-400',
+            iconBg: 'bg-indigo-50/50 border border-indigo-100/40 dark:bg-indigo-500/10 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400',
             trend: 'Team'
         },
         {
             name: 'Total Appointments',
             value: stats?.total_appointments || 0,
             icon: CalendarDaysIcon,
-            iconBg: 'bg-amber-50/50 text-amber-600 dark:bg-amber-600/10 dark:text-amber-400',
+            iconBg: 'bg-amber-50/50 border border-amber-100/40 dark:bg-amber-500/10 dark:border-amber-500/20 text-amber-600 dark:text-amber-400',
             trend: `${stats?.appointments_this_week || 0} this week`,
             feature: 'appointments'
         },
@@ -98,7 +98,7 @@ const AgentDashboard = () => {
             name: 'Registered Users',
             value: stats?.total_users || 0,
             icon: UsersIcon,
-            iconBg: 'bg-purple-50/50 text-purple-600 dark:bg-primary-600/10 dark:text-primary-400',
+            iconBg: 'bg-purple-50/50 border border-purple-100/40 dark:bg-purple-500/10 dark:border-purple-500/20 text-purple-600 dark:text-purple-400',
             trend: 'Direct'
         },
     ];
@@ -236,13 +236,13 @@ const AgentDashboard = () => {
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                         <div className="space-y-3">
                              <Link to="/dashboard/listings/new" className="flex items-center p-3 rounded-admin hover:bg-gray-50 dark:hover:bg-primary-500/10 transition-colors group">
-                                <div className="p-2 bg-primary-50 dark:bg-primary-600/15 text-primary-600 dark:text-primary-400 rounded-admin group-hover:scale-110 transition-transform">
+                                <div className="p-2 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 dark:text-primary-400 rounded-admin group-hover:scale-110 transition-transform">
                                     <PlusIcon className="w-5 h-5" />
                                 </div>
                                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Add New Listing</span>
                             </Link>
                             <Link to="/dashboard/users" className="flex items-center p-3 rounded-admin hover:bg-gray-50 dark:hover:bg-purple-500/10 transition-colors group">
-                                <div className="p-2 bg-purple-50 dark:bg-purple-600/15 text-purple-600 dark:text-purple-400 rounded-admin group-hover:scale-110 transition-transform">
+                                <div className="p-2 bg-purple-50/50 border border-purple-100/40 dark:bg-purple-500/10 dark:border-purple-500/20 text-purple-600 dark:text-purple-400 rounded-admin group-hover:scale-110 transition-transform">
                                     <UsersIcon className="w-5 h-5" />
                                 </div>
                                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Manage Users</span>

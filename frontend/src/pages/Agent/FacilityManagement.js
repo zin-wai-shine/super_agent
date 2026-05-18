@@ -43,6 +43,7 @@ import {
     ChevronDoubleRightIcon,
     BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const SortableTableRow = ({ group, onDelete, onEdit }) => {
     const {
@@ -70,7 +71,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
         >
             <td className="py-5 pl-6 min-w-[300px]">
                 <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                    <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                         <BuildingOfficeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div className="flex flex-col">
@@ -87,7 +88,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
                 </div>
             </td>
             <td className="py-5 px-4">
-                <div className="inline-flex items-center px-4 py-1.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-admin text-[10px] font-black uppercase tracking-wider border border-primary-100/50 dark:border-primary-500/20">
+                <div className="inline-flex items-center px-4 py-1.5 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] text-primary-600 dark:text-primary-400 rounded-admin text-[10px] font-black uppercase tracking-wider border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                     <PhotoIcon className="w-3.5 h-3.5 mr-2" />
                     {group.items.length} {group.items.length === 1 ? 'Image' : 'Images'}
                 </div>
@@ -96,14 +97,14 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
                 <div className="flex items-center justify-end gap-2.5">
                     <button
                         onClick={() => onEdit(group)}
-                        className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
                         title="Edit Collection"
                     >
                         <TbEdit className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => onDelete(group)}
-                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
                         title="Delete Collection"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -170,6 +171,9 @@ const FacilityManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [editName, setEditName] = useState('');
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [deleteType, setDeleteType] = useState('group'); // 'group', 'single', or 'edit_single'
+    const [itemToDelete, setItemToDelete] = useState(null);
     
     const [uploading, setUploading] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -298,24 +302,38 @@ const FacilityManagement = () => {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDelete = async (item) => {
-        if (!window.confirm('Are you sure you want to delete this?')) return;
+    const handleDelete = (item) => {
+        setItemToDelete(item);
+        setDeleteType(item.items ? 'group' : 'single');
+        setDeleteConfirmOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
         try {
-            // If it's a group delete
-            if (item.items) {
-                const deletePromises = item.items.map(img => agentApi.deleteFacilityMedia(img.id));
+            if (deleteType === 'group') {
+                const deletePromises = itemToDelete.items.map(img => agentApi.deleteFacilityMedia(img.id));
                 await Promise.all(deletePromises);
-                setMedia(prev => prev.filter(m => m.name !== item.name));
+                setMedia(prev => prev.filter(m => m.name !== itemToDelete.name));
                 toast.success('Collection deleted');
-            } else {
-                // Single image delete
-                await agentApi.deleteFacilityMedia(item.id);
-                setMedia(prev => prev.filter(m => m.id !== item.id));
+            } else if (deleteType === 'single') {
+                await agentApi.deleteFacilityMedia(itemToDelete.id);
+                setMedia(prev => prev.filter(m => m.id !== itemToDelete.id));
+                toast.success('Image deleted');
+            } else if (deleteType === 'edit_single') {
+                setEditingItem(prev => ({
+                    ...prev,
+                    items: prev.items.filter(i => i.id !== itemToDelete.id)
+                }));
+                await agentApi.deleteFacilityMedia(itemToDelete.id);
+                setMedia(prev => prev.filter(m => m.id !== itemToDelete.id));
                 toast.success('Image deleted');
             }
         } catch (error) {
             toast.error('Failed to delete');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setItemToDelete(null);
         }
     };
 
@@ -383,7 +401,7 @@ const FacilityManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <PhotoIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Facility & Building Images
@@ -468,9 +486,9 @@ const FacilityManagement = () => {
                             <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                                 <thead>
                                     <tr className="bg-[#F9FAFB] dark:bg-gray-800/50">
-                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Unit Name</th>
-                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Image Count</th>
-                                        <th className="px-6 py-3 text-right text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider">Actions</th>
+                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider whitespace-nowrap">Unit Name</th>
+                                        <th className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider whitespace-nowrap">Image Count</th>
+                                        <th className="px-6 py-3 text-right text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <SortableContext
@@ -583,7 +601,7 @@ const FacilityManagement = () => {
                                         />
                                     </div>
 
-                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-admin border border-primary-100 dark:border-primary-900/30">
+                                    <div className="p-4 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                                         <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
                                             <strong>Tip:</strong> Drag and drop images to change their display order. Changes are saved when you click Update.
                                         </p>
@@ -624,14 +642,9 @@ const FacilityManagement = () => {
                                                         url={getMediaUrl(img.url)}
                                                         index={idx}
                                                         onRemove={() => {
-                                                            if (window.confirm('Delete this image?')) {
-                                                                setEditingItem(prev => ({
-                                                                    ...prev,
-                                                                    items: prev.items.filter(i => i.id !== img.id)
-                                                                }));
-                                                                agentApi.deleteFacilityMedia(img.id);
-                                                                setMedia(prev => prev.filter(m => m.id !== img.id));
-                                                            }
+                                                            setItemToDelete(img);
+                                                            setDeleteType('edit_single');
+                                                            setDeleteConfirmOpen(true);
                                                         }}
                                                     />
                                                 ))}
@@ -718,7 +731,7 @@ const FacilityManagement = () => {
                                     }
                                 }}
                                 disabled={uploading}
-                                className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
+                                                               className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
                             >
                                 {uploading ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
@@ -788,7 +801,7 @@ const FacilityManagement = () => {
                                         />
                                     </div>
 
-                                    <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-admin border border-primary-100 dark:border-primary-900/30">
+                                    <div className="p-4 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                                         <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
                                             <strong>Tip:</strong> You can reorder images by dragging them in the main gallery after uploading.
                                         </p>
@@ -888,6 +901,22 @@ const FacilityManagement = () => {
                 document.body
             )}
 
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setItemToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title={deleteType === 'group' ? 'Delete Collection' : 'Delete Image'}
+                message={deleteType === 'group' 
+                    ? "Are you sure you want to delete this entire facility collection? This action cannot be undone."
+                    : "Are you sure you want to delete this facility image? This action cannot be undone."
+                }
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

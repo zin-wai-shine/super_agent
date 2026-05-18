@@ -39,6 +39,7 @@ const DashboardLayout = () => {
     const { user, logout, isSuperAdmin, isAgent } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -111,13 +112,13 @@ const DashboardLayout = () => {
                 <div className="flex items-center lg:hidden z-20">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 -ml-2 w-12 h-12 flex items-center justify-center rounded-full text-gray-500 bg-gray-100 dark:bg-dashboard-card hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 ease-out border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[0.5px] active:scale-[0.98]"
+                        className="w-[30px] h-[30px] flex items-center justify-center rounded-admin text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border-admin"
                     >
                         <div className={`transition-transform duration-300 ${sidebarOpen ? 'rotate-90' : 'rotate-0'}`}>
                             {sidebarOpen ? (
-                                <XMarkIcon className="w-7 h-7" />
+                                <XMarkIcon className="w-6 h-6 lg:w-5 lg:h-5" />
                             ) : (
-                                <Bars3Icon className="w-7 h-7" />
+                                <Bars3Icon className="w-6 h-6 lg:w-5 lg:h-5" />
                             )}
                         </div>
                     </button>
@@ -211,12 +212,12 @@ const DashboardLayout = () => {
                     {/* Toggle Button - Desktop Only */}
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="hidden lg:flex absolute -right-5 top-6 z-50 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 p-1 rounded-admin text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 shadow-sm transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                        className="hidden lg:flex absolute -right-4 top-6 z-50 w-8 h-8 items-center justify-center bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 rounded-admin text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
                     >
                         {isCollapsed ? (
-                            <ChevronRightIcon className="w-4 h-4" />
+                            <ChevronRightIcon className="w-5 h-5" />
                         ) : (
-                            <ChevronLeftIcon className="w-4 h-4" />
+                            <ChevronLeftIcon className="w-5 h-5" />
                         )}
                     </button>
 
@@ -241,8 +242,8 @@ const DashboardLayout = () => {
                                     title={isCollapsed ? item.name : ''}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-3 rounded-admin transition-all duration-200 ${isActive(item.href)
-                                        ? 'bg-primary-50/50 dark:bg-transparent text-primary-700 dark:text-primary-400'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-primary-50/30 dark:hover:bg-white/5'
+                                        ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] text-primary-700 dark:text-primary-400'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -269,7 +270,7 @@ const DashboardLayout = () => {
                                 )}
                             </div>
                             <button
-                                onClick={handleLogout}
+                                onClick={() => setShowLogoutConfirm(true)}
                                 title={isCollapsed ? 'Logout' : ''}
                                 className={`mt-3 w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center space-x-2'} px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-admin transition-colors`}
                             >
@@ -285,6 +286,38 @@ const DashboardLayout = () => {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Logout Confirm Modal */}
+            {showLogoutConfirm && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
+                    <div className="bg-white dark:bg-dashboard-card w-full max-w-sm flex flex-col rounded-admin shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all animate-in fade-in zoom-in duration-300">
+                        <div className="px-8 py-8 text-center flex flex-col items-center">
+                            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-admin border border-red-100 dark:border-red-500/20 flex items-center justify-center mb-6 shadow-sm">
+                                <ArrowLeftOnRectangleIcon className="w-8 h-8 text-red-500 dark:text-red-400" />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight mb-2">Sign Out</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">Are you sure you want to sign out of your account?</p>
+                        </div>
+                        <div className="px-6 py-5 bg-gray-50/50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                            <button
+                                onClick={() => setShowLogoutConfirm(false)}
+                                className="flex-1 h-11 bg-white dark:bg-dashboard-card border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-admin font-bold text-[13px] hover:bg-gray-50 dark:hover:bg-white/5 transition-all shadow-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowLogoutConfirm(false);
+                                    handleLogout();
+                                }}
+                                className="flex-1 h-11 bg-red-600 text-white rounded-admin font-bold text-[13px] hover:bg-red-700 transition-all shadow-sm"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

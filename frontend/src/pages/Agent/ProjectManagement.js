@@ -31,6 +31,7 @@ import {
 import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const ProjectManagement = () => {
     const [projects, setProjects] = useState([]);
@@ -38,6 +39,8 @@ const ProjectManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState(null);
     const [globalFilter, setGlobalFilter] = useSessionState('projman_globalFilter', '');
     const [sorting, setSorting] = useSessionState('projman_sorting', []);
     const [pagination, setPagination] = useSessionState('projman_pagination', { pageIndex: 0, pageSize: 10 });
@@ -178,14 +181,22 @@ const ProjectManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this project? This cannot be undone.')) return;
+    const handleDelete = (id) => {
+        setProjectToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!projectToDelete) return;
         try {
-            await developerApi.deleteProject(id);
+            await developerApi.deleteProject(projectToDelete);
             toast.success('Project deleted');
             fetchProjects();
         } catch (error) {
             toast.error(error.response?.data?.error || 'Failed to delete project');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setProjectToDelete(null);
         }
     };
 
@@ -195,7 +206,7 @@ const ProjectManagement = () => {
             header: 'Project Name',
             cell: ({ getValue }) => (
                 <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
+                    <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center flex-shrink-0 shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                         <BuildingOfficeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <span className="font-bold text-gray-900 dark:text-white text-sm">{getValue()}</span>
@@ -207,7 +218,7 @@ const ProjectManagement = () => {
             header: 'Developer',
             accessorFn: (row) => row.developer?.name || '',
             cell: ({ row }) => (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-50/50 text-primary-700 dark:bg-primary-600/10 dark:text-primary-400 backdrop-blur-sm">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 dark:text-primary-400 backdrop-blur-sm">
                     {row.original.developer?.name || '—'}
                 </span>
             ),
@@ -219,14 +230,14 @@ const ProjectManagement = () => {
                 <div className="flex justify-end space-x-2.5">
                     <button
                         onClick={() => handleOpenForm(row.original)}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                         title="Edit"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -254,7 +265,7 @@ const ProjectManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-600/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <BuildingOfficeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Project Management
@@ -586,6 +597,19 @@ const ProjectManagement = () => {
             )}
 
 
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setProjectToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Project"
+                message="Are you sure you want to delete this project? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

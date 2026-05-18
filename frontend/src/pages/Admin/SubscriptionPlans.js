@@ -18,12 +18,15 @@ import {
     XMarkIcon
 } from '@heroicons/react/24/outline';
 import EmptyState from '../../components/Common/EmptyState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const SubscriptionPlans = () => {
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [planToDelete, setPlanToDelete] = useState(null);
 
     const { register, control, handleSubmit, reset } = useForm();
 
@@ -109,14 +112,22 @@ const SubscriptionPlans = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this plan?')) return;
+    const handleDelete = (id) => {
+        setPlanToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!planToDelete) return;
         try {
-            await adminApi.deletePlan(id);
+            await adminApi.deletePlan(planToDelete);
             toast.success('Plan deleted');
             fetchPlans();
         } catch (error) {
             toast.error('Failed to delete');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setPlanToDelete(null);
         }
     };
 
@@ -401,6 +412,19 @@ const SubscriptionPlans = () => {
                     </div>
                 </div>
             )}
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setPlanToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Plan"
+                message="Are you sure you want to delete this subscription plan? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

@@ -48,6 +48,7 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import toast from 'react-hot-toast';
 import { getMediaUrl } from '../../utils/media';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const BannerManagement = () => {
     const { user, isSuperAdmin } = useAuth();
@@ -58,6 +59,8 @@ const BannerManagement = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [sorting, setSorting] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [bannerToDelete, setBannerToDelete] = useState(null);
 
     // Modal & Filter States
     const [showModal, setShowModal] = useState(false);
@@ -279,15 +282,23 @@ const BannerManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this banner?")) return;
+    const handleDelete = (id) => {
+        setBannerToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!bannerToDelete) return;
         try {
-            await bannerApi.deleteBanner(id);
+            await bannerApi.deleteBanner(bannerToDelete);
             toast.success("Banner deleted");
             fetchBanners();
         } catch (error) {
             console.error("Failed to delete banner", error);
             toast.error("Failed to delete banner");
+        } finally {
+            setDeleteConfirmOpen(false);
+            setBannerToDelete(null);
         }
     };
 
@@ -435,21 +446,21 @@ const BannerManagement = () => {
                 <div className="flex items-center justify-end whitespace-nowrap gap-2.5">
                     <button
                         onClick={() => handlePreview(row.original)}
-                        className="p-2.5 text-gray-500 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-admin transition-all border border-gray-100/30 dark:border-gray-700 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-[#222222] bg-[#222222]/5 hover:bg-[#222222]/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 rounded-admin transition-all border border-[#222222]/15 dark:border-white/10 shadow-sm flex items-center justify-center"
                         title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                         title="Edit Banner"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete Banner"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -486,7 +497,7 @@ const BannerManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <MegaphoneIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Banner Management
@@ -1094,6 +1105,19 @@ const BannerManagement = () => {
                 document.body
             )}
 
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setBannerToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Banner"
+                message="Are you sure you want to delete this banner? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

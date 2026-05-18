@@ -105,7 +105,7 @@ const AddToCollectionModal = ({ isOpen, onClose, listingId }) => {
                             onClick={() => setActiveTab('image')}
                             className={`px-6 h-10 rounded-full text-[13px] font-bold transition-all border ${
                                 activeTab === 'image' 
-                                ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-200 dark:border-primary-500/20 text-primary-600 shadow-sm' 
+                                ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 shadow-sm' 
                                 : 'bg-white dark:bg-white/5 border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/10'
                             }`}
                         >
@@ -115,7 +115,7 @@ const AddToCollectionModal = ({ isOpen, onClose, listingId }) => {
                             onClick={() => setActiveTab('icon')}
                             className={`px-6 h-10 rounded-full text-[13px] font-bold transition-all border ${
                                 activeTab === 'icon' 
-                                ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-200 dark:border-primary-500/20 text-primary-600 shadow-sm' 
+                                ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 shadow-sm' 
                                 : 'bg-white dark:bg-white/5 border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/10'
                             }`}
                         >

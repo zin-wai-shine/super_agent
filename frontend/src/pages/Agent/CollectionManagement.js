@@ -17,6 +17,7 @@ import {
     ChevronDownIcon as ChevronDownIconOutline,
     ArrowsUpDownIcon,
     Bars3Icon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
     DndContext,
@@ -50,6 +51,7 @@ import StyledSelect from '../../components/Form/StyledSelect';
 import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 import { getMediaUrl } from '../../utils/media';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import CreateCollectionModal from '../../components/Listings/CreateCollectionModal';
 import EditCollectionModal from '../../components/Listings/EditCollectionModal';
 
@@ -240,6 +242,8 @@ const CollectionManagement = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createModalType, setCreateModalType] = useState('child');
     const [editingCollection, setEditingCollection] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [collectionToDelete, setCollectionToDelete] = useState(null);
     const [showReorderModal, setShowReorderModal] = useState(false);
     const [selectedParentForReorder, setSelectedParentForReorder] = useState(null);
     
@@ -256,6 +260,25 @@ const CollectionManagement = () => {
 
     // Use scroll restoration
     useScrollRestoration('CollectionManagement', !loading && collections.length > 0);
+
+    const handleDeleteClick = (id) => {
+        setCollectionToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!collectionToDelete) return;
+        try {
+            await collectionApi.deleteCollection(collectionToDelete);
+            toast.success('Collection deleted');
+            fetchCollections();
+        } catch (e) {
+            toast.error('Failed to delete');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setCollectionToDelete(null);
+        }
+    };
 
     const fetchCollections = async () => {
         try {
@@ -312,7 +335,7 @@ const CollectionManagement = () => {
             accessorKey: 'listings_count',
             header: 'Props',
             cell: ({ getValue }) => (
-                <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-500/10 px-1.5 py-0.5 rounded-xl">
+                <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] px-1.5 py-0.5 rounded-xl">
                     {getValue() || 0}
                 </span>
             ),
@@ -326,25 +349,15 @@ const CollectionManagement = () => {
                     <div className="flex justify-end space-x-1.5">
                         <button
                             onClick={() => setEditingCollection(row.original)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition-all"
+                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
                             <PencilSquareIcon className="w-4 h-4" />
                         </button>
                         {!isVirtual && (
                             <button
-                                onClick={async () => {
-                                    if (window.confirm('Delete this collection?')) {
-                                        try {
-                                            await collectionApi.deleteCollection(row.original.id);
-                                            toast.success('Deleted');
-                                            fetchCollections();
-                                        } catch (e) {
-                                            toast.error('Failed to delete');
-                                        }
-                                    }
-                                }}
-                                className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
+                                onClick={() => handleDeleteClick(row.original.id)}
+                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                                 title="Delete"
                             >
                                 <TrashIcon className="w-4 h-4" />
@@ -381,7 +394,7 @@ const CollectionManagement = () => {
             accessorKey: 'children_count',
             header: 'Childs',
             cell: ({ getValue }) => (
-                <span className="text-[10px] font-bold text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-500/10 px-1.5 py-0.5 rounded-xl">
+                <span className="text-[10px] font-bold text-secondary-600 dark:text-secondary-400 bg-[color-mix(in_srgb,var(--secondary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--secondary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--secondary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--secondary-color),transparent_80%)] px-1.5 py-0.5 rounded-xl">
                     {getValue() || 0}
                 </span>
             ),
@@ -397,31 +410,21 @@ const CollectionManagement = () => {
                                 setSelectedParentForReorder(row.original);
                                 setShowReorderModal(true);
                             }}
-                            className="p-2.5 text-gray-400 hover:text-gray-700 bg-gray-50/50 hover:bg-gray-100/50 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition-all border border-gray-100/20 dark:border-gray-700 shadow-sm flex items-center justify-center"
+                            className="p-2.5 text-gray-600 bg-gray-100/40 hover:bg-gray-100 dark:bg-gray-500/10 dark:text-gray-400 dark:hover:bg-gray-500/20 rounded-xl transition-all border border-gray-600/20 dark:border-gray-500/20 shadow-sm flex items-center justify-center"
                             title="Adjust Order"
                         >
                             <ArrowsUpDownIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setEditingCollection(row.original)}
-                            className="p-2.5 text-primary-600 bg-primary-50/50 hover:bg-primary-100/50 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-xl transition-all border border-primary-100/20 dark:border-primary-500/20 shadow-sm flex items-center justify-center"
+                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
                             <PencilSquareIcon className="w-5 h-5" />
                         </button>
                         <button
-                            onClick={async () => {
-                                if (window.confirm('Delete this main collection?')) {
-                                    try {
-                                        await collectionApi.deleteCollection(row.original.id);
-                                        toast.success('Deleted');
-                                        fetchCollections();
-                                    } catch (e) {
-                                        toast.error('Failed to delete');
-                                    }
-                                }
-                            }}
-                            className="p-2.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-100/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            onClick={() => handleDeleteClick(row.original.id)}
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                             title="Delete"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -580,7 +583,7 @@ const CollectionManagement = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-500/10 rounded-2xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-2xl flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <FolderIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Collections
@@ -599,7 +602,7 @@ const CollectionManagement = () => {
                             <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">
                                 Main Collections
                             </h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 rounded-xl">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)] text-primary-600 dark:text-primary-400 rounded-xl">
                                 {parentData.length}
                             </span>
                         </div>
@@ -655,7 +658,7 @@ const CollectionManagement = () => {
                             <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">
                                 Child Collections
                             </h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-secondary-50 dark:bg-secondary-500/10 text-secondary-600 dark:text-secondary-400 rounded-xl">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-[color-mix(in_srgb,var(--secondary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--secondary-color),transparent_90%)] border border-[color-mix(in_srgb,var(--secondary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--secondary-color),transparent_80%)] text-secondary-600 dark:text-secondary-400 rounded-xl">
                                 {childData.length}
                             </span>
                         </div>
@@ -737,6 +740,20 @@ const CollectionManagement = () => {
                 parent={selectedParentForReorder}
                 collections={collections}
                 onReordered={() => fetchCollections()}
+            />
+
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setCollectionToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Collection"
+                message="Are you sure you want to delete this collection? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
             />
         </div>
     );

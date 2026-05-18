@@ -10,6 +10,9 @@ import { DashboardThemeProvider } from './contexts/DashboardThemeContext';
 import { PublicDarkThemeProvider } from './contexts/PublicDarkThemeContext';
 import './index.css';
 
+import desktopErrorBg from './assets/images/properties_not_fount/pro_desktop_not_found.png';
+import mobileErrorBg from './assets/images/properties_not_fount/pro_mobile_not_found.png';
+
 // Suppress benign ResizeObserver loop error (browser quirk when layout triggers more resize callbacks in same frame)
 const resizeObserverErr = (msg) => typeof msg === 'string' && msg.includes('ResizeObserver loop');
 window.addEventListener('error', (e) => {
@@ -49,10 +52,16 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center overflow-hidden relative">
-                    {/* Background Decorations */}
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-500/10 rounded-full blur-[120px] animate-pulse"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-white dark:bg-dashboard-dark p-6 text-center animate-in fade-in duration-700">
+                    {/* Background Images */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden"
+                        style={{ backgroundImage: `url(${mobileErrorBg})` }}
+                    />
+                    <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block"
+                        style={{ backgroundImage: `url(${desktopErrorBg})` }}
+                    />
 
                     <div className="relative z-10 w-full max-w-md animate-fade-up">
                         {/* Branded Logo Header */}

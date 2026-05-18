@@ -347,7 +347,7 @@ const AppointmentManagement = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <CalendarDaysIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Appointments
@@ -588,13 +588,13 @@ const AppointmentManagement = () => {
                             <table className="w-full text-left border-collapse divide-y divide-gray-100 dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800/50">
                                     <tr>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Visitor</th>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Listing</th>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Booking Date</th>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Preferred Time</th>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Status</th>
-                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Decision</th>
-                                        <th className="text-right px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider">Actions</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Visitor</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Listing</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Booking Date</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Preferred Time</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Status</th>
+                                        <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Decision</th>
+                                        <th className="text-right px-6 py-3 text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-wider whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -674,14 +674,14 @@ const AppointmentManagement = () => {
                                                 <div className="flex items-center justify-end gap-2.5">
                                                     <button
                                                         onClick={() => openDetailModal(appointment)}
-                                                        className="p-2.5 text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all border border-primary-100/50 dark:border-primary-500/20 shadow-sm"
+                                                        className="p-2.5 text-[#222222] bg-[#222222]/5 hover:bg-[#222222]/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 rounded-admin transition-all border border-[#222222]/15 dark:border-white/10 shadow-sm flex items-center justify-center"
                                                         title="View Details"
                                                     >
                                                         <EyeIcon className="w-5 h-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setShowDeleteConfirm(appointment.id)}
-                                                        className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-100/50 dark:border-red-500/20 shadow-sm"
+                                                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm"
                                                         title="Delete"
                                                     >
                                                         <TrashIcon className="w-5 h-5" />

@@ -42,6 +42,7 @@ import {
 import { collectionApi } from '../../services/api';
 import { FolderIcon } from '@heroicons/react/24/outline';
 import { TbEdit } from "react-icons/tb";
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 import { format, startOfDay, endOfDay, isSameDay, setMonth, setYear, getMonth, getYear, addMonths, subMonths, isWithinInterval, parseISO, subDays, startOfMonth } from 'date-fns';
 import { enUS } from 'date-fns/locale';
@@ -62,6 +63,13 @@ const AgentListings = () => {
     const [addToCollectionId, setAddToCollectionId] = useState(null);
     const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
     const [collectionRefreshTrigger, setCollectionRefreshTrigger] = useState(0);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [listingToDelete, setListingToDelete] = useState(null);
+    const [repostConfirmOpen, setRepostConfirmOpen] = useState(false);
+    const [listingToRepost, setListingToRepost] = useState(null);
+    const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+    const [listingToPublish, setListingToPublish] = useState(null);
+    const [isPublishAction, setIsPublishAction] = useState(false);
 
     // Use scroll restoration
     useScrollRestoration('AgentListings', !loading && listings.length > 0);
@@ -133,18 +141,28 @@ const AgentListings = () => {
         fetchListings();
     }, [selectedCollection]);
 
-    const handlePublish = async (id, isPublished) => {
+    const handlePublish = (id, isPublished) => {
+        setListingToPublish(id);
+        setIsPublishAction(!isPublished);
+        setPublishConfirmOpen(true);
+    };
+
+    const confirmPublish = async () => {
+        if (!listingToPublish) return;
         try {
-            if (isPublished) {
-                await agentApi.unpublishListing(id);
-                toast.success('Listing unpublished');
+            if (isPublishAction) {
+                await agentApi.publishListing(listingToPublish);
+                toast.success('Listing published successfully!');
             } else {
-                await agentApi.publishListing(id);
-                toast.success('Listing published');
+                await agentApi.unpublishListing(listingToPublish);
+                toast.success('Listing unpublished successfully!');
             }
             fetchListings();
         } catch (error) {
             toast.error('Action failed');
+        } finally {
+            setPublishConfirmOpen(false);
+            setListingToPublish(null);
         }
     };
 
@@ -158,25 +176,41 @@ const AgentListings = () => {
         }
     };
 
-    const handleRepost = async (id) => {
+    const handleRepost = (id) => {
+        setListingToRepost(id);
+        setRepostConfirmOpen(true);
+    };
+
+    const confirmRepost = async () => {
+        if (!listingToRepost) return;
         try {
-            await agentApi.repostListing(id);
+            await agentApi.repostListing(listingToRepost);
             toast.success('Listing reposted to top!');
             fetchListings();
         } catch (error) {
             toast.error('Failed to repost listing');
+        } finally {
+            setRepostConfirmOpen(false);
+            setListingToRepost(null);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this listing?')) return;
+    const handleDelete = (id) => {
+        setListingToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!listingToDelete) return;
         try {
-            await agentApi.deleteListing(id);
+            await agentApi.deleteListing(listingToDelete);
             toast.success('Listing deleted');
             fetchListings();
         } catch (error) {
             toast.error('Failed to delete listing');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setListingToDelete(null);
         }
     };
 
@@ -246,7 +280,8 @@ const AgentListings = () => {
             const matchesSearch = globalFilter
                 ? (listing.title?.toLowerCase().includes(globalFilter.toLowerCase()) ||
                     listing.address?.toLowerCase().includes(globalFilter.toLowerCase()) ||
-                    listing.district?.toLowerCase().includes(globalFilter.toLowerCase()))
+                    listing.district?.toLowerCase().includes(globalFilter.toLowerCase()) ||
+                    listing.station_name?.toLowerCase().includes(globalFilter.toLowerCase()))
                 : true;
 
             // Date Filter
@@ -304,9 +339,20 @@ const AgentListings = () => {
                         </div>
                         <div>
                             <div className="font-medium text-gray-900 dark:text-white line-clamp-1">{listing.title}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{listing.station_name || listing.district}</div>
                         </div>
                     </div>
+                );
+            }
+        },
+        {
+            header: 'Transit',
+            accessorKey: 'station_name',
+            cell: ({ getValue }) => {
+                const val = getValue();
+                return (
+                    <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        {val || '-'}
+                    </span>
                 );
             }
         },
@@ -316,11 +362,8 @@ const AgentListings = () => {
             cell: ({ row }) => {
                 const listing = row.original;
                 return (
-                    <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                            {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(listing.price)}
-                        </div>
-                        {listing.listing_type === 'rent' && <div className="text-sm text-gray-500 dark:text-gray-400">/month</div>}
+                    <div className="font-medium text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(listing.price)}
                     </div>
                 );
             }
@@ -370,7 +413,7 @@ const AgentListings = () => {
                         onClick={() => handleToggleViewing(listing.id, checked)}
                         className={`
                             relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ring-0
-                            ${checked ? 'bg-primary-600 dark:bg-primary-500' : 'bg-gray-200 dark:bg-zinc-600'}
+                            ${checked ? 'bg-[color-mix(in_srgb,var(--primary-color),transparent_10%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_20%)] shadow-sm' : 'bg-gray-200 dark:bg-zinc-600'}
                         `}
                     >
                         <span
@@ -393,14 +436,14 @@ const AgentListings = () => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setAddToCollectionId(listing.id)}
-                            className="px-3 py-2 text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all shadow-sm flex items-center gap-2 text-[11px] font-medium"
+                            className="px-3 py-2 text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center gap-2 text-[11px] font-normal"
                         >
                             <FolderPlusIcon className="w-4 h-4" />
                             <span>Collection</span>
                         </button>
                         <button
                             onClick={() => handleRepost(listing.id)}
-                            className="px-3 py-2 text-indigo-600 bg-indigo-600/10 hover:bg-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-admin transition-all shadow-sm flex items-center gap-2 text-[11px] font-medium"
+                            className="px-3 py-2 text-indigo-600 bg-indigo-600/10 hover:bg-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-admin border border-indigo-600/20 dark:border-indigo-500/20 transition-all shadow-sm flex items-center gap-2 text-[11px] font-normal"
                         >
                             <ArrowPathIcon className="w-4 h-4" />
                             <span>Repost</span>
@@ -418,9 +461,9 @@ const AgentListings = () => {
                     <div className="flex items-center justify-end gap-2.5">
                         <button
                             onClick={() => handlePublish(listing.id, listing.is_published)}
-                            className={`p-2.5 rounded-admin transition-all shadow-sm flex items-center justify-center ${listing.is_published
-                                ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20'
-                                : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20'
+                            className={`p-2.5 rounded-admin transition-all shadow-sm flex items-center justify-center border ${listing.is_published
+                                ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-600/20 dark:border-amber-500/20'
+                                : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-600/20 dark:border-emerald-500/20'
                                 }`}
                             title={listing.is_published ? 'Unpublish' : 'Publish'}
                         >
@@ -432,14 +475,14 @@ const AgentListings = () => {
                         </button>
                         <button
                             onClick={() => navigate(`/dashboard/listings/${listing.id}/edit`)}
-                            className="p-2.5 text-primary-600 bg-primary-600/10 hover:bg-primary-600/20 dark:bg-primary-500/10 dark:text-primary-400 dark:hover:bg-primary-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
                             title="Edit"
                         >
                             <TbEdit className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => handleDelete(listing.id)}
-                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all shadow-sm flex items-center justify-center"
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
                             title="Delete"
                         >
                             <TrashIcon className="w-5 h-5" />
@@ -470,7 +513,7 @@ const AgentListings = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-50/50 dark:bg-primary-500/10 backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] backdrop-blur-md rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <BuildingOffice2Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         {selectedCollection ? `${selectedCollection.name}` : 'All Listings'}
@@ -748,7 +791,7 @@ const AgentListings = () => {
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-                                                    className={`text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 ${header.id === 'actions' ? 'text-right' : ''}`}
+                                                    className={`text-left px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap ${header.id === 'actions' ? 'text-right' : ''}`}
                                                 >
                                                     {header.isPlaceholder ? null : (
                                                         <div
@@ -890,6 +933,51 @@ const AgentListings = () => {
                     setCollectionRefreshTrigger(prev => prev + 1);
                     setSelectedCollection(newCol);
                 }}
+            />
+
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setListingToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete Listing"
+                message="Are you sure you want to delete this listing? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
+
+            <ConfirmModal
+                isOpen={repostConfirmOpen}
+                onClose={() => {
+                    setRepostConfirmOpen(false);
+                    setListingToRepost(null);
+                }}
+                onConfirm={confirmRepost}
+                title="Repost Listing"
+                message="Are you sure you want to repost this listing to the top? This will push it to the top of search results."
+                confirmText="Repost"
+                cancelText="Cancel"
+                isDestructive={false}
+            />
+
+            <ConfirmModal
+                isOpen={publishConfirmOpen}
+                onClose={() => {
+                    setPublishConfirmOpen(false);
+                    setListingToPublish(null);
+                }}
+                onConfirm={confirmPublish}
+                title={isPublishAction ? "Publish Listing" : "Unpublish Listing"}
+                message={isPublishAction 
+                    ? "Are you sure you want to publish this listing? It will become visible to the public."
+                    : "Are you sure you want to unpublish this listing? It will be hidden from the public."
+                }
+                confirmText={isPublishAction ? "Publish" : "Unpublish"}
+                cancelText="Cancel"
+                isDestructive={!isPublishAction}
             />
         </div >
     );

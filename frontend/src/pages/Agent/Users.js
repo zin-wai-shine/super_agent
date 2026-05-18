@@ -34,10 +34,13 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
     const [globalFilter, setGlobalFilter] = useSessionState('users_globalFilter', '');
     const [statusFilter, setStatusFilter] = useSessionState('users_statusFilter', 'all');
     const [sorting, setSorting] = useSessionState('users_sorting', []);
@@ -176,15 +179,22 @@ const Users = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    const handleDelete = (id) => {
+        setUserToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
         try {
-            await agentApi.deleteUser(id);
+            await agentApi.deleteUser(userToDelete);
             toast.success('User deleted successfully');
             fetchUsers();
         } catch (error) {
             toast.error('Failed to delete user');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setUserToDelete(null);
         }
     };
 
@@ -311,14 +321,14 @@ const Users = () => {
                 <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => {/* View Details */ }}
-                        className="p-1.5 text-[#3B82F6] bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100/50 backdrop-blur-sm rounded-xl transition-all"
+                        className="p-2.5 text-[#222222] bg-[#222222]/5 hover:bg-[#222222]/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 rounded-xl transition-all border border-[#222222]/15 dark:border-white/10 shadow-sm flex items-center justify-center"
                         title="View Details"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50/50 dark:bg-red-900/10 hover:bg-red-100/50 backdrop-blur-sm rounded-xl transition-all"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -350,7 +360,7 @@ const Users = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-xl flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-xl flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Registered Users
@@ -667,6 +677,19 @@ const Users = () => {
                     />
                 )}
             </div>
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setUserToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div>
     );
 };

@@ -37,12 +37,15 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const SubAgents = () => {
     const [subAgents, setSubAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingSubAgent, setEditingSubAgent] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [subAgentToDelete, setSubAgentToDelete] = useState(null);
     const [globalFilter, setGlobalFilter] = useSessionState('subagents_globalFilter', '');
     const [sorting, setSorting] = useSessionState('subagents_sorting', []);
     const [pagination, setPagination] = useSessionState('subagents_pagination', {
@@ -202,15 +205,22 @@ const SubAgents = () => {
         reset();
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Remove this sub-agent?')) return;
+    const handleDelete = (id) => {
+        setSubAgentToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!subAgentToDelete) return;
         try {
-            await agentApi.deleteSubAgent(id);
+            await agentApi.deleteSubAgent(subAgentToDelete);
             toast.success('Sub-agent removed');
             fetchSubAgents();
         } catch (error) {
             toast.error('Failed to remove sub-agent');
+        } finally {
+            setDeleteConfirmOpen(false);
+            setSubAgentToDelete(null);
         }
     };
 
@@ -262,14 +272,14 @@ const SubAgents = () => {
                 <div className="flex justify-end space-x-2">
                     <button
                         onClick={() => handleEdit(row.original)}
-                        className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 backdrop-blur-sm rounded-admin transition-all duration-200"
+                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 border border-blue-600/20 dark:border-blue-500/20 backdrop-blur-sm rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center"
                         title="Edit"
                     >
                         <PencilIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDelete(row.original.id)}
-                        className="p-1.5 text-red-600 bg-red-50/50 hover:bg-red-100/50 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 backdrop-blur-sm rounded-admin transition-all duration-200"
+                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 border border-red-600/20 dark:border-red-500/20 backdrop-blur-sm rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center"
                         title="Delete"
                     >
                         <TrashIcon className="w-5 h-5" />
@@ -322,7 +332,7 @@ const SubAgents = () => {
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 pb-2">
                 <div className="lg:min-w-[280px]">
                     <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-600/10 rounded-admin flex items-center justify-center shadow-sm">
+                        <div className="w-10 h-10 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin flex items-center justify-center shadow-sm border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
                             <UsersIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         Sub-Agents
@@ -527,7 +537,7 @@ const SubAgents = () => {
                                             {headerGroup.headers.map(header => (
                                                 <th
                                                     key={header.id}
-                                                    className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider"
+                                                    className="px-6 py-3 text-[11px] font-bold text-[#6B7280] dark:text-gray-400 tracking-wider whitespace-nowrap"
                                                 >
                                                     <div
                                                         className={`flex items-center gap-2 ${header.column.getCanSort() ? 'cursor-pointer select-none' : ''}`}
@@ -702,6 +712,19 @@ const SubAgents = () => {
                 )
             }
 
+            <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    setDeleteConfirmOpen(false);
+                    setSubAgentToDelete(null);
+                }}
+                onConfirm={confirmDelete}
+                title="Remove Sub-Agent"
+                message="Are you sure you want to remove this sub-agent? They will no longer have access to the agent dashboard."
+                confirmText="Remove"
+                cancelText="Cancel"
+                isDestructive={true}
+            />
         </div >
     );
 };
