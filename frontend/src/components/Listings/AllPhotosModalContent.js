@@ -121,12 +121,10 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const [isLoading, setIsLoading] = useState(true);
     const { theme } = useTheme();
     const { isMainDomain } = useTenant();
-    const [focusedImageIndex, setFocusedImageIndex] = useState(null); // null = list view, number = single full-screen image
+    const [focusedImageIndex, setFocusedImageIndex] = useState(null);
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
-    const focusedScrollRef = useRef(null);
-    const isManualScrolling = useRef(false);
+    const touchStartX = useRef(0);
     const lastTapTimeRef = useRef(0);
-    const lastTapXRef = useRef(0);
     const DOUBLE_TAP_MS = 350;
 
     useEffect(() => {
@@ -135,17 +133,11 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         return () => clearTimeout(timer);
     }, []);
 
-    const scrollToImage = useCallback((index, smooth = true) => {
-        if (!focusedScrollRef.current) return;
-        isManualScrolling.current = true;
-        const width = focusedScrollRef.current.offsetWidth;
-        focusedScrollRef.current.scrollTo({
-            left: index * width,
-            behavior: smooth ? 'smooth' : 'auto'
-        });
-        setFocusedImageIndex(index);
-        setTimeout(() => { isManualScrolling.current = false; }, 500);
-    }, []);
+    const scrollToImage = useCallback((index) => {
+        if (index >= 0 && index < flatImages.length) {
+            setFocusedImageIndex(index);
+        }
+    }, [flatImages.length]);
 
     const goPrevImage = useCallback(() => {
         if (focusedImageIndex === null || focusedImageIndex <= 0) return;
@@ -156,6 +148,20 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         if (focusedImageIndex === null || focusedImageIndex >= flatImages.length - 1) return;
         scrollToImage(focusedImageIndex + 1);
     }, [focusedImageIndex, flatImages.length, scrollToImage]);
+
+    const handleTouchStart = useCallback((e) => {
+        touchStartX.current = e.touches[0].clientX;
+    }, []);
+
+    const handleTouchEnd = useCallback((e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const deltaX = touchEndX - touchStartX.current;
+        if (deltaX > 50) {
+            goPrevImage();
+        } else if (deltaX < -50) {
+            goNextImage();
+        }
+    }, [goPrevImage, goNextImage]);
 
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
     useEffect(() => {
@@ -180,27 +186,6 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [focusedImageIndex, flatImages.length, goPrevImage, goNextImage]);
-
-    // When entering focused view: scroll to initial index
-    useEffect(() => {
-        if (focusedImageIndex !== null && focusedScrollRef.current) {
-            // Delay slightly to ensure layout is ready
-            const timeout = setTimeout(() => {
-                scrollToImage(focusedImageIndex, false);
-            }, 50);
-            return () => clearTimeout(timeout);
-        }
-    }, [focusedImageIndex === null]); // Only run when opening focused view
-
-    const handleFocusedScroll = () => {
-        if (!focusedScrollRef.current || isManualScrolling.current) return;
-        const scrollLeft = focusedScrollRef.current.scrollLeft;
-        const width = focusedScrollRef.current.offsetWidth;
-        const newIndex = Math.round(scrollLeft / width);
-        if (newIndex !== focusedImageIndex && newIndex >= 0 && newIndex < flatImages.length) {
-            setFocusedImageIndex(newIndex);
-        }
-    };
 
     const [scrolled, setScrolled] = useState(false);
 
@@ -317,17 +302,21 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 </header>
 
                 <div className="relative flex-1 min-h-0 flex items-center justify-center p-0 z-10">
-                    <div className="w-full h-full mx-auto relative overflow-hidden">
-                        <div
-                            ref={focusedScrollRef}
-                            onScroll={handleFocusedScroll}
-                            className="w-full h-full flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain select-none no-scrollbar"
-                            style={{ WebkitOverflowScrolling: 'touch' }}
-                        >
-                            {flatImages.map((img, i) => (
+                    <div 
+                        className="w-full h-full mx-auto relative overflow-hidden flex items-center justify-center"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                    >
+                        {flatImages.map((img, i) => {
+                            const isActive = i === currentIdx;
+                            return (
                                 <div
                                     key={i}
-                                    className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4"
+                                    className={`absolute inset-0 flex items-center justify-center p-4 select-none transition-all duration-500 ease-out ${
+                                        isActive 
+                                            ? 'opacity-100 scale-100 z-10 pointer-events-auto' 
+                                            : 'opacity-0 scale-[0.97] z-0 pointer-events-none'
+                                    }`}
                                     onClick={handleDoubleClick}
                                 >
                                     <img
@@ -337,8 +326,8 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         draggable={false}
                                     />
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                         {total > 1 && (
                             <>
                                 {currentIdx > 0 && (
