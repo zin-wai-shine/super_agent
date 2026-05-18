@@ -14,6 +14,7 @@ import {
     ArrowLeftIcon,
 } from '@heroicons/react/24/solid';
 import { BsCalendar2Week } from 'react-icons/bs';
+import { TbSmartHome } from 'react-icons/tb';
 import {
     HomeIcon,
     BuildingOfficeIcon,
@@ -48,6 +49,16 @@ const BookAppointment = () => {
         purpose: 'rent', // Will be updated based on listing type
         message: '',
     });
+
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const [availableSlots, setAvailableSlots] = useState([]);
     const [lockId, setLockId] = useState(null);
@@ -314,16 +325,30 @@ const BookAppointment = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 dark:bg-dashboard-dark py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:text-white">
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-6">
-                    <Link to={`/listings/${id}`} className="inline-flex items-center text-sm font-bold text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all group">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2 bg-transparent dark:bg-white/10 group-hover:bg-gray-100 dark:group-hover:bg-white/20 transition-all">
-                            <ArrowLeftIcon className="w-4 h-4 text-current group-hover:-translate-x-0.5 transition-transform" />
-                        </div>
-                        Back to Property
-                    </Link>
+        <div className="min-h-screen bg-gray-50/50 dark:bg-dashboard-dark pb-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:text-white">
+            {/* Sticky Navigation Sub-Header Bar */}
+            <div className={`sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 mb-6 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5 shadow-sm' : 'border-b border-transparent'}`}>
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                        >
+                            <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                            title="Go to Home"
+                        >
+                            <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
+                        </button>
+                    </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto">
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
