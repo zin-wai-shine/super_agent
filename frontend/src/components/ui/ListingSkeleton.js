@@ -109,27 +109,6 @@ const DetailSkeleton = ({ status }) => {
 
     return (
         <div className="w-full flex flex-col min-h-screen bg-white dark:bg-dashboard-dark" style={skeletonStyle}>
-            {/* Desktop Header Skeleton */}
-            <div className="hidden lg:flex items-center justify-between px-20 h-[80px] border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-dark sticky top-0 z-[100]">
-                <div className="flex items-center gap-2">
-                    {/* Back button & Home button group */}
-                    <div className="h-[44px] w-[44px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-fast" />
-                    <div className="h-[44px] w-[120px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                </div>
-                <div className="flex items-center gap-6">
-                    {/* Contact & Booking group */}
-                    <div className="flex items-center gap-2 pr-2">
-                        <div className="h-[44px] w-[110px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                        <div className="h-[44px] w-[130px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                    </div>
-                    {/* Save & Share group */}
-                    <div className="flex items-center gap-2">
-                        <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                        <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
-                    </div>
-                </div>
-            </div>
-
             {/* Mobile Hero / Gallery Placeholder */}
             <div className="lg:hidden relative w-full h-[45vh] bg-gray-100 dark:bg-white/5 animate-fill-fast overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[76px] px-4 flex items-center justify-between z-10">
@@ -143,8 +122,28 @@ const DetailSkeleton = ({ status }) => {
             </div>
 
             <div className="max-w-[1440px] mx-auto w-full px-0 md:px-8 lg:px-20 relative z-10">
-                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-10 lg:mt-0 px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 min-h-[60vh]">
-                    
+                {/* Desktop Header Skeleton — aligned exactly like real page */}
+                <div className="hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-20 py-6 sticky top-0 z-[100] bg-white dark:bg-dashboard-dark -mx-4 md:-mx-8 lg:-mx-20 border-b border-transparent">
+                    <div className="flex items-center gap-2">
+                        {/* Back button & Home button group */}
+                        <div className="h-[44px] w-[44px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-fast" />
+                        <div className="h-[44px] w-[120px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                    </div>
+                    <div className="flex items-center gap-6">
+                        {/* Contact & Booking group */}
+                        <div className="flex items-center gap-2 pr-2">
+                            <div className="h-[44px] w-[110px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                            <div className="h-[44px] w-[130px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                        </div>
+                        {/* Save & Share group */}
+                        <div className="flex items-center gap-2">
+                            <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                            <div className="h-[44px] w-[100px] bg-gray-100 dark:bg-white/5 rounded-full animate-fill-med" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-dashboard-dark rounded-t-[32px] lg:rounded-none -mt-10 lg:mt-0 px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 min-h-[60vh]">                    
                     {/* Title & Info Section */}
                     <div className="flex flex-col gap-1 mb-8 px-4 lg:px-0">
                         {/* Title */}
