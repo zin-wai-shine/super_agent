@@ -239,6 +239,7 @@ const ListingsPage = () => {
 
 
     const lastFetchedParamsStateRef = useRef(null);
+    const isFirstFetchRef = useRef(true);
     useEffect(() => {
         if (typeof lastFetchedParamsRef.current === 'function') {
             lastFetchedParamsRef.current = lastFetchedParamsRef.current();
@@ -1100,13 +1101,15 @@ const ListingsPage = () => {
 
             // Bypass fetch if we already restored this exact state from cache
             // IMPORTANT: In map mode, skip this if bounds have changed (user panned) - always re-fetch
-            if (isCacheValidSync && page === globalListCache.page && !isBoundsTriggeredFetch) {
+            if (isFirstFetchRef.current && isCacheValidSync && page === globalListCache.page && !isBoundsTriggeredFetch) {
+                isFirstFetchRef.current = false;
                 lastFetchedParamsRef.current = currentParamsKey;
                 setLoading(false);
                 setInitialLoading(false);
                 setIsMapRefetching(false);
                 return;
             }
+            isFirstFetchRef.current = false;
 
             if (lastFetchedParamsRef.current === currentParamsKey && listings.length > 0) {
                 setLoading(false);
