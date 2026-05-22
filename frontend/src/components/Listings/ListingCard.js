@@ -106,51 +106,82 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w
 // Internal component for smooth, flicker-free image loading
 const GracefulImage = ({ src, alt, className, shouldLoad = true, onReady }) => {
     const [isLoaded, setIsLoaded] = React.useState(false);
+    const [hasError, setHasError] = React.useState(false);
     const imgRef = React.useRef(null);
     const onReadyRef = React.useRef(onReady);
-    onReadyRef.current = onReady;
-
-    // Check if image is already cached (instant display)
+    
+    // Keep ref up to date
     React.useEffect(() => {
-        if (!shouldLoad || !src) return;
-        // Check browser cache immediately
-        const img = new Image();
-        img.src = src;
-        if (img.complete && img.naturalWidth > 0) {
-            setIsLoaded(true);
-            onReadyRef.current?.();
-        }
-    }, [src, shouldLoad]);
+        onReadyRef.current = onReady;
+    }, [onReady]);
 
-    const handleLoad = React.useCallback(() => {
+    const markReady = React.useCallback(() => {
         setIsLoaded(true);
         onReadyRef.current?.();
     }, []);
 
+    const handleError = React.useCallback(() => {
+        setHasError(true);
+        markReady();
+    }, [markReady]);
+
+    // Check if image is already cached (instant display)
+    React.useEffect(() => {
+        if (!shouldLoad) return;
+        if (!src) {
+            handleError();
+            return;
+        }
+        
+        // Check browser cache immediately
+        const img = new Image();
+        img.src = src;
+        if (img.complete) {
+            if (img.naturalWidth > 0) {
+                markReady();
+            } else {
+                handleError();
+            }
+        }
+    }, [src, shouldLoad, markReady, handleError]);
+
     // Check if the actual DOM element loaded before our effect ran
     React.useEffect(() => {
-        if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0 && !isLoaded) {
-            setIsLoaded(true);
-            onReadyRef.current?.();
+        if (imgRef.current?.complete && !isLoaded) {
+            if (imgRef.current.naturalWidth > 0) {
+                markReady();
+            } else {
+                handleError();
+            }
         }
     });
 
     return (
         <div className="relative w-full h-full bg-[#f7f7f7] dark:bg-white/5 overflow-hidden">
-            {shouldLoad && (
+            {shouldLoad && !hasError && (
                 <img
                     ref={imgRef}
                     src={src}
                     alt={alt}
-                    onLoad={handleLoad}
+                    onLoad={markReady}
+                    onError={handleError}
                     decoding="async"
                     className={`${className} transition-opacity duration-500 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                     loading="lazy"
                 />
             )}
             
+            {/* Error state fallback */}
+            {hasError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-white/5">
+                    <svg className="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            )}
+            
             {/* Shimmer Placeholder */}
-            {!isLoaded && (
+            {!isLoaded && !hasError && (
                 <div className="absolute inset-0 bg-gradient-to-r from-gray-200/60 via-gray-100/60 to-gray-200/60 dark:from-white/5 dark:via-white/10 dark:to-white/5 animate-pulse" />
             )}
         </div>
