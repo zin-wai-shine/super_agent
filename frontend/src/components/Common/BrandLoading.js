@@ -33,19 +33,30 @@ const BrandLoading = ({ agent, isMainDomain, isExiting, isLoadingConfig }) => {
                 {/* Minimalist Logo Display */}
                 <div className="relative w-56 h-56 flex items-center justify-center transform transition-all duration-700 animate-logo-pulse">
                     {logoUrl ? (
-                        <div className="w-full h-full relative">
+                        <div className="w-full h-full relative flex items-center justify-center">
+                            {/* Under layer: Double size, blurred, reduced opacity */}
+                            <img 
+                                src={logoUrl} 
+                                alt="" 
+                                className="absolute inset-0 w-full h-full object-contain scale-[2] blur-[30px] opacity-30 z-0 mix-blend-multiply dark:mix-blend-screen"
+                                aria-hidden="true"
+                            />
+                            {/* Top layer: Crisp logo */}
                             <img 
                                 src={logoUrl} 
                                 alt="Logo" 
-                                className="w-full h-full object-contain relative z-10"
+                                className="w-full h-full object-contain relative z-10 drop-shadow-xl"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
-                                    const fallback = e.target.parentElement.querySelector('.logo-fallback');
+                                    const parent = e.target.parentElement;
+                                    const underlayer = parent.querySelector('img[aria-hidden="true"]');
+                                    if (underlayer) underlayer.style.display = 'none';
+                                    const fallback = parent.querySelector('.logo-fallback');
                                     if (fallback) fallback.style.display = 'flex';
                                 }}
                             />
                             <div 
-                                className="logo-fallback absolute inset-0 hidden items-center justify-center text-white font-black text-4xl tracking-tighter rounded-3xl"
+                                className="logo-fallback absolute inset-0 hidden items-center justify-center text-white font-black text-4xl tracking-tighter rounded-3xl z-20"
                                 style={{ backgroundColor: primaryColor }}
                             >
                                 {siteTitle?.charAt(0) || 'S'}

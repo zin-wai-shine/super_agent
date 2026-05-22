@@ -607,12 +607,12 @@ const ListingsPage = () => {
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
     const handleMapBoundsChanged = React.useCallback((data) => {
-        // Simple comparison to prevent identical bounds from triggering a reload
+        // Robust comparison with epsilon to prevent tiny floating-point/sub-pixel inaccuracies from triggering infinite reload loops
         const isSame = lastBoundsRef.current &&
-            lastBoundsRef.current.min_lat === data.min_lat &&
-            lastBoundsRef.current.max_lat === data.max_lat &&
-            lastBoundsRef.current.min_lng === data.min_lng &&
-            lastBoundsRef.current.max_lng === data.max_lng;
+            Math.abs(lastBoundsRef.current.min_lat - data.min_lat) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.max_lat - data.max_lat) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.min_lng - data.min_lng) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.max_lng - data.max_lng) < 0.00001;
 
         if (!isSame) {
             if (ignoreBoundsChangeRef.current) {

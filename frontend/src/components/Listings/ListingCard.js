@@ -782,4 +782,4 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
     );
 };
 
-export default ListingCard;
+export default React.memo(ListingCard);

@@ -420,13 +420,26 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
         window.addEventListener('resize', handleResize);
 
         let observer = null;
+        let ticking = false;
 
         const handleModalScroll = (e) => {
-            setIsScrolled(e.detail.scrollTop > 10);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setIsScrolled(e.detail.scrollTop > 10);
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
 
         const handleWindowScroll = () => {
-            setIsScrolled(window.scrollY > 10);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setIsScrolled(window.scrollY > 10);
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
 
         if (isModal) {
@@ -970,15 +983,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     }, [user]);
 
     // Update purpose based on listing type
+    const listingType = listing?.listing_type;
     useEffect(() => {
-        if (listing) {
-            if (listing.listing_type === 'rent') {
+        if (listingType) {
+            if (listingType === 'rent') {
                 setBookingForm(prev => ({ ...prev, purpose: 'rent' }));
-            } else if (listing.listing_type === 'sale') {
+            } else if (listingType === 'sale') {
                 setBookingForm(prev => ({ ...prev, purpose: 'buy' }));
             }
         }
-    }, [listing]);
+    }, [listingType]);
 
     // Booking Logic Helpers
     const getDaysInMonth = (date) => {
@@ -1012,8 +1026,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     };
 
     // --- Slot Management ---
+    const hasListing = !!listing;
     useEffect(() => {
-        if (bookingForm.preferred_date && listing) {
+        if (bookingForm.preferred_date && hasListing) {
             const fetchSlots = async () => {
                 setFetchingSlots(true);
                 try {
@@ -1030,7 +1045,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             };
             fetchSlots();
         }
-    }, [bookingForm.preferred_date, listing, id]);
+    }, [bookingForm.preferred_date, hasListing, id]);
 
     const handleTimeSelect = async (time) => {
         if (bookingForm.preferred_time === time) return;
@@ -2020,6 +2035,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             alt={`${listing.title} - ${idx + 1}`}
                                             className="w-full h-full object-cover pointer-events-none"
                                             draggable={false}
+                                            loading={idx === 0 ? "eager" : "lazy"}
+                                            decoding="async"
                                         />
                                     </div>
                                 ))
@@ -2030,6 +2047,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         alt={listing.title}
                                         className="w-full h-full object-cover pointer-events-none"
                                         draggable={false}
+                                        loading="eager"
+                                        decoding="async"
                                     />
                                 </div>
                             )}
@@ -2229,6 +2248,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 src={hasImages ? getMediaUrl(images[0].url) : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'}
                                                 alt={listing.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                loading="eager"
+                                                decoding="async"
                                             />
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                         </div>
@@ -2244,6 +2265,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         src={getMediaUrl(images[1].url)}
                                                         alt="Gallery 2"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                                 </>
@@ -2261,6 +2284,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         src={getMediaUrl(images[2].url)}
                                                         alt="Gallery 3"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                                 </>
@@ -2278,6 +2303,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         src={getMediaUrl(images[3].url)}
                                                         alt="Gallery 4"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                                 </>
@@ -2295,6 +2322,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         src={getMediaUrl(images[4].url)}
                                                         alt="Gallery 5"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     <div className="absolute inset-0 bg-black/10 flex items-center justify-center group-hover:bg-black/20 transition-colors pointer-events-none">
                                                          <span className="h-[44px] px-6 bg-white dark:bg-dashboard-card text-[#222222] dark:text-white rounded-full font-semibold text-[12.5px] shadow-md border border-gray-200 dark:border-white/10 flex items-center gap-2 w-fit transition-all duration-300 group-hover:-translate-y-[1px]">

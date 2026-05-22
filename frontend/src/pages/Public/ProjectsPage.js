@@ -276,12 +276,12 @@ const ProjectsPage = () => {
     const fetchTriggeredByBoundsRef = useRef(false); // when true, skip fitBounds so map stays where user panned
 
     const handleMapBoundsChanged = React.useCallback((bounds) => {
-        // Simple comparison to prevent identical bounds from triggering a reload
+        // Robust comparison with epsilon to prevent tiny floating-point/sub-pixel inaccuracies from triggering infinite reload loops
         const isSame = lastBoundsRef.current &&
-            lastBoundsRef.current.min_lat === bounds.min_lat &&
-            lastBoundsRef.current.max_lat === bounds.max_lat &&
-            lastBoundsRef.current.min_lng === bounds.min_lng &&
-            lastBoundsRef.current.max_lng === bounds.max_lng;
+            Math.abs(lastBoundsRef.current.min_lat - bounds.min_lat) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.max_lat - bounds.max_lat) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.min_lng - bounds.min_lng) < 0.00001 &&
+            Math.abs(lastBoundsRef.current.max_lng - bounds.max_lng) < 0.00001;
 
         if (!isSame) {
             lastBoundsRef.current = bounds;
@@ -512,8 +512,10 @@ const ProjectsPage = () => {
             if (page === 1) {
                 const prev = prevMapBoundsRef.current;
                 const boundsJustChanged = isGoogleMapOpen && mapBounds && prev &&
-                    (prev.min_lat !== mapBounds.min_lat || prev.max_lat !== mapBounds.max_lat ||
-                        prev.min_lng !== mapBounds.min_lng || prev.max_lng !== mapBounds.max_lng);
+                    (Math.abs(prev.min_lat - mapBounds.min_lat) > 0.00001 ||
+                     Math.abs(prev.max_lat - mapBounds.max_lat) > 0.00001 ||
+                     Math.abs(prev.min_lng - mapBounds.min_lng) > 0.00001 ||
+                     Math.abs(prev.max_lng - mapBounds.max_lng) > 0.00001);
                 
                 fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
                 prevMapBoundsRef.current = mapBounds;

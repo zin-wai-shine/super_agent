@@ -49,12 +49,19 @@ const CollectionDetailPage = () => {
     useEffect(() => {
         fetchCollectionData();
 
+        let ticking = false;
         const handleScroll = () => {
-            const scrollPos = window.scrollY;
-            setScrolled(scrollPos > 50);
-            setHeaderSticky(scrollPos >= (window.innerWidth < 1024 ? window.innerHeight * 0.5 : 400));
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollPos = window.scrollY;
+                    setScrolled(scrollPos > 50);
+                    setHeaderSticky(scrollPos >= (window.innerWidth < 1024 ? window.innerHeight * 0.5 : 400));
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, [id]);
 
