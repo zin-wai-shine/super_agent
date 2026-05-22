@@ -444,20 +444,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
     const [isSaved, setIsSaved] = React.useState(initialSaved);
     const [savingListing, setSavingListing] = React.useState(false);
     const [isAgentModalOpen, setIsAgentModalOpen] = React.useState(false);
-    const [isInView, setIsInView] = React.useState(false);
+    const [isInView, setIsInView] = React.useState(true);
     const [isFirstImageReady, setIsFirstImageReady] = React.useState(false);
     const cardRef = React.useRef(null);
-
-    React.useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsInView(true);
-                observer.disconnect();
-            }
-        }, { rootMargin: '200px' });
-        if (cardRef.current) observer.observe(cardRef.current);
-        return () => observer.disconnect();
-    }, []);
 
     const navigate = useNavigate();
     const location = useLocation();
