@@ -145,17 +145,6 @@ const GracefulImage = ({ src, alt, className, shouldLoad = true, onReady }) => {
         }
     }, [src, shouldLoad, markReady, handleError]);
 
-    // Check if the actual DOM element loaded before our effect ran
-    React.useEffect(() => {
-        if (imgRef.current?.complete && !isLoaded) {
-            if (imgRef.current.naturalWidth > 0) {
-                markReady();
-            } else {
-                handleError();
-            }
-        }
-    });
-
     return (
         <div className="relative w-full h-full bg-[#f7f7f7] dark:bg-white/5 overflow-hidden">
             {shouldLoad && !hasError && (
