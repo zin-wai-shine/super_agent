@@ -136,12 +136,8 @@ const GracefulImage = ({ src, alt, className, shouldLoad = true, onReady }) => {
         // Check browser cache immediately
         const img = new Image();
         img.src = src;
-        if (img.complete) {
-            if (img.naturalWidth > 0) {
-                markReady();
-            } else {
-                handleError();
-            }
+        if (img.complete && img.naturalWidth > 0) {
+            markReady();
         }
     }, [src, shouldLoad, markReady, handleError]);
 
