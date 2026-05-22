@@ -106,40 +106,52 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w
 // Internal component for smooth, flicker-free image loading
 const GracefulImage = ({ src, alt, className, shouldLoad = true, onReady }) => {
     const [isLoaded, setIsLoaded] = React.useState(false);
-    const [hasStartedLoading, setHasStartedLoading] = React.useState(false);
-    
-    React.useEffect(() => {
-        if (!shouldLoad || hasStartedLoading) return;
+    const imgRef = React.useRef(null);
+    const onReadyRef = React.useRef(onReady);
+    onReadyRef.current = onReady;
 
-        setHasStartedLoading(true);
+    // Check if image is already cached (instant display)
+    React.useEffect(() => {
+        if (!shouldLoad || !src) return;
+        // Check browser cache immediately
         const img = new Image();
         img.src = src;
-        if (img.complete) {
+        if (img.complete && img.naturalWidth > 0) {
             setIsLoaded(true);
-            onReady?.();
+            onReadyRef.current?.();
         }
-    }, [src, shouldLoad, hasStartedLoading, onReady]);
+    }, [src, shouldLoad]);
 
-    const handleLoad = () => {
+    const handleLoad = React.useCallback(() => {
         setIsLoaded(true);
-        onReady?.();
-    };
+        onReadyRef.current?.();
+    }, []);
+
+    // Check if the actual DOM element loaded before our effect ran
+    React.useEffect(() => {
+        if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0 && !isLoaded) {
+            setIsLoaded(true);
+            onReadyRef.current?.();
+        }
+    });
 
     return (
         <div className="relative w-full h-full bg-[#f7f7f7] dark:bg-white/5 overflow-hidden">
             {shouldLoad && (
                 <img
+                    ref={imgRef}
                     src={src}
                     alt={alt}
                     onLoad={handleLoad}
-                    className={`${className} transition-all duration-700 ease-out ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'}`}
+                    decoding="async"
+                    className={`${className} transition-opacity duration-500 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                     loading="lazy"
                 />
             )}
             
-            {/* Soft Blur Placeholder Overlay */}
+            {/* Shimmer Placeholder */}
             {!isLoaded && (
-                <div className="absolute inset-0 bg-gray-200/50 dark:bg-white/5 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-200/60 via-gray-100/60 to-gray-200/60 dark:from-white/5 dark:via-white/10 dark:to-white/5 animate-pulse" />
             )}
         </div>
     );

@@ -6,6 +6,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { saveListing, unsaveListing } from '../../services/savedListingsApi';
 import { useTenant } from '../../contexts/TenantContext';
 import { publicApi } from '../../services/api';
+import { cachedApiCall } from '../../utils/apiCache';
+import { preloadListingImages } from '../../utils/imagePreloader';
 import { useTheme } from '../../contexts/ThemeContext';
 import ListingCard from '../../components/Listings/ListingCard';
 import CollectionBar from '../../components/Listings/CollectionBar';
@@ -1149,10 +1151,18 @@ const ListingsPage = () => {
             try {
                 // Artificial delays removed for speed as requested.
                 // Batch fetch with minimal responsiveness gap.
-                const response = await publicApi.getListings(params, { signal: controller.signal });
+                // AIRBNB-STYLE: Use client-side response caching for instant navigation
+                const response = await cachedApiCall(publicApi.getListings, params, { 
+                    // Force refresh if this is a map pan to ensure we get fresh data for new bounds
+                    force: isBoundsTriggeredFetch 
+                });
 
                 const data = response.data;
                 const newItems = data.listings || [];
+                
+                // AIRBNB-STYLE: Preload images for the upcoming listings so they appear instantly
+                preloadListingImages(newItems, getMediaUrl, 6);
+                
                 const isMobile = window.innerWidth < 1024;
                 const limit = isGoogleMapOpen ? 500 : 10;
 
