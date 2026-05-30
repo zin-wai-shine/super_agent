@@ -5,6 +5,8 @@ import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import NotificationBell from '../Common/NotificationBell';
+import toast from 'react-hot-toast';
+import { hasPathPermission } from '../../utils/permissions';
 
 import Logo from '../Common/Logo';
 import { getMediaUrl } from '../../utils/media';
@@ -84,6 +86,17 @@ const DashboardLayout = () => {
 
     // Safe navigation filter
     const navigation = isSuperAdmin ? adminNavigation : agentNavigation.filter(item => {
+        // Filter out if sub-agent lacks path permission or accesses agent-only features
+        if (user?.role === 'sub_agent') {
+            const agentOnlyFeatures = ['Sub-Agents', 'Theme', 'Banners', 'Settings'];
+            if (agentOnlyFeatures.includes(item.name)) {
+                return false;
+            }
+            if (!hasPathPermission(user, item.href)) {
+                return false;
+            }
+        }
+
         const sub = user?.agent?.subscription || user?.agent?.Subscription;
         if (!sub) return true; // Default to show if no plan info
 
@@ -96,6 +109,33 @@ const DashboardLayout = () => {
             default: return true;
         }
     });
+
+    // Sub-Agent route protection guard
+    React.useEffect(() => {
+        if (user?.role === 'sub_agent' && location.pathname.startsWith('/dashboard')) {
+            const currentPath = location.pathname;
+            const agentOnlyPaths = ['/dashboard/sub-agents', '/dashboard/theme', '/dashboard/banners', '/dashboard/settings'];
+            const isAgentOnly = agentOnlyPaths.some(p => currentPath.startsWith(p));
+
+            if (isAgentOnly) {
+                toast.error('Access denied for this section');
+                navigate('/dashboard');
+                return;
+            }
+
+            const matchingNav = agentNavigation.find(item => {
+                if (item.href === '/dashboard') {
+                    return currentPath === '/dashboard';
+                }
+                return currentPath.startsWith(item.href);
+            });
+
+            if (matchingNav && !hasPathPermission(user, matchingNav.href)) {
+                toast.error('Access denied for this section');
+                navigate('/dashboard');
+            }
+        }
+    }, [location.pathname, user, navigate]);
 
     const isActive = (path) => {
         if (path === '/dashboard' || path === '/admin') {

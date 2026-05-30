@@ -1904,6 +1904,7 @@ const ListingsPage = () => {
                 {filterBarSlot && createPortal(
                     <FilterBar
                         className=""
+                        listings={listings}
                         total={total}
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -1922,14 +1923,16 @@ const ListingsPage = () => {
                         isScrolled={layoutScrolled}
                         filters={filters}
                         onFilterChange={handleFilterChange}
+                        listingType={filters.listing_type || ''}
+                        onListingTypeChange={(val) => handleFilterChange('listing_type', val, true)}
                         onQuickSearchClick={handleQuickSearchFilters}
                         stations={stations}
                     />,
                     filterBarSlot
                 )}
 
-                {/* Main Content Grid — same width as nav: max-w-[1440px]; mobile: left/right padding */}
-                <div className="max-w-[1440px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
+                {/* Main Content Grid — same width as nav: max-w-[2520px]; mobile: left/right padding */}
+                <div className="max-w-[2520px] mx-auto w-full px-6 md:px-12 lg:px-20 mt-2 lg:mt-3">
                     {/* Main Content Grid — at lg only: no sidebar (use Filters drawer); at xl: sidebar visible again */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar — removed from list page; use Filters button to open filter drawer */}
