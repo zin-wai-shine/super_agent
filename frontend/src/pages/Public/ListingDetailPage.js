@@ -9,7 +9,13 @@ import { publicApi, appointmentApi, PHOTO_ROOM_TYPES } from '../../services/api'
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { useWebSocket } from '../../context/WebSocketContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
-
+import { 
+    UNIT_AMENITIES, 
+    BUILDING_FEATURES, 
+    PROJECT_FACILITIES, 
+    PROPERTY_FEATURES, 
+    NEARBY_PLACES 
+} from '../../constants/features';
 import {
     MapPinIcon,
     HomeIcon,
@@ -305,6 +311,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [showAllFeatures, setShowAllFeatures] = useState(false);
     const [showAllFacilities, setShowAllFacilities] = useState(false);
+    const [showAllPropertyFeatures, setShowAllPropertyFeatures] = useState(false);
+    const [showAllNearbyPlaces, setShowAllNearbyPlaces] = useState(false);
     const [isNavPadExpanded, setIsNavPadExpanded] = useState(false);
     
     // Ensure we start at the top when the detail view/page is opened
@@ -1360,22 +1368,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                 {/* Group 2: Saved, Share — text + icon */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleToggleSave}
-                        disabled={savingListing}
-                        className="flex items-center justify-center gap-1.5 lg:min-w-[82px] py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group disabled:opacity-50 whitespace-nowrap"
-                    >
-                        <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
-                            {isSaved ? (
-                                <BsFillHeartFill className="w-[20px] h-[20px] text-rose-500" />
-                            ) : (
-                                <BsHeart className="w-[20px] h-[20px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
-                            )}
-                        </div>
-                        <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
-                            {isSaved ? 'Saved' : 'Save'}
-                        </span>
-                    </button>
+                    {isMainDomain && (
+                        <button
+                            onClick={handleToggleSave}
+                            disabled={savingListing}
+                            className="flex items-center justify-center gap-1.5 lg:min-w-[82px] py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group disabled:opacity-50 whitespace-nowrap"
+                        >
+                            <div className={`transition-all duration-500 ease-spring flex-shrink-0 ${isSaved ? 'scale-110' : 'group-hover:scale-110'}`}>
+                                {isSaved ? (
+                                    <BsFillHeartFill className="w-[20px] h-[20px] text-rose-500" />
+                                ) : (
+                                    <BsHeart className="w-[20px] h-[20px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white opacity-60" />
+                                )}
+                            </div>
+                            <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
+                                {isSaved ? 'Saved' : 'Save'}
+                            </span>
+                        </button>
+                    )}
                     <PropertyShare
                         property={listing}
                         className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
@@ -2153,22 +2163,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </div>
 
                                                 <div className="flex items-center gap-3">
-                                                    <button
-                                                        onClick={handleToggleSave}
-                                                        disabled={savingListing}
-                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 min-w-[100px] rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn disabled:opacity-50 whitespace-nowrap"
-                                                    >
-                                                        <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
-                                                            {isSaved ? (
-                                                                <BsFillHeartFill className="w-[22px] h-[22px] text-rose-500" />
-                                                            ) : (
-                                                                <BsHeart className="w-[22px] h-[22px] text-gray-800 dark:text-white opacity-60" />
-                                                            )}
-                                                        </div>
-                                                        <span className={`text-[12.5px] font-semibold transition-all ${isSaved ? 'text-rose-600' : 'text-[#222222] dark:text-white'}`}>
-                                                            {isSaved ? 'Saved' : 'Save'}
-                                                        </span>
-                                                    </button>
+                                                    {isMainDomain && (
+                                                        <button
+                                                            onClick={handleToggleSave}
+                                                            disabled={savingListing}
+                                                            className="h-[44px] flex items-center justify-center gap-2 px-5 min-w-[100px] rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn disabled:opacity-50 whitespace-nowrap"
+                                                        >
+                                                            <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
+                                                                {isSaved ? (
+                                                                    <BsFillHeartFill className="w-[22px] h-[22px] text-rose-500" />
+                                                                ) : (
+                                                                    <BsHeart className="w-[22px] h-[22px] text-gray-800 dark:text-white opacity-60" />
+                                                                )}
+                                                            </div>
+                                                            <span className={`text-[12.5px] font-semibold transition-all ${isSaved ? 'text-rose-600' : 'text-[#222222] dark:text-white'}`}>
+                                                                {isSaved ? 'Saved' : 'Save'}
+                                                            </span>
+                                                        </button>
+                                                    )}
                                                     <PropertyShare
                                                         property={listing}
                                                         className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
@@ -2231,117 +2243,138 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     </div>
 
 
-                                {/* Image Gallery - Desktop Bento Grid */}
-                                <div className="hidden lg:block rounded-[24px] overflow-hidden shadow-sm bg-white dark:bg-dashboard-card mt-6">
+                                {/* Desktop Layout Wrapper: Full-Width Image Gallery */}
+                                <div className="hidden lg:block mt-6">
+                                    {/* Full Width: Image Gallery with Highlights Overlay */}
+                                    <div className="rounded-[24px] overflow-hidden shadow-sm bg-[#ffffff] dark:bg-[#ffffff]">
+                                        {/* Desktop Bento Grid */}
+                                        <div className="grid grid-cols-4 gap-2 h-[420px] cursor-pointer relative group/grid bg-[#ffffff]">
+                                            {/* Vignette Overlay for the entire grid */}
+                                            <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.15)]" />
 
-                                    {/* Desktop Bento Grid (Visible on lg screens) */}
-                                    <div className="hidden lg:grid grid-cols-4 gap-2 h-[400px] cursor-pointer relative group">
-                                        {/* Vignette Overlay for the entire grid */}
-                                        <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_0_120px_rgba(0,0,0,0.2)] transition-shadow duration-700" />
-                                        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/20 to-transparent z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                        {/* Main Image (Large, Left) */}
-                                        <div
-                                            className="col-span-2 row-span-2 relative overflow-hidden group cursor-pointer"
-                                            onClick={() => openGallery(0)}
-                                        >
-                                            <img
-                                                src={hasImages ? getMediaUrl(images[0].url) : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'}
-                                                alt={listing.title}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                loading="eager"
-                                                decoding="async"
-                                            />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                        </div>
+                                            {/* Main Image (Large, Left) */}
+                                            <div
+                                                className="col-span-2 row-span-2 relative overflow-hidden group cursor-pointer"
+                                                onClick={() => openGallery(0)}
+                                            >
+                                                <img
+                                                    src={hasImages ? getMediaUrl(images[0].url) : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop'}
+                                                    alt={listing.title}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    loading="eager"
+                                                    decoding="async"
+                                                />
 
-                                        {/* Second Image (Top Right Center) */}
-                                        <div
-                                            className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
-                                            onClick={() => openGallery(1)}
-                                        >
-                                            {images[1] && (
-                                                <>
-                                                    <img
-                                                        src={getMediaUrl(images[1].url)}
-                                                        alt="Gallery 2"
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                                </>
-                                            )}
-                                        </div>
 
-                                        {/* Third Image (Top Right) */}
-                                        <div
-                                            className="col-span-1 row-span-1 relative overflow-hidden group rounded-tr-[24px] cursor-pointer"
-                                            onClick={() => openGallery(2)}
-                                        >
-                                            {images[2] && (
-                                                <>
-                                                    <img
-                                                        src={getMediaUrl(images[2].url)}
-                                                        alt="Gallery 3"
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                                </>
-                                            )}
-                                        </div>
+                                            </div>
 
-                                        {/* Fourth Image (Bottom Right Center) */}
-                                        <div
-                                            className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
-                                            onClick={() => openGallery(3)}
-                                        >
-                                            {images[3] && (
-                                                <>
-                                                    <img
-                                                        src={getMediaUrl(images[3].url)}
-                                                        alt="Gallery 4"
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                                </>
-                                            )}
-                                        </div>
+                                            {/* Second Image (Top Right Center) */}
+                                            <div
+                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+                                                onClick={() => openGallery(1)}
+                                            >
+                                                {images[1] && (
+                                                    <>
+                                                        <img
+                                                            src={getMediaUrl(images[1].url)}
+                                                            alt="Gallery 2"
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
 
-                                        {/* Fifth Image / Show All Button (Bottom Right) */}
-                                        <div
-                                            className="col-span-1 row-span-1 relative overflow-hidden group rounded-br-[24px] cursor-pointer"
-                                            onClick={() => openGallery(images[4] ? 4 : 0)}
-                                        >
-                                            {images[4] ? (
-                                                <>
-                                                    <img
-                                                        src={getMediaUrl(images[4].url)}
-                                                        alt="Gallery 5"
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/10 flex items-center justify-center group-hover:bg-black/20 transition-colors pointer-events-none">
-                                                         <span className="h-[44px] px-6 bg-white dark:bg-dashboard-card text-[#222222] dark:text-white rounded-full font-semibold text-[12.5px] shadow-md border border-gray-200 dark:border-white/10 flex items-center gap-2 w-fit transition-all duration-300 group-hover:-translate-y-[1px]">
-                                                             <Square2StackIcon className="w-[22px] h-[22px]" />
-                                                             Show all photos
-                                                         </span>
-                                                     </div>
-                                                </>
-                                            ) : (
-                                                <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                                                     <span className="h-[44px] px-6 bg-white dark:bg-dashboard-card text-[#222222] dark:text-white rounded-full font-semibold text-[12.5px] shadow-md border border-gray-200 dark:border-white/10 flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-[1px]">
-                                                         <Square2StackIcon className="w-[22px] h-[22px]" />
-                                                         Show all {images.length} photos
-                                                     </span>
-                                                 </div>
-                                            )}
+                                            {/* Third Image (Top Right) */}
+                                            <div
+                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+                                                onClick={() => openGallery(2)}
+                                            >
+                                                {images[2] && (
+                                                    <>
+                                                        <img
+                                                            src={getMediaUrl(images[2].url)}
+                                                            alt="Gallery 3"
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {/* Fourth Image (Bottom Right Center) */}
+                                            <div
+                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+                                                onClick={() => openGallery(3)}
+                                            >
+                                                {images[3] && (
+                                                    <>
+                                                        <img
+                                                            src={getMediaUrl(images[3].url)}
+                                                            alt="Gallery 4"
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {/* Fifth Image / Show All Button (Bottom Right) */}
+                                            <div
+                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer rounded-[24px]"
+                                                style={{ backgroundColor: '#ffffff' }}
+                                                onClick={() => openGallery(0)}
+                                            >
+                                                {/* Stacked Images Representation */}
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <div className="relative w-[75%] h-[75%] scale-100 group-hover:scale-105 transition-transform duration-500">
+                                                        {/* Layer 3 (Back) - 3rd Item */}
+                                                        {images[2] && (
+                                                            <div className="absolute top-0 right-0 w-[65%] h-[65%] bg-gray-100 rounded-[14px] rotate-12 -translate-y-2 translate-x-3 border-[3px] border-white shadow-md overflow-hidden opacity-40">
+                                                                <img
+                                                                    src={getMediaUrl(images[2].url)}
+                                                                    className="w-full h-full object-cover"
+                                                                    alt=""
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {/* Layer 2 (Middle) - 2nd Item */}
+                                                        {images[1] && (
+                                                            <div className="absolute top-0 left-0 w-[70%] h-[70%] bg-gray-200 rounded-[14px] -rotate-6 translate-y-2 -translate-x-3 border-[3px] border-white shadow-lg overflow-hidden opacity-70">
+                                                                <img
+                                                                    src={getMediaUrl(images[1].url)}
+                                                                    className="w-full h-full object-cover"
+                                                                    alt=""
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {/* Layer 1 (Front) - 1st Item */}
+                                                        {images[0] && (
+                                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[75%] h-[75%] bg-gray-50 rounded-[14px] translate-y-3 border-[3px] border-white shadow-xl overflow-hidden">
+                                                                <img
+                                                                    src={getMediaUrl(images[0].url)}
+                                                                    className="w-full h-full object-cover"
+                                                                    alt=""
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Centered Show All Button */}
+                                                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                                    <span className="h-[40px] px-5 bg-white dark:bg-white text-[#222222] dark:text-[#222222] rounded-full font-bold text-[12px] shadow-lg border border-gray-200 dark:border-white/10 flex items-center gap-2 w-fit transition-all duration-300 group-hover:-translate-y-[2px]">
+                                                        <Square2StackIcon className="w-[18px] h-[18px]" />
+                                                        Show all
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    
 
                                 </div>
 
@@ -2349,11 +2382,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {renderHeaderActions()}
 
                                 {/* Details - Features & Description */}
-                                <div className="px-4 md:px-0 lg:px-0">
-                                    {/* Features */}
+                                <div className="px-4 md:px-0 lg:px-0 mt-6 lg:mt-6">
                                     {/* Features Grid */}
                                     <div className="-mx-4 md:mx-0">
-                                        <Card className="rounded-[24px] overflow-hidden mb-8 mt-8 border-0 md:border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card" style={{ boxShadow: 'none' }}>
+                                        <Card className="rounded-[24px] overflow-hidden mb-8 mt-2 border-0 md:border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card" style={{ boxShadow: 'none' }}>
                                         <div className="grid grid-cols-2 lg:grid-cols-4 md:divide-x divide-gray-100 dark:divide-white/5">
                                             {/* Row 1 */}
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
@@ -2406,8 +2438,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none col-span-2 md:col-span-2 border-gray-100 dark:border-white/5">
                                                 <span className="flex-shrink-0 md:flex md:items-center md:justify-center">
-                                                    <MapPinIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white hidden md:block" />
-                                                    <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0 md:hidden" />
+                                                    <TbTrain className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 </span>
                                                 <div>
                                                     <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
@@ -2426,164 +2457,67 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                      {listing.features && (() => {
                                          try {
                                              const featureList = JSON.parse(listing.features || '[]');
-                                             const featureMap = {
-                                                 'refrigerator': { label: 'Refrigerator', icon: <RiFridgeLine className="w-6 h-6 text-blue-500" /> },
-                                                 'bathtub': { label: 'Bathtub', icon: <PiBathtub className="w-6 h-6 text-indigo-500" /> },
-                                                 'tv': { label: 'TV', icon: <MdOutlineTv className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
-                                                 'ac': { label: 'Air Conditioning', icon: <TbAirConditioning className="w-6 h-6 text-blue-400" /> },
-                                                 'microwave': { label: 'Microwave', icon: <MdOutlineMicrowave className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
-                                                 'washing_machine': { label: 'Washing Machine', icon: <MdOutlineLocalLaundryService className="w-6 h-6 text-blue-600" /> },
-                                                 'water_heater': { label: 'Water Heater', icon: <MdOutlineHotTub className="w-6 h-6 text-orange-400" /> },
-                                                 'kitchen': { label: 'Kitchen', icon: <TbToolsKitchen2 className="w-6 h-6 text-amber-600" /> },
-                                                 'parking': { label: 'Parking', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-600" /> },
-                                                 'pool': { label: 'Swimming Pool', icon: <TbPool className="w-6 h-6 text-cyan-500" /> },
-                                                 'gym': { label: 'Gym', icon: <MdOutlineFitnessCenter className="w-6 h-6 text-slate-600 dark:text-gray-400" /> },
-                                                 'security': { label: 'Security', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
-                                                 'sauna': { label: 'Sauna', icon: <MdOutlineHotTub className="w-6 h-6 text-orange-500" /> },
-                                                 'garden': { label: 'Garden', icon: <TbTree className="w-6 h-6 text-emerald-600" /> },
-                                                 'playground': { label: 'Playground', icon: <MdOutlineToys className="w-6 h-6 text-yellow-500" /> },
-                                                 'coworking': { label: 'Coworking Space', icon: <MdOutlineLaptop className="w-6 h-6 text-indigo-500" /> },
-                                                 'communal_elevator': { label: 'Communal Elevator', icon: <MdOutlineElevator className="w-6 h-6 text-gray-600 dark:text-gray-400" /> },
-                                                 'communal_reception': { label: 'Communal Reception', icon: <MdOutlineSupportAgent className="w-6 h-6 text-blue-500" /> },
-                                                 'communal_restaurant': { label: 'Communal Restaurant On Premises', icon: <MdOutlineRestaurant className="w-6 h-6 text-orange-500" /> },
-                                                 'communal_shop': { label: 'Communal Shop On Premises', icon: <MdOutlineStorefront className="w-6 h-6 text-orange-600" /> },
-                                                 'communal_shuttle': { label: 'Communal Shuttle Service', icon: <MdOutlineDirectionsBus className="w-6 h-6 text-blue-400" /> },
-                                                 'communal_spa': { label: 'Communal Spa', icon: <MdOutlineSpa className="w-6 h-6 text-pink-500" /> },
-                                                 'communal_coworking': { label: 'Communal Coworking Space', icon: <MdOutlineLaptop className="w-6 h-6 text-indigo-500" /> },
-                                                 'communal_security_24': { label: 'Communal Security 24 hours', icon: <MdOutlineSecurity className="w-6 h-6 text-red-600" /> },
-                                                 'communal_parking': { label: 'Communal Car Park', icon: <MdOutlineLocalParking className="w-6 h-6 text-blue-600" /> },
-                                                 'communal_covered_parking': { label: 'Communal Covered Car Park', icon: <MdOutlineGarage className="w-6 h-6 text-gray-700 dark:text-gray-400" /> },
-                                                 'communal_function_room': { label: 'Communal Function Room', icon: <MdOutlineMeetingRoom className="w-6 h-6 text-gray-800 dark:text-gray-300" /> },
-                                             };
+                                             
+                                             const getActiveFeatures = (constantArray) => 
+                                                 constantArray.filter(f => featureList.includes(f.id));
 
-                                             const amenityIds = ['refrigerator', 'bathtub', 'tv', 'ac', 'microwave', 'washing_machine', 'water_heater', 'kitchen'];
-                                             const featureIds = ['parking', 'pool', 'gym', 'security', 'sauna', 'garden', 'playground', 'coworking'];
-                                             const projectFacilityIds = ['communal_elevator', 'communal_reception', 'communal_restaurant', 'communal_shop', 'communal_shuttle', 'communal_spa', 'communal_coworking', 'communal_security_24', 'communal_parking', 'communal_covered_parking', 'communal_function_room'];
+                                             const amenities = getActiveFeatures(UNIT_AMENITIES);
+                                             const buildingFeatures = getActiveFeatures(BUILDING_FEATURES);
+                                             const facilities = getActiveFeatures(PROJECT_FACILITIES);
+                                             const propertyFeatures = getActiveFeatures(PROPERTY_FEATURES);
+                                             const nearbyPlaces = getActiveFeatures(NEARBY_PLACES);
 
-                                             const amenities = featureList.filter(id => amenityIds.includes(id));
-                                             const features = featureList.filter(id => featureIds.includes(id));
-                                             const facilities = featureList.filter(id => projectFacilityIds.includes(id));
-
-                                             if (!amenities.length && !features.length && !facilities.length) {
+                                             if (!amenities.length && !buildingFeatures.length && !facilities.length && !propertyFeatures.length && !nearbyPlaces.length) {
                                                  return (
                                                      <div className="mb-12">
-                                                         <p className="text-gray-500 dark:text-gray-400 italic">No specific amenities listed.</p>
+                                                         <p className="text-gray-500 dark:text-gray-400 italic">No specific features or amenities listed.</p>
                                                      </div>
                                                  );
                                              }
 
+                                             const renderFeatureSection = (title, featuresArray, showAll, setShowAll) => {
+                                                 if (featuresArray.length === 0) return null;
+                                                 return (
+                                                     <div className="mb-12">
+                                                         <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">{title}</h3>
+                                                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                                                             {(showAll ? featuresArray : featuresArray.slice(0, 4)).map(item => (
+                                                                 <div key={item.id} className="flex items-center space-x-4 py-1 group">
+                                                                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
+                                                                         {item.icon || <SparklesIcon className="w-6 h-6 text-yellow-400" />}
+                                                                     </div>
+                                                                     <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
+                                                                 </div>
+                                                             ))}
+                                                         </div>
+                                                         {featuresArray.length > 4 && (
+                                                             <Button
+                                                                 variant="ghost"
+                                                                 onClick={() => setShowAll(!showAll)}
+                                                                 className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
+                                                             >
+                                                                 {showAll ? (
+                                                                     <>
+                                                                         See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
+                                                                     </>
+                                                                 ) : (
+                                                                     <>
+                                                                         See more ({featuresArray.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
+                                                                     </>
+                                                                 )}
+                                                             </Button>
+                                                         )}
+                                                     </div>
+                                                 );
+                                             };
+
                                              return (
                                                  <div className="w-full">
-                                                     {/* Amenities Section */}
-                                                     {amenities.length > 0 && (
-                                                         <div className="mb-12">
-                                                             <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">Amenities</h3>
-                                                             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
-                                                                 {(showAllAmenities ? amenities : amenities.slice(0, 4)).map(featureId => {
-                                                                     const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
-                                                                     return (
-                                                                         <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                                             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
-                                                                                 {item.icon}
-                                                                             </div>
-                                                                             <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
-                                                                         </div>
-                                                                     );
-                                                                 })}
-                                                             </div>
-                                                             {amenities.length > 4 && (
-                                                                 <Button
-                                                                     variant="ghost"
-                                                                     onClick={() => setShowAllAmenities(!showAllAmenities)}
-                                                                     className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
-                                                                 >
-                                                                     {showAllAmenities ? (
-                                                                         <>
-                                                                             See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     ) : (
-                                                                         <>
-                                                                             See more ({amenities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     )}
-                                                                 </Button>
-                                                             )}
-                                                         </div>
-                                                     )}
-
-                                                     {/* Features Section */}
-                                                     {features.length > 0 && (
-                                                         <div className="mb-12">
-                                                             <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">Features</h3>
-                                                             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
-                                                                 {(showAllFeatures ? features : features.slice(0, 4)).map(featureId => {
-                                                                     const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
-                                                                     return (
-                                                                         <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                                             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
-                                                                                 {item.icon}
-                                                                             </div>
-                                                                             <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
-                                                                         </div>
-                                                                     );
-                                                                 })}
-                                                             </div>
-                                                             {features.length > 4 && (
-                                                                 <Button
-                                                                     variant="ghost"
-                                                                     onClick={() => setShowAllFeatures(!showAllFeatures)}
-                                                                     className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
-                                                                 >
-                                                                     {showAllFeatures ? (
-                                                                         <>
-                                                                             See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     ) : (
-                                                                         <>
-                                                                             See more ({features.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     )}
-                                                                 </Button>
-                                                             )}
-                                                         </div>
-                                                     )}
-
-                                                     {/* Project Facilities Section */}
-                                                     {facilities.length > 0 && (
-                                                         <div className="mb-12">
-                                                             <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">Project Facilities</h3>
-                                                             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
-                                                                 {(showAllFacilities ? facilities : facilities.slice(0, 4)).map(featureId => {
-                                                                     const item = featureMap[featureId] || { label: featureId, icon: <SparklesIcon className="w-6 h-6 text-yellow-400" /> };
-                                                                     return (
-                                                                         <div key={featureId} className="flex items-center space-x-4 py-1 group">
-                                                                             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
-                                                                                 {item.icon}
-                                                                             </div>
-                                                                             <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
-                                                                         </div>
-                                                                     );
-                                                                 })}
-                                                             </div>
-                                                             {facilities.length > 4 && (
-                                                                 <Button
-                                                                     variant="ghost"
-                                                                     onClick={() => setShowAllFacilities(!showAllFacilities)}
-                                                                     className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
-                                                                 >
-                                                                     {showAllFacilities ? (
-                                                                         <>
-                                                                             See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     ) : (
-                                                                         <>
-                                                                             See more ({facilities.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
-                                                                         </>
-                                                                     )}
-                                                                 </Button>
-                                                             )}
-                                                         </div>
-                                                     )}
+                                                     {renderFeatureSection('Unit Amenities', amenities, showAllAmenities, setShowAllAmenities)}
+                                                     {renderFeatureSection('Building Features', buildingFeatures, showAllFeatures, setShowAllFeatures)}
+                                                     {renderFeatureSection('Project Facilities', facilities, showAllFacilities, setShowAllFacilities)}
+                                                     {renderFeatureSection('Property Features', propertyFeatures, showAllPropertyFeatures, setShowAllPropertyFeatures)}
+                                                     {renderFeatureSection('Nearby Places', nearbyPlaces, showAllNearbyPlaces, setShowAllNearbyPlaces)}
                                                  </div>
                                              );
                                          } catch (e) {
