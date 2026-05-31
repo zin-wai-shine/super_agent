@@ -1601,19 +1601,19 @@ const ListingsPage = () => {
                 <div className="space-y-7">
 
 
-                    {/* LISTING TYPE (Buy/Rent) — draft only */}
+                    {/* LISTING TYPE (Buy/Rent) — draft only; show only Sale and Rent (no All option) */}
                     <FilterCard
                         title="Listing Type"
                         icon={FilterIcons.tag}
                     >
                         <div className="flex flex-wrap gap-2.5">
-                            {listingTypeOptions.map(({ value, label }) => {
+                            {listingTypeOptions.filter(({ value }) => value !== '').map(({ value, label }) => {
                                 const selectedSet = new Set((pendingFilters.listing_type || '').split(',').filter(Boolean));
-                                const isActive = value === '' ? selectedSet.size === 0 : selectedSet.has(value);
+                                const isActive = selectedSet.has(value);
                                 const IconComp = listingTypeIconMap[value];
                                 return (
                                     <FilterPill
-                                        key={value || 'all'}
+                                        key={value}
                                         label={label}
                                         isActive={isActive}
                                         onClick={() => togglePendingMultiFilter('listing_type', value)}
