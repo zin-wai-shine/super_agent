@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { agentApi, PHOTO_ROOM_TYPES } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import toast from 'react-hot-toast';
 import {
     useReactTable,
@@ -54,6 +56,15 @@ import { useSessionState, useScrollRestoration } from '../../hooks/usePersistent
 
 const AgentListings = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const canCreate = hasActionPermission(user, 'listings:create');
+    const canUpdate = hasActionPermission(user, 'listings:update');
+    const canDelete = hasActionPermission(user, 'listings:delete');
+    const canBooking = hasActionPermission(user, 'listings:booking');
+    const canCollection = hasActionPermission(user, 'listings:collection');
+    const canRepost = hasActionPermission(user, 'listings:repost');
+    const canStatus = hasActionPermission(user, 'listings:status');
+    const canViews = hasActionPermission(user, 'listings:views');
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [globalFilter, setGlobalFilter] = useSessionState('listings_globalFilter', '');
@@ -373,7 +384,7 @@ const AgentListings = () => {
             accessorKey: 'property_type',
             cell: ({ getValue }) => <span className="capitalize text-gray-700 dark:text-gray-300">{getValue()}</span>
         },
-        {
+        canStatus ? {
             header: 'Status',
             accessorKey: 'is_published',
             cell: ({ getValue }) => (
@@ -381,7 +392,7 @@ const AgentListings = () => {
                     {getValue() ? 'Published' : 'Draft'}
                 </span>
             )
-        },
+        } : null,
         {
             header: 'Date',
             accessorKey: 'created_at',
@@ -394,12 +405,12 @@ const AgentListings = () => {
                 );
             }
         },
-        {
+        canViews ? {
             header: 'Views',
             accessorKey: 'view_count',
             cell: ({ getValue }) => <span className="text-gray-600 dark:text-gray-400">{getValue() || 0}</span>
-        },
-        {
+        } : null,
+        canBooking ? {
             header: 'Book Viewing',
             accessorKey: 'allow_viewing_requests',
             cell: ({ row }) => {
@@ -426,14 +437,15 @@ const AgentListings = () => {
                     </button>
                 );
             }
-        },
-        {
+        } : null,
+        (canCollection || canRepost) ? {
             id: 'management',
             header: 'Promotion',
             cell: ({ row }) => {
                 const listing = row.original;
                 return (
                     <div className="flex items-center gap-2">
+                        {canCollection && (
                         <button
                             onClick={() => setAddToCollectionId(listing.id)}
                             className="px-3 py-2 text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center gap-2 text-[11px] font-normal"
@@ -441,6 +453,8 @@ const AgentListings = () => {
                             <FolderPlusIcon className="w-4 h-4" />
                             <span>Collection</span>
                         </button>
+                        )}
+                        {canRepost && (
                         <button
                             onClick={() => handleRepost(listing.id)}
                             className="px-3 py-2 text-indigo-600 bg-indigo-600/10 hover:bg-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 rounded-admin border border-indigo-600/20 dark:border-indigo-500/20 transition-all shadow-sm flex items-center gap-2 text-[11px] font-normal"
@@ -448,50 +462,57 @@ const AgentListings = () => {
                             <ArrowPathIcon className="w-4 h-4" />
                             <span>Repost</span>
                         </button>
+                        )}
                     </div>
                 );
             }
-        },
-        {
+        } : null,
+        (canUpdate || canDelete) ? {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => {
                 const listing = row.original;
                 return (
                     <div className="flex items-center justify-end gap-2.5">
-                        <button
-                            onClick={() => handlePublish(listing.id, listing.is_published)}
-                            className={`p-2.5 rounded-admin transition-all shadow-sm flex items-center justify-center border ${listing.is_published
-                                ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-600/20 dark:border-amber-500/20'
-                                : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-600/20 dark:border-emerald-500/20'
-                                }`}
-                            title={listing.is_published ? 'Unpublish' : 'Publish'}
-                        >
-                            {listing.is_published ? (
-                                <EyeSlashIcon className="w-5 h-5" />
-                            ) : (
-                                <EyeIcon className="w-5 h-5" />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => navigate(`/dashboard/listings/${listing.id}/edit`)}
-                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
-                            title="Edit"
-                        >
-                            <TbEdit className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => handleDelete(listing.id)}
-                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
-                            title="Delete"
-                        >
-                            <TrashIcon className="w-5 h-5" />
-                        </button>
+                        {canUpdate && (
+                            <button
+                                onClick={() => handlePublish(listing.id, listing.is_published)}
+                                className={`p-2.5 rounded-admin transition-all shadow-sm flex items-center justify-center border ${listing.is_published
+                                    ? 'text-amber-600 bg-amber-100/40 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-600/20 dark:border-amber-500/20'
+                                    : 'text-emerald-600 bg-emerald-100/40 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-600/20 dark:border-emerald-500/20'
+                                    }`}
+                                title={listing.is_published ? 'Unpublish' : 'Publish'}
+                            >
+                                {listing.is_published ? (
+                                    <EyeSlashIcon className="w-5 h-5" />
+                                ) : (
+                                    <EyeIcon className="w-5 h-5" />
+                                )}
+                            </button>
+                        )}
+                        {canUpdate && (
+                            <button
+                                onClick={() => navigate(`/dashboard/listings/${listing.id}/edit`)}
+                                className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
+                                title="Edit"
+                            >
+                                <TbEdit className="w-5 h-5" />
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button
+                                onClick={() => handleDelete(listing.id)}
+                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
+                                title="Delete"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
                 );
             }
-        }
-    ], []);
+        } : null
+    ].filter(Boolean), [canUpdate, canDelete, canBooking, canCollection, canRepost, canStatus, canViews]);
 
     const table = useReactTable({
         data: filteredListings,
@@ -756,21 +777,24 @@ const AgentListings = () => {
                         />
                     </div>
                     <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                        <button
-                            onClick={() => setIsCollectionModalOpen(true)}
-                            className="btn-secondary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
-                        >
-                            <FolderPlusIcon className="w-4 h-4 text-primary-500" />
-                            <span className="whitespace-nowrap">New Collection</span>
-                        </button>
-
-                        <Link
-                            to="/dashboard/listings/new"
-                            className="btn-primary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
-                        >
-                            <PlusIcon className="w-4 h-4" />
-                            <span>Add Listing</span>
-                        </Link>
+                        {canUpdate && (
+                            <button
+                                onClick={() => setIsCollectionModalOpen(true)}
+                                className="btn-secondary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
+                            >
+                                <FolderPlusIcon className="w-4 h-4 text-primary-500" />
+                                <span className="whitespace-nowrap">New Collection</span>
+                            </button>
+                        )}
+                        {canCreate && (
+                            <Link
+                                to="/dashboard/listings/new"
+                                className="btn-primary flex-1 sm:flex-none h-[34px] px-4 text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                <span>Add Listing</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

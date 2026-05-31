@@ -13,8 +13,8 @@
   }
 
   body {
-    @apply font-sans antialiased text-gray-900 bg-white dark:bg-dashboard-dark dark:text-gray-100;
-    font-family: "DM Sans", sans-serif;
+    @apply antialiased text-gray-900 bg-white dark:bg-dashboard-dark dark:text-gray-100;
+    font-family: var(--font-family, Helvetica, "Helvetica Neue", Arial, sans-serif) !important;
   }
 
   /* Prevent iOS Safari zoom on input focus (zooms when font-size < 16px) */

@@ -388,7 +388,7 @@ const SavedListingsPage = () => {
                                                         <div key={listing.id} className={removingId === listing.id ? 'animate-fadeOutDown' : ''}>
                                                             <ListingCard
                                                                 listing={listing}
-                                                                viewMode="saved-grid"
+                                                                viewMode="grid"
                                                                 showSave={true}
                                                                 initialSaved={true}
                                                                 onSaveToggle={(id, saved) => !saved && handleUnsave(id)}
@@ -433,13 +433,13 @@ const SavedListingsPage = () => {
                                     <div className="pt-8">
                                         {/* Desktop Listings Grid */}
                                     {initialLoading || !activeGroup ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fill-fast">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fill-fast">
                                             {[...Array(getSkeletonCount())].map((_, i) => (
                                                 <ListingSkeleton key={`group-skel-${i}`} viewMode="grid" />
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                             {activeGroup.items.map((listing) => (
                                                 <div
                                                     key={listing.id}
@@ -447,7 +447,7 @@ const SavedListingsPage = () => {
                                                 >
                                                     <ListingCard
                                                         listing={listing}
-                                                        viewMode="saved-grid"
+                                                        viewMode="grid"
                                                         showSave={true}
                                                         initialSaved={true}
                                                         onSaveToggle={(id, saved) => !saved && handleUnsave(id)}

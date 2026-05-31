@@ -72,7 +72,7 @@ const ModernShadowPicker = ({ label, x, y, blur, spread, color, opacity, onChang
                                 type="text"
                                 value={color}
                                 onChange={(e) => onChange({ color: e.target.value })}
-                                className="flex-1 bg-transparent border-none p-0 text-[11px] font-mono text-gray-700 dark:text-gray-200 focus:ring-0 uppercase"
+                                className="flex-1 bg-transparent border-none p-0 text-[11px] text-gray-700 dark:text-gray-200 focus:ring-0 uppercase"
                                 spellCheck={false}
                             />
                         </div>
@@ -88,7 +88,7 @@ const ModernShadowPicker = ({ label, x, y, blur, spread, color, opacity, onChang
                                 onChange={(e) => onChange({ opacity: parseInt(e.target.value) || 0 })}
                                 className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
                             />
-                            <span className="text-[11px] font-mono text-gray-500 dark:text-gray-400 w-8 text-right">{opacity}%</span>
+                            <span className="text-[11px] text-gray-500 dark:text-gray-400 w-8 text-right">{opacity}%</span>
                         </div>
                     </div>
                 </div>

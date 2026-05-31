@@ -40,6 +40,15 @@ func (ac *AgentController) GetListings(c *gin.Context) {
 		return db.Order("sort_order ASC")
 	}).Preload("Project").Preload("Project.Developer").Where("agent_id = ?", agentID)
 
+	// Filter: Sub-agents only see their own listings
+	role, _ := c.Get("role")
+	if role != nil && role.(string) == models.RoleSubAgent {
+		userID, ok := middleware.GetUserID(c)
+		if ok {
+			query = query.Where("created_by = ?", userID)
+		}
+	}
+
 	// Filter by published status
 	if status := c.Query("status"); status != "" {
 		switch status {
@@ -341,10 +350,11 @@ func (ac *AgentController) CreateSubAgent(c *gin.Context) {
 	}
 
 	var req struct {
-		Email     string `json:"email" binding:"required,email"`
-		Password  string `json:"password" binding:"required,min=8"`
-		FirstName string `json:"first_name" binding:"required"`
-		LastName  string `json:"last_name" binding:"required"`
+		Email       string `json:"email" binding:"required,email"`
+		Password    string `json:"password" binding:"required,min=8"`
+		FirstName   string `json:"first_name" binding:"required"`
+		LastName    string `json:"last_name" binding:"required"`
+		Permissions string `json:"permissions"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -369,6 +379,7 @@ func (ac *AgentController) CreateSubAgent(c *gin.Context) {
 		Role:         models.RoleSubAgent,
 		AgentID:      &agentID,
 		IsActive:     true,
+		Permissions:  req.Permissions,
 	}
 
 	if err := ac.db.Create(&subAgent).Error; err != nil {
@@ -426,10 +437,11 @@ func (ac *AgentController) UpdateSubAgent(c *gin.Context) {
 	}
 
 	var req struct {
-		Email     string `json:"email" binding:"required,email"`
-		FirstName string `json:"first_name" binding:"required"`
-		LastName  string `json:"last_name" binding:"required"`
-		Password  string `json:"password"` // Optional
+		Email       string `json:"email" binding:"required,email"`
+		FirstName   string `json:"first_name" binding:"required"`
+		LastName    string `json:"last_name" binding:"required"`
+		Password    string `json:"password"` // Optional
+		Permissions string `json:"permissions"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -448,6 +460,7 @@ func (ac *AgentController) UpdateSubAgent(c *gin.Context) {
 
 	subAgent.FirstName = req.FirstName
 	subAgent.LastName = req.LastName
+	subAgent.Permissions = req.Permissions
 
 	if req.Password != "" {
 		hashedPassword, _ := utils.HashPassword(req.Password)
@@ -608,15 +621,45 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 		AppointmentsThisWeek int64 `json:"appointments_this_week"`
 	}
 
-	ac.db.Model(&models.Listing{}).Where("agent_id = ?", agentID).Count(&stats.TotalListings)
-	ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, true).Count(&stats.PublishedListings)
-	ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, false).Count(&stats.DraftListings)
+	role, _ := c.Get("role")
+	var userID uuid.UUID
+	isSubAgent := false
+	if role != nil && role.(string) == models.RoleSubAgent {
+		uid, ok := middleware.GetUserID(c)
+		if ok {
+			userID = uid
+			isSubAgent = true
+		}
+	}
+
+	listingsQuery := ac.db.Model(&models.Listing{}).Where("agent_id = ?", agentID)
+	if isSubAgent {
+		listingsQuery = listingsQuery.Where("created_by = ?", userID)
+	}
+	listingsQuery.Count(&stats.TotalListings)
+
+	pubQuery := ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, true)
+	if isSubAgent {
+		pubQuery = pubQuery.Where("created_by = ?", userID)
+	}
+	pubQuery.Count(&stats.PublishedListings)
+
+	draftQuery := ac.db.Model(&models.Listing{}).Where("agent_id = ? AND is_published = ?", agentID, false)
+	if isSubAgent {
+		draftQuery = draftQuery.Where("created_by = ?", userID)
+	}
+	draftQuery.Count(&stats.DraftListings)
+
 	ac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agentID, models.RoleSubAgent).Count(&stats.TotalSubAgents)
 	ac.db.Model(&models.User{}).Where("agent_id = ? AND role = ?", agentID, models.RolePublic).Count(&stats.TotalUsers)
 
 	// Sum view counts
 	var viewSum struct{ Total int64 }
-	ac.db.Model(&models.Listing{}).Select("COALESCE(SUM(view_count), 0) as total").Where("agent_id = ?", agentID).Scan(&viewSum)
+	viewQuery := ac.db.Model(&models.Listing{}).Select("COALESCE(SUM(view_count), 0) as total").Where("agent_id = ?", agentID)
+	if isSubAgent {
+		viewQuery = viewQuery.Where("created_by = ?", userID)
+	}
+	viewQuery.Scan(&viewSum)
 	stats.TotalViews = viewSum.Total
 
 	// Appointment stats
@@ -630,7 +673,11 @@ func (ac *AgentController) GetDashboard(c *gin.Context) {
 
 	// Get recent listings
 	var recentListings []models.Listing
-	ac.db.Preload("Media").Where("agent_id = ?", agentID).Order("created_at DESC").Limit(5).Find(&recentListings)
+	recentQuery := ac.db.Preload("Media").Where("agent_id = ?", agentID)
+	if isSubAgent {
+		recentQuery = recentQuery.Where("created_by = ?", userID)
+	}
+	recentQuery.Order("created_at DESC").Limit(5).Find(&recentListings)
 
 	c.JSON(http.StatusOK, gin.H{
 		"stats":           stats,

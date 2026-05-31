@@ -79,32 +79,32 @@ const CollectionGroup = ({
                     </h2>
                     <button 
                         onClick={() => onNavigate('/collections')}
-                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="hidden md:flex w-8 h-8 rounded-full bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 items-center justify-center transition-colors"
                     >
-                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
+                        <ArrowSmallRightIcon className="w-4 h-4 text-white stroke-[2.0]" />
                     </button>
                 </div>
                 
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => onNavigate('/collections')}
-                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="md:hidden w-10 h-10 rounded-full bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 flex items-center justify-center transition-colors"
                     >
-                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
+                        <ArrowSmallRightIcon className="w-5 h-5 text-white stroke-[2.0]" />
                     </button>
 
                     <div className="hidden md:flex items-center gap-3">
                         <button 
                             onClick={() => handleScroll('left')}
                             disabled={!canScrollLeft}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeft ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${canScrollLeft ? 'bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 text-white shadow-sm cursor-pointer' : 'bg-[#222222]/20 backdrop-blur-sm cursor-not-allowed text-white/40'}`}
                         >
                             <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
                         </button>
                         <button 
                             onClick={() => handleScroll('right')}
                             disabled={!canScrollRight}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRight ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${canScrollRight ? 'bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 text-white shadow-sm cursor-pointer' : 'bg-[#222222]/20 backdrop-blur-sm cursor-not-allowed text-white/40'}`}
                         >
                             <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -116,7 +116,7 @@ const CollectionGroup = ({
             <div className="relative">
                 <div 
                     ref={scrollRef}
-                    className="flex overflow-x-auto gap-5 md:gap-5 pt-2 pb-6 scrollbar-hide scroll-smooth px-6 md:px-1 scroll-px-6 md:scroll-px-1"
+                    className="flex overflow-x-auto gap-4 pt-2 pb-6 scrollbar-hide scroll-smooth px-6 md:px-1 scroll-px-6 md:scroll-px-1"
                 >
                     {groupCollections.map((collection, i) => (
                         <div key={collection.id} className="relative flex-shrink-0 w-[180px] md:w-[200px]">
@@ -139,7 +139,7 @@ const CollectionGroup = ({
                         className="flex-shrink-0 w-[180px] md:w-[200px] group cursor-pointer animate-fillIn"
                         onClick={() => onNavigate('/collections')}
                     >
-                        <div className="relative aspect-[1/1] md:aspect-[4/3] bg-white dark:bg-dashboard-card border border-gray-100 dark:border-white/10 shadow-sm rounded-[23px] overflow-hidden mb-3 transition-all duration-300 group-hover:shadow-md">
+                        <div className="relative aspect-[1/1] md:aspect-[4/3] bg-[#222222]/70 backdrop-blur-sm dark:bg-[#222222]/70 border border-transparent shadow-sm rounded-[23px] overflow-hidden mb-3 transition-all duration-300 group-hover:bg-[#222222]/90 dark:group-hover:bg-[#222222]/90 group-hover:shadow-md">
                             <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
                                     <div className="relative w-[75%] h-[75%]">
                                         {/* Layer 3 (Back) - 3rd Item */}
@@ -229,32 +229,32 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                     </h2>
                     <button 
                         onClick={() => setIsAllOpen(true)}
-                        className="hidden md:flex w-8 h-8 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="hidden md:flex w-8 h-8 rounded-full bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 items-center justify-center transition-colors"
                     >
-                        <ArrowSmallRightIcon className="w-4 h-4 text-[#222222] dark:text-white stroke-[2.0]" />
+                        <ArrowSmallRightIcon className="w-4 h-4 text-white stroke-[2.0]" />
                     </button>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => setIsAllOpen(true)}
-                        className="md:hidden w-10 h-10 rounded-full bg-[#F7F7F7] dark:bg-gray-800/60 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="md:hidden w-10 h-10 rounded-full bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 flex items-center justify-center transition-colors"
                     >
-                        <ArrowSmallRightIcon className="w-5 h-5 text-[#222222] dark:text-white stroke-[2.0]" />
+                        <ArrowSmallRightIcon className="w-5 h-5 text-white stroke-[2.0]" />
                     </button>
 
                     <div className="hidden md:flex items-center gap-3">
                         <button
                             onClick={() => scrollCategories('left')}
                             disabled={!canScrollLeft}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollLeft ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${canScrollLeft ? 'bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 text-white shadow-sm cursor-pointer' : 'bg-[#222222]/20 backdrop-blur-sm cursor-not-allowed text-white/40'}`}
                         >
                             <ChevronLeftIcon className="w-4 h-4 stroke-[2.5]" />
                         </button>
                         <button
                             onClick={() => scrollCategories('right')}
                             disabled={!canScrollRight}
-                            className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all ${canScrollRight ? 'hover:bg-gray-50 dark:hover:bg-gray-800 text-[#222222] dark:text-white shadow-sm cursor-pointer' : 'opacity-20 cursor-not-allowed text-gray-400'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${canScrollRight ? 'bg-[#222222]/70 backdrop-blur-sm hover:bg-[#222222]/90 text-white shadow-sm cursor-pointer' : 'bg-[#222222]/20 backdrop-blur-sm cursor-not-allowed text-white/40'}`}
                         >
                             <ChevronRightIcon className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -296,11 +296,11 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                         onClick={() => setIsAllOpen(true)}
                         className="flex-shrink-0 group cursor-pointer"
                     >
-                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-primary-600 dark:bg-white border border-transparent flex flex-row items-center gap-3 transition-all duration-300 ease-out hover:opacity-95 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98] shadow-none">
-                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-white dark:text-gray-900 flex-shrink-0">
+                        <div className="h-14 min-w-[max-content] p-2 pr-6 rounded-full bg-[#222222]/70 backdrop-blur-sm dark:bg-[#222222]/70 border border-transparent flex flex-row items-center gap-3 transition-all duration-300 ease-out hover:bg-[#222222]/90 dark:hover:bg-[#222222]/90 hover:shadow-md hover:-translate-y-[1px] active:scale-[0.98] shadow-none">
+                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-white/20 flex items-center justify-center text-white dark:text-white flex-shrink-0">
                                 <FiGrid className="w-5 h-5" />
                             </div>
-                            <span className="text-[14px] font-semibold text-white dark:text-gray-900 whitespace-nowrap">
+                            <span className="text-[14px] font-semibold text-white dark:text-white whitespace-nowrap">
                                 See all
                             </span>
                         </div>
@@ -382,7 +382,7 @@ const CollectionBar = ({
                         <div className="hidden md:flex w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 animate-pulse" />
                     </div>
                     
-                    <div className="flex gap-5 overflow-x-auto pb-10 scrollbar-hide">
+                    <div className="flex gap-4 overflow-x-auto pb-10 scrollbar-hide">
                         {[...Array(6)].map((_, i) => (
                             <div key={`pop-skel-${i}`} className="flex-shrink-0 w-[180px] md:w-[200px]">
                                 <CollectionSkeleton index={i} />

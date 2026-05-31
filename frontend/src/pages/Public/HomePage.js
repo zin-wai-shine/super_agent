@@ -71,7 +71,7 @@ const HomePage = () => {
     return (
         <div className="bg-white dark:bg-dashboard-dark selection:bg-primary-100 selection:text-primary-900 transition-colors duration-500">
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-32">
+            <section className="relative min-h-screen flex items-start justify-center overflow-hidden pt-12 pb-32">
                 {/* Background Decoration - Clear Style */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-0 left-0 w-full h-full bg-white dark:bg-dashboard-dark transition-colors duration-500"></div>
@@ -115,7 +115,7 @@ const HomePage = () => {
                         )}
                     </h1>
 
-                    <div className="animate-fade-up mb-12 -translate-y-1" style={{ animationDelay: '0.4s' }}>
+                    <div className="animate-fade-up mb-12" style={{ animationDelay: '0.4s' }}>
                         <HeroFilter />
                     </div>
 

@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { agentApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import {
     UserPlusIcon,
     TrashIcon,
@@ -39,8 +41,176 @@ import EmptyState from '../../components/Common/EmptyState';
 import { useSessionState, useScrollRestoration } from '../../hooks/usePersistentState';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 
+const defaultPermissions = {
+    paths: {
+        '/dashboard': true,
+        '/dashboard/listings': true,
+        '/dashboard/facilities': true,
+        '/dashboard/developers': true,
+        '/dashboard/projects': true,
+        '/dashboard/collections': true,
+        '/dashboard/appointments': true,
+        '/dashboard/users': true,
+        '/dashboard/theme': true,
+        '/dashboard/notifications': true,
+        '/dashboard/banners': true,
+        '/dashboard/settings': true,
+    },
+    actions: {
+        'listings:create': true,
+        'listings:update': true,
+        'listings:delete': true,
+        'listings:booking': true,
+        'listings:collection': true,
+        'listings:repost': true,
+        'listings:status': true,
+        'listings:views': true,
+        'facilities:update': true,
+        'facilities:delete': true,
+        'developers:create': true,
+        'developers:update': true,
+        'developers:delete': true,
+        'projects:create': true,
+        'projects:update': true,
+        'projects:delete': true,
+        'collections:create': true,
+        'collections:update': true,
+        'collections:delete': true,
+        'appointments:update': true,
+        'appointments:delete': true,
+        'users:update': true,
+        'users:delete': true,
+        'theme:update': true,
+        'banners:create': true,
+        'banners:update': true,
+        'banners:delete': true,
+        'notifications:create': true,
+        'settings:update': true,
+    }
+};
+
+const MODULES_CONFIG = [
+    {
+        name: 'Dashboard',
+        path: '/dashboard',
+        description: 'Access the main performance dashboard and stats',
+        actions: []
+    },
+    {
+        name: 'Listings',
+        path: '/dashboard/listings',
+        description: 'View listing directories and details',
+        actions: [
+            { key: 'listings:create', name: 'Create' },
+            { key: 'listings:update', name: 'Edit' },
+            { key: 'listings:delete', name: 'Delete' },
+            { key: 'listings:booking', name: 'Book Viewing' },
+            { key: 'listings:collection', name: 'Collection' },
+            { key: 'listings:repost', name: 'Repost' },
+            { key: 'listings:status', name: 'Status' },
+            { key: 'listings:views', name: 'Views' }
+        ]
+    },
+    {
+        name: 'Facility Images',
+        path: '/dashboard/facilities',
+        description: 'Manage building and shared facility photos',
+        actions: [
+            { key: 'facilities:update', name: 'Upload/Edit' },
+            { key: 'facilities:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Developers',
+        path: '/dashboard/developers',
+        description: 'Manage builder and property developer names',
+        actions: [
+            { key: 'developers:create', name: 'Create' },
+            { key: 'developers:update', name: 'Edit' },
+            { key: 'developers:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Projects',
+        path: '/dashboard/projects',
+        description: 'Manage residential and commercial property projects',
+        actions: [
+            { key: 'projects:create', name: 'Create' },
+            { key: 'projects:update', name: 'Edit' },
+            { key: 'projects:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Collections',
+        path: '/dashboard/collections',
+        description: 'Group property listings into public collections',
+        actions: [
+            { key: 'collections:create', name: 'Create' },
+            { key: 'collections:update', name: 'Edit' },
+            { key: 'collections:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Appointments',
+        path: '/dashboard/appointments',
+        description: 'View and manage viewing appointments',
+        actions: [
+            { key: 'appointments:update', name: 'Status Update' },
+            { key: 'appointments:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Users',
+        path: '/dashboard/users',
+        description: 'View registered clients and public users',
+        actions: [
+            { key: 'users:update', name: 'Activate/Suspend' },
+            { key: 'users:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Theme Settings',
+        path: '/dashboard/theme',
+        description: 'Customize layout, theme colors, and CSS',
+        actions: [
+            { key: 'theme:update', name: 'Save Theme' }
+        ]
+    },
+    {
+        name: 'Notifications',
+        path: '/dashboard/notifications',
+        description: 'View inbox and dispatch custom notifications',
+        actions: [
+            { key: 'notifications:create', name: 'Send' }
+        ]
+    },
+    {
+        name: 'Banners',
+        path: '/dashboard/banners',
+        description: 'Manage homepage slides and advertising banners',
+        actions: [
+            { key: 'banners:create', name: 'Create' },
+            { key: 'banners:update', name: 'Edit' },
+            { key: 'banners:delete', name: 'Delete' }
+        ]
+    },
+    {
+        name: 'Settings',
+        path: '/dashboard/settings',
+        description: 'Modify price limits and social contact links',
+        actions: [
+            { key: 'settings:update', name: 'Save Settings' }
+        ]
+    }
+];
+
 const SubAgents = () => {
+    const { user } = useAuth();
+    const canCreate = hasActionPermission(user, 'settings:update');
+    const canUpdate = hasActionPermission(user, 'settings:update');
+    const canDelete = hasActionPermission(user, 'settings:update');
     const [subAgents, setSubAgents] = useState([]);
+    const [permissions, setPermissions] = useState(defaultPermissions);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingSubAgent, setEditingSubAgent] = useState(null);
@@ -176,11 +346,15 @@ const SubAgents = () => {
 
     const onSubmit = async (data) => {
         try {
+            const payload = {
+                ...data,
+                permissions: JSON.stringify(permissions)
+            };
             if (editingSubAgent) {
-                await agentApi.updateSubAgent(editingSubAgent.id, data);
+                await agentApi.updateSubAgent(editingSubAgent.id, payload);
                 toast.success('Sub-agent updated!');
             } else {
-                await agentApi.createSubAgent(data);
+                await agentApi.createSubAgent(payload);
                 toast.success('Sub-agent created!');
             }
             handleCloseForm();
@@ -190,19 +364,63 @@ const SubAgents = () => {
         }
     };
 
+    const handleOpenForm = () => {
+        setPermissions(defaultPermissions);
+        setShowForm(true);
+    };
+
     const handleEdit = (subAgent) => {
         setEditingSubAgent(subAgent);
         setValue('first_name', subAgent.first_name);
         setValue('last_name', subAgent.last_name);
         setValue('email', subAgent.email);
         setValue('password', ''); // Don't pre-populate password
+        
+        if (subAgent.permissions) {
+            try {
+                const parsed = typeof subAgent.permissions === 'string' ? JSON.parse(subAgent.permissions) : subAgent.permissions;
+                setPermissions({
+                    paths: { ...defaultPermissions.paths, ...parsed?.paths },
+                    actions: { ...defaultPermissions.actions, ...parsed?.actions }
+                });
+            } catch (e) {
+                setPermissions(defaultPermissions);
+            }
+        } else {
+            setPermissions(defaultPermissions);
+        }
+        
         setShowForm(true);
     };
 
     const handleCloseForm = () => {
         setShowForm(false);
         setEditingSubAgent(null);
+        setPermissions(defaultPermissions);
         reset();
+    };
+
+    const handlePathToggle = (path, checked) => {
+        setPermissions(prev => {
+            const nextPaths = { ...prev.paths, [path]: checked };
+            const nextActions = { ...prev.actions };
+
+            const config = MODULES_CONFIG.find(m => m.path === path);
+            if (config) {
+                config.actions.forEach(act => {
+                    nextActions[act.key] = checked;
+                });
+            }
+
+            return { paths: nextPaths, actions: nextActions };
+        });
+    };
+
+    const handleActionToggle = (actionKey, checked) => {
+        setPermissions(prev => ({
+            ...prev,
+            actions: { ...prev.actions, [actionKey]: checked }
+        }));
     };
 
     const handleDelete = (id) => {
@@ -270,6 +488,7 @@ const SubAgents = () => {
             header: '',
             cell: ({ row }) => (
                 <div className="flex justify-end space-x-2">
+                    {canUpdate && (
                     <button
                         onClick={() => handleEdit(row.original)}
                         className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 border border-blue-600/20 dark:border-blue-500/20 backdrop-blur-sm rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center"
@@ -277,6 +496,8 @@ const SubAgents = () => {
                     >
                         <PencilIcon className="w-5 h-5" />
                     </button>
+                    )}
+                    {canDelete && (
                     <button
                         onClick={() => handleDelete(row.original.id)}
                         className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 border border-red-600/20 dark:border-red-500/20 backdrop-blur-sm rounded-admin transition-all duration-200 shadow-sm flex items-center justify-center"
@@ -284,10 +505,11 @@ const SubAgents = () => {
                     >
                         <TrashIcon className="w-5 h-5" />
                     </button>
+                    )}
                 </div>
             ),
         },
-    ], []);
+    ], [canUpdate, canDelete]);
 
     const filteredSubAgents = useMemo(() => {
         let data = subAgents;
@@ -511,6 +733,7 @@ const SubAgents = () => {
                             className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
+                    {canCreate && (
                     <button
                         onClick={() => handleOpenForm()}
                         className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
@@ -518,6 +741,7 @@ const SubAgents = () => {
                         <PlusIcon className="w-4 h-4" />
                         Add Sub Agent
                     </button>
+                    )}
                 </div>
             </div>
 
@@ -630,7 +854,7 @@ const SubAgents = () => {
                         icon={UsersIcon}
                         title="No sub-agents yet"
                         description="Add team members to help manage your listings."
-                        action={
+                        action={canCreate ? (
                             <button
                                 onClick={() => setShowForm(true)}
                                 className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[38px] text-sm shadow-sm"
@@ -638,7 +862,7 @@ const SubAgents = () => {
                                 <UserPlusIcon className="w-5 h-5" />
                                 <span>Add Sub-Agent</span>
                             </button>
-                        }
+                        ) : null}
                     />
                 )}
             </div>
@@ -695,6 +919,76 @@ const SubAgents = () => {
                                         className={`input-field ${errors.password ? 'border-red-300' : ''}`}
                                         {...register('password', { required: !editingSubAgent && 'Required', minLength: 8 })}
                                     />
+                                </div>
+
+                                <div className="border-t border-gray-150 dark:border-gray-800 pt-5 mt-5">
+                                    <h4 className="text-sm font-extrabold text-gray-900 dark:text-white mb-1 uppercase tracking-wider text-xs">
+                                        Permissions Management
+                                    </h4>
+                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+                                        Configure which sections and specific buttons this sub-agent can access.
+                                    </p>
+                                    <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {MODULES_CONFIG.map(mod => {
+                                            const hasPath = permissions.paths[mod.path];
+                                            return (
+                                                <div 
+                                                    key={mod.path} 
+                                                    className={`border rounded-xl p-4 transition-all duration-300 ${
+                                                        hasPath 
+                                                            ? 'border-primary-500/30 bg-primary-50/10 dark:bg-primary-950/5' 
+                                                            : 'border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1 pr-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-gray-900 dark:text-white text-xs">
+                                                                    {mod.name}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                                                                {mod.description}
+                                                            </p>
+                                                        </div>
+                                                        <label className="relative inline-flex items-center cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!hasPath}
+                                                                onChange={(e) => handlePathToggle(mod.path, e.target.checked)}
+                                                                className="sr-only peer"
+                                                            />
+                                                            <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                                                        </label>
+                                                    </div>
+
+                                                    {hasPath && mod.actions.length > 0 && (
+                                                        <div className="mt-3.5 pt-3.5 border-t border-dashed border-gray-200 dark:border-gray-800">
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-2">
+                                                                Allowed Actions / Buttons
+                                                            </span>
+                                                            <div className="flex flex-wrap gap-x-5 gap-y-2">
+                                                                {mod.actions.map(act => (
+                                                                    <label 
+                                                                        key={act.key} 
+                                                                        className="flex items-center space-x-2 cursor-pointer select-none text-[11px] font-medium text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white"
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={!!permissions.actions[act.key]}
+                                                                            onChange={(e) => handleActionToggle(act.key, e.target.checked)}
+                                                                            className="w-3.5 h-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800"
+                                                                        />
+                                                                        <span>{act.name}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </form>
                             <div className="flex-none p-6 border-t border-admin bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">

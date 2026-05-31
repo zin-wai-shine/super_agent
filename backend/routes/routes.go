@@ -128,21 +128,21 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			agent.Use(middleware.RoleMiddleware(models.RoleAgent, models.RoleSubAgent))
 			{
 				// Listings management
-				agent.GET("/listings", agentController.GetListings)
-				agent.POST("/listings", agentController.CreateListing)
-				agent.GET("/listings/:id", agentController.GetListing)
-				agent.PUT("/listings/:id", agentController.UpdateListing)
-				agent.DELETE("/listings/:id", agentController.DeleteListing)
-				agent.POST("/listings/:id/publish", agentController.PublishListing)
-				agent.POST("/listings/:id/unpublish", agentController.UnpublishListing)
-				agent.POST("/listings/:id/repost", agentController.RepostListing)
-				agent.PUT("/listings/:id/toggle-viewing", agentController.ToggleViewingRequests)
+				agent.GET("/listings", middleware.PermissionMiddleware(db, "/dashboard/listings", ""), agentController.GetListings)
+				agent.POST("/listings", middleware.PermissionMiddleware(db, "", "listings:create"), agentController.CreateListing)
+				agent.GET("/listings/:id", middleware.PermissionMiddleware(db, "/dashboard/listings", ""), agentController.GetListing)
+				agent.PUT("/listings/:id", middleware.PermissionMiddleware(db, "", "listings:update"), agentController.UpdateListing)
+				agent.DELETE("/listings/:id", middleware.PermissionMiddleware(db, "", "listings:delete"), agentController.DeleteListing)
+				agent.POST("/listings/:id/publish", middleware.PermissionMiddleware(db, "", "listings:update"), agentController.PublishListing)
+				agent.POST("/listings/:id/unpublish", middleware.PermissionMiddleware(db, "", "listings:update"), agentController.UnpublishListing)
+				agent.POST("/listings/:id/repost", middleware.PermissionMiddleware(db, "", "listings:update"), agentController.RepostListing)
+				agent.PUT("/listings/:id/toggle-viewing", middleware.PermissionMiddleware(db, "", "listings:update"), agentController.ToggleViewingRequests)
 
 				// Facility media management
-				agent.GET("/facilities", agentController.GetFacilityMedia)
-				agent.PUT("/facilities/:id", agentController.UpdateFacilityMedia)
-				agent.DELETE("/facilities/:id", agentController.DeleteFacilityMedia)
-				agent.PUT("/facilities/reorder", agentController.ReorderFacilityMedia)
+				agent.GET("/facilities", middleware.PermissionMiddleware(db, "/dashboard/facilities", ""), agentController.GetFacilityMedia)
+				agent.PUT("/facilities/:id", middleware.PermissionMiddleware(db, "", "facilities:update"), agentController.UpdateFacilityMedia)
+				agent.DELETE("/facilities/:id", middleware.PermissionMiddleware(db, "", "facilities:delete"), agentController.DeleteFacilityMedia)
+				agent.PUT("/facilities/reorder", middleware.PermissionMiddleware(db, "", "facilities:update"), agentController.ReorderFacilityMedia)
 
 
 				// Sub-agent management (Agent only)
@@ -159,67 +159,64 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				theme := agent.Group("/theme")
 				theme.Use(middleware.FeatureMiddleware(db, "theme"))
 				{
-					theme.GET("", agentController.GetTheme)
-					theme.PUT("", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateTheme)
+					theme.GET("", middleware.PermissionMiddleware(db, "/dashboard/theme", ""), agentController.GetTheme)
+					theme.PUT("", middleware.PermissionMiddleware(db, "", "theme:update"), agentController.UpdateTheme)
 				}
 
 				// Settings management
-				agent.GET("/settings", agentController.GetSettings)
-				agent.PUT("/settings", middleware.RoleMiddleware(models.RoleAgent), agentController.UpdateSettings)
+				agent.GET("/settings", middleware.PermissionMiddleware(db, "/dashboard/settings", ""), agentController.GetSettings)
+				agent.PUT("/settings", middleware.PermissionMiddleware(db, "", "settings:update"), agentController.UpdateSettings)
 
 				// Dashboard
-				agent.GET("/dashboard", agentController.GetDashboard)
+				agent.GET("/dashboard", middleware.PermissionMiddleware(db, "/dashboard", ""), agentController.GetDashboard)
 
 				// Appointment management (agent)
 				appointments := agent.Group("/appointments")
 				appointments.Use(middleware.FeatureMiddleware(db, "appointments"))
 				{
-					appointments.GET("", appointmentController.GetAppointments)
-					appointments.GET("/:id", appointmentController.GetAppointment)
-					appointments.PUT("/:id", appointmentController.UpdateAppointmentStatus)
-					appointments.DELETE("/:id", appointmentController.DeleteAppointment)
+					appointments.GET("", middleware.PermissionMiddleware(db, "/dashboard/appointments", ""), appointmentController.GetAppointments)
+					appointments.GET("/:id", middleware.PermissionMiddleware(db, "/dashboard/appointments", ""), appointmentController.GetAppointment)
+					appointments.PUT("/:id", middleware.PermissionMiddleware(db, "", "appointments:update"), appointmentController.UpdateAppointmentStatus)
+					appointments.DELETE("/:id", middleware.PermissionMiddleware(db, "", "appointments:delete"), appointmentController.DeleteAppointment)
 				}
 
-				// User management (Agent only)
+				// User management
 				users := agent.Group("/users")
-				users.Use(middleware.RoleMiddleware(models.RoleAgent))
 				{
-					users.GET("", agentController.GetUsers)
-					users.PUT("/:id/toggle", agentController.ToggleUserStatus)
-					agent.DELETE("/users/:id", agentController.DeleteUser)
+					users.GET("", middleware.PermissionMiddleware(db, "/dashboard/users", ""), agentController.GetUsers)
+					users.PUT("/:id/toggle", middleware.PermissionMiddleware(db, "", "users:update"), agentController.ToggleUserStatus)
+					agent.DELETE("/users/:id", middleware.PermissionMiddleware(db, "", "users:delete"), agentController.DeleteUser)
 				}
 
-				// Developer management (Agent only)
+				// Developer management
 				developers := agent.Group("/developers")
-				developers.Use(middleware.RoleMiddleware(models.RoleAgent))
 				{
-					developers.GET("", developerController.GetDevelopers)
-					developers.POST("", developerController.CreateDeveloper)
-					developers.PUT("/:id", developerController.UpdateDeveloper)
-					developers.DELETE("/:id", developerController.DeleteDeveloper)
+					developers.GET("", middleware.PermissionMiddleware(db, "/dashboard/developers", ""), developerController.GetDevelopers)
+					developers.POST("", middleware.PermissionMiddleware(db, "", "developers:create"), developerController.CreateDeveloper)
+					developers.PUT("/:id", middleware.PermissionMiddleware(db, "", "developers:update"), developerController.UpdateDeveloper)
+					developers.DELETE("/:id", middleware.PermissionMiddleware(db, "", "developers:delete"), developerController.DeleteDeveloper)
 				}
 
-				// Project management (Agent only)
+				// Project management
 				projects := agent.Group("/projects")
-				projects.Use(middleware.RoleMiddleware(models.RoleAgent))
 				{
-					projects.GET("", developerController.GetProjects)
-					projects.POST("", developerController.CreateProject)
-					projects.PUT("/:id", developerController.UpdateProject)
-					projects.DELETE("/:id", developerController.DeleteProject)
+					projects.GET("", middleware.PermissionMiddleware(db, "/dashboard/projects", ""), developerController.GetProjects)
+					projects.POST("", middleware.PermissionMiddleware(db, "", "projects:create"), developerController.CreateProject)
+					projects.PUT("/:id", middleware.PermissionMiddleware(db, "", "projects:update"), developerController.UpdateProject)
+					projects.DELETE("/:id", middleware.PermissionMiddleware(db, "", "projects:delete"), developerController.DeleteProject)
 				}
 
 				// Collection management
 				collections := agent.Group("/collections")
 				{
-					collections.GET("", collectionController.GetCollections)
-					collections.PUT("/reorder", collectionController.ReorderCollections)
-					collections.POST("", collectionController.CreateCollection)
-					collections.GET("/:id", collectionController.GetCollection)
-					collections.PUT("/:id", collectionController.UpdateCollection)
-					collections.DELETE("/:id", collectionController.DeleteCollection)
-					collections.POST("/:id/listings/:listingId", collectionController.AddListingToCollection)
-					collections.DELETE("/:id/listings/:listingId", collectionController.RemoveListingFromCollection)
+					collections.GET("", middleware.PermissionMiddleware(db, "/dashboard/collections", ""), collectionController.GetCollections)
+					collections.PUT("/reorder", middleware.PermissionMiddleware(db, "", "collections:update"), collectionController.ReorderCollections)
+					collections.POST("", middleware.PermissionMiddleware(db, "", "collections:create"), collectionController.CreateCollection)
+					collections.GET("/:id", middleware.PermissionMiddleware(db, "/dashboard/collections", ""), collectionController.GetCollection)
+					collections.PUT("/:id", middleware.PermissionMiddleware(db, "", "collections:update"), collectionController.UpdateCollection)
+					collections.DELETE("/:id", middleware.PermissionMiddleware(db, "", "collections:delete"), collectionController.DeleteCollection)
+					collections.POST("/:id/listings/:listingId", middleware.PermissionMiddleware(db, "", "collections:update"), collectionController.AddListingToCollection)
+					collections.DELETE("/:id/listings/:listingId", middleware.PermissionMiddleware(db, "", "collections:update"), collectionController.RemoveListingFromCollection)
 				}
 			}
 
@@ -244,9 +241,9 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			notificationController := controllers.NewNotificationController(db, wsManager)
 			notifications := protected.Group("/notifications")
 			{
-				notifications.GET("", notificationController.GetMyNotifications)
-				notifications.GET("/sent", notificationController.GetSentNotifications)
-				notifications.POST("", middleware.FeatureMiddleware(db, "notifications"), notificationController.CreateNotification)
+				notifications.GET("", middleware.PermissionMiddleware(db, "/dashboard/notifications", ""), notificationController.GetMyNotifications)
+				notifications.GET("/sent", middleware.PermissionMiddleware(db, "/dashboard/notifications", ""), notificationController.GetSentNotifications)
+				notifications.POST("", middleware.FeatureMiddleware(db, "notifications"), middleware.PermissionMiddleware(db, "", "notifications:create"), notificationController.CreateNotification)
 				notifications.POST("/:id/read", notificationController.MarkRead)
 			}
 
@@ -255,11 +252,11 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			banners := protected.Group("/banners")
 			banners.Use(middleware.FeatureMiddleware(db, "banners"))
 			{
-				banners.GET("", bannerController.GetBanners)
-				banners.GET("/:id", bannerController.GetBanner)
-				banners.POST("", bannerController.CreateBanner)
-				banners.PUT("/:id", bannerController.UpdateBanner)
-				banners.DELETE("/:id", bannerController.DeleteBanner)
+				banners.GET("", middleware.PermissionMiddleware(db, "/dashboard/banners", ""), bannerController.GetBanners)
+				banners.GET("/:id", middleware.PermissionMiddleware(db, "/dashboard/banners", ""), bannerController.GetBanner)
+				banners.POST("", middleware.PermissionMiddleware(db, "", "banners:create"), bannerController.CreateBanner)
+				banners.PUT("/:id", middleware.PermissionMiddleware(db, "", "banners:update"), bannerController.UpdateBanner)
+				banners.DELETE("/:id", middleware.PermissionMiddleware(db, "", "banners:delete"), bannerController.DeleteBanner)
 			}
 
 			// Saved Listings routes

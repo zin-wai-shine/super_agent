@@ -233,7 +233,7 @@ const ProjectCard = ({ project = {}, viewMode = 'grid', to, index = 0 }) => {
                             <div className="flex items-baseline gap-1 text-primary-600">
                                 <span className="text-sm font-bold tracking-tight uppercase tracking-wider">{formatType(project_type)}</span>
                             </div>
-                            <span className="text-[10px] md:text-[11px] text-gray-300 font-mono">#{id.slice(0, 5)}</span>
+                            <span className="text-[10px] md:text-[11px] text-gray-300">#{id.slice(0, 5)}</span>
                         </div>
 
                         {/* Title */}

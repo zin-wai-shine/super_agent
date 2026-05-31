@@ -94,8 +94,15 @@ const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w
                 {isSaved ? (
                     <BsFillHeartFill className={`text-rose-500 drop-shadow-md transition-colors duration-300 ${iconClassName}`} />
                 ) : (
-                    <BsHeart 
-                        className={`text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300 ${iconClassName}`} 
+                    <BsFillHeartFill 
+                        className={`drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-colors duration-300 ${iconClassName}`}
+                        style={{ 
+                            color: 'rgba(0, 0, 0, 0.55)', 
+                            stroke: '#ffffff', 
+                            strokeWidth: '1px',
+                            paintOrder: 'stroke',
+                            overflow: 'visible'
+                        }}
                     />
                 )}
             </div>
@@ -192,7 +199,7 @@ export const ListingCardSkeleton = ({ viewMode = 'grid' }) => {
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="aspect-[4/4] md:aspect-[4/3.7] w-full rounded-[32px] md:rounded-[23px] bg-gray-200 dark:bg-white/5 animate-pulse" />
+            <div className="aspect-[4/3.7] md:aspect-[4/3.3] w-full rounded-[32px] md:rounded-[23px] bg-gray-200 dark:bg-white/5 animate-pulse" />
             <div className="px-1.5 space-y-2">
                 <div className="h-5 bg-gray-200 dark:bg-white/5 rounded-md w-3/4 animate-pulse" />
                 <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-md w-1/2 animate-pulse" />
@@ -511,7 +518,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                     {!isFirstImageReady && <ListingCardSkeleton viewMode={viewMode} />}
                     <div className={`transition-all duration-700 ${isFirstImageReady ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
                         <div className="relative">
-                            <div className="relative aspect-[5/4.5] md:aspect-[5/5.0] rounded-[23px] overflow-hidden mb-2">
+                            <div className="relative aspect-[4/3.7] md:aspect-[4/3.3] rounded-[23px] overflow-hidden mb-2">
                                 <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} shouldLoadFirst={isInView} onFirstImageReady={() => setIsFirstImageReady(true)} />
                                 {isMainDomain && listing.agent && (
                                     <button onClick={handleAgentClick} className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto active:scale-95 transition-all duration-300">
@@ -523,9 +530,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 )}
                             </div>
                             <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
-                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[12px] md:text-[13px] font-bold text-gray-900 shadow-sm">{listing_type === 'rent' ? 'For Rent' : 'For Sale'}</span>
+                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[11px] md:text-[12px] font-bold text-gray-900 shadow-sm">{listing_type === 'rent' ? 'For Rent' : 'For Sale'}</span>
                             </div>
-                            {showSave && (
+                            {showSave && user?.role !== 'sub_agent' && (
                                 <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
                                     <HeartButton isSaved={isSaved} onClick={handleToggleSave} disabled={savingListing} className="pointer-events-auto w-12 h-12 flex items-center justify-center" />
                                 </div>
@@ -533,7 +540,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         </div>
                         <div className="px-1.5 py-2">
                             <Link to={cardLink} className="block group/link">
-                                <h3 className="text-[16px] md:text-[13px] font-semibold text-[#222222] dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">{title}</h3>
+                                <h3 className="text-[16px] md:text-[13px] font-medium text-[#222222] dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">{title}</h3>
                                 <div className="mt-1 flex flex-col gap-0.5">
                                     <p className="text-[16px] md:text-[13px] text-[#222222]/70 dark:text-gray-300 font-medium">{formatBedrooms(bedrooms)} · {bathrooms} Bath</p>
                                 </div>
@@ -545,11 +552,11 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
         }
 
         return (
-            <div ref={cardRef} className={`group relative flex flex-col transition-all duration-700 ${cardClassName}`}>
+            <div ref={cardRef} className={`group relative flex flex-col w-full md:w-[96%] mx-auto transition-all duration-700 ${cardClassName}`}>
                 {!isFirstImageReady && <ListingCardSkeleton viewMode="grid" />}
                 <div className={`flex flex-col w-full bg-transparent rounded-none border-none transition-all duration-700 ${isFirstImageReady ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98] absolute inset-0 pointer-events-none'}`}>
                     <div className="relative">
-                        <div className="relative aspect-[4/4] md:aspect-[4/3.7] w-full overflow-hidden rounded-[32px] md:rounded-[23px] block animate-fill-fast">
+                        <div className="relative aspect-[4/3.7] md:aspect-[4/3.3] w-full overflow-hidden rounded-[32px] md:rounded-[23px] block animate-fill-fast">
                             <ListingImageSlider images={listingImages} title={title} cardLink={cardLink} shouldLoadFirst={isInView} onFirstImageReady={() => setIsFirstImageReady(true)} />
                             {isMainDomain && listing.agent && (
                                 <button onClick={handleAgentClick} className="absolute bottom-[10px] left-[10px] md:bottom-[15px] md:left-[15px] z-10 pointer-events-auto group/agent active:scale-95 transition-all duration-300 group-hover:translate-y-[-3px] group-hover:scale-[1.04]">
@@ -561,9 +568,9 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             )}
                         </div>
                         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none animate-fill-med">
-                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">{is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}</span>
+                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[13px] md:text-[12px] font-bold text-gray-900 shadow-sm">{is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}</span>
                         </div>
-                        {showSave && (
+                        {showSave && user?.role !== 'sub_agent' && (
                             <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
                                 <HeartButton isSaved={isSaved} onClick={handleToggleSave} disabled={savingListing} className="pointer-events-auto w-12 h-12 flex items-center justify-center" />
                             </div>
@@ -572,7 +579,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                 </div>
                 <Link to={cardLink} className="py-3 px-1.5 flex flex-col gap-1">
                     <div className="flex justify-between items-start animate-fill-med">
-                        <h3 className="text-[16px] md:text-[16px] font-semibold text-[#222222] dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
+                        <h3 className="text-[16px] md:text-[16px] font-medium text-[#222222] dark:text-white truncate md:group-hover:text-primary-600 transition-colors">{title}</h3>
                     </div>
                     {stationWithDistance && (
                         <div className="text-[17px] md:text-[14px] flex items-center gap-2 mb-1.5 animate-fill-med mt-0.5 font-sans">
@@ -603,7 +610,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2 pointer-events-none">
                                 <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm"><span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span></div>
                             </div>
-                            {showSave && (
+                            {showSave && user?.role !== 'sub_agent' && (
                                 <div className="absolute top-2 right-3.5 z-10 pointer-events-none">
                                     <HeartButton isSaved={isSaved} onClick={handleToggleSave} disabled={savingListing} className="pointer-events-auto w-12 h-12 flex items-center justify-center" />
                                 </div>
@@ -620,7 +627,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         <div className="flex-1 py-1 flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start mb-1">
-                                    <Link to={linkTo}><h3 className="text-[16px] sm:text-lg font-semibold text-[#222222] dark:text-white line-clamp-1 md:hover:text-primary-600 transition-colors">{title}</h3></Link>
+                                    <Link to={linkTo}><h3 className="text-[16px] sm:text-lg font-medium text-[#222222] dark:text-white line-clamp-1 md:hover:text-primary-600 transition-colors">{title}</h3></Link>
                                 </div>
                                 {stationWithDistance && (
                                     <div className="flex items-center gap-2 text-[17px] sm:text-sm mb-1.5 mt-0.5 font-sans">
@@ -765,7 +772,7 @@ const AgentProfileModal = ({ isOpen, onClose, agent }) => {
                         </div>
                         {agent.description ? (
                             <div className="relative mb-10">
-                                <div className="absolute -top-3 -left-2 text-8xl text-primary-100/40 dark:text-primary-500/10 font-serif leading-none select-none pointer-events-none" style={{ fontFamily: 'Georgia, serif' }}>"</div>
+                                <div className="absolute -top-3 -left-2 text-8xl text-primary-100/40 dark:text-primary-500/10 leading-none select-none pointer-events-none">"</div>
                                 <p className="text-[16px] text-slate-600/90 dark:text-gray-300 leading-relaxed pt-8 pl-5 relative z-10 italic">{agent.description}</p>
                             </div>
                         ) : (

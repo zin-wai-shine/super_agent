@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 
 import { agentApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -45,7 +47,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 
-const SortableTableRow = ({ group, onDelete, onEdit }) => {
+const SortableTableRow = ({ group, onDelete, onEdit, canUpdate, canDelete }) => {
     const {
         attributes,
         listeners,
@@ -53,7 +55,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
         transform,
         transition,
         isDragging
-    } = useSortable({ id: group.name });
+    } = useSortable({ id: group.name, disabled: !canUpdate });
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -98,17 +100,19 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
                     <button
                         onClick={() => onEdit(group)}
                         className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin border border-blue-600/20 dark:border-blue-500/20 transition-all shadow-sm flex items-center justify-center"
-                        title="Edit Collection"
+                        title={canUpdate ? "Edit Collection" : "View Collection"}
                     >
                         <TbEdit className="w-5 h-5" />
                     </button>
-                    <button
-                        onClick={() => onDelete(group)}
-                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
-                        title="Delete Collection"
-                    >
-                        <TrashIcon className="w-5 h-5" />
-                    </button>
+                    {canDelete && (
+                        <button
+                            onClick={() => onDelete(group)}
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin border border-red-600/20 dark:border-red-500/20 transition-all shadow-sm flex items-center justify-center"
+                            title="Delete Collection"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             </td>
         </tr>
@@ -119,7 +123,7 @@ const SortableTableRow = ({ group, onDelete, onEdit }) => {
 
 
 
-const SortablePreviewItem = ({ id, url, index, onRemove }) => {
+const SortablePreviewItem = ({ id, url, index, onRemove, canUpdate, showDelete = true }) => {
     const {
         attributes,
         listeners,
@@ -127,7 +131,7 @@ const SortablePreviewItem = ({ id, url, index, onRemove }) => {
         transform,
         transition,
         isDragging
-    } = useSortable({ id: id || url });
+    } = useSortable({ id: id || url, disabled: !canUpdate });
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -145,26 +149,34 @@ const SortablePreviewItem = ({ id, url, index, onRemove }) => {
             <img src={url} alt="Preview" className="w-full h-full object-cover" />
             
             {/* Drag Handle Overlay */}
-            <div 
-                {...attributes} 
-                {...listeners}
-                className="absolute inset-0 cursor-grab active:cursor-grabbing bg-black/0 hover:bg-black/10 transition-colors"
-            />
+            {canUpdate && (
+                <div 
+                    {...attributes} 
+                    {...listeners}
+                    className="absolute inset-0 cursor-grab active:cursor-grabbing bg-black/0 hover:bg-black/10 transition-colors"
+                />
+            )}
 
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(index);
-                }}
-                className="absolute top-2 right-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-admin opacity-0 group-hover:opacity-100 transition-all shadow-lg backdrop-blur-sm z-10"
-            >
-                <XMarkIcon className="w-4 h-4" />
-            </button>
+            {showDelete && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(index);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-admin opacity-0 group-hover:opacity-100 transition-all shadow-lg backdrop-blur-sm z-10"
+                >
+                    <XMarkIcon className="w-4 h-4" />
+                </button>
+            )}
         </div>
     );
 };
 
 const FacilityManagement = () => {
+    const { user } = useAuth();
+    const canUpdate = hasActionPermission(user, 'facilities:update');
+    const canDelete = hasActionPermission(user, 'facilities:delete');
+
     const [media, setMedia] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -456,13 +468,15 @@ const FacilityManagement = () => {
                             className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
-                    <button
-                        onClick={() => setIsUploadModalOpen(true)}
-                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-95 shadow-sm"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        Upload New Images
-                    </button>
+                    {canUpdate && (
+                        <button
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-95 shadow-sm"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            Upload New Images
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -472,8 +486,8 @@ const FacilityManagement = () => {
                     icon={PhotoIcon}
                     title="No Facility Images"
                     description="Start by uploading images of your building, gym, pool, or other facilities."
-                    actionText="Upload Images"
-                    onAction={() => setIsUploadModalOpen(true)}
+                    actionText={canUpdate ? "Upload Images" : undefined}
+                    onAction={canUpdate ? () => setIsUploadModalOpen(true) : undefined}
                 />
             ) : (
                 <div className="bg-white dark:bg-dashboard-card rounded-admin border-admin overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
@@ -506,6 +520,8 @@ const FacilityManagement = () => {
                                                     setEditName(group.name);
                                                     setIsEditModalOpen(true);
                                                 }}
+                                                canUpdate={canUpdate}
+                                                canDelete={canDelete}
                                             />
                                         ))}
                                     </tbody>
@@ -565,7 +581,7 @@ const FacilityManagement = () => {
                         {/* Header */}
                         <div className="flex-none px-8 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-dashboard-card z-10 sticky top-0">
                             <div>
-                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white leading-tight">Edit Collection</h3>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white leading-tight">{canUpdate ? "Edit Collection" : "View Collection"}</h3>
                                 <p className="text-[10px] text-gray-500 mt-0.5">Managing: <span className="text-primary-600 font-bold">{editingItem.name}</span></p>
                             </div>
                             <button
@@ -584,7 +600,10 @@ const FacilityManagement = () => {
                                     <div className="space-y-2">
                                         <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Collection Details</h4>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Update the unit name for this collection. This will apply to all images within this group.
+                                            {canUpdate 
+                                                ? "Update the unit name for this collection. This will apply to all images within this group."
+                                                : "View the details of this collection, including images and unit name."
+                                            }
                                         </p>
                                     </div>
 
@@ -597,15 +616,18 @@ const FacilityManagement = () => {
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             placeholder="e.g. Unit 101, Lobby, Swimming Pool"
-                                            className="input-field px-4 py-3 rounded-admin"
+                                            className="input-field px-4 py-3 rounded-admin disabled:opacity-60 disabled:cursor-not-allowed"
+                                            disabled={!canUpdate}
                                         />
                                     </div>
 
-                                    <div className="p-4 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
-                                        <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
-                                            <strong>Tip:</strong> Drag and drop images to change their display order. Changes are saved when you click Update.
-                                        </p>
-                                    </div>
+                                    {canUpdate && (
+                                        <div className="p-4 bg-[color-mix(in_srgb,var(--primary-color),transparent_95%)] dark:bg-[color-mix(in_srgb,var(--primary-color),transparent_90%)] rounded-admin border border-[color-mix(in_srgb,var(--primary-color),transparent_90%)] dark:border-[color-mix(in_srgb,var(--primary-color),transparent_80%)]">
+                                            <p className="text-xs text-primary-700 dark:text-primary-400 leading-relaxed">
+                                                <strong>Tip:</strong> Drag and drop images to change their display order. Changes are saved when you click Update.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Right Column: Images Grid */}
@@ -618,6 +640,7 @@ const FacilityManagement = () => {
                                         sensors={sensors}
                                         collisionDetection={closestCenter}
                                         onDragEnd={(event) => {
+                                            if (!canUpdate) return;
                                             const { active, over } = event;
                                             if (active.id !== over.id) {
                                                 const oldIndex = editingItem.items.findIndex(i => i.url === active.id);
@@ -641,6 +664,8 @@ const FacilityManagement = () => {
                                                         id={img.url}
                                                         url={getMediaUrl(img.url)}
                                                         index={idx}
+                                                        canUpdate={canUpdate}
+                                                        showDelete={canDelete}
                                                         onRemove={() => {
                                                             setItemToDelete(img);
                                                             setDeleteType('edit_single');
@@ -657,18 +682,22 @@ const FacilityManagement = () => {
                                                         id={url}
                                                         url={url}
                                                         index={index}
+                                                        canUpdate={canUpdate}
+                                                        showDelete={canUpdate}
                                                         onRemove={() => removeSelectedFile(index)}
                                                     />
                                                 ))}
                                                 
                                                 {/* Add Button */}
-                                                <button
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="aspect-square rounded-admin border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
-                                                >
-                                                    <PlusIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                                                    <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Add More</span>
-                                                </button>
+                                                {canUpdate && (
+                                                    <button
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="aspect-square rounded-admin border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 hover:text-primary-500 hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all group"
+                                                    >
+                                                        <PlusIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                                                        <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Add More</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </SortableContext>
                                     </DndContext>
@@ -694,52 +723,54 @@ const FacilityManagement = () => {
                                 }}
                                 className="px-8 h-12 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-admin"
                             >
-                                Cancel
+                                {canUpdate ? "Cancel" : "Close"}
                             </button>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        setUploading(true);
-                                        // 1. Upload new images if any
-                                        if (selectedFiles.length > 0) {
-                                            const uploadPromises = selectedFiles.map(file => uploadApi.uploadFacilityImage(file, editName));
-                                            await Promise.all(uploadPromises);
-                                        }
-                                        
-                                        // 2. Update names for existing images
-                                        const updatePromises = editingItem.items.map(img => agentApi.updateFacilityMedia(img.id, { name: editName }));
-                                        await Promise.all(updatePromises);
+                            {canUpdate && (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            setUploading(true);
+                                            // 1. Upload new images if any
+                                            if (selectedFiles.length > 0) {
+                                                const uploadPromises = selectedFiles.map(file => uploadApi.uploadFacilityImage(file, editName));
+                                                await Promise.all(uploadPromises);
+                                            }
+                                            
+                                            // 2. Update names for existing images
+                                            const updatePromises = editingItem.items.map(img => agentApi.updateFacilityMedia(img.id, { name: editName }));
+                                            await Promise.all(updatePromises);
 
-                                        // 3. Save new order
-                                        const reorderData = editingItem.items.map((item, index) => ({
-                                            id: item.id,
-                                            sort_order: index
-                                        }));
-                                        if (reorderData.length > 0) {
-                                            await agentApi.reorderFacilityMedia(reorderData);
-                                        }
+                                            // 3. Save new order
+                                            const reorderData = editingItem.items.map((item, index) => ({
+                                                id: item.id,
+                                                sort_order: index
+                                            }));
+                                            if (reorderData.length > 0) {
+                                                await agentApi.reorderFacilityMedia(reorderData);
+                                            }
 
-                                        toast.success('Collection updated successfully');
-                                        setIsEditModalOpen(false);
-                                        resetUploadState();
-                                        fetchMedia();
-                                    } catch (e) {
-                                        console.error('Update error:', e);
-                                        toast.error('Failed to update collection');
-                                    } finally {
-                                        setUploading(false);
-                                    }
-                                }}
-                                disabled={uploading}
-                                                               className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
-                            >
-                                {uploading ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
-                                ) : (
-                                    <CheckIcon className="w-5 h-5" />
-                                )}
-                                <span>Update Collection</span>
-                            </button>
+                                            toast.success('Collection updated successfully');
+                                            setIsEditModalOpen(false);
+                                            resetUploadState();
+                                            fetchMedia();
+                                        } catch (e) {
+                                            console.error('Update error:', e);
+                                            toast.error('Failed to update collection');
+                                        } finally {
+                                            setUploading(false);
+                                        }
+                                    }}
+                                    disabled={uploading}
+                                    className="px-10 h-12 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-admin shadow-lg shadow-primary-500/25 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
+                                >
+                                    {uploading ? (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                                    ) : (
+                                        <CheckIcon className="w-5 h-5" />
+                                    )}
+                                    <span>Update Collection</span>
+                                </button>
+                            )}
 
                         </div>
                     </div>

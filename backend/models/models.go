@@ -33,6 +33,7 @@ type User struct {
 	Avatar                string         `gorm:"size:500" json:"avatar,omitempty"`
 	IsActive              bool           `gorm:"default:true" json:"is_active"`
 	LateCancellationCount int            `gorm:"default:0" json:"late_cancellation_count"`
+	Permissions           string         `gorm:"type:text" json:"permissions,omitempty"`
 	CreatedAt             time.Time      `json:"created_at"`
 	UpdatedAt             time.Time      `json:"updated_at"`
 	DeletedAt             gorm.DeletedAt `gorm:"index" json:"-"`

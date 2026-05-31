@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import { agentApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -37,6 +39,10 @@ import { useSessionState, useScrollRestoration } from '../../hooks/usePersistent
 import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const Users = () => {
+    const { user } = useAuth();
+    const canUpdate = hasActionPermission(user, 'users:update');
+    const canDelete = hasActionPermission(user, 'users:delete');
+
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -326,17 +332,19 @@ const Users = () => {
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
-                    <button
-                        onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
-                        title="Delete"
-                    >
-                        <TrashIcon className="w-5 h-5" />
-                    </button>
+                    {canDelete && (
+                        <button
+                            onClick={() => handleDelete(row.original.id)}
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            title="Delete"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             ),
         },
-    ], [users]);
+    ], [users, canDelete]);
 
     const table = useReactTable({
         data: filteredUsers,

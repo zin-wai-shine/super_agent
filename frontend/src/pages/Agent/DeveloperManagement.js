@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import { developerApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -32,6 +33,10 @@ import { useSessionState, useScrollRestoration } from '../../hooks/usePersistent
 import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const DeveloperManagement = () => {
+    const { user } = useAuth();
+    const canCreate = hasActionPermission(user, 'developers:create');
+    const canUpdate = hasActionPermission(user, 'developers:update');
+    const canDelete = hasActionPermission(user, 'developers:delete');
     const [developers, setDevelopers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -161,24 +166,28 @@ const DeveloperManagement = () => {
             header: '',
             cell: ({ row }) => (
                 <div className="flex justify-end space-x-2.5">
-                    <button
-                        onClick={() => handleOpenForm(row.original)}
-                        className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
-                        title="Edit"
-                    >
-                        <PencilSquareIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row.original.id)}
-                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
-                        title="Delete"
-                    >
-                        <TrashIcon className="w-5 h-5" />
-                    </button>
+                    {canUpdate && (
+                        <button
+                            onClick={() => handleOpenForm(row.original)}
+                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-admin transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
+                            title="Edit"
+                        >
+                            <PencilSquareIcon className="w-5 h-5" />
+                        </button>
+                    )}
+                    {canDelete && (
+                        <button
+                            onClick={() => handleDelete(row.original.id)}
+                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                            title="Delete"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             ),
         },
-    ], []);
+    ], [canUpdate, canDelete]);
 
     const table = useReactTable({
         data: developers,
@@ -263,13 +272,15 @@ const DeveloperManagement = () => {
                             className="input-field pl-10 pr-4 h-[34px] min-h-0 text-[11px]"
                         />
                     </div>
-                    <button
-                        onClick={() => handleOpenForm()}
-                        className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        Add Developer
-                    </button>
+                    {canCreate && (
+                        <button
+                            onClick={() => handleOpenForm()}
+                            className="btn-primary w-full sm:w-auto px-4 h-[34px] text-[12px] flex items-center justify-center gap-2 whitespace-nowrap"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            Add Developer
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -378,7 +389,7 @@ const DeveloperManagement = () => {
                         title="No developers yet"
                         description="Add property developers to organize your listings by project."
                         action={
-                            <button onClick={() => handleOpenForm()} className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[38px] text-sm shadow-sm">
+                            canCreate && <button onClick={() => handleOpenForm()} className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap px-4 h-[38px] text-sm shadow-sm">
                                 <PlusIcon className="w-5 h-5" />
                                 <span>Add Developer</span>
                             </button>

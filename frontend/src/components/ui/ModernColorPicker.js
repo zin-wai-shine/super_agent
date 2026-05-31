@@ -34,7 +34,7 @@ const ModernColorPicker = ({ label, value, onChange }) => {
                     type="text"
                     value={localValue}
                     onChange={(e) => handleChange(e.target.value)}
-                    className="flex-1 bg-transparent border-none p-0 text-sm font-mono text-gray-700 dark:text-gray-200 focus:ring-0 uppercase"
+                    className="flex-1 bg-transparent border-none p-0 text-sm text-gray-700 dark:text-gray-200 focus:ring-0 uppercase"
                     spellCheck={false}
                 />
             </div>

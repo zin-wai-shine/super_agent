@@ -4,12 +4,16 @@ import { useForm, Controller } from 'react-hook-form';
 import { agentApi, publicApi, uploadApi, developerApi, PHOTO_ROOM_TYPES } from '../../services/api';
 import toast from 'react-hot-toast';
 import { PhotoIcon, TrashIcon, ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, MapPinIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import {
     MdBed, MdBathtub, MdSquareFoot, MdLayers, MdCalendarToday,
     MdKitchen, MdTv, MdAir, MdMicrowave, MdLocalLaundryService, MdShower, MdRestaurant,
     MdLocalParking, MdPool, MdFitnessCenter, MdSecurity, MdHotTub, MdPark, MdChildCare, MdComputer,
     MdElevator, MdGroups, MdStore, MdDirectionsBus, MdSpa, MdGarage, MdMeetingRoom
 } from 'react-icons/md';
+import PaginatedCheckboxGroup from '../../components/Form/PaginatedCheckboxGroup';
+import { UNIT_AMENITIES, BUILDING_FEATURES, PROJECT_FACILITIES, PROPERTY_FEATURES, NEARBY_PLACES } from '../../constants/features';
 import StyledSelect from '../../components/Form/StyledSelect';
 import LocationPicker from '../../components/Listings/LocationPicker';
 import ReactQuill from 'react-quill';
@@ -32,6 +36,8 @@ const availabilityOptions = [
 const initialImageSections = () => PHOTO_ROOM_TYPES.reduce((acc, t) => ({ ...acc, [t]: [] }), {});
 
 const CreateListing = () => {
+    const { user } = useAuth();
+    const canCreate = hasActionPermission(user, 'listings:create');
     const [loading, setLoading] = useState(false);
     const [stations, setStations] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -197,7 +203,9 @@ const CreateListing = () => {
                 features: JSON.stringify([
                     ...(data.unit_amenities || []),
                     ...(data.building_features || []),
-                    ...(data.project_facilities || [])
+                    ...(data.project_facilities || []),
+                    ...(data.property_features || []),
+                    ...(data.nearby_places || [])
                 ]),
                 facility_name: data.facility_name?.value || data.facility_name || '',
                 is_published: true,
@@ -256,6 +264,8 @@ const CreateListing = () => {
                 unit_amenities: [],
                 building_features: [],
                 project_facilities: [],
+                property_features: [],
+                nearby_places: [],
                 project_id: null,
                 station_id: null,
                 facility_name: null,
@@ -531,7 +541,7 @@ const CreateListing = () => {
                             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label className="input-label">Property Type *</label>
                                 <Controller
@@ -575,40 +585,40 @@ const CreateListing = () => {
                                     <p className="text-sm text-red-500 mt-1">{errors.listing_type.message}</p>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Project Selector */}
-                        <div>
-                            <label className="input-label">
-                                Project {(fieldValues.listing_type?.value || fieldValues.listing_type) === 'sale' ? '*' : '(Optional)'}
-                            </label>
-                            <Controller
-                                name="project_id"
-                                control={control}
-                                rules={{
-                                    validate: (value) => {
-                                        const lt = fieldValues.listing_type?.value || fieldValues.listing_type;
-                                        if (lt === 'sale' && !value) return 'Project is required for sale listings';
-                                        return true;
-                                    }
-                                }}
-                                render={({ field }) => (
-                                    <StyledSelect
-                                        {...field}
-                                        options={projects.map(p => ({
-                                            value: p.id,
-                                            label: `${p.name} — ${p.developer?.name || 'Unknown'}`,
-                                        }))}
-                                        onMenuOpen={fetchProjects}
-                                        placeholder="Select project..."
-                                        error={!!errors.project_id}
-                                        isClearable
-                                    />
+                            {/* Project Selector */}
+                            <div>
+                                <label className="input-label">
+                                    Project {(fieldValues.listing_type?.value || fieldValues.listing_type) === 'sale' ? '*' : '(Optional)'}
+                                </label>
+                                <Controller
+                                    name="project_id"
+                                    control={control}
+                                    rules={{
+                                        validate: (value) => {
+                                            const lt = fieldValues.listing_type?.value || fieldValues.listing_type;
+                                            if (lt === 'sale' && !value) return 'Project is required for sale listings';
+                                            return true;
+                                        }
+                                    }}
+                                    render={({ field }) => (
+                                        <StyledSelect
+                                            {...field}
+                                            options={projects.map(p => ({
+                                                value: p.id,
+                                                label: `${p.name} — ${p.developer?.name || 'Unknown'}`,
+                                            }))}
+                                            onMenuOpen={fetchProjects}
+                                            placeholder="Select project..."
+                                            error={!!errors.project_id}
+                                            isClearable
+                                        />
+                                    )}
+                                />
+                                {errors.project_id && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.project_id.message}</p>
                                 )}
-                            />
-                            {errors.project_id && (
-                                <p className="text-sm text-red-500 mt-1">{errors.project_id.message}</p>
-                            )}
+                            </div>
                         </div>
 
                         <div>
@@ -1095,95 +1105,39 @@ const CreateListing = () => {
                     </div>
 
                     <div className="space-y-8 pt-6">
-                        <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Unit Amenities</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {[
-                                    { id: 'refrigerator', label: 'Refrigerator', icon: <MdKitchen className="w-5 h-5 text-blue-400" /> },
-                                    { id: 'bathtub', label: 'Bathtub', icon: <MdBathtub className="w-5 h-5 text-blue-300" /> },
-                                    { id: 'tv', label: 'TV', icon: <MdTv className="w-5 h-5 text-gray-600" /> },
-                                    { id: 'ac', label: 'Air Conditioning', icon: <MdAir className="w-5 h-5 text-cyan-400" /> },
-                                    { id: 'microwave', label: 'Microwave', icon: <MdMicrowave className="w-5 h-5 text-orange-400" /> },
-                                    { id: 'washing_machine', label: 'Washing Machine', icon: <MdLocalLaundryService className="w-5 h-5 text-gray-400" /> },
-                                    { id: 'water_heater', label: 'Water Heater', icon: <MdShower className="w-5 h-5 text-blue-400" /> },
-                                    { id: 'kitchen', label: 'Kitchen / Stove', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
-                                ].map((item) => (
-                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
-                                        <input
-                                            type="checkbox"
-                                            value={item.id}
-                                            {...register('unit_amenities')}
-                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
-                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
-                                            <span className="truncate">{item.label}</span>
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Building Features</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {[
-                                    { id: 'parking', label: 'Covered Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
-                                    { id: 'pool', label: 'Swimming Pool', icon: <MdPool className="w-5 h-5 text-cyan-500" /> },
-                                    { id: 'gym', label: 'Fitness / Gym', icon: <MdFitnessCenter className="w-5 h-5 text-gray-700" /> },
-                                    { id: 'security', label: '24h Security', icon: <MdSecurity className="w-5 h-5 text-red-500" /> },
-                                    { id: 'sauna', label: 'Sauna', icon: <MdHotTub className="w-5 h-5 text-orange-400" /> },
-                                    { id: 'garden', label: 'Garden / BBQ', icon: <MdPark className="w-5 h-5 text-green-500" /> },
-                                    { id: 'playground', label: 'Playground', icon: <MdChildCare className="w-5 h-5 text-purple-400" /> },
-                                    { id: 'coworking', label: 'Co-working Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
-                                ].map((item) => (
-                                    <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
-                                        <input
-                                            type="checkbox"
-                                            value={item.id}
-                                            {...register('building_features')}
-                                            className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
-                                            <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
-                                            <span className="truncate">{item.label}</span>
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+                        <PaginatedCheckboxGroup
+                            title="Unit Amenities"
+                            items={UNIT_AMENITIES}
+                            register={register}
+                            name="unit_amenities"
+                        />
+                        <PaginatedCheckboxGroup
+                            title="Building Features"
+                            items={BUILDING_FEATURES}
+                            register={register}
+                            name="building_features"
+                        />
                     </div>
 
-                    <div className="pt-8">
-                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wider mb-4">Project Facilities</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                            {[
-                                { id: 'communal_elevator', label: 'Communal Elevator', icon: <MdElevator className="w-5 h-5 text-gray-500" /> },
-                                { id: 'communal_reception', label: 'Communal Reception', icon: <MdGroups className="w-5 h-5 text-amber-600" /> },
-                                { id: 'communal_restaurant', label: 'Communal Restaurant', icon: <MdRestaurant className="w-5 h-5 text-orange-500" /> },
-                                { id: 'communal_shop', label: 'Communal Shop', icon: <MdStore className="w-5 h-5 text-emerald-600" /> },
-                                { id: 'communal_shuttle', label: 'Communal Shuttle Service', icon: <MdDirectionsBus className="w-5 h-5 text-blue-500" /> },
-                                { id: 'communal_spa', label: 'Communal Spa', icon: <MdSpa className="w-5 h-5 text-pink-400" /> },
-                                { id: 'communal_coworking', label: 'Communal Coworking Space', icon: <MdComputer className="w-5 h-5 text-gray-600" /> },
-                                { id: 'communal_security_24', label: 'Communal Security 24 hours', icon: <MdSecurity className="w-5 h-5 text-red-500" /> },
-                                { id: 'communal_parking', label: 'Communal Car Park', icon: <MdLocalParking className="w-5 h-5 text-blue-500" /> },
-                                { id: 'communal_covered_parking', label: 'Communal Covered Car Park', icon: <MdGarage className="w-5 h-5 text-blue-600" /> },
-                                { id: 'communal_function_room', label: 'Communal Function Room', icon: <MdMeetingRoom className="w-5 h-5 text-amber-700" /> },
-                            ].map((item) => (
-                                <label key={item.id} className="flex items-center h-[40px] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
-                                    <input
-                                        type="checkbox"
-                                        value={item.id}
-                                        {...register('project_facilities')}
-                                        className="w-5 h-5 rounded-xl border-gray-300 text-primary-600 focus:ring-primary-500 shrink-0"
-                                    />
-                                    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white flex items-center min-w-0">
-                                        <span className="mr-2 flex items-center justify-center shrink-0">{item.icon}</span>
-                                        <span className="truncate">{item.label}</span>
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
+                    <div className="pt-8 space-y-8">
+                        <PaginatedCheckboxGroup
+                            title="Project Facilities"
+                            items={PROJECT_FACILITIES}
+                            register={register}
+                            name="project_facilities"
+                        />
+                        <PaginatedCheckboxGroup
+                            title="Property Features"
+                            items={PROPERTY_FEATURES}
+                            register={register}
+                            name="property_features"
+                        />
+                        <PaginatedCheckboxGroup
+                            title="Nearby Places"
+                            items={NEARBY_PLACES}
+                            register={register}
+                            name="nearby_places"
+                        />
                     </div>
                 </div>
 
@@ -1196,6 +1150,7 @@ const CreateListing = () => {
                     >
                         Cancel
                     </button>
+                    {canCreate && (
                     <button type="submit" disabled={loading} className="btn-primary">
                         {loading ? (
                             <>
@@ -1209,6 +1164,7 @@ const CreateListing = () => {
                             'Create Listing'
                         )}
                     </button>
+                    )}
                 </div>
             </form >
 

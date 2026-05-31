@@ -350,7 +350,7 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
                 
                 {/* Content Area */}
                 <div className="pt-[100px] max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pb-20">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-8">
                         {[...Array(8)].map((_, i) => (
                             <ListingSkeleton key={i} viewMode="grid" index={i} />
                         ))}
@@ -387,7 +387,7 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
                     </div>
                     
                     <div className="max-w-[2520px] mx-auto px-6 md:px-12 lg:px-20 pt-1 lg:pt-6 pb-20">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-8">
                             {[...Array(8)].map((_, i) => (
                                 <ListingSkeleton key={i} viewMode="grid" index={i} />
                             ))}
@@ -412,7 +412,7 @@ const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, nav
         <div className="relative min-h-[400px]">
             {listings.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-8">
                         {visibleListings.map((listing, idx) => (
                             <div key={listing.id} className="animate-fadeInUp" style={{ animationDelay: `${(idx % 4) * 100}ms` }}>
                                 <ListingCard listing={listing} viewMode="grid" showSave={true} />

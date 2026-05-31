@@ -7,13 +7,26 @@ export const TransitMapSVG = ({ isDarkMode }) => (
    stroke: ${isDarkMode ? '#1e3a4a' : '#B8E5FA'};
  }
  
+ text {
+   font-family: inherit !important;
+ }
+ 
  .dark-map text, .dark-map g[fill="#424143"], .dark-map path[fill="#424143"] {
-   fill: #A6ADBB !important;
+   fill: #ffffff !important;
  }
  
  .dark-map circle[fill="#fff"], .dark-map path[fill="#fff"] {
    fill: #1a1c1e !important;
  }
+
+ /* 3D Design for lines and stations */
+ [data-name="train-line"] path {
+   filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.4)) drop-shadow(0px 1px 1px rgba(0,0,0,0.3));
+ }
+ [data-name="station"] circle {
+   filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.4));
+ }
+
 
  :root {
    --future-color: transparent;

@@ -259,7 +259,7 @@ const ModernGradientPicker = ({ value, onChange, label }) => {
                 <div className="flex justify-between items-center">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</label>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 font-mono">
+                        <span className="text-[10px] text-gray-400">
                             {angle}°
                         </span>
                         {/* Simple Angle Preset Buttons */}
@@ -343,7 +343,7 @@ const ModernGradientPicker = ({ value, onChange, label }) => {
                                     type="text"
                                     value={activeStop.color}
                                     onChange={(e) => updateStop(activeStop.id, { color: e.target.value })}
-                                    className="w-24 h-9 px-2 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-mono"
+                                    className="w-24 h-9 px-2 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
                                 />
                             </div>
                         </div>

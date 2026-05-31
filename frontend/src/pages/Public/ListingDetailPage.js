@@ -1332,7 +1332,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         <PhoneIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
                         <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Contact</span>
                     </button>
-                    {activeBooking ? (
+                    {user?.role !== 'sub_agent' && (activeBooking ? (
                         <button
                             onClick={() => setIsStatusOverlayOpen(true)}
                             className={`flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full transition-all duration-300 active:scale-95 whitespace-nowrap border
@@ -1363,12 +1363,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 </>
                             )}
                         </button>
-                    )}
+                    ))}
                 </div>
 
                 {/* Group 2: Saved, Share — text + icon */}
                 <div className="flex items-center gap-2">
-                    {isMainDomain && (
+                    {user?.role !== 'sub_agent' && (
                         <button
                             onClick={handleToggleSave}
                             disabled={savingListing}
@@ -2128,7 +2128,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <PhoneIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
                                                         <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Contact</span>
                                                     </button>
-                                                    {activeBooking ? (
+                                                    {user?.role !== 'sub_agent' && (activeBooking ? (
                                                         <button
                                                             onClick={() => setIsStatusOverlayOpen(true)}
                                                             className={`h-[44px] flex items-center justify-center gap-2.5 px-5 rounded-full transition-all duration-300 active:scale-[0.98] whitespace-nowrap border hover:shadow-md hover:-translate-y-[1px]
@@ -2159,11 +2159,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 </>
                                                             )}
                                                         </button>
-                                                    )}
+                                                    ))}
                                                 </div>
 
                                                 <div className="flex items-center gap-3">
-                                                    {isMainDomain && (
+                                                    {user?.role !== 'sub_agent' && (
                                                         <button
                                                             onClick={handleToggleSave}
                                                             disabled={savingListing}
@@ -3356,7 +3356,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         <span>Contact</span>
                     </button>
 
-                    {activeBooking ? (
+                    {user?.role !== 'sub_agent' && (activeBooking ? (
                         <button
                             onClick={() => setIsStatusOverlayOpen(true)}
                             className={`h-[44px] px-5 rounded-full text-[13px] font-semibold
@@ -3387,7 +3387,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         >
                             {listing?.allow_viewing_requests === false ? 'Direct Message' : 'Book Viewing'}
                         </button>
-                    )}
+                    ))}
                 </div>
             </div>
         </div >

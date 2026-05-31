@@ -88,7 +88,7 @@ const CollectionCard = ({
                 <p className="text-[13px] text-gray-500 font-medium">
                     {collection.listings_count || 0} properties
                 </p>
-                <h3 className={`text-[14px] font-semibold leading-snug transition-colors ${isSelected ? 'text-primary-600' : 'text-[#222222] dark:text-white'}`}>
+                <h3 className={`text-[14px] font-medium leading-snug transition-colors ${isSelected ? 'text-primary-600' : 'text-[#222222] dark:text-white'}`}>
                     {collection.name}
                 </h3>
             </div>

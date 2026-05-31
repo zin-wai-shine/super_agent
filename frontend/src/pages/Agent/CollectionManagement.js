@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import { collectionApi, uploadApi } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -237,6 +239,11 @@ const ReorderModal = ({ isOpen, onClose, parent, collections, onReordered }) => 
 };
 
 const CollectionManagement = () => {
+    const { user } = useAuth();
+    const canCreate = hasActionPermission(user, 'collections:create');
+    const canUpdate = hasActionPermission(user, 'collections:update');
+    const canDelete = hasActionPermission(user, 'collections:delete');
+
     const [collections, setCollections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -347,14 +354,16 @@ const CollectionManagement = () => {
                 const isVirtual = row.original.isVirtual;
                 return (
                     <div className="flex justify-end space-x-1.5">
-                        <button
-                            onClick={() => setEditingCollection(row.original)}
-                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
-                            title="Edit"
-                        >
-                            <PencilSquareIcon className="w-4 h-4" />
-                        </button>
-                        {!isVirtual && (
+                        {canUpdate && (
+                            <button
+                                onClick={() => setEditingCollection(row.original)}
+                                className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
+                                title="Edit"
+                            >
+                                <PencilSquareIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                        {!isVirtual && canDelete && (
                             <button
                                 onClick={() => handleDeleteClick(row.original.id)}
                                 className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
@@ -405,35 +414,41 @@ const CollectionManagement = () => {
             cell: ({ row }) => {
                 return (
                     <div className="flex justify-end space-x-2">
-                        <button
-                            onClick={() => {
-                                setSelectedParentForReorder(row.original);
-                                setShowReorderModal(true);
-                            }}
-                            className="p-2.5 text-gray-600 bg-gray-100/40 hover:bg-gray-100 dark:bg-gray-500/10 dark:text-gray-400 dark:hover:bg-gray-500/20 rounded-xl transition-all border border-gray-600/20 dark:border-gray-500/20 shadow-sm flex items-center justify-center"
-                            title="Adjust Order"
-                        >
-                            <ArrowsUpDownIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => setEditingCollection(row.original)}
-                            className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
-                            title="Edit"
-                        >
-                            <PencilSquareIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => handleDeleteClick(row.original.id)}
-                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
-                            title="Delete"
-                        >
-                            <TrashIcon className="w-5 h-5" />
-                        </button>
+                        {canUpdate && (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        setSelectedParentForReorder(row.original);
+                                        setShowReorderModal(true);
+                                    }}
+                                    className="p-2.5 text-gray-600 bg-gray-100/40 hover:bg-gray-100 dark:bg-gray-500/10 dark:text-gray-400 dark:hover:bg-gray-500/20 rounded-xl transition-all border border-gray-600/20 dark:border-gray-500/20 shadow-sm flex items-center justify-center"
+                                    title="Adjust Order"
+                                >
+                                    <ArrowsUpDownIcon className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setEditingCollection(row.original)}
+                                    className="p-2.5 text-blue-600 bg-blue-100/40 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 rounded-xl transition-all border border-blue-600/20 dark:border-blue-500/20 shadow-sm flex items-center justify-center"
+                                    title="Edit"
+                                >
+                                    <PencilSquareIcon className="w-5 h-5" />
+                                </button>
+                            </>
+                        )}
+                        {canDelete && (
+                            <button
+                                onClick={() => handleDeleteClick(row.original.id)}
+                                className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-xl transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm flex items-center justify-center"
+                                title="Delete"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
                 );
             },
         },
-    ], [fetchCollections]);
+    ], [fetchCollections, canUpdate, canDelete]);
     
     const childColumns = useMemo(() => {
         const cols = [...baseColumns];
@@ -451,7 +466,7 @@ const CollectionManagement = () => {
             },
         });
         return cols;
-    }, []);
+    }, [baseColumns, canUpdate, canDelete]);
 
     const parentData = useMemo(() => {
         // We only show "Parents" (top-level categories)
@@ -620,26 +635,30 @@ const CollectionManagement = () => {
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => {
-                                    setSelectedParentForReorder(null);
-                                    setShowReorderModal(true);
-                                }}
-                                className="h-[34px] w-[34px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-400 hover:text-primary-500 rounded-xl transition-all flex items-center justify-center shadow-sm"
-                                title="Reorder Main Categories"
-                            >
-                                <ArrowsUpDownIcon className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setCreateModalType('parent');
-                                    setShowCreateModal(true);
-                                }}
-                                className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
-                            >
-                                <PlusIcon className="w-3.5 h-3.5" />
-                                <span>Add Parent</span>
-                            </button>
+                            {canUpdate && (
+                                <button
+                                    onClick={() => {
+                                        setSelectedParentForReorder(null);
+                                        setShowReorderModal(true);
+                                    }}
+                                    className="h-[34px] w-[34px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-400 hover:text-primary-500 rounded-xl transition-all flex items-center justify-center shadow-sm"
+                                    title="Reorder Main Categories"
+                                >
+                                    <ArrowsUpDownIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                            {canCreate && (
+                                <button
+                                    onClick={() => {
+                                        setCreateModalType('parent');
+                                        setShowCreateModal(true);
+                                    }}
+                                    className="h-[34px] px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+                                >
+                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    <span>Add Parent</span>
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -695,16 +714,18 @@ const CollectionManagement = () => {
                             />
                         </div>
 
-                        <button
-                            onClick={() => {
-                                setCreateModalType('child');
-                                setShowCreateModal(true);
-                            }}
-                            className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
-                        >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                            <span>Add Child</span>
-                        </button>
+                        {canCreate && (
+                            <button
+                                onClick={() => {
+                                    setCreateModalType('child');
+                                    setShowCreateModal(true);
+                                }}
+                                className="h-[34px] px-4 bg-secondary-600 hover:bg-secondary-700 text-white rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <PlusIcon className="w-3.5 h-3.5" />
+                                <span>Add Child</span>
+                            </button>
+                        )}
                     </div>
 
                     <TableView 

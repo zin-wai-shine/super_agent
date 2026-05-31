@@ -9,7 +9,7 @@ const defaultTheme = {
     primaryColor: '#0b6732',
     secondaryColor: '#34a853',
     textColor: '#202124',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
     logoUrl: '',
     faviconUrl: '',
     headerText: 'Super Real Estate',

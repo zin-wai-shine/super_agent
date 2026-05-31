@@ -33,22 +33,25 @@ const FilterSearchModal = ({
     // Prevent body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.overflow = 'hidden';
-            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
+            if (scrollbarWidth > 0) {
+                document.body.style.paddingRight = `${scrollbarWidth}px`;
+            }
             // Focus input after animation on mobile or desktop search
             if (!isSearchExpanded) {
                 setTimeout(() => inputRef.current?.focus(), 300);
             }
         } else {
             document.body.style.overflow = 'unset';
-            document.body.style.paddingRight = '0px';
+            document.body.style.paddingRight = '';
             setSearchTerm('');
             setIsSearchExpanded(false);
             setIsExpanded(false);
         }
         return () => {
             document.body.style.overflow = 'unset';
-            document.body.style.paddingRight = '0px';
+            document.body.style.paddingRight = '';
         };
     }, [isOpen]);
 

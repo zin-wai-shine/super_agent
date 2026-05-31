@@ -12,9 +12,11 @@ const TransitMapFilter = ({
     showTitle = false,
     onClose = null,
     externalStations = null,
-    hideHeader = false
+    hideHeader = false,
+    forceDarkMode = false
 }) => {
-    const { isDarkMode } = usePublicDarkTheme();
+    const { isDarkMode: contextDarkMode } = usePublicDarkTheme();
+    const isDarkMode = forceDarkMode || contextDarkMode;
     const [internalStations, setInternalStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const stations = externalStations || internalStations;
@@ -349,7 +351,7 @@ const TransitMapFilter = ({
             )}
 
             {/* Interactive Map Container */}
-            <div className="relative bg-white dark:bg-dashboard-card overflow-hidden group flex-1">
+            <div className="relative bg-transparent overflow-hidden group flex-1">
                 {/* Zoom & Reset Controls - Bottom Right Vertical (Hidden on Mobile) */}
                 <div className="absolute bottom-6 right-6 z-[90] hidden sm:flex flex-col items-center gap-3">
                     {/* Zoom Pill */}
@@ -421,7 +423,7 @@ const TransitMapFilter = ({
 
                 <div
                     ref={mapWrapperRef}
-                    className="relative cursor-grab active:cursor-grabbing select-none h-full bg-slate-50 dark:bg-dashboard-card z-10"
+                    className="relative cursor-grab active:cursor-grabbing select-none h-full bg-transparent z-10"
                     style={{ overflow: 'hidden', touchAction: 'none' }}
                     onMouseDown={(e) => {
                         setIsInteracting(true);

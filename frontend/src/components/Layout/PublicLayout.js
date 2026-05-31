@@ -689,7 +689,7 @@ const PublicLayout = () => {
                                         </div>
 
                                         {/* Center Slot for Search/Filter — integrated into nav row */}
-                                        <div className="flex-1 max-w-6xl mx-auto px-4 hidden md:block">
+                                        <div className="flex-1 max-w-7xl mx-auto px-4 hidden md:block">
                                             {(isListingsOrProjects || location.pathname === '/saved-listings' || location.pathname === '/my-bookings') && (
                                                 <div ref={(el) => setFilterBarSlot(el)} className="w-full flex justify-center" />
                                             )}
@@ -763,14 +763,18 @@ const PublicLayout = () => {
                                                                     </p>
                                                                 </div>
                                                                 <div className="py-1 px-2">
-                                                                    <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
-                                                                        <BsHeart className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                        Favorites
-                                                                    </Link>
-                                                                    <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
-                                                                        <BsCalendar2Week className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                        My Viewing Requests
-                                                                    </Link>
+                                                                    {user?.role !== 'sub_agent' && (
+                                                                        <>
+                                                                            <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                                <BsHeart className="w-6 h-6 text-gray-900 dark:text-white" />
+                                                                                Favorites
+                                                                            </Link>
+                                                                            <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                                <BsCalendar2Week className="w-6 h-6 text-gray-900 dark:text-white" />
+                                                                                My Viewing Requests
+                                                                            </Link>
+                                                                        </>
+                                                                    )}
                                                                     <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
                                                                         <PiUser className="w-6 h-6 text-gray-900 dark:text-white" />
                                                                         Account
@@ -957,22 +961,24 @@ const PublicLayout = () => {
                                 {isAuthenticated ? (
                                     <>
                                         {/* Favorites */}
-                                        <Link
-                                            to="/saved-listings"
-                                            className="flex-1 flex flex-col items-center justify-center py-2"
-                                        >
-                                            {isWishlistTabActive ? (
-                                                <BsFillHeartFill className="w-7 h-7 text-primary-600" />
-                                            ) : (
-                                                <BsHeart className="w-7 h-7 text-gray-400 dark:text-gray-500" />
-                                            )}
-                                            <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
-                                                    }`}
+                                        {user?.role !== 'sub_agent' && (
+                                            <Link
+                                                to="/saved-listings"
+                                                className="flex-1 flex flex-col items-center justify-center py-2"
                                             >
-                                                Favorites
-                                            </span>
-                                        </Link>
+                                                {isWishlistTabActive ? (
+                                                    <BsFillHeartFill className="w-7 h-7 text-primary-600" />
+                                                ) : (
+                                                    <BsHeart className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                                                )}
+                                                <span
+                                                    className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
+                                                        }`}
+                                                >
+                                                    Favorites
+                                                </span>
+                                            </Link>
+                                        )}
 
                                         {/* Map/List toggle — shown only on /listings */}
                                         <button
@@ -988,21 +994,23 @@ const PublicLayout = () => {
                                         </button>
 
                                         {/* Viewings */}
-                                        <Link
-                                            to="/my-bookings"
-                                            className="flex-1 flex flex-col items-center justify-center py-2"
-                                        >
-                                            <BsCalendar2Week
-                                                className={`w-7 h-7 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
-                                                    }`}
-                                            />
-                                            <span
-                                                className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
-                                                    }`}
+                                        {user?.role !== 'sub_agent' && (
+                                            <Link
+                                                to="/my-bookings"
+                                                className="flex-1 flex flex-col items-center justify-center py-2"
                                             >
-                                                Viewings
-                                            </span>
-                                        </Link>
+                                                <BsCalendar2Week
+                                                    className={`w-7 h-7 ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-400 dark:text-gray-500'
+                                                        }`}
+                                                />
+                                                <span
+                                                    className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
+                                                        }`}
+                                                >
+                                                    Viewings
+                                                </span>
+                                            </Link>
+                                        )}
 
                                         {/* Profile */}
                                         <Link

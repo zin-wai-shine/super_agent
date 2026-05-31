@@ -35,6 +35,10 @@ const Modal = ({
             const originalHtmlOverflow = document.documentElement.style.overflow;
             const originalOverscroll = document.body.style.overscrollBehavior;
             const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+            const originalPaddingRight = document.body.style.paddingRight;
+
+            // Measure scrollbar width BEFORE hiding to prevent layout shift
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
             // Apply locks to both body and html for maximum compatibility without jumps
             document.body.style.overflow = 'hidden';
@@ -42,8 +46,10 @@ const Modal = ({
             document.body.style.overscrollBehavior = 'none';
             document.documentElement.style.overscrollBehavior = 'none';
 
-            // Compensaute for scrollbar width to prevent horizontal jump
-            document.body.style.paddingRight = 'var(--scrollbar-width, 0px)';
+            // Compensate for scrollbar width to prevent horizontal layout shift
+            if (scrollbarWidth > 0) {
+                document.body.style.paddingRight = `${scrollbarWidth}px`;
+            }
 
             // Add internal lock style for additional containment
             const style = document.createElement('style');
@@ -71,7 +77,7 @@ const Modal = ({
                 document.documentElement.style.overflow = originalHtmlOverflow;
                 document.body.style.overscrollBehavior = originalOverscroll;
                 document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
-                document.body.style.paddingRight = '';
+                document.body.style.paddingRight = originalPaddingRight;
 
                 const existing = document.getElementById('modal-internal-lock');
                 if (existing) existing.remove();

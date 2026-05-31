@@ -663,7 +663,7 @@ const BookAppointment = () => {
                                     {listing.title}
                                 </p>
 
-                                <div className="flex items-center text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-full w-fit">
+                                <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-full w-fit">
                                     ID: {listing.id?.slice(0, 8).toUpperCase()}
                                 </div>
                             </div>
@@ -681,7 +681,7 @@ const BookAppointment = () => {
                                     </svg>
                                 </div>
 
-                                <h3 className="font-mono text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
+                                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                                     Booking Summary
                                 </h3>
@@ -698,7 +698,7 @@ const BookAppointment = () => {
                                                 <span className="text-[10px] items-center text-white/60 uppercase font-bold tracking-wider mb-px">
                                                     {new Date(form.preferred_date).toLocaleDateString('en-US', { month: 'short' })}
                                                 </span>
-                                                <span className="text-xl font-bold font-mono text-white leading-none">
+                                                <span className="text-xl font-bold text-white leading-none">
                                                     {new Date(form.preferred_date).getDate()}
                                                 </span>
                                             </>
@@ -729,7 +729,7 @@ const BookAppointment = () => {
                                             </div>
                                             <div>
                                                 <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Time</div>
-                                                <div className={`font-bold font-mono text-sm ${form.preferred_time ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'}`}>
+                                                <div className={`font-bold text-sm ${form.preferred_time ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'}`}>
                                                     {form.preferred_time || '--:--'}
                                                 </div>
                                             </div>

@@ -89,7 +89,7 @@ class ErrorBoundary extends React.Component {
 
                             {this.state.error && (
                                 <div className="bg-gray-950/5 dark:bg-white/5 rounded-2xl p-4 mb-8">
-                                    <pre className="text-[11px] text-gray-600 dark:text-gray-400 font-mono text-left overflow-auto max-h-[120px] scrollbar-thin">
+                                    <pre className="text-[11px] text-gray-600 dark:text-gray-400 text-left overflow-auto max-h-[120px] scrollbar-thin">
                                         {this.state.error.toString()}
                                     </pre>
                                 </div>

@@ -71,7 +71,7 @@ const HeroFilter = () => {
         <div className="w-full max-w-6xl mx-auto">
             {/* Search bar — Liquid Glass design */}
             <div
-                className="relative w-full h-[46px] bg-white/75 dark:bg-dashboard-card/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-t-[24px] rounded-b-none border-b-white/20 dark:border-b-white/5"
+                className="relative w-full h-[46px] bg-white/75 dark:bg-dashboard-card/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-t-[24px] rounded-b-none border-b border-b-slate-200/60 dark:border-b-white/10"
                 style={{ transition: 'border-color 0.2s ease' }}
             >
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">

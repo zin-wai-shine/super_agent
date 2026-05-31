@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 
 import { appointmentApi } from '../../services/api';
 import StyledSelect from '../../components/Form/StyledSelect';
@@ -53,6 +55,10 @@ const statusOptions = [
 ];
 
 const AppointmentManagement = () => {
+    const { user } = useAuth();
+    const canUpdate = hasActionPermission(user, 'appointments:update');
+    const canDelete = hasActionPermission(user, 'appointments:delete');
+
     const { isDarkMode } = useDashboardTheme();
     const { lastMessage } = useWebSocket();
     const [appointments, setAppointments] = useState([]);
@@ -292,6 +298,9 @@ const AppointmentManagement = () => {
     };
 
     const StatusActions = ({ appointment }) => {
+        if (!canUpdate) {
+            return <span className="text-gray-400 dark:text-gray-500 text-sm font-medium">—</span>;
+        }
         const { status } = appointment;
         return (
             <div className="flex items-center gap-2">
@@ -679,13 +688,15 @@ const AppointmentManagement = () => {
                                                     >
                                                         <EyeIcon className="w-5 h-5" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => setShowDeleteConfirm(appointment.id)}
-                                                        className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm"
-                                                        title="Delete"
-                                                    >
-                                                        <TrashIcon className="w-5 h-5" />
-                                                    </button>
+                                                    {canDelete && (
+                                                        <button
+                                                            onClick={() => setShowDeleteConfirm(appointment.id)}
+                                                            className="p-2.5 text-red-600 bg-red-100/40 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 rounded-admin transition-all border border-red-600/20 dark:border-red-500/20 shadow-sm"
+                                                            title="Delete"
+                                                        >
+                                                            <TrashIcon className="w-5 h-5" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -867,16 +878,19 @@ const AppointmentManagement = () => {
                                     value={agentNotes}
                                     onChange={(e) => setAgentNotes(e.target.value)}
                                     rows={3}
-                                    placeholder="Add private notes about this appointment..."
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-admin text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none resize-none"
+                                    placeholder={canUpdate ? "Add private notes about this appointment..." : "No agent notes added."}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-admin text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none resize-none disabled:opacity-60 disabled:cursor-not-allowed"
+                                    disabled={!canUpdate}
                                 />
-                                <button
-                                    onClick={handleSaveNotes}
-                                    disabled={updating || agentNotes === (selectedAppointment.agent_notes || '')}
-                                    className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-admin hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                                >
-                                    {updating ? 'Saving...' : 'Save Notes'}
-                                </button>
+                                {canUpdate && (
+                                    <button
+                                        onClick={handleSaveNotes}
+                                        disabled={updating || agentNotes === (selectedAppointment.agent_notes || '')}
+                                        className="mt-2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-admin hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {updating ? 'Saving...' : 'Save Notes'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <div className="flex-none p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end">

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -369,4 +370,80 @@ func GetAgentID(c *gin.Context) (uuid.UUID, bool) {
 		}
 	}
 	return id.(uuid.UUID), true
+}
+
+// PermissionMiddleware verifies sub-agent granular permissions
+func PermissionMiddleware(db *gorm.DB, requiredPath string, requiredAction string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Role not found"})
+			c.Abort()
+			return
+		}
+
+		userRole := role.(string)
+		// Super Admin and main Agent always have full access
+		if userRole == models.RoleSuperAdmin || userRole == models.RoleAgent {
+			c.Next()
+			return
+		}
+
+		if userRole == models.RoleSubAgent {
+			userID, exists := GetUserID(c)
+			if !exists {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "User context not found"})
+				c.Abort()
+				return
+			}
+
+			var user models.User
+			if err := db.Select("permissions").First(&user, "id = ?", userID).Error; err != nil {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Failed to fetch user permissions"})
+				c.Abort()
+				return
+			}
+
+			// If no permissions are set, default is restricted
+			if user.Permissions == "" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Access denied. No permissions configured."})
+				c.Abort()
+				return
+			}
+
+			var perms struct {
+				Paths   map[string]bool `json:"paths"`
+				Actions map[string]bool `json:"actions"`
+			}
+			if err := json.Unmarshal([]byte(user.Permissions), &perms); err != nil {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Invalid permissions configuration"})
+				c.Abort()
+				return
+			}
+
+			// Verify required path if specified
+			if requiredPath != "" {
+				if allowed, ok := perms.Paths[requiredPath]; !ok || !allowed {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Access denied for this section"})
+					c.Abort()
+					return
+				}
+			}
+
+			// Verify required action if specified
+			if requiredAction != "" {
+				if allowed, ok := perms.Actions[requiredAction]; !ok || !allowed {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Action not allowed"})
+					c.Abort()
+					return
+				}
+			}
+
+			c.Next()
+			return
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+		c.Abort()
+	}
 }

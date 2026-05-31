@@ -24,6 +24,7 @@ import {
 import { PiUser } from 'react-icons/pi';
 import StyledSelect from '../../components/Form/StyledSelect';
 import { useAuth } from '../../contexts/AuthContext';
+import { hasActionPermission } from '../../utils/permissions';
 import { getMediaUrl } from '../../utils/media';
 import ModernSlider from '../../components/ui/ModernSlider';
 import ModernColorPicker from '../../components/ui/ModernColorPicker';
@@ -36,6 +37,7 @@ import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const ThemeSettings = () => {
     const { user } = useAuth();
+    const canUpdate = hasActionPermission(user, 'theme:update');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -336,27 +338,29 @@ const ThemeSettings = () => {
                         Customize your public site's appearance to match your brand.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={resetToDefaults}
-                        className="btn-secondary h-[34px] text-[12px] px-3 flex items-center gap-2"
-                    >
-                        <ArrowPathIcon className="w-4 h-4" />
-                        Reset
-                    </button>
-                    <button
-                        onClick={handleSubmit(onSubmit)}
-                        disabled={saving}
-                        className="btn-primary h-[34px] text-[12px] px-4 flex items-center gap-2 shadow-none hover:shadow-none transform-none"
-                    >
-                        {saving ? (
-                            <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <CheckCircleIcon className="w-4 h-4" />
-                        )}
-                        Save Changes
-                    </button>
-                </div>
+                {canUpdate && (
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={resetToDefaults}
+                            className="btn-secondary h-[34px] text-[12px] px-3 flex items-center gap-2"
+                        >
+                            <ArrowPathIcon className="w-4 h-4" />
+                            Reset
+                        </button>
+                        <button
+                            onClick={handleSubmit(onSubmit)}
+                            disabled={saving}
+                            className="btn-primary h-[34px] text-[12px] px-4 flex items-center gap-2 shadow-none hover:shadow-none transform-none"
+                        >
+                            {saving ? (
+                                <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <CheckCircleIcon className="w-4 h-4" />
+                            )}
+                            Save Changes
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="h-[calc(100vh-200px)] min-h-[600px] w-full bg-white dark:bg-dashboard-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex overflow-hidden">
@@ -386,38 +390,44 @@ const ThemeSettings = () => {
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
                                     <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Header Site Title</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => resetField('header_text')}
-                                        className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
-                                        title="Reset Title"
-                                    >
-                                        <ArrowPathIcon className="w-3.5 h-3.5" />
-                                    </button>
+                                    {canUpdate && (
+                                        <button
+                                            type="button"
+                                            onClick={() => resetField('header_text')}
+                                            className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
+                                            title="Reset Title"
+                                        >
+                                            <ArrowPathIcon className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
                                 <input
                                     type="text"
-                                    className="input-field rounded-admin h-12 text-sm"
+                                    className="input-field rounded-admin h-12 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                                     placeholder="Super Real Estate"
+                                    disabled={!canUpdate}
                                     {...register('header_text')}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
                                     <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Footer Attribution</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => resetField('footer_text')}
-                                        className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
-                                        title="Reset Footer"
-                                    >
-                                        <ArrowPathIcon className="w-3.5 h-3.5" />
-                                    </button>
+                                    {canUpdate && (
+                                        <button
+                                            type="button"
+                                            onClick={() => resetField('footer_text')}
+                                            className="p-1.5 rounded-admin border-admin bg-gray-50 dark:bg-dashboard-input text-gray-400 hover:text-primary-500 transition-all active:scale-95"
+                                            title="Reset Footer"
+                                        >
+                                            <ArrowPathIcon className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
                                 <input
                                     type="text"
-                                    className="input-field rounded-admin h-12 text-sm"
+                                    className="input-field rounded-admin h-12 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                                     placeholder="© 2024 Your Name"
+                                    disabled={!canUpdate}
                                     {...register('footer_text')}
                                 />
                             </div>
@@ -433,15 +443,17 @@ const ThemeSettings = () => {
                                         <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Website Navbar Preview</label>
                                         <p className="text-[12px] text-gray-500 dark:text-gray-400">Adjust how your logo appears in the site header.</p>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => logoInputRef.current?.click()}
-                                            className="text-[12px] font-medium text-primary-500 hover:text-primary-600 transition-colors"
-                                        >
-                                            {watchAll.logo_url ? 'Change Logo' : 'Upload Logo'}
-                                        </button>
-                                    </div>
+                                    {canUpdate && (
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => logoInputRef.current?.click()}
+                                                className="text-[12px] font-medium text-primary-500 hover:text-primary-600 transition-colors"
+                                            >
+                                                {watchAll.logo_url ? 'Change Logo' : 'Upload Logo'}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="relative dark:bg-gray-950 border border-gray-100 dark:border-white/5 rounded-admin overflow-hidden bg-gray-50/50">
@@ -527,23 +539,23 @@ const ThemeSettings = () => {
                                     <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Browser Icon (Favicon)</label>
                                 </div>
                                 <div
-                                    onClick={() => faviconInputRef.current?.click()}
-                                    className="flex justify-center p-8 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin hover:border-primary-400 transition-all cursor-pointer bg-gray-50/20 dark:bg-gray-900/10 min-h-[200px] flex-col items-center"
+                                    onClick={canUpdate ? () => faviconInputRef.current?.click() : undefined}
+                                    className={`flex justify-center p-8 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin transition-all bg-gray-50/20 dark:bg-gray-900/10 min-h-[200px] flex-col items-center ${canUpdate ? 'cursor-pointer hover:border-primary-400' : 'opacity-60 cursor-not-allowed'}`}
                                 >
                                     {watchAll.favicon_url ? (
                                         <img src={getMediaUrl(watchAll.favicon_url)} alt="Favicon" className="w-16 h-16 object-contain rounded-admin shadow-sm bg-white p-2" />
                                     ) : (
                                         <GlobeAltIcon className="h-10 w-10 text-gray-300" />
                                     )}
-                                    <div className="mt-4 text-[12px] font-medium text-primary-500">Upload Icon</div>
+                                    {canUpdate && <div className="mt-4 text-[12px] font-medium text-primary-500">Upload Icon</div>}
                                 </div>
                             </div>
 
                             <div className="space-y-6">
                                 <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300">Social Share Image</label>
                                 <div
-                                    onClick={() => sharePreviewInputRef.current?.click()}
-                                    className="relative flex justify-center p-2 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin hover:border-primary-400 transition-all cursor-pointer bg-gray-50/20 dark:bg-gray-900/10 overflow-hidden group"
+                                    onClick={canUpdate ? () => sharePreviewInputRef.current?.click() : undefined}
+                                    className={`relative flex justify-center p-2 border-2 border-gray-100 dark:border-white/5 border-dashed rounded-admin transition-all bg-gray-50/20 dark:bg-gray-900/10 overflow-hidden group ${canUpdate ? 'cursor-pointer hover:border-primary-400' : 'opacity-60 cursor-not-allowed'}`}
                                 >
                                     {watchAll.share_preview_image ? (
                                         <img 
@@ -555,7 +567,7 @@ const ThemeSettings = () => {
                                     ) : (
                                         <div className="py-12 flex flex-col items-center">
                                             <PhotoIcon className="h-10 w-10 text-gray-300 mb-2" />
-                                            <div className="text-[12px] font-medium text-primary-500">Add Preview Image</div>
+                                            {canUpdate && <div className="text-[12px] font-medium text-primary-500">Add Preview Image</div>}
                                         </div>
                                     )}
                                 </div>
