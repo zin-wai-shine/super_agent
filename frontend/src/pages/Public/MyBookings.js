@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useOutletContext, useNavigate } from 'react-router-dom';
 import { appointmentApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import Button from '../../components/ui/Button';
 import FilterBar from '../../components/ui/FilterBar';
 import {
@@ -21,6 +22,7 @@ import { BsCalendar2Week } from 'react-icons/bs';
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
 
 const MyBookings = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const outletContext = useOutletContext() || {};
@@ -157,10 +159,10 @@ const MyBookings = () => {
                 <div className="flex flex-col items-start text-left gap-8 mb-16 relative z-20 px-0">
                     <div>
                         <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white tracking-tight leading-tight">
-                            My Viewing Requests
+                            {t('bookings.title')}
                         </h1>
                         <p className="text-slate-500 dark:text-gray-400 mt-2 font-medium text-lg max-w-md">
-                            View and manage your property viewing requests.
+                            {t('bookings.desc')}
                         </p>
                     </div>
 
@@ -168,11 +170,11 @@ const MyBookings = () => {
                     <div className="w-full">
                         <div className="flex flex-wrap gap-2.5" role="tablist" aria-label="Filter by status">
                             {[
-                                { value: 'all', label: 'All' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'confirmed', label: 'Confirmed' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'cancelled', label: 'Cancelled' }
+                                { value: 'all', label: t('filters.any') },
+                                { value: 'pending', label: t('listing.requested') },
+                                { value: 'confirmed', label: t('listing.confirmed') },
+                                { value: 'completed', label: t('listing.completed', 'Completed') },
+                                { value: 'cancelled', label: t('listing.cancelled') }
                             ].map(({ value, label }) => (
                                 <button
                                     key={value}
@@ -208,10 +210,9 @@ const MyBookings = () => {
                                 <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-red-900 leading-none mb-2">Process Warning: Appointment Cancellations</h3>
+                                <h3 className="text-lg font-black text-red-900 leading-none mb-2">{t('bookings.warningTitle')}</h3>
                                 <p className="text-red-700 font-bold leading-relaxed">
-                                    Our system has detected multiple cancellations for confirmed appointments (Total: {user.late_cancellation_count}).
-                                    Repeated late cancellations may lead to account restrictions. Please ensure you can attend before booking, or contact support if you need assistance.
+                                    {t('bookings.warningDesc', { count: user.late_cancellation_count })}
                                 </p>
                             </div>
                         </div>
@@ -247,18 +248,18 @@ const MyBookings = () => {
                             <div className="mb-6 relative z-10 transition-transform duration-500">
                                 <BsCalendar2Week className="w-12 h-12 text-slate-400" />
                             </div>
-                            <h3 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white mb-3 relative z-10">No viewings yet</h3>
+                            <h3 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white mb-3 relative z-10">{t('bookings.noViewingsYet')}</h3>
                             <p className="text-slate-500 dark:text-gray-400 mb-10 max-w-sm text-center font-medium leading-relaxed relative z-10 px-4">
                                 {filter === 'all'
-                                    ? "Excited to find your new home? Your scheduled viewings will appear right here."
-                                    : `You don't have any ${filter} viewings at the moment.`}
+                                    ? t('bookings.emptyAll')
+                                    : t('bookings.emptyStatus', { status: filter === 'pending' ? t('listing.requested') : t(`listing.${filter}`, filter) })}
                             </p>
                             <Button
                                 variant="ghost"
                                 className="!p-0 !bg-transparent !border-none !shadow-none !text-slate-600 hover:!text-primary-600 font-semibold transition-all duration-300 group inline-flex items-center !outline-none !ring-0 !ring-offset-0 w-auto"
                                 onClick={() => window.location.href = '/listings'}
                             >
-                                <span className="text-base sm:text-lg font-bold text-slate-700 dark:text-gray-300 group-hover:dark:text-white">Explore Listings</span>
+                                <span className="text-base sm:text-lg font-bold text-slate-700 dark:text-gray-300 group-hover:dark:text-white">{t('bookings.exploreListings')}</span>
                                 <ArrowRightIcon className="w-5 sm:w-6 h-5 sm:h-6 ml-2 sm:ml-3 text-slate-500 transition-transform duration-300 group-hover:translate-x-3" />
                             </Button>
                         </div>
@@ -286,7 +287,7 @@ const MyBookings = () => {
                                                             appointment.status === 'cancelled' ? 'bg-rose-500' :
                                                                 'bg-amber-500'
                                                         }`} />
-                                                    {appointment.status}
+                                                    {appointment.status === 'pending' ? t('listing.requested') : t(`listing.${appointment.status}`, appointment.status)}
                                                 </span>
                                                 <span className="text-[10px] font-medium text-slate-400 tabular-nums truncate">
                                                     {appointment.id.slice(0, 8).toUpperCase()}
@@ -306,7 +307,7 @@ const MyBookings = () => {
                                                     </span>
                                                     <div className="flex flex-col -gap-0.5">
                                                         <span className="text-[13px] font-black uppercase tracking-wider text-slate-400 leading-tight">
-                                                            {date.toLocaleDateString('en-US', { month: 'short' })}
+                                                            {date.toLocaleDateString(i18n.language || 'en', { month: 'short' })}
                                                         </span>
                                                         <span className="text-[12px] font-bold text-slate-900 dark:text-gray-300 leading-tight">
                                                             {date.getFullYear()}
@@ -315,7 +316,7 @@ const MyBookings = () => {
                                                 </div>
                                                 <div className="w-px h-10 bg-slate-100 dark:bg-white/10" />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Time</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t('bookingFlow.time')}</span>
                                                     <div className="flex items-center gap-1.5">
                                                         <ClockIcon className="w-4 h-4 text-slate-400" />
                                                         <span className="text-[15px] font-bold text-slate-800 dark:text-white">{appointment.preferred_time}</span>
@@ -332,15 +333,14 @@ const MyBookings = () => {
                                                         setCancellationModal({ open: true, appointmentId: appointment.id, reason: '', submitting: false });
                                                     }}
                                                     className="h-[44px] px-5 rounded-full text-[13px] font-semibold
-                                                        bg-white dark:bg-dashboard-card
-                                                        border border-gray-200 dark:border-white/10
-                                                        text-rose-500 dark:text-rose-400
-                                                        hover:border-rose-400 dark:hover:border-rose-400/60
-                                                        hover:bg-rose-50 dark:hover:bg-rose-500/10
+                                                        bg-rose-50 dark:bg-rose-500/10
+                                                        border border-transparent
+                                                        text-rose-600 dark:text-rose-400
+                                                        hover:bg-rose-100 dark:hover:bg-rose-500/20
                                                         hover:shadow-md hover:-translate-y-[1px]
                                                         transition-all duration-300 ease-out active:scale-[0.98]"
                                                 >
-                                                    Cancel
+                                                    {t('bookings.cancel')}
                                                 </button>
                                             )}
                                             <button
@@ -355,7 +355,7 @@ const MyBookings = () => {
                                                     transition-all duration-300 ease-out active:scale-[0.98]
                                                     flex items-center gap-2 group/btn"
                                             >
-                                                View Details
+                                                {t('bookings.viewDetails')}
                                                 <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
                                             </button>
                                         </div>
@@ -393,63 +393,48 @@ const MyBookings = () => {
                     <div className="flex justify-center pt-4 pb-2 sm:hidden">
                         <div className="w-12 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full" />
                     </div>
-
                     <div className="px-8 pt-6 sm:pt-10 pb-10">
-                        <h3 className="text-[26px] sm:text-[22px] font-black text-slate-900 dark:text-white mb-2 leading-tight">Cancel Viewing?</h3>
+                        <h3 className="text-[26px] sm:text-[22px] font-black text-slate-900 dark:text-white mb-2 leading-tight">{t('bookings.cancelTitle')}</h3>
                         <p className="text-[17px] sm:text-[15px] text-slate-500 dark:text-gray-400 font-medium mb-8 leading-relaxed max-w-[90%] sm:max-w-full">
-                            Please let us know why you need to cancel this appointment.
+                            {t('bookings.cancelDesc')}
                         </p>
-
+ 
                         <div className="space-y-6">
                             <div className="relative">
                                 <label className="block text-[15px] sm:text-[14px] font-bold text-slate-600 dark:text-gray-300 mb-3 ml-1">
-                                    Reason for cancellation
+                                    {t('bookings.reasonLabel')}
                                 </label>
                                 <textarea
                                     autoFocus={cancellationModal.open}
                                     value={cancellationModal.reason}
                                     onChange={(e) => setCancellationModal(prev => ({ ...prev, reason: e.target.value }))}
-                                    placeholder="e.g., Change of plans, found another property..."
+                                    placeholder={t('bookings.reasonPlaceholder')}
                                     rows={4}
                                     className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-[24px] px-6 py-5 text-[16px] sm:text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-rose-500/20 transition-all resize-none font-medium"
                                 />
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                            <div className="flex flex-row gap-3 pt-2">
                                 <button
                                     disabled={cancellationModal.submitting}
                                     onClick={() => setCancellationModal({ open: false, appointmentId: null, reason: '', submitting: false })}
-                                    className="flex-1 h-[44px] px-5 rounded-full text-[13px] font-semibold
-                                        bg-white dark:bg-dashboard-card
-                                        border border-gray-200 dark:border-white/10
-                                        text-[#222222] dark:text-white
-                                        hover:border-[#222222] dark:hover:border-white/40
-                                        hover:shadow-md hover:-translate-y-[1px]
-                                        transition-all duration-300 ease-out active:scale-[0.98]
-                                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-bold text-[13px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
                                 >
-                                    Go Back
+                                    {t('bookings.goBack')}
                                 </button>
                                 <button
                                     disabled={!cancellationModal.reason.trim() || cancellationModal.submitting}
                                     onClick={handleCancelSubmit}
-                                    className={`flex-1 h-[44px] px-5 rounded-full text-[13px] font-semibold
-                                        transition-all duration-300 ease-out
-                                        flex items-center justify-center gap-2
+                                    className={`flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full font-bold text-[13px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap border
                                         ${!cancellationModal.reason.trim() || cancellationModal.submitting
-                                            ? 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-white/10 cursor-not-allowed'
-                                            : `bg-rose-600 dark:bg-rose-600
-                                               border border-rose-600 dark:border-rose-600
-                                               text-white
-                                               hover:bg-rose-700 hover:border-rose-700
-                                               hover:shadow-md hover:shadow-rose-600/20 hover:-translate-y-[1px]
-                                               active:scale-[0.98]`
+                                            ? 'bg-gray-100 dark:bg-white/10 border-transparent text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                            : 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700 hover:border-rose-700 hover:shadow-md hover:shadow-rose-600/20 hover:-translate-y-[1px]'
                                         }`}
                                 >
                                     {cancellationModal.submitting ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                        'Confirm Cancellation'
+                                        t('bookings.confirmCancellation')
                                     )}
                                 </button>
                             </div>

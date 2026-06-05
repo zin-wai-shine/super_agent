@@ -1,5 +1,6 @@
 import React from 'react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 
 /**
  * A single row for "Rooms and beds" style filter: label on the left, stepper (minus | value | plus) on the right.
@@ -9,9 +10,15 @@ import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
  * @param {function(string)} onChange - Called with new value when user steps
  */
 const RoomStepperRow = ({ label, options = [], value, onChange }) => {
+    const { t } = useTranslation();
     const currentIndex = options.findIndex(o => o.value === value);
     const safeIndex = currentIndex >= 0 ? currentIndex : 0;
     const displayLabel = (options[safeIndex] && options[safeIndex].label) || 'Any';
+    const translatedDisplayLabel = displayLabel === 'Any' 
+        ? t('filters.any') 
+        : displayLabel === 'Studio' 
+        ? t('listing.studio') 
+        : displayLabel;
     const canDecrement = safeIndex > 0;
     const canIncrement = safeIndex < options.length - 1 && safeIndex >= 0;
 
@@ -48,7 +55,7 @@ const RoomStepperRow = ({ label, options = [], value, onChange }) => {
                     <MinusIcon className="w-5 h-5" strokeWidth={2.5} />
                 </button>
                 <span className="min-w-[3.5rem] text-center text-base font-normal text-gray-900 dark:text-white">
-                    {displayLabel}
+                    {translatedDisplayLabel}
                 </span>
                 <button
                     type="button"

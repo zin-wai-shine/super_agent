@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMediaUrl } from '../../utils/media';
 import { FolderIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
+import { useTranslation } from 'react-i18next';
 
 const CollectionCard = ({ 
     collection, 
@@ -16,6 +18,8 @@ const CollectionCard = ({
     index = 0
 }) => {
     const navigate = useNavigate();
+    const tDynamic = useDynamicTranslation();
+    const { t } = useTranslation();
     const firstImage = collection.media?.find(m => m.type === 'image')?.url;
 
     const [isLoaded, setIsLoaded] = React.useState(false);
@@ -86,10 +90,10 @@ const CollectionCard = ({
             <div className={`px-1 ${animateEntrance ? 'opacity-0 animate-fillIn' : ''}`}
                  style={animateEntrance ? { animationDelay: delay } : {}}>
                 <p className="text-[13px] text-gray-500 font-medium">
-                    {collection.listings_count || 0} properties
+                    {collection.listings_count === 1 ? t('filters.propertiesCountSingle', { count: 1 }) : t('filters.propertiesCount', { count: collection.listings_count || 0 })}
                 </p>
                 <h3 className={`text-[14px] font-medium leading-snug transition-colors ${isSelected ? 'text-primary-600' : 'text-[#222222] dark:text-white'}`}>
-                    {collection.name}
+                    {tDynamic(collection, 'name')}
                 </h3>
             </div>
         </div>

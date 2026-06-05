@@ -1,6 +1,7 @@
 import React from 'react';
 import Select, { components } from 'react-select';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
 
 // Custom styles for React-Select matching our Tailwind design system
 const getCustomStyles = (isDarkMode, isDashboard = false) => ({
@@ -209,7 +210,7 @@ const customTheme = (theme) => ({
     },
 });
 
-import { useDashboardTheme } from '../../contexts/DashboardThemeContext';
+
 
 // Styled Select Component
 const StyledSelect = ({

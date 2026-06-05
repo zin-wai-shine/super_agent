@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { publicApi } from '../../services/api';
@@ -23,6 +24,7 @@ import FilterCard from '../../components/ui/FilterCard';
 import FilterPill from '../../components/ui/FilterPill';
 import { FilterIcons } from '../../utils/IconMap';
 import ScrollableFilterList from '../../components/ui/ScrollableFilterList';
+import { getMediaUrl } from '../../utils/media';
 
 import {
     AdjustmentsHorizontalIcon,
@@ -34,8 +36,8 @@ import {
     BuildingOfficeIcon,
     GlobeAltIcon,
     SparklesIcon,
-    ArrowUpIcon,
-    TagIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
     MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { BsSearch } from 'react-icons/bs';
@@ -115,6 +117,10 @@ const MapTransitionOverlay = ({ active, switchActive }) => {
 
 
 const ProjectsPage = () => {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
+    const [langMenuOpen, setLangMenuOpen] = useState(false);
+    const langMenuRef = useRef(null);
     const { user } = useAuth();
     const { agent, actual_min_price, actual_max_price } = useTenant();
     const outletContext = useOutletContext() || {};
@@ -270,6 +276,28 @@ const ProjectsPage = () => {
         return () => clearTimeout(t);
     }, [isSidebarClosing]);
 
+    const [isSidebarScrolling, setIsSidebarScrolling] = useState(false);
+    const sidebarScrollTimeoutRef = useRef(null);
+
+    const handleSidebarScroll = useCallback(() => {
+        setIsSidebarScrolling(true);
+        if (sidebarScrollTimeoutRef.current) {
+            clearTimeout(sidebarScrollTimeoutRef.current);
+        }
+        sidebarScrollTimeoutRef.current = setTimeout(() => {
+            setIsSidebarScrolling(false);
+        }, 800);
+    }, []);
+
+    // Clean up timeout on unmount or close
+    useEffect(() => {
+        return () => {
+            if (sidebarScrollTimeoutRef.current) {
+                clearTimeout(sidebarScrollTimeoutRef.current);
+            }
+        };
+    }, []);
+
     // Use a ref to track bounds to avoid redundant state updates in onBoundsChanged
     const lastBoundsRef = useRef(null);
     const prevMapBoundsRef = useRef(null);
@@ -312,12 +340,15 @@ const ProjectsPage = () => {
         
         if (isGoogleMapOpen || isSidebarOpen) {
             document.body.classList.add('filter-open');
+            document.documentElement.classList.add('filter-open');
         } else {
             document.body.classList.remove('filter-open');
+            document.documentElement.classList.remove('filter-open');
         }
         
         return () => { 
             document.body.classList.remove('filter-open');
+            document.documentElement.classList.remove('filter-open');
             document.body.style.paddingRight = '';
         };
     }, [isGoogleMapOpen, isSidebarOpen]);
@@ -347,11 +378,6 @@ const ProjectsPage = () => {
         // Reset scroll position to top when switching views
         window.scrollTo({ top: 0, behavior: 'instant' });
 
-        // Start with collapsed sheet (Full Map Design)
-        if (isOpen) {
-            setSheetOffset(92);
-        }
-
         setIsMapTransitioning(true);
 
         // Persist the user's explicit choice globally
@@ -368,6 +394,13 @@ const ProjectsPage = () => {
             setIsMapTransitioning(false);
         }, 1200);
     };
+
+    const handleProjectClick = useCallback((project) => {
+        if (!project || !project.id) return;
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('project', project.id);
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
 
     const [stations, setStations] = useState([]);
     const [flatStations, setFlatStations] = useState([]); // Flat options for StyledSelect
@@ -443,6 +476,9 @@ const ProjectsPage = () => {
             if (transitSearchRef.current && !transitSearchRef.current.contains(event.target)) {
                 setShowTransitResults(false);
             }
+            if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+                setLangMenuOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -461,6 +497,59 @@ const ProjectsPage = () => {
     });
 
     const [searchTerm, setSearchTerm] = useState(filters.search);
+    const [isMobileSearchFocused, setIsMobileSearchFocused] = useState(false);
+    const [isMobileSearchScrolled, setIsMobileSearchScrolled] = useState(false);
+
+    useEffect(() => {
+        if (!isMobileSearchFocused) {
+            setIsMobileSearchScrolled(false);
+        }
+    }, [isMobileSearchFocused]);
+
+    const [recentSearches, setRecentSearches] = useState(() => {
+        try {
+            const saved = localStorage.getItem('project_recent_searches');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const saveRecentSearch = (term) => {
+        if (!term || !term.trim()) return;
+        setRecentSearches(prev => {
+            const next = [term.trim(), ...prev.filter(t => t !== term.trim())].slice(0, 5);
+            localStorage.setItem('project_recent_searches', JSON.stringify(next));
+            return next;
+        });
+    };
+
+    const searchResults = useMemo(() => {
+        if (!searchTerm) return [];
+        const lowerVal = searchTerm.toLowerCase();
+        return (projects || []).filter(p => 
+            (p.name && p.name.toLowerCase().includes(lowerVal)) || 
+            (p.district && p.district.toLowerCase().includes(lowerVal)) ||
+            (p.station_id && p.station_id.toLowerCase().includes(lowerVal)) ||
+            (p.developer?.name && p.developer.name.toLowerCase().includes(lowerVal))
+        ).slice(0, 10);
+    }, [searchTerm, projects]);
+
+    const handleResultClick = (project) => {
+        saveRecentSearch(searchTerm);
+        setIsMobileSearchFocused(false);
+        handleProjectClick(project);
+    };
+
+    const formatStatus = (s) => {
+        if (!s) return 'Unknown Status';
+        return s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    };
+
+    const formatType = (t) => {
+        if (!t) return 'Project';
+        return t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    };
 
 
     // Debounce search
@@ -498,6 +587,7 @@ const ProjectsPage = () => {
     useEffect(() => {
         const controller = new AbortController();
         const fetchListings = async () => {
+            let isBoundsTriggeredFetch = false;
             // Optimistic loading: If map is open but bounds aren't ready or valid, wait.
             // This prevents "showing all properties" flash on reload in Map View.
             const hasValidBounds = mapBounds && mapBounds.min_lat !== undefined;
@@ -519,7 +609,7 @@ const ProjectsPage = () => {
                 
                 fetchTriggeredByBoundsRef.current = !!boundsJustChanged;
                 prevMapBoundsRef.current = mapBounds;
-                const isBoundsTriggeredFetch = !!boundsJustChanged;
+                isBoundsTriggeredFetch = !!boundsJustChanged;
 
                 // Avoid "flash" in map view OR during typing search.
                 const isMapBoundsUpdate = isGoogleMapOpen && projects.length > 0;
@@ -695,7 +785,7 @@ const ProjectsPage = () => {
                 {/* Selected filters — chips with × to remove */}
                 {activeFiltersList.length > 0 && (
                     <div className="space-y-2">
-                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900 dark:text-white">Selected</h2>
+                        <h2 className="text-[15px] md:text-[13px] font-medium md:font-normal text-gray-900 dark:text-white">{t('filters.selected')}</h2>
                         <div className="flex flex-wrap gap-2">
                             {activeFiltersList.map(({ label, key }) => {
                                 const isExiting = exitingChipKeys.has(key);
@@ -727,26 +817,7 @@ const ProjectsPage = () => {
                     </div>
                 )}
 
-                {/* Text Search */}
-                <div className="relative mb-7">
-                    <input
-                        type="text"
-                        value={searchTerm || ''}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
-                        placeholder="Keyword, location, property name..."
-                        className="w-full h-[52px] sm:h-[48px] pl-6 pr-12 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all"
-                    />
-                    {searchTerm && (
-                        <button
-                            type="button"
-                            onClick={() => { setSearchTerm(''); }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                        >
-                            <XMarkIcon className="w-5 h-5 stroke-[2.5]" />
-                        </button>
-                    )}
-                </div>
+
 
                 {/* Filter Sections */}
                 <div className="space-y-10">
@@ -754,13 +825,13 @@ const ProjectsPage = () => {
 
                     {/* PROJECT TYPE - Pill Select */}
                     <FilterCard
-                        title="Project Type"
+                        title={t('filters.projectType')}
                         icon={FilterIcons.propertyType}
                     >
                         <div className="flex flex-wrap gap-2.5">
                             {/* All option */}
                             <FilterPill
-                                label="All Types"
+                                label={t('filters.allTypes')}
                                 isActive={!filters.project_type}
                                 onClick={() => handleFilterChange('project_type', '')}
                             />
@@ -779,7 +850,7 @@ const ProjectsPage = () => {
                                 return (
                                     <FilterPill
                                         key={opt.value}
-                                        label={opt.label}
+                                        label={t('filters.' + opt.value, { defaultValue: opt.label })}
                                         isActive={isActive}
                                         onClick={toggle}
                                     />
@@ -791,13 +862,13 @@ const ProjectsPage = () => {
 
                     {/* PROJECT STATUS - Pill Select */}
                     <FilterCard
-                        title="Project Status"
+                        title={t('filters.projectStatus')}
                         icon={FilterIcons.projectStatus}
                     >
                         <div className="flex flex-wrap gap-2.5">
                             {/* All option */}
                             <FilterPill
-                                label="All Statuses"
+                                label={t('filters.allStatuses')}
                                 isActive={!filters.status}
                                 onClick={() => handleFilterChange('status', '')}
                             />
@@ -816,7 +887,7 @@ const ProjectsPage = () => {
                                 return (
                                     <FilterPill
                                         key={opt.value}
-                                        label={opt.label}
+                                        label={t('filters.' + opt.value, { defaultValue: opt.label })}
                                         isActive={isActive}
                                         onClick={toggle}
                                     />
@@ -827,7 +898,7 @@ const ProjectsPage = () => {
 
                     {/* TRANSIT STATION - Modal Trigger */}
                     <FilterCard
-                        title="Transit Station"
+                        title={t('filters.transitStation')}
                         icon={FilterIcons.transit}
                     >
                         <div className="space-y-3">
@@ -837,7 +908,7 @@ const ProjectsPage = () => {
                             >
                                 <div className="flex items-center gap-3">
                                     <MagnifyingGlassIcon className="w-[22px] h-[22px] text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
-                                    <span className="text-[13px] font-normal text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
+                                    <span className="text-[13px] font-normal text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">{t('filters.searchTransitStation')}</span>
                                 </div>
                                 <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 w-[42px] h-[42px] sm:w-9 sm:h-9 rounded-full active:scale-95 transition-all flex items-center justify-center">
                                     <MapIcon className="w-[20px] h-[20px] sm:w-5 sm:h-5 text-gray-800 dark:text-white" strokeWidth={2} />
@@ -870,7 +941,7 @@ const ProjectsPage = () => {
 
                     {/* PRICE RANGE */}
                     <FilterCard
-                        title="Price Range"
+                        title={t('filters.priceRange')}
                         icon={FilterIcons.price}
                     >
                         <PriceRangeSlider
@@ -889,7 +960,7 @@ const ProjectsPage = () => {
 
                     {/* DEVELOPER FILTER */}
                     <FilterCard
-                        title="Developer"
+                        title={t('filters.developer')}
                         icon={FilterIcons.developer}
                     >
                         <ScrollableFilterList
@@ -902,10 +973,10 @@ const ProjectsPage = () => {
                             }))}
                             selectedId={filters.developer_id}
                             onSelect={id => handleSelectChange('developer_id', id)}
-                            placeholder="Search developer..."
-                            allLabel="All Developers"
+                            placeholder={t('filters.searchDeveloper')}
+                            allLabel={t('filters.allDevelopers')}
                             useModal={true}
-                            title="Developer"
+                            title={t('filters.developer')}
                             icon={FilterIcons.developer}
                         />
                     </FilterCard>
@@ -976,7 +1047,7 @@ const ProjectsPage = () => {
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-gray-200 md:border-gray-100 dark:border-white/10 bg-white dark:bg-dashboard-card">
-                            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">Filter Settings</h3>
+                            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">{t('filters.filterSettings')}</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -987,7 +1058,10 @@ const ProjectsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable overscroll-contain">
+                        <div
+                            onScroll={handleSidebarScroll}
+                            className={`flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 overscroll-contain sidebar-scroll-container ${isSidebarScrolling ? 'is-scrolling' : ''}`}
+                        >
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
@@ -1005,14 +1079,14 @@ const ProjectsPage = () => {
                                     onClick={clearFilters}
                                     className="order-1 px-6 py-3.5 md:px-5 md:py-2.5 min-h-[48px] md:min-h-[40px] rounded-full text-[13px] md:text-[12px] font-bold text-red-600 dark:text-red-500 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
                                 >
-                                    Clear all
+                                    {t('filters.clearAll')}
                                 </button>
                             )}
                             <button
                                 onClick={applyFilters}
                                 className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[13px] md:text-[12px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 min-h-[48px] md:min-h-[40px]"
                             >
-                                <span>Show {total} {total === 1 ? 'project' : 'projects'}</span>
+                                <span>{t((total === 1) ? 'filters.showProject' : 'filters.showProjects', { count: total })}</span>
                             </button>
                         </div>
                     </aside>
@@ -1026,31 +1100,82 @@ const ProjectsPage = () => {
                 {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
                 <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-card py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                            <BsSearch className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                            <input
-                                type="search"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
-                                placeholder="Search projects & filters"
-                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 bg-transparent border-none focus:outline-none focus:ring-0"
-                                aria-label="Search projects"
-                            />
+                        <div
+                            onClick={() => setIsMobileSearchFocused(true)}
+                            className="flex-1 min-w-0 flex items-center gap-2 min-h-[48px] pl-4 pr-4 py-1.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer"
+                        >
+                            <BsSearch className="w-[16px] h-[16px] text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            <div className="flex-1 min-w-0 py-1 text-[14px] font-medium text-gray-400 dark:text-gray-500 truncate">
+                                {searchTerm || "Search projects & filters"}
+                            </div>
                         </div>
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all bg-white dark:bg-white/5 shadow-sm ${activeFiltersList.length > 0 ? 'border border-gray-200 dark:border-white/10' : 'border border-transparent'}`}
+                            className="flex-shrink-0 relative w-[48px] h-[48px] rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all bg-white dark:bg-white/5 shadow-sm border border-gray-200 dark:border-white/10"
                             aria-label="Open filters"
                         >
-                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[26px] h-[26px]' : 'w-8 h-8'}`} />
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[20px] h-[20px]' : 'w-6 h-6'}`} />
                             {activeFiltersList.length > 0 && (
-                                <span className="absolute -top-[2px] -right-[2px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[12px] font-bold border border-gray-200 dark:border-white/10 leading-none">
+                                <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border border-gray-200 dark:border-white/10 leading-none">
                                     {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
                                 </span>
                             )}
                         </button>
+
+                        {/* Language Selector (Mobile Only) */}
+                        <div className="relative flex-shrink-0" ref={langMenuRef}>
+                            <button
+                                type="button"
+                                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                                className="w-[48px] h-[48px] rounded-full flex items-center justify-center bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 active:scale-[0.98] transition-all duration-300 ease-out hover:shadow-md overflow-hidden"
+                                style={{ borderRadius: '9999px' }}
+                            >
+                                <img
+                                    src={
+                                        currentLang === 'en'
+                                            ? 'https://flagcdn.com/us.svg'
+                                            : currentLang === 'mm'
+                                            ? 'https://flagcdn.com/mm.svg'
+                                            : 'https://flagcdn.com/cn.svg'
+                                    }
+                                    alt=""
+                                    className="w-[36px] h-[36px] rounded-full object-cover scale-110"
+                                />
+                            </button>
+                            {langMenuOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-[148px] bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md rounded-[20px] border border-gray-100 dark:border-white/10 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.12)] py-2 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right overflow-hidden z-[220]">
+                                    <div className="px-1.5 space-y-1">
+                                        {[
+                                            { code: 'en', flagUrl: 'https://flagcdn.com/us.svg', label: 'English' },
+                                            { code: 'mm', flagUrl: 'https://flagcdn.com/mm.svg', label: 'Myanmar' },
+                                            { code: 'zh', flagUrl: 'https://flagcdn.com/cn.svg', label: 'Chinese' }
+                                        ].map((lang) => (
+                                            <button
+                                                key={lang.code}
+                                                type="button"
+                                                onClick={() => {
+                                                    i18n.changeLanguage(lang.code);
+                                                    localStorage.setItem('preferredLanguage', lang.code);
+                                                    setLangMenuOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-left transition-all active:scale-[0.97] duration-200 ${
+                                                    currentLang === lang.code
+                                                        ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 font-semibold shadow-sm'
+                                                        : 'text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5'
+                                                 }`}
+                                                style={{ borderRadius: '12px' }}
+                                            >
+                                                <div className="w-[20px] h-[20px] rounded-full overflow-hidden border border-gray-200/60 dark:border-white/10 flex-shrink-0 shadow-sm">
+                                                    <img src={lang.flagUrl} alt="" className="w-full h-full object-cover scale-105" />
+                                                </div>
+                                                <span className="leading-none">{lang.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 {/* Header Mobile */}
@@ -1301,6 +1426,178 @@ const ProjectsPage = () => {
                 onApply={handleStationSelect}
             />
 
+            {isMobileSearchFocused && (
+                <div className="lg:hidden fixed inset-0 z-[250] bg-white dark:bg-dashboard-dark flex flex-col animate-in fade-in duration-200">
+                    {/* Header */}
+                    <div className={`flex-shrink-0 px-4 py-3.5 border-b flex items-center gap-3 bg-white dark:bg-dashboard-card transition-all duration-200 ${
+                        isMobileSearchScrolled 
+                            ? 'border-gray-100 dark:border-white/10 shadow-sm' 
+                            : 'border-transparent'
+                    }`}>
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileSearchFocused(false)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 active:bg-gray-100 dark:active:bg-white/10 transition-all"
+                        >
+                            <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-white" strokeWidth={2.5} />
+                        </button>
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[48px] pl-4 pr-4 py-1.5 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                            <BsSearch className="w-[16px] h-[16px] text-gray-500 flex-shrink-0" />
+                            <input
+                                autoFocus
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        saveRecentSearch(searchTerm);
+                                        setIsMobileSearchFocused(false);
+                                    }
+                                }}
+                                placeholder="Search projects & filters"
+                                className="flex-1 min-w-0 py-1 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
+                            />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchTerm('')}
+                                    className="p-1 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600"
+                                >
+                                    <XMarkIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Scrollable Suggestions content */}
+                    <div 
+                        onScroll={(e) => setIsMobileSearchScrolled(e.target.scrollTop > 0)}
+                        className="flex-1 overflow-y-auto p-5 space-y-6"
+                    >
+                        {searchTerm ? (
+                            <div className="space-y-4">
+                                <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.matchingProjects', 'Matching Projects')}</h3>
+                                {searchResults.length > 0 ? (
+                                    <div className="divide-y divide-gray-100 dark:divide-white/10">
+                                        {searchResults.map((project) => {
+                                            const featuredImage = (project.media && Array.isArray(project.media) && project.media.length > 0)
+                                                ? getMediaUrl(project.media.find(m => m.type === 'image' || !m.type)?.url || project.media[0])
+                                                : getMediaUrl(project.cover_image) || '/placeholder-image.jpg';
+                                            return (
+                                                <div
+                                                    key={project.id}
+                                                    onClick={() => handleResultClick(project)}
+                                                    className="flex items-center gap-4 py-3 cursor-pointer group active:opacity-75 transition-all"
+                                                >
+                                                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-100/50 dark:border-white/10">
+                                                        <img
+                                                            src={featuredImage}
+                                                            alt={project.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[14px] font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary-600 transition-colors">
+                                                            {project.name}
+                                                        </h4>
+                                                        <p className="text-[13px] text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                                                            {project.developer?.name || 'Unknown Developer'}
+                                                        </p>
+                                                        <p className="text-[11px] text-gray-500 dark:text-gray-500 mt-0.5 flex items-center gap-1.5">
+                                                            <span>{formatType(project.project_type)}</span>
+                                                            <span>·</span>
+                                                            <span>{formatStatus(project.status)}</span>
+                                                            {project.district && (
+                                                                <>
+                                                                    <span>·</span>
+                                                                    <span>{project.district}</span>
+                                                                </>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">{t('filters.noProjects', 'No projects match your search')}</p>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                {/* Recent Searches */}
+                                {recentSearches.length > 0 && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.recentSearches', 'Recent Searches')}</h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setRecentSearches([]);
+                                                    localStorage.removeItem('project_recent_searches');
+                                                }}
+                                                className="text-[12px] text-primary-600 font-semibold"
+                                            >
+                                                {t('filters.clear', 'Clear')}
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {recentSearches.map((text, idx) => (
+                                                <button
+                                                    key={`recent-${idx}`}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSearchTerm(text);
+                                                        saveRecentSearch(text);
+                                                        setIsMobileSearchFocused(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 py-3 border-b border-gray-50 dark:border-white/5 text-left active:opacity-75"
+                                                >
+                                                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span className="text-[14px] text-gray-700 dark:text-gray-200 font-medium">{text}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quick Suggestions */}
+                                <div className="space-y-3">
+                                    <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.suggestions', 'Suggestions')}</h3>
+                                    <div className="space-y-1">
+                                        {[
+                                            { label: 'BTS / MRT Transit Map', tag: 'transit' },
+                                            { label: 'Condo Projects', tag: 'Condo', filterKey: 'project_type', filterVal: 'condo' },
+                                            { label: 'House Projects', tag: 'House', filterKey: 'project_type', filterVal: 'house' },
+                                            { label: 'Active Projects', tag: 'active', filterKey: 'status', filterVal: 'active' }
+                                        ].map((sug) => (
+                                            <button
+                                                key={sug.tag}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (sug.filterKey) {
+                                                        handleFilterChange(sug.filterKey, sug.filterVal);
+                                                    } else if (sug.tag === 'transit') {
+                                                        setSearchTerm('BTS');
+                                                    }
+                                                    saveRecentSearch(sug.label);
+                                                    setIsMobileSearchFocused(false);
+                                                }}
+                                                className="w-full flex items-center justify-between py-3 border-b border-gray-50 dark:border-white/5 text-left active:opacity-75"
+                                            >
+                                                <span className="text-[14px] text-gray-700 dark:text-gray-200 font-medium">{t('filters.suggestion_' + sug.tag, sug.label)}</span>
+                                                <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

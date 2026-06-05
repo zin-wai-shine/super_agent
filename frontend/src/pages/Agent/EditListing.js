@@ -340,7 +340,11 @@ const EditListing = () => {
             // Reset form with listing data
             reset({
                 title: listing.title,
+                title_my: listing.title_my || '',
+                title_zh: listing.title_zh || '',
                 description: listing.description,
+                description_my: listing.description_my || '',
+                description_zh: listing.description_zh || '',
                 price: listing.price,
                 bedrooms: listing.bedrooms,
                 bathrooms: listing.bathrooms,
@@ -474,7 +478,11 @@ const EditListing = () => {
         try {
             await agentApi.updateListing(id, {
                 title: data.title,
+                title_my: data.title_my,
+                title_zh: data.title_zh,
                 description: data.description,
+                description_my: data.description_my,
+                description_zh: data.description_zh,
                 property_type: data.property_type?.value || data.property_type,
                 listing_type: data.listing_type?.value || data.listing_type,
                 station_id: data.station_id?.value || data.station_id || null,
@@ -759,6 +767,33 @@ const EditListing = () => {
                             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="input-label flex items-center gap-2">
+                                    <span>Title (Myanmar)</span>
+                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Auto AI Translated</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="Leave empty for auto-translation"
+                                    {...register('title_my')}
+                                />
+                            </div>
+                            <div>
+                                <label className="input-label flex items-center gap-2">
+                                    <span>Title (Chinese)</span>
+                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Auto AI Translated</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="Leave empty for auto-translation"
+                                    {...register('title_zh')}
+                                />
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label className="input-label">Property Type</label>
@@ -849,6 +884,48 @@ const EditListing = () => {
                                         }}
                                         className="bg-white dark:bg-gray-900 rounded-xl"
                                         placeholder="Describe the property features, amenities, and unique selling points..."
+                                    />
+                                )}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="input-label flex items-center gap-2">
+                                <span>Description (Myanmar)</span>
+                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Auto AI Translated</span>
+                            </label>
+                            <Controller
+                                name="description_my"
+                                control={control}
+                                render={({ field }) => (
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
+                                        modules={{ toolbar: [['bold', 'italic'], ['clean']] }}
+                                        className="bg-white dark:bg-gray-900 rounded-xl"
+                                        placeholder="Leave empty to let AI translate automatically..."
+                                    />
+                                )}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="input-label flex items-center gap-2">
+                                <span>Description (Chinese)</span>
+                                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Auto AI Translated</span>
+                            </label>
+                            <Controller
+                                name="description_zh"
+                                control={control}
+                                render={({ field }) => (
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
+                                        modules={{ toolbar: [['bold', 'italic'], ['clean']] }}
+                                        className="bg-white dark:bg-gray-900 rounded-xl"
+                                        placeholder="Leave empty to let AI translate automatically..."
                                     />
                                 )}
                             />

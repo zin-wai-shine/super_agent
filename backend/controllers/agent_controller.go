@@ -11,6 +11,7 @@ import (
 	"super_real_estate/config"
 	"super_real_estate/middleware"
 	"super_real_estate/models"
+	"super_real_estate/services"
 	"super_real_estate/utils"
 
 	"github.com/gin-gonic/gin"
@@ -128,6 +129,27 @@ func (ac *AgentController) CreateListing(c *gin.Context) {
 	listing.AgentID = agentID
 	listing.CreatedBy = userID
 
+	// Auto-Translate missing fields
+	aiService := services.NewAIService(ac.db)
+	if listing.TitleMY == "" && listing.Title != "" {
+		if t, err := aiService.Translate(listing.Title, "my"); err == nil { listing.TitleMY = t }
+	}
+	if listing.TitleZH == "" && listing.Title != "" {
+		if t, err := aiService.Translate(listing.Title, "zh"); err == nil { listing.TitleZH = t }
+	}
+	if listing.DescriptionMY == "" && listing.Description != "" {
+		if t, err := aiService.Translate(listing.Description, "my"); err == nil { listing.DescriptionMY = t }
+	}
+	if listing.DescriptionZH == "" && listing.Description != "" {
+		if t, err := aiService.Translate(listing.Description, "zh"); err == nil { listing.DescriptionZH = t }
+	}
+	if listing.FeaturesMY == "" && listing.Features != "" && listing.Features != "[]" {
+		if t, err := aiService.Translate(listing.Features, "my"); err == nil { listing.FeaturesMY = t }
+	}
+	if listing.FeaturesZH == "" && listing.Features != "" && listing.Features != "[]" {
+		if t, err := aiService.Translate(listing.Features, "zh"); err == nil { listing.FeaturesZH = t }
+	}
+
 	if err := ac.db.Create(&listing).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create listing"})
 		return
@@ -199,6 +221,27 @@ func (ac *AgentController) UpdateListing(c *gin.Context) {
 	if err := c.ShouldBindJSON(&listing); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Auto-Translate missing fields
+	aiService := services.NewAIService(ac.db)
+	if listing.TitleMY == "" && listing.Title != "" {
+		if t, err := aiService.Translate(listing.Title, "my"); err == nil { listing.TitleMY = t }
+	}
+	if listing.TitleZH == "" && listing.Title != "" {
+		if t, err := aiService.Translate(listing.Title, "zh"); err == nil { listing.TitleZH = t }
+	}
+	if listing.DescriptionMY == "" && listing.Description != "" {
+		if t, err := aiService.Translate(listing.Description, "my"); err == nil { listing.DescriptionMY = t }
+	}
+	if listing.DescriptionZH == "" && listing.Description != "" {
+		if t, err := aiService.Translate(listing.Description, "zh"); err == nil { listing.DescriptionZH = t }
+	}
+	if listing.FeaturesMY == "" && listing.Features != "" && listing.Features != "[]" {
+		if t, err := aiService.Translate(listing.Features, "my"); err == nil { listing.FeaturesMY = t }
+	}
+	if listing.FeaturesZH == "" && listing.Features != "" && listing.Features != "[]" {
+		if t, err := aiService.Translate(listing.Features, "zh"); err == nil { listing.FeaturesZH = t }
 	}
 
 	if err := ac.db.Save(&listing).Error; err != nil {

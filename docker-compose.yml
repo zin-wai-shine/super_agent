@@ -38,6 +38,7 @@ services:
       - UPLOAD_PATH=/app/uploads
       - GIN_MODE=debug
       - MAIN_DOMAIN=srv1534108.hstgr.cloud
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads

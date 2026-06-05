@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collectionApi } from '../../services/api';
 import CollectionCard from './CollectionCard';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
+import { useTranslation } from 'react-i18next';
 import { 
     ChevronLeftIcon, 
     ChevronRightIcon, 
@@ -32,6 +34,7 @@ const CollectionGroup = ({
     initialPath,
     onNavigate 
 }) => {
+    const { t } = useTranslation();
     const scrollRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
@@ -171,7 +174,7 @@ const CollectionGroup = ({
                         </div>
                         <div className="px-1">
                             <div className="h-4" /> 
-                            <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-tight">See all</h3>
+                            <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-tight">{t('listing.seeAll')}</h3>
                         </div>
                     </div>
                 </div>
@@ -181,6 +184,8 @@ const CollectionGroup = ({
 };
 
 const IconCategoryGroup = ({ title, categories, onNavigate }) => {
+    const tDynamic = useDynamicTranslation();
+    const { t } = useTranslation();
     const categoriesScrollRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
@@ -284,7 +289,7 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                                     <Icon className="w-5 h-5" />
                                 </div>
                                 <span className="text-[14px] font-medium text-[#222222] dark:text-white whitespace-nowrap">
-                                    {category.name}
+                                    {tDynamic(category, 'name')}
                                 </span>
                             </div>
                         </div>
@@ -301,7 +306,7 @@ const IconCategoryGroup = ({ title, categories, onNavigate }) => {
                                 <FiGrid className="w-5 h-5" />
                             </div>
                             <span className="text-[14px] font-semibold text-white dark:text-white whitespace-nowrap">
-                                See all
+                                {t('listing.seeAll')}
                             </span>
                         </div>
                     </div>
@@ -328,6 +333,7 @@ const CollectionBar = ({
     initialPath = '/listings'
 }) => {
     const navigate = useNavigate();
+    const tDynamic = useDynamicTranslation();
     
     // Quick-mount sync cache check
     const [collections, setCollections] = useState(() => {
@@ -409,7 +415,7 @@ const CollectionBar = ({
                             return (
                                 <IconCategoryGroup
                                     key={parent.id}
-                                    title={parent.name}
+                                    title={tDynamic(parent, 'name')}
                                     categories={children}
                                     onNavigate={navigate}
                                 />
@@ -418,7 +424,7 @@ const CollectionBar = ({
                             return (
                                 <CollectionGroup
                                     key={parent.id}
-                                    title={parent.name}
+                                    title={tDynamic(parent, 'name')}
                                     groupCollections={children}
                                     selectedId={selectedId}
                                     onSelectCollection={onSelectCollection}

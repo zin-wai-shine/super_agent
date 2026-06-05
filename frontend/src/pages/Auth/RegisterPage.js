@@ -6,9 +6,11 @@ import { BuildingOfficeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/o
 import { useTenant } from '../../contexts/TenantContext';
 import { getMediaUrl } from '../../utils/media';
 import api from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 
 const RegisterPage = () => {
+    const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { register: registerUser, error: authError } = useAuth();
@@ -77,8 +79,8 @@ const RegisterPage = () => {
                 {/* Card — mobile: larger fonts and inputs; md: default */}
                 <div className="p-6 md:p-8">
                     <div className="text-center mb-6 md:mb-8">
-                        <h1 className="text-[28px] md:text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
-                        <p className="text-base md:text-sm text-gray-500">Start exploring properties today</p>
+                        <h1 className="text-[28px] md:text-2xl font-bold text-gray-900 mb-2">{t('authPages.createAccountHeader')}</h1>
+                        <p className="text-base md:text-sm text-gray-500">{t('authPages.startExploring')}</p>
                     </div>
 
                     {authError && (
@@ -93,14 +95,14 @@ const RegisterPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="firstName" className="block text-base md:text-sm font-medium text-gray-700 mb-2">
-                                    First name
+                                    {t('authPages.firstNameLabel')}
                                 </label>
                                 <input
                                     id="firstName"
                                     type="text"
                                     className={`w-full px-4 py-3 md:py-2 text-base md:text-sm min-h-[52px] md:min-h-[44px] bg-white border rounded-full border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.firstName ? 'border-red-300' : ''}`}
                                     placeholder="John"
-                                    {...register('firstName', { required: 'Required' })}
+                                    {...register('firstName', { required: t('authPages.required') })}
                                 />
                                 {errors.firstName && (
                                     <p className="mt-1 text-sm text-red-500">{errors.firstName.message}</p>
@@ -108,14 +110,14 @@ const RegisterPage = () => {
                             </div>
                             <div>
                                 <label htmlFor="lastName" className="block text-base md:text-sm font-medium text-gray-700 mb-2">
-                                    Last name
+                                    {t('authPages.lastNameLabel')}
                                 </label>
                                 <input
                                     id="lastName"
                                     type="text"
                                     className={`w-full px-4 py-3 md:py-2 text-base md:text-sm min-h-[52px] md:min-h-[44px] bg-white border rounded-full border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.lastName ? 'border-red-300' : ''}`}
                                     placeholder="Doe"
-                                    {...register('lastName', { required: 'Required' })}
+                                    {...register('lastName', { required: t('authPages.required') })}
                                 />
                                 {errors.lastName && (
                                     <p className="mt-1 text-sm text-red-500">{errors.lastName.message}</p>
@@ -126,7 +128,7 @@ const RegisterPage = () => {
                         {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-base md:text-sm font-medium text-gray-700 mb-2">
-                                Email address
+                                {t('authPages.emailLabel')}
                             </label>
                             <input
                                 id="email"
@@ -135,10 +137,10 @@ const RegisterPage = () => {
                                 className={`w-full px-4 py-3 md:py-2 text-base md:text-sm min-h-[52px] md:min-h-[44px] bg-white border rounded-full border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.email ? 'border-red-300' : ''}`}
                                 placeholder="you@example.com"
                                 {...register('email', {
-                                    required: 'Email is required',
+                                    required: t('authPages.emailRequired'),
                                     pattern: {
                                         value: /^\S+@\S+$/i,
-                                        message: 'Invalid email address',
+                                        message: t('authPages.invalidEmail'),
                                     },
                                 })}
                             />
@@ -150,7 +152,7 @@ const RegisterPage = () => {
                         {/* Password */}
                         <div>
                             <label htmlFor="password" className="block text-base md:text-sm font-medium text-gray-700 mb-2">
-                                Password
+                                {t('authPages.passwordLabel')}
                             </label>
                             <div className="relative">
                                 <input
@@ -159,10 +161,10 @@ const RegisterPage = () => {
                                     className={`w-full px-4 py-3 md:py-2 pr-12 text-base md:text-sm min-h-[52px] md:min-h-[44px] bg-white border rounded-full border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.password ? 'border-red-300' : ''}`}
                                     placeholder="••••••••"
                                     {...register('password', {
-                                        required: 'Password is required',
+                                        required: t('authPages.passwordRequired'),
                                         minLength: {
                                             value: 8,
-                                            message: 'Password must be at least 8 characters',
+                                            message: t('authPages.passwordMinLength'),
                                         },
                                     })}
                                 />
@@ -186,7 +188,7 @@ const RegisterPage = () => {
                         {/* Confirm Password */}
                         <div>
                             <label htmlFor="confirmPassword" className="block text-base md:text-sm font-medium text-gray-700 mb-2">
-                                Confirm password
+                                {t('authPages.confirmPasswordLabel')}
                             </label>
                             <input
                                 id="confirmPassword"
@@ -194,9 +196,9 @@ const RegisterPage = () => {
                                 className={`w-full px-4 py-3 md:py-2 text-base md:text-sm min-h-[52px] md:min-h-[44px] bg-white border rounded-full border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.confirmPassword ? 'border-red-300' : ''}`}
                                 placeholder="••••••••"
                                 {...register('confirmPassword', {
-                                    required: 'Please confirm your password',
+                                    required: t('authPages.confirmPasswordRequired'),
                                     validate: (value) =>
-                                        value === password || 'Passwords do not match',
+                                        value === password || t('authPages.passwordsDoNotMatch'),
                                 })}
                             />
                             {errors.confirmPassword && (
@@ -216,10 +218,10 @@ const RegisterPage = () => {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
-                                    Creating account...
+                                    {t('authPages.creatingAccount')}
                                 </span>
                             ) : (
-                                'Create account'
+                                t('authPages.createAccount')
                             )}
                         </button>
 
@@ -229,7 +231,7 @@ const RegisterPage = () => {
                                 <div className="w-full border-t border-gray-200" />
                             </div>
                             <div className="relative flex justify-center">
-                                <span className="px-3 bg-gray-50 md:bg-white text-base md:text-sm text-gray-500">Or continue with</span>
+                                <span className="px-3 bg-gray-50 md:bg-white text-base md:text-sm text-gray-500">{t('authPages.orContinueWith')}</span>
                             </div>
                         </div>
                         
@@ -256,16 +258,16 @@ const RegisterPage = () => {
                                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
-                                <span>Continue with Google</span>
+                                <span>{t('authPages.continueWithGoogle')}</span>
                             </a>
                         </div>
                     </form>
 
                     <div className="mt-6 text-center">
                         <p className="text-base md:text-sm text-gray-500">
-                            Already have an account?{' '}
+                            {t('authPages.alreadyHaveAccount')}{' '}
                             <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
-                                Sign in
+                                {t('authPages.signIn')}
                             </Link>
                         </p>
                     </div>

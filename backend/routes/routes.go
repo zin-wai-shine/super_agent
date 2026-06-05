@@ -23,6 +23,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	googleAuthController := controllers.NewGoogleAuthController(db, cfg)
 	facebookAuthController := controllers.NewFacebookAuthController(db, cfg)
 	collectionController := controllers.NewCollectionController(db, cfg)
+	translationController := controllers.NewTranslationController(db)
 
 	// Public static files (Move before tenant middleware)
 	router.Static("/uploads", cfg.UploadPath)
@@ -121,6 +122,9 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 				// Appointment management (admin)
 				superAdmin.GET("/appointments", appointmentController.GetAllAppointments)
 				superAdmin.GET("/appointment-stats", appointmentController.GetAppointmentStats)
+
+				// System & Tools
+				superAdmin.POST("/system/migrate-translations", translationController.MigrateListings)
 			}
 
 			// Agent routes

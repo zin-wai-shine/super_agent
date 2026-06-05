@@ -4,6 +4,8 @@ import { collectionApi } from '../../services/api';
 import CollectionCard from '../../components/Listings/CollectionCard';
 import CollectionSkeleton from '../../components/ui/CollectionSkeleton';
 import AllCategoriesModal from '../../components/Listings/AllCategoriesModal';
+import { useTranslation } from 'react-i18next';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { FiGrid } from "react-icons/fi";
 import { HiOutlineQueueList } from "react-icons/hi2";
@@ -12,6 +14,8 @@ let globalCollectionsCache = null;
 let globalCategoriesCache = null;
 
 const CollectionsPage = () => {
+    const { t } = useTranslation();
+    const tDynamic = useDynamicTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const activeCategoryId = searchParams.get('category');
@@ -82,8 +86,8 @@ const CollectionsPage = () => {
     const activeCategoryName = useMemo(() => {
         // Look in both categories and all collections for the title
         const found = [...categories, ...collections].find(c => c.id === activeCategoryId);
-        return found ? found.name : null;
-    }, [categories, collections, activeCategoryId]);
+        return found ? tDynamic(found, 'name') : null;
+    }, [categories, collections, activeCategoryId, tDynamic]);
 
     return (
         <div className="bg-white dark:bg-dashboard-dark pb-24 lg:pb-20 min-h-screen">
@@ -108,7 +112,7 @@ const CollectionsPage = () => {
                             <div className="h-5 w-32 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                         ) : (
                             <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
-                                {activeCategoryName || categories[0]?.name || 'Popular Collections'}
+                                {activeCategoryName || (categories[0] ? tDynamic(categories[0], 'name') : t('collections.popularCollections'))}
                             </h1>
                         )}
                     </div>
@@ -122,12 +126,12 @@ const CollectionsPage = () => {
                     {collections.length === 0 && !loading ? (
                         <div className="text-center py-24 animate-fadeInUp">
                             <FiGrid className="mx-auto h-20 w-20 text-gray-200" />
-                            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">No collections found</h2>
+                            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">{t('collections.noCollectionsFound')}</h2>
                             <button
                                 onClick={() => navigate('/listings')}
                                 className="mt-8 inline-flex items-center px-8 py-3 rounded-full text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-dashboard-dark dark:hover:bg-gray-200 font-bold transition-all shadow-lg active:scale-95"
                             >
-                                Start Browsing
+                                {t('collections.startBrowsing')}
                             </button>
                         </div>
                     ) : (

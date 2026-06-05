@@ -22,6 +22,7 @@ import { formatDistance, formatBedrooms } from '../../utils/format';
 import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { BsHeart, BsFillHeartFill } from "react-icons/bs";
 import { IoSettingsOutline } from "react-icons/io5";
+import { useTranslation } from 'react-i18next';
 import { PiBuildingApartmentBold } from "react-icons/pi";
 
 const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w-[32px] h-[32px] md:w-[26px] md:h-[26px]" }) => {
@@ -99,6 +100,7 @@ const options = {
 };
 
 const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListingIds = [], highlightedMarkerListingId = null, openedMarkerId = null, onCardToggle, onCloseCard, markerType = 'price', isZoomedIn, formatPrice }) => {
+    const { t } = useTranslation();
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
     const isOpened = String(property.id) === String(openedMarkerId);
     const isHighlighted = String(property.id) === String(highlightedMarkerListingId);
@@ -198,7 +200,7 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                                 {/* Status Badge */}
                                 <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
                                     <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">
-                                        {isFeatured ? 'Featured' : (listingType === 'sale' ? 'For Sale' : 'For Rent')}
+                                        {isFeatured ? t('listing.featured', 'Featured') : (listingType === 'sale' ? t('listing.forSale', 'For Sale') : t('listing.forRent', 'For Rent'))}
                                     </span>
                                 </div>
 
@@ -237,12 +239,22 @@ const PropertyMarker = React.memo(({ property, onClick, onSaveClick, savedListin
                                 )}
                                 
                                 <p className="text-[14px] text-gray-400 font-normal">
-                                    {formatBedrooms(property.bedrooms)} · {property.bathrooms ?? '—'} Bath · {property.area ?? '—'} Sqm
+                                    {Number(property.bedrooms) <= 0 || isNaN(Number(property.bedrooms))
+                                        ? t('listing.studio', 'Studio')
+                                        : (Number(property.bedrooms) === 1
+                                            ? t('listing.bed', { count: 1 })
+                                            : t('listing.beds', { count: Number(property.bedrooms) }))} · {property.bathrooms !== null && property.bathrooms !== undefined
+                                                ? (Number(property.bathrooms) === 1
+                                                    ? t('listing.bath', { count: 1 })
+                                                    : t('listing.baths', { count: Number(property.bathrooms) }))
+                                                : '—'} · {property.area
+                                                    ? t('listing.sqm', { count: property.area })
+                                                    : '—'}
                                 </p>
 
                                 <div className="mt-1 flex items-baseline gap-1">
                                     <span className="text-[17px] font-semibold text-white">฿{priceDisplay}</span>
-                                    {listingType === 'rent' && <span className="text-[14px] text-gray-400 font-normal">/ month</span>}
+                                    {listingType === 'rent' && <span className="text-[14px] text-gray-400 font-normal">{t('listing.rentUnit', '/ month')}</span>}
                                 </div>
                             </div>
                         </div>
@@ -400,6 +412,7 @@ const PropertyClusterMarker = React.memo(({ properties, onClick, onSaveClick, sa
 
 // Helper component for expanded card content to avoid duplication
 const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCard, onClick, formatPrice }) => {
+    const { t } = useTranslation();
     const initialSaved = Array.isArray(savedListingIds) && savedListingIds.some((sid) => String(sid) === String(property.id));
     const isFeatured = property.is_featured === true || property.is_featured === '1';
     const listingType = property.listing_type || 'rent';
@@ -448,7 +461,7 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
                 {/* Status Badge */}
                 <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
                     <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-7 py-2.5 md:px-5 md:py-1.5 rounded-full text-[14px] md:text-[13px] font-bold text-gray-900 shadow-sm">
-                        {isFeatured ? 'Featured' : (listingType === 'sale' ? 'For Sale' : 'For Rent')}
+                        {isFeatured ? t('listing.featured', 'Featured') : (listingType === 'sale' ? t('listing.forSale', 'For Sale') : t('listing.forRent', 'For Rent'))}
                     </span>
                 </div>
 
@@ -487,12 +500,22 @@ const PropertyCardContent = ({ property, onSaveClick, savedListingIds, onCloseCa
                 )}
                 
                 <p className="text-[14px] text-gray-400 font-normal">
-                    {formatBedrooms(property.bedrooms)} · {property.bathrooms ?? '—'} Bath · {property.area ?? '—'} Sqm
+                    {Number(property.bedrooms) <= 0 || isNaN(Number(property.bedrooms))
+                        ? t('listing.studio', 'Studio')
+                        : (Number(property.bedrooms) === 1
+                            ? t('listing.bed', { count: 1 })
+                            : t('listing.beds', { count: Number(property.bedrooms) }))} · {property.bathrooms !== null && property.bathrooms !== undefined
+                                ? (Number(property.bathrooms) === 1
+                                    ? t('listing.bath', { count: 1 })
+                                    : t('listing.baths', { count: Number(property.bathrooms) }))
+                                : '—'} · {property.area
+                                    ? t('listing.sqm', { count: property.area })
+                                    : '—'}
                 </p>
 
                 <div className="mt-1 flex items-baseline gap-1">
                     <span className="text-[17px] font-semibold text-white">฿{priceDisplay}</span>
-                    {listingType === 'rent' && <span className="text-[14px] text-gray-400 font-normal">/ month</span>}
+                    {listingType === 'rent' && <span className="text-[14px] text-gray-400 font-normal">{t('listing.rentUnit', '/ month')}</span>}
                 </div>
             </div>
         </div>
@@ -532,6 +555,7 @@ const GoogleMapComponent = ({
     hideSyncButton = false,
     hideSettingsButton = false
 }) => {
+    const { t } = useTranslation();
     const isMobile = window.innerWidth < 768;
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const settingsRef = useRef(null);
@@ -1198,7 +1222,7 @@ const GoogleMapComponent = ({
                             {/* Desktop Settings Dropdown */}
                             {isSettingsOpen && (
                                 <div className="absolute bottom-0 right-[calc(100%+16px)] w-60 bg-[#222222]/85 backdrop-blur-3xl rounded-[24px] shadow-2xl border border-white/10 p-5 animate-in fade-in slide-in-from-right-2 duration-300">
-                                    <h4 className="text-[16px] font-bold text-white mb-5 px-1">Settings</h4>
+                                    <h4 className="text-[16px] font-bold text-white mb-5 px-1">{t('filters.settings', 'Settings')}</h4>
                                     <div className="flex flex-col gap-4">
                                         {/* Map Theme Toggle */}
                                         <div 
@@ -1215,7 +1239,7 @@ const GoogleMapComponent = ({
                                                 />
                                             </button>
                                             <span className="text-[14px] font-semibold text-white/90 group-hover:text-white transition-colors">
-                                                Modern Map Style
+                                                {t('filters.modernMapStyle', 'Modern Map Style')}
                                             </span>
                                         </div>
 
@@ -1234,7 +1258,7 @@ const GoogleMapComponent = ({
                                                 />
                                             </button>
                                             <span className="text-[14px] font-semibold text-white/90 group-hover:text-white transition-colors">
-                                                {useShortPrice ? 'Show as 1K' : 'Show as 1,000'}
+                                                {useShortPrice ? t('filters.showAs1K', 'Show as 1K') : t('filters.showAs1000', 'Show as 1,000')}
                                             </span>
                                         </div>
                                     </div>
@@ -1322,7 +1346,7 @@ const GoogleMapComponent = ({
                         </div>
                         
                         <div className="px-6 pb-10 pt-4 flex-1">
-                            <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-8 px-2">Settings</h3>
+                            <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-8 px-2">{t('filters.settings', 'Settings')}</h3>
                             
                             <div className="flex flex-col gap-6">
                                 {/* Toggle Switch Row 1 - Map Theme */}
@@ -1341,7 +1365,7 @@ const GoogleMapComponent = ({
                                             style={{ transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)' }}
                                         />
                                     </button>
-                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">Modern Map Style</span>
+                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">{t('filters.modernMapStyle', 'Modern Map Style')}</span>
                                 </div>
 
                                 {/* Toggle Switch Row 2 - Short Price */}
@@ -1360,7 +1384,7 @@ const GoogleMapComponent = ({
                                             style={{ transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)' }}
                                         />
                                     </button>
-                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">Show as 1K</span>
+                                    <span className="text-[15px] font-semibold text-gray-900 dark:text-white">{useShortPrice ? t('filters.showAs1K', 'Show as 1K') : t('filters.showAs1000', 'Show as 1,000')}</span>
                                 </div>
                             </div>
                         </div>

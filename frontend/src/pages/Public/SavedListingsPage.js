@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { getSavedListings } from '../../services/savedListingsApi';
 import ListingCard from '../../components/Listings/ListingCard';
 import ListingDetailModal from '../../components/Listings/ListingDetailModal';
@@ -14,6 +15,7 @@ import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 
 const GroupedSavedCard = ({ label, items, onClick }) => {
+    const { t } = useTranslation();
     if (!items || items.length === 0) return null;
 
     // Get first image for each item for the collage (Bedroom first priority)
@@ -87,9 +89,9 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
                 </div>
             </div>
             <div className="px-1 relative">
-                <h3 className="text-[17px] font-bold text-gray-900 dark:text-white leading-tight truncate">{label}</h3>
+                <h3 className="text-[17px] font-bold text-gray-900 dark:text-white leading-tight truncate">{t(`savedListings.${label.toLowerCase()}`, label)}</h3>
                 <p className="text-[14px] text-gray-500 font-medium">
-                    {items.length} {items.length === 1 ? 'place' : 'places'}
+                    {items.length === 1 ? t('savedListings.place', { count: items.length }) : t('savedListings.places', { count: items.length })}
                 </p>
             </div>
         </div>
@@ -98,6 +100,7 @@ const GroupedSavedCard = ({ label, items, onClick }) => {
 
 
 const SavedListingsPage = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -313,7 +316,7 @@ const SavedListingsPage = () => {
                         /* Skeletons for main grid view */
                         <div className="animate-fill-fast">
                             <div className="mb-10">
-                                <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
+                                <h1 className="text-[24px] font-semibold text-gray-900 dark:text-white tracking-tight">{t('savedListings.favorites')}</h1>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pointer-events-none">
                                 {[...Array(getSkeletonCount())].map((_, index) => (
@@ -356,7 +359,7 @@ const SavedListingsPage = () => {
                                                 {initialLoading || !activeGroup ? (
                                                     <div className="h-5 w-24 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                                                 ) : (
-                                                    <h2 className="text-[17px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw]">{currentGroup}</h2>
+                                                    <h2 className="text-[17px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw]">{t(`savedListings.${currentGroup.toLowerCase()}`, currentGroup)}</h2>
                                                 )}
                                             </div>
 
@@ -365,7 +368,7 @@ const SavedListingsPage = () => {
                                                 {initialLoading || !activeGroup ? (
                                                     <div className="h-4 w-14 bg-gray-100 dark:bg-white/10 rounded-full animate-pulse" />
                                                 ) : (
-                                                    <>{activeGroup?.items.length || 0} places</>
+                                                    <>{(activeGroup?.items.length ?? 0) === 1 ? t('savedListings.place', { count: activeGroup?.items.length }) : t('savedListings.places', { count: activeGroup?.items.length })}</>
                                                 )}
                                             </div>
                                         </div>
@@ -421,11 +424,11 @@ const SavedListingsPage = () => {
                                         </div>
 
                                         <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-                                            <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight">{currentGroup}</h1>
+                                            <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight">{t(`savedListings.${currentGroup.toLowerCase()}`, currentGroup)}</h1>
                                         </div>
 
                                         <div className="text-[14px] text-gray-500 font-medium z-10">
-                                            {activeGroup?.items.length || 0} listing{activeGroup?.items.length !== 1 ? 's' : ''} saved
+                                            {(activeGroup?.items.length ?? 0) === 1 ? t('savedListings.savedCount', { count: activeGroup?.items.length }) : t('savedListings.savedCount_plural', { count: activeGroup?.items.length })}
                                         </div>
                                     </div>
 
@@ -463,7 +466,7 @@ const SavedListingsPage = () => {
                                 /* Main Grouped View (Grid of Today/Yesterday/Earlier Categories) */
                                 <div className="animate-fill-fast">
                                     <div className="sticky top-0 z-40 bg-white dark:bg-dashboard-dark py-5 mb-5 sm:static sm:bg-transparent sm:py-0 sm:mb-10 -mx-6 px-6 md:mx-0 md:px-0 border-b border-gray-50 dark:border-white/5 sm:border-0">
-                                        <h1 className="text-[24px] font-bold text-gray-900 dark:text-white tracking-tight">Favorites</h1>
+                                        <h1 className="text-[24px] font-bold text-gray-900 dark:text-white tracking-tight">{t('savedListings.favorites')}</h1>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
                                         {(() => {
@@ -499,15 +502,15 @@ const SavedListingsPage = () => {
                         /* Empty State */
                         <div className="text-center py-24 animate-fadeInUp">
                             <HiOutlineHeart className="mx-auto h-20 w-20 text-gray-200 dark:text-white/10" />
-                            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">No favorites yet</h2>
+                            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">{t('savedListings.noFavoritesYet')}</h2>
                             <p className="mt-2 text-gray-500 max-w-sm mx-auto">
-                                Save properties you like by clicking the heart icon, and they'll show up here.
+                                {t('savedListings.saveInstructions')}
                             </p>
                             <button
                                 onClick={() => navigate('/listings')}
                                 className="mt-8 inline-flex items-center px-8 py-3 rounded-full text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-dashboard-dark dark:hover:bg-gray-200 font-bold transition-all shadow-lg active:scale-95"
                             >
-                                Start Browsing
+                                {t('collections.startBrowsing')}
                             </button>
                         </div>
                     )}

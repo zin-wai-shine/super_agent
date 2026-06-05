@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     MapPinIcon,
     BuildingOffice2Icon,
@@ -19,6 +20,7 @@ const QUICK_SUGGESTIONS = [
 ];
 
 const HeroFilter = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [filters, setFilters] = useState({ search: '', station_id: '' });
 
@@ -86,7 +88,7 @@ const HeroFilter = () => {
                             handleSearchSubmit({ search: e.currentTarget.value });
                         }
                     }}
-                    placeholder="Search location, name, neighborhood..."
+                    placeholder={t('filters.searchPlaceholder')}
                     className="absolute inset-0 w-full h-full bg-transparent border-none outline-none pl-12 pr-24 text-[14px] font-medium text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 rounded-t-[24px]"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-[5px]">
@@ -106,7 +108,7 @@ const HeroFilter = () => {
                 {/* Left: Quick Searches — Glass Sidebar */}
                 <div className="w-[320px] flex-shrink-0 flex flex-col bg-white/30 dark:bg-white/5 backdrop-blur-md border-r border-white/20 dark:border-white/5">
                     <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400/80 dark:text-gray-500 mb-4">Quick Searches</p>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400/80 dark:text-gray-500 mb-4">{t('filters.quickSearches')}</p>
                         <div className="space-y-1">
                             {QUICK_SUGGESTIONS.map(({ icon: Icon, label, tag }) => (
                                 <button
@@ -117,7 +119,7 @@ const HeroFilter = () => {
                                 >
                                     <div className="flex items-center gap-3">
                                         <Icon className="w-5 h-5 text-slate-400/70 dark:text-gray-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
-                                        <span className="text-[13px] text-slate-600/90 dark:text-gray-400 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{label}</span>
+                                        <span className="text-[13px] text-slate-600/90 dark:text-gray-400 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{t('filters.suggestion_' + tag, label)}</span>
                                     </div>
                                     <ChevronRightIcon className="w-4 h-4 text-slate-300 dark:text-gray-600 group-hover:text-primary-400 transition-all -translate-x-1 group-hover:translate-x-0" />
                                 </button>
@@ -126,7 +128,7 @@ const HeroFilter = () => {
                     </div>
                     <div className="px-6 py-4 bg-white/20 dark:bg-black/20 border-t border-white/10 dark:border-white/5 flex items-center gap-1.5 mt-auto">
                         <BsSearch className="w-4 h-4 text-slate-400/60 dark:text-gray-500" />
-                        <p className="text-[11px] text-slate-400/80 dark:text-gray-500 font-bold tracking-tight">Press Enter to search all results</p>
+                        <p className="text-[11px] text-slate-400/80 dark:text-gray-500 font-bold tracking-tight">{t('filters.pressEnter')}</p>
                     </div>
                 </div>
 
@@ -137,7 +139,7 @@ const HeroFilter = () => {
                             <div className="bg-primary-600 p-1.5 rounded-full shadow-lg shadow-primary-500/20">
                                 <MapIcon className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <span className="text-[11px] font-black text-slate-900/90 dark:text-white uppercase tracking-[0.15em]">Transit Explorer</span>
+                            <span className="text-[11px] font-black text-slate-900/90 dark:text-white uppercase tracking-[0.15em]">{t('filters.transitExplorer')}</span>
                         </div>
                     </div>
                     <TransitMapFilter

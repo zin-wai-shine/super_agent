@@ -462,10 +462,62 @@
    JS applies padding-right = scrollbar-width to body before adding this class,
    so the layout stays the same width. The scrollbar disappears behind the sidebar
    panel (which is fixed and covers the right edge) so no shift is visible. */
+html.filter-open,
 body.filter-open {
-  overflow: hidden;
   overscroll-behavior: none;
   touch-action: none;
+}
+
+/* Sidebar scrollbar container - overlay styling to prevent width/layout shift */
+.sidebar-scroll-container {
+  overflow-y: overlay !important; /* Webkit overlay scrollbar */
+  scrollbar-width: thin !important; /* Firefox width locked */
+  scrollbar-color: transparent transparent !important; /* Firefox color transition defaults */
+  transition: scrollbar-color 0.3s ease !important;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0) !important; /* Fully transparent by default */
+  border-radius: 9999px !important;
+  border: 1px solid transparent !important;
+  background-clip: padding-box !important;
+  transition: background-color 0.3s ease !important;
+}
+
+/* When scrolling, show custom styled scrollbar thumbs */
+.sidebar-scroll-container.is-scrolling {
+  scrollbar-color: rgba(34, 34, 34, 0.35) transparent !important;
+}
+
+.sidebar-scroll-container.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(34, 34, 34, 0.35) !important;
+}
+
+.sidebar-scroll-container.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 34, 34, 0.55) !important;
+}
+
+/* Dark mode sidebar scrollbar */
+.dark .sidebar-scroll-container.is-scrolling {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
+}
+
+.dark .sidebar-scroll-container.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.dark .sidebar-scroll-container.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45) !important;
 }
 
 @keyframes bounce-subtle {
@@ -833,10 +885,11 @@ body.filter-open {
 ::-webkit-scrollbar,
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
+#main-scroll-container::-webkit-scrollbar,
 #root::-webkit-scrollbar,
 *::-webkit-scrollbar {
-  width: 10px !important;
-  height: 10px !important;
+  width: 8px !important;
+  height: 8px !important;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -846,6 +899,7 @@ body::-webkit-scrollbar,
 ::-webkit-scrollbar-corner,
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track,
+#main-scroll-container::-webkit-scrollbar-track,
 #root::-webkit-scrollbar-track,
 *::-webkit-scrollbar-track {
   background: transparent !important;
@@ -854,27 +908,80 @@ body::-webkit-scrollbar-track,
   box-shadow: none !important;
 }
 
+/* Offset the viewport scrollbar track so the thumb starts below the header nav bar */
+@media (min-width: 768px) {
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track,
+  #main-scroll-container::-webkit-scrollbar-track {
+    border-top: 112px solid transparent !important;
+    background-clip: padding-box !important;
+  }
+}
+
+/* Default all scrollbar thumbs to completely transparent */
 ::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
+#main-scroll-container::-webkit-scrollbar-thumb,
 #root::-webkit-scrollbar-thumb,
 *::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3) !important;
-  background-clip: content-box !important;
-  border: 3px solid transparent !important;
+  background: rgba(0, 0, 0, 0) !important; /* Fully transparent by default */
+  background-clip: padding-box !important;
+  border: 2px solid transparent !important;
   border-radius: 100px !important;
+  transition: background-color 0.3s ease !important;
 }
 
-::-webkit-scrollbar-thumb:hover,
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5) !important;
-  background-clip: content-box !important;
+/* Page scrollbars: show when scrolling */
+html.is-scrolling::-webkit-scrollbar-thumb,
+body.is-scrolling::-webkit-scrollbar-thumb,
+html.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb,
+body.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.35) !important;
 }
 
-/* Firefox Support */
+html.is-scrolling::-webkit-scrollbar-thumb:hover,
+body.is-scrolling::-webkit-scrollbar-thumb:hover,
+html.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb:hover,
+body.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.55) !important;
+}
+
+/* Dark mode page scrollbar */
+.dark html.is-scrolling::-webkit-scrollbar-thumb,
+.dark body.is-scrolling::-webkit-scrollbar-thumb,
+.dark html.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb,
+.dark body.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.dark html.is-scrolling::-webkit-scrollbar-thumb:hover,
+.dark body.is-scrolling::-webkit-scrollbar-thumb:hover,
+.dark html.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb:hover,
+.dark body.is-scrolling #main-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Firefox support default */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+/* Firefox support when scrolling */
+html.is-scrolling,
+body.is-scrolling,
+html.is-scrolling #main-scroll-container,
+body.is-scrolling #main-scroll-container {
+  scrollbar-color: rgba(156, 163, 175, 0.35) transparent !important;
+}
+
+.dark html.is-scrolling,
+.dark body.is-scrolling,
+.dark html.is-scrolling #main-scroll-container,
+.dark body.is-scrolling #main-scroll-container {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
 }
 
 /* ── Dashboard Overrides ─────────────────────────────────────── 

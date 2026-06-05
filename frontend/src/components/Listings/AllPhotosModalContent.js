@@ -8,6 +8,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import Modal from '../ui/Modal';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 // Group images by room_type; treat empty as "Additional Photos". Order by PHOTO_ROOM_TYPES.
 function groupImagesByRoomType(images) {
@@ -29,8 +30,22 @@ function groupImagesByRoomType(images) {
     return { sections, flatImages };
 }
 
+const getRoomTypeTranslationKey = (title) => {
+    const map = {
+        'Bedroom': 'gallery.bedroom',
+        'Living Room': 'gallery.livingRoom',
+        'Dining Area': 'gallery.diningArea',
+        'Shared Full Bathroom': 'gallery.sharedFullBathroom',
+        'Laundry area': 'gallery.laundryArea',
+        'Exterior': 'gallery.exterior',
+        'Additional Photos': 'gallery.additionalPhotos'
+    };
+    return map[title] || title;
+};
+
 // Layer card: stacked overlapping thumbnails for a section (first 2–3 images)
 function LayerCard({ section, onTap, firstFlatIndex }) {
+    const { t } = useTranslation();
     const previews = section.images.slice(0, 3);
     const count = section.images.length;
     return (
@@ -62,8 +77,8 @@ function LayerCard({ section, onTap, firstFlatIndex }) {
                     );
                 })}
             </div>
-            <span className="text-sm md:text-base md:font-semibold text-gray-900 dark:text-white mt-2 block w-full truncate text-center">{section.title}</span>
-            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{count} photo{count !== 1 ? 's' : ''}</span>
+            <span className="text-sm md:text-base md:font-semibold text-gray-900 dark:text-white mt-2 block w-full truncate text-center">{t(getRoomTypeTranslationKey(section.title))}</span>
+            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{count === 1 ? t('gallery.photoCount', { count }) : t('gallery.photoCount_plural', { count })}</span>
         </button>
     );
 }
@@ -114,6 +129,7 @@ function getSectionTitleForImage(img) {
 }
 
 export default function AllPhotosModalContent({ images, initialIndex, onClose, isDesktop = false }) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const scrollRef = useRef(null);
     const sectionRefs = useRef({});
@@ -294,7 +310,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         </button>
 
                         <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
-                            {focusedSectionTitle}
+                            {t(getRoomTypeTranslationKey(focusedSectionTitle))}
                         </span>
 
                         <div className="w-[44px]" />
@@ -420,19 +436,19 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                 navigate('/');
                             }}
                             className="hidden lg:flex px-5 h-[44px] items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
-                            title="Go to Home"
+                            title={t('listing.goToHome')}
                         >
                             <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
-                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
+                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">{t('listing.goToHome')}</span>
                         </button>
                     </div>
                     <span className="absolute left-1/2 -translate-x-1/2 text-[16px] lg:text-[18px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none text-center">
-                        {activeSectionTitle || 'Photo tour'}
+                        {activeSectionTitle ? t(getRoomTypeTranslationKey(activeSectionTitle)) : t('gallery.photoTour')}
                     </span>
                     <div className="w-[44px]" />
                 </div>
             </header>
-
+ 
             <div ref={scrollRef} className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`} style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">
                     {isLoading ? (
@@ -441,7 +457,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         <div className="min-h-full md:flex md:flex-col">
                             <div className="md:flex-shrink-0 md:min-h-[30%]">
                                 <div className="px-4 md:px-8 lg:px-20 pt-5 pb-5 flex items-center justify-between relative">
-                                    {!isDesktop && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Photo tour</h1>}
+                                    {!isDesktop && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{t('gallery.photoTour')}</h1>}
                                 </div>
                                 <div className="pb-4 md:py-4">
                                     <div className="flex gap-4 overflow-x-auto px-4 md:px-8 lg:px-20 pb-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -499,7 +515,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                                 </div>
                                             </div>
                                             <div className="md:w-[30%] md:flex-shrink-0 px-4 mb-3 md:mb-0 md:pt-1 md:px-0 order-1 md:order-2 text-left md:sticky md:top-32 self-start">
-                                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{section.title}</h2>
+                                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{t(getRoomTypeTranslationKey(section.title))}</h2>
                                             </div>
                                         </div>
                                     );

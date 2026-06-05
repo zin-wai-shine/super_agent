@@ -22,6 +22,7 @@ import {
 import GoogleMapComponent from '../../components/Listings/GoogleMap';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import BookingSkeleton from '../../components/ui/BookingSkeleton';
 
@@ -33,6 +34,7 @@ const BookAppointment = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -157,11 +159,11 @@ const BookAppointment = () => {
     // --- Validation ---
     const validateForm = () => {
         const newErrors = {};
-        if (!form.full_name.trim()) newErrors.full_name = 'Required';
-        if (!form.email.trim()) newErrors.email = 'Required';
-        if (!form.phone.trim()) newErrors.phone = 'Required';
-        if (!form.preferred_date) newErrors.preferred_date = 'Required';
-        if (!form.preferred_time) newErrors.preferred_time = 'Required';
+        if (!form.full_name.trim()) newErrors.full_name = t('authPages.required');
+        if (!form.email.trim()) newErrors.email = t('authPages.required');
+        if (!form.phone.trim()) newErrors.phone = t('authPages.required');
+        if (!form.preferred_date) newErrors.preferred_date = t('authPages.required');
+        if (!form.preferred_time) newErrors.preferred_time = t('authPages.required');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -203,7 +205,7 @@ const BookAppointment = () => {
             setLockId(response.data.lock_id);
             setExpiresAt(new Date(response.data.expires_at));
         } catch (error) {
-            setErrors({ submit: error.response?.data?.error || 'Slot is no longer available' });
+            setErrors({ submit: error.response?.data?.error || t('bookingFlow.slotUnavailable') });
             setForm(prev => ({ ...prev, preferred_time: '' }));
             // Refresh slots
             if (form.preferred_date) {
@@ -224,7 +226,7 @@ const BookAppointment = () => {
                 setExpiresAt(null);
                 setTimeLeft(null);
                 setForm(prev => ({ ...prev, preferred_time: '' }));
-                setErrors({ submit: 'Your session has expired. Please select a time slot again.' });
+                setErrors({ submit: t('bookingFlow.sessionExpired') });
                 clearInterval(interval);
             } else {
                 const mins = Math.floor(diff / 1000 / 60);
@@ -250,16 +252,16 @@ const BookAppointment = () => {
             setSuccess(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
-            setErrors({ submit: error.response?.data?.error || 'Failed to book' });
+            setErrors({ submit: error.response?.data?.error || t('bookingFlow.failedToBook') });
         } finally {
             setSubmitting(false);
         }
     };
 
     if (loading) return <BookingSkeleton />;
-    if (!listing) return <div className="p-10 text-center">Listing not found</div>;
+    if (!listing) return <div className="p-10 text-center">{t('error.listingNotFound')}</div>;
 
-    const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const monthYear = calendarMonth.toLocaleDateString(i18n.language || 'en', { month: 'long', year: 'numeric' });
 
     // --- Success View ---
     if (success && bookedAppointment) {
@@ -289,7 +291,7 @@ const BookAppointment = () => {
                         <SolidCheckCircleIcon className="w-12 h-12 relative z-10 text-white" />
                     </div>
 
-                    <h2 className="text-[26px] sm:text-[32px] font-black text-gray-900 dark:text-white mb-8 tracking-tight leading-tight relative z-10">Appointment Successful!</h2>
+                    <h2 className="text-[26px] sm:text-[32px] font-black text-gray-900 dark:text-white mb-8 tracking-tight leading-tight relative z-10">{t('bookingFlow.successTitle')}</h2>
 
                     {/* Status badge */}
                     <div
@@ -297,16 +299,14 @@ const BookAppointment = () => {
                         style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 12%, transparent)', color: 'var(--primary-color)' }}
                     >
                         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-color)' }} />
-                        Pending Admin Confirmation
+                        {t('bookingFlow.pendingConfirmation')}
                     </div>
                 </div>
 
                 {/* Footer section */}
                 <div className="w-full max-w-md p-10 flex flex-col items-center bg-white/10 backdrop-blur-md dark:bg-dashboard-dark/20 mt-auto relative z-10">
                     <p className="text-base text-gray-600 dark:text-gray-400 mb-10 font-medium leading-relaxed text-center">
-                        We've received your request for <span className="text-gray-900 dark:text-white font-bold">{form.email}</span>.
-                        <br />
-                        The admin will confirm your appointment shortly.
+                        {t('bookingFlow.successDesc', { email: form.email })}
                     </p>
 
                     <Button
@@ -317,7 +317,7 @@ const BookAppointment = () => {
                             background: 'var(--primary-color)'
                         }}
                     >
-                        Return to Listings
+                        {t('bookingFlow.returnToListings')}
                     </Button>
                 </div>
             </div>
@@ -341,7 +341,7 @@ const BookAppointment = () => {
                     {/* Centered Title */}
                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
                         <span className="text-[16px] lg:text-[18px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
-                            Book Viewing
+                            {t('listing.bookViewing')}
                         </span>
                     </div>
 
@@ -360,7 +360,7 @@ const BookAppointment = () => {
                         {/* Logic: If 'both', show a sleek segmented control. If single, show a clean badge/header combo. */}
                         {listing.listing_type === 'both' ? (
                             <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
-                                <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">I want to</h3>
+                                <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">{t('bookingFlow.iWantTo')}</h3>
                                 <div className="bg-gray-100 dark:bg-white/5 p-1 rounded-full flex items-center">
                                     <button
                                         type="button"
@@ -368,7 +368,7 @@ const BookAppointment = () => {
                                         className={`flex-1 py-2 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'rent' ? 'bg-white dark:bg-white/10 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 text-[var(--primary-color)]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                                     >
                                         <HomeIcon className="w-4 h-4" />
-                                        For Rent
+                                        {t('bookingFlow.forRent')}
                                     </button>
                                     <button
                                         type="button"
@@ -376,7 +376,7 @@ const BookAppointment = () => {
                                         className={`flex-1 py-2 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 ${form.purpose === 'buy' ? 'bg-white dark:bg-white/10 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 text-[var(--primary-color)]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                                     >
                                         <BuildingOfficeIcon className="w-4 h-4" />
-                                        For Buy
+                                        {t('bookingFlow.forBuy')}
                                     </button>
                                 </div>
                             </div>
@@ -391,9 +391,9 @@ const BookAppointment = () => {
                                     {listing.listing_type === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                 </div>
                                 <div>
-                                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Viewing Type</div>
+                                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t('bookingFlow.viewingType')}</div>
                                     <div className="font-bold text-gray-900 dark:text-white text-sm">
-                                        {listing.listing_type === 'rent' ? 'Property for Rent' : 'Property for Sale'}
+                                        {listing.listing_type === 'rent' ? t('bookingFlow.propertyForRent') : t('bookingFlow.propertyForSale')}
                                     </div>
                                 </div>
                             </div>
@@ -401,7 +401,7 @@ const BookAppointment = () => {
 
                         {/* 2. Date & Time Selection */}
                         <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
-                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">Select Date & Time</h3>
+                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">{t('bookingFlow.selectDateTime')}</h3>
 
                             <div className="flex flex-col md:flex-row gap-8">
                                 {/* Calendar Side */}
@@ -415,7 +415,7 @@ const BookAppointment = () => {
                                     </div>
 
                                     <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                                        {t('bookingFlow.weekdays', 'S,M,T,W,T,F,S').split(',').map((d, i) => (
                                             <div key={i} className="text-xs font-bold text-gray-400 py-1">{d}</div>
                                         ))}
                                     </div>
@@ -498,7 +498,7 @@ const BookAppointment = () => {
                                                     style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
                                                     <span>{time}</span>
-                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">Unavailable</span>}
+                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">{t('bookingFlow.unavailable')}</span>}
                                                 </button>
                                             );
                                         })}
@@ -527,35 +527,35 @@ const BookAppointment = () => {
                                                     style={form.preferred_time === time ? { backgroundColor: 'var(--primary-color)', boxShadow: '0 4px 14px 0 var(--primary-color-light)' } : {}}
                                                 >
                                                     <span>{time}</span>
-                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">Unavailable</span>}
+                                                    {isLocked && <span className="text-[10px] font-bold mt-0.5">{t('bookingFlow.unavailable')}</span>}
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                    {errors.preferred_time && <p className="text-red-500 text-xs mt-2 text-center font-bold">Please select a time</p>}
+                                    {errors.preferred_time && <p className="text-red-500 text-xs mt-2 text-center font-bold">{t('bookingFlow.selectTimeError')}</p>}
 
                                 </div>
                             </div>
                         </div>
 
-                        {/* 3. User Details Form */}
+                        {/* 3. Your Details */}
                         <div className="bg-white dark:bg-dashboard-dark/40 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 p-6 transition-colors">
-                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">Your Details</h3>
+                            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">{t('bookingFlow.yourDetails')}</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Full Name</label>
+                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">{t('bookingFlow.fullName')}</label>
                                     <input
                                         type="text"
                                         value={form.full_name}
                                         onChange={e => setForm({ ...form, full_name: e.target.value })}
                                         className="w-full px-5 py-3.5 rounded-full bg-gray-50 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
-                                        placeholder="John Doe"
+                                        placeholder={t('bookingFlow.fullNamePlaceholder')}
                                         autoComplete="name"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Phone</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">{t('bookingFlow.phone')}</label>
                                         <input
                                             type="tel"
                                             value={form.phone}
@@ -566,7 +566,7 @@ const BookAppointment = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Email</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">{t('bookingFlow.email')}</label>
                                         <input
                                             type="email"
                                             value={form.email}
@@ -578,13 +578,13 @@ const BookAppointment = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">Message (Optional)</label>
+                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5 ml-1">{t('bookingFlow.messageOptional')}</label>
                                     <textarea
                                         rows={3}
                                         value={form.message}
                                         onChange={e => setForm({ ...form, message: e.target.value })}
                                         className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-[var(--primary-color)] focus:ring-0 transition-all font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
-                                        placeholder="Any special requests?"
+                                        placeholder={t('bookingFlow.messagePlaceholder')}
                                     />
                                 </div>
                             </div>
@@ -603,7 +603,7 @@ const BookAppointment = () => {
                                     className="w-full font-bold shadow-lg rounded-full py-4 text-base"
                                     style={{ boxShadow: '0 10px 20px -10px var(--primary-color)' }}
                                 >
-                                    Confirm Appointment
+                                    {t('bookingFlow.confirmAppointment')}
                                 </Button>
                             </div>
                         </div>
@@ -683,7 +683,7 @@ const BookAppointment = () => {
 
                                 <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    Booking Summary
+                                    {t('bookingFlow.bookingSummary')}
                                 </h3>
 
                                 <div className="flex items-start gap-4">
@@ -696,7 +696,7 @@ const BookAppointment = () => {
                                         {form.preferred_date ? (
                                             <>
                                                 <span className="text-[10px] items-center text-white/60 uppercase font-bold tracking-wider mb-px">
-                                                    {new Date(form.preferred_date).toLocaleDateString('en-US', { month: 'short' })}
+                                                    {new Date(form.preferred_date).toLocaleDateString(i18n.language || 'en', { month: 'short' })}
                                                 </span>
                                                 <span className="text-xl font-bold text-white leading-none">
                                                     {new Date(form.preferred_date).getDate()}
@@ -707,11 +707,11 @@ const BookAppointment = () => {
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs text-slate-400 mb-1 font-medium">Selected Date</div>
+                                        <div className="text-xs text-slate-400 mb-1 font-medium">{t('bookingFlow.selectedDate')}</div>
                                         <div className="font-bold text-lg text-white truncate">
                                             {form.preferred_date
-                                                ? new Date(form.preferred_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric' })
-                                                : <span className="opacity-50 italic font-normal text-sm">Select a date...</span>}
+                                                ? new Date(form.preferred_date).toLocaleDateString(i18n.language || 'en', { weekday: 'long', year: 'numeric' })
+                                                : <span className="opacity-50 italic font-normal text-sm">{t('bookingFlow.selectDatePlaceholder')}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -728,7 +728,7 @@ const BookAppointment = () => {
                                                 <ClockIcon className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Time</div>
+                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">{t('bookingFlow.time')}</div>
                                                 <div className={`font-bold text-sm ${form.preferred_time ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'}`}>
                                                     {form.preferred_time || '--:--'}
                                                 </div>
@@ -749,9 +749,9 @@ const BookAppointment = () => {
                                                 {form.purpose === 'rent' ? <HomeIcon className="w-5 h-5" /> : <BuildingOfficeIcon className="w-5 h-5" />}
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Type</div>
+                                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">{t('bookingFlow.purpose')}</div>
                                                 <div className="font-bold text-gray-900 dark:text-white text-sm">
-                                                    {form.purpose === 'rent' ? 'Rental Viewing' : 'Purchase Viewing'}
+                                                    {form.purpose === 'rent' ? t('bookingFlow.rentalViewing') : t('bookingFlow.purchaseViewing')}
                                                 </div>
                                             </div>
                                         </div>
@@ -764,12 +764,12 @@ const BookAppointment = () => {
                                     {(!form.preferred_date || !form.preferred_time) ? (
                                         <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 py-3 rounded-full border border-gray-100 dark:border-white/5 text-xs font-bold uppercase tracking-wide">
                                             <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                                            Pending Selection
+                                            {t('bookingFlow.pendingSelection')}
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10 py-3 rounded-full border border-emerald-100/50 dark:border-emerald-500/20 text-xs font-bold uppercase tracking-wide animate-in fade-in">
                                             <SolidCheckCircleIcon className="w-4 h-4" />
-                                            Ready to Book
+                                            {t('bookingFlow.readyToBook')}
                                         </div>
                                     )}
                                 </div>

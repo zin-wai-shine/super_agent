@@ -21,6 +21,7 @@ import { BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
+import { useTranslation } from 'react-i18next';
 import { getMediaUrl } from '../../utils/media';
 import { TbTrain, TbHandFinger } from "react-icons/tb";
 import { MdOutlineDirectionsTransit } from "react-icons/md";
@@ -28,6 +29,7 @@ import { MdOutlineDirectionsTransit } from "react-icons/md";
 import { saveListing, unsaveListing, checkIfSaved } from '../../services/savedListingsApi';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 import { formatDistance, formatBedrooms } from '../../utils/format';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
 
 const HeartButton = ({ isSaved, onClick, disabled, className, iconClassName = "w-[32px] h-[32px] md:w-[26px] md:h-[26px]" }) => {
     const [animate, setAnimate] = React.useState(false);
@@ -425,11 +427,14 @@ export const ListingImageSlider = ({ images, title, cardLink, arrowPadding = '3'
 };
 
 const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', showSave = true, to, onSaveToggle, initialSaved = false, cardClassName = '', index = 0 }) => {
+    const { t } = useTranslation();
+    const tDynamic = useDynamicTranslation();
     const isListView = viewMode === 'list';
     const {
-        id, title, price, listing_type, bedrooms, bathrooms, area, station_name,
+        id, price, listing_type, bedrooms, bathrooms, area, station_name,
         distance_to_station, line_color, station, media = [], is_featured, agent
     } = listing;
+    const title = tDynamic(listing, 'title');
 
     const safeMedia = Array.isArray(media) ? media : [];
     const featuredImage = getMediaUrl(safeMedia.find((m) => m.type === 'image')?.url);
@@ -530,7 +535,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                 )}
                             </div>
                             <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none">
-                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[11px] md:text-[12px] font-bold text-gray-900 shadow-sm">{listing_type === 'rent' ? 'For Rent' : 'For Sale'}</span>
+                                <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[11px] md:text-[12px] font-bold text-gray-900 shadow-sm">{listing_type === 'rent' ? t('listing.forRent') : t('listing.forSale')}</span>
                             </div>
                             {showSave && user?.role !== 'sub_agent' && (
                                 <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
@@ -542,7 +547,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <Link to={cardLink} className="block group/link">
                                 <h3 className="text-[16px] md:text-[13px] font-medium text-[#222222] dark:text-white line-clamp-1 leading-snug md:group-hover:text-primary-600 transition-colors">{title}</h3>
                                 <div className="mt-1 flex flex-col gap-0.5">
-                                    <p className="text-[16px] md:text-[13px] text-[#222222]/70 dark:text-gray-300 font-medium">{formatBedrooms(bedrooms)} · {bathrooms} Bath</p>
+                                    <p className="text-[16px] md:text-[13px] text-[#222222]/70 dark:text-gray-300 font-medium">{Number(bedrooms) <= 0 ? t('listing.studio') : t('listing.bed', { count: bedrooms })} · {t('listing.bath', { count: bathrooms })}</p>
                                 </div>
                             </Link>
                         </div>
@@ -568,7 +573,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             )}
                         </div>
                         <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-50 pointer-events-none animate-fill-med">
-                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[13px] md:text-[12px] font-bold text-gray-900 shadow-sm">{is_featured ? 'Featured' : (listing_type === 'rent' ? 'For Rent' : 'For Sale')}</span>
+                            <span className="bg-[#f0f0f0]/95 backdrop-blur-md border border-white/40 px-5 py-2 md:px-4 md:py-1 rounded-full text-[13px] md:text-[12px] font-bold text-gray-900 shadow-sm">{is_featured ? t('listing.featured') : (listing_type === 'rent' ? t('listing.forRent') : t('listing.forSale'))}</span>
                         </div>
                         {showSave && user?.role !== 'sub_agent' && (
                             <div className="absolute top-2 right-3.5 z-50 pointer-events-none">
@@ -589,10 +594,10 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                             <span className="truncate font-medium text-[#646464] dark:text-gray-300">{stationWithDistance}</span>
                         </div>
                     )}
-                    <p className="text-[16px] md:text-[14px] text-[#222222]/70 dark:text-gray-300 animate-fill-slow">{formatBedrooms(bedrooms)} · {bathrooms} Bath · {area} Sqm</p>
+                    <p className="text-[16px] md:text-[14px] text-[#222222]/70 dark:text-gray-300 animate-fill-slow">{Number(bedrooms) <= 0 ? t('listing.studio') : t('listing.bed', { count: bedrooms })} · {t('listing.bath', { count: bathrooms })} · {t('listing.sqm', { count: area })}</p>
                     <div className="mt-2 flex items-baseline gap-1 animate-fill-slow">
                         <span className="text-[16.5px] md:text-[14.5px] font-semibold text-[#222222] dark:text-white">฿{formatPrice(price)}</span>
-                        <span className="text-[14.5px] md:text-[13px] text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ month' : ''}</span>
+                        <span className="text-[14.5px] md:text-[13px] text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? t('listing.rentUnit') : ''}</span>
                     </div>
                 </Link>
             </div>
@@ -608,7 +613,7 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                         <div className="relative aspect-[4/3.8] w-40 sm:w-48 overflow-hidden rounded-[23px] flex-shrink-0">
                             <ListingImageSlider images={listingImages} title={title} cardLink={linkTo} shouldLoadFirst={isInView} onFirstImageReady={() => setIsFirstImageReady(true)} />
                             <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2 pointer-events-none">
-                                <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm"><span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span></div>
+                                <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm"><span className="text-[12px] font-semibold text-gray-900">{listing_type === 'sale' ? t('listing.forSale') : t('listing.forRent')}</span></div>
                             </div>
                             {showSave && user?.role !== 'sub_agent' && (
                                 <div className="absolute top-2 right-3.5 z-10 pointer-events-none">
@@ -638,13 +643,13 @@ const ListingCard = ({ listing = {}, viewMode = 'grid', priceFormat = 'short', s
                                     </div>
                                 )}
                                 <div className="flex gap-4 text-[16px] sm:text-sm text-[#222222]/70 dark:text-gray-300">
-                                    <span>{formatBedrooms(bedrooms)}</span>
-                                    <span>{bathrooms} Bath</span>
-                                    <span>{area} sqm</span>
+                                    <span>{Number(bedrooms) <= 0 ? t('listing.studio') : t('listing.bed', { count: bedrooms })}</span>
+                                    <span>{t('listing.bath', { count: bathrooms })}</span>
+                                    <span>{t('listing.sqm', { count: area })}</span>
                                 </div>
                             </div>
                             <div className="flex justify-between items-end">
-                                <p className="text-[16.5px] font-semibold text-[#222222] dark:text-white">฿{formatPrice(price)}<span className="text-[14.5px] font-normal text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? '/ month' : ''}</span></p>
+                                <p className="text-[16.5px] font-semibold text-[#222222] dark:text-white">฿{formatPrice(price)}<span className="text-[14.5px] font-normal text-[#222222]/60 dark:text-gray-400">{listing_type === 'rent' ? t('listing.rentUnit') : ''}</span></p>
                             </div>
                         </div>
                     </div>

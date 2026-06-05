@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShareIcon } from '@heroicons/react/24/outline';
 import ShareModal from './ShareModal';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 
 /**
@@ -15,6 +16,7 @@ import { toast } from 'react-toastify';
  * @param {boolean} showLabel - Whether to show the "Share" text
  */
 const PropertyShare = ({ property, className = "", showLabel = false, labelClassName = "", iconClassName = "" }) => {
+    const { t } = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleShare = async (e) => {
@@ -65,7 +67,7 @@ const PropertyShare = ({ property, className = "", showLabel = false, labelClass
                     <ShareIcon className={iconClassName || "w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-primary-600 transition-colors"} />
                     {showLabel && (
                         <span className={labelClassName || "text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors tracking-wide"}>
-                            Share
+                            {t('listing.share')}
                         </span>
                     )}
                 </div>

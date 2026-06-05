@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
+import ScrollToTop from './components/Common/ScrollToTop';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './contexts/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
@@ -103,9 +106,7 @@ const GuestRoute = ({ children }) => {
     return children;
 };
 
-import { Toaster } from 'react-hot-toast';
-import ScrollToTop from './components/Common/ScrollToTop';
-import { useEffect } from 'react';
+
 
 function App() {
     useEffect(() => {
@@ -130,6 +131,7 @@ function App() {
 }
 
 const AppRoutes = () => {
+    const { t } = useTranslation();
     const { isMainDomain, agent } = useTenant();
 
     // Handle invalid subdomain access
@@ -163,10 +165,9 @@ const AppRoutes = () => {
                             </div>
                         </div>
 
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Site Not Found</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">{t('error.siteNotFound')}</h1>
                         <p className="text-gray-600 mb-10 leading-relaxed text-sm">
-                            The agent portal you requested doesn't exist or might have moved.
-                            If you're an agent, check your subdomain settings in the master portal.
+                            {t('error.siteNotFoundDesc')}
                         </p>
 
                         <div className="space-y-4">
@@ -174,7 +175,7 @@ const AppRoutes = () => {
                                 href={`http://${process.env.REACT_APP_MAIN_DOMAIN || 'srv1534108.hstgr.cloud'}`}
                                 className="group relative flex items-center justify-center w-full px-8 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition-all duration-300 shadow-xl shadow-gray-200 hover:shadow-gray-300 transform hover:-translate-y-1 overflow-hidden"
                             >
-                                <span className="relative z-10">Back to Platform</span>
+                                <span className="relative z-10">{t('error.backToPlatform')}</span>
                                 <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white/10 opacity-40 group-hover:animate-shimmer" style={{ animation: 'shimmer 1.5s infinite' }}></div>
                             </a>
 

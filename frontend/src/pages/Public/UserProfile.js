@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Logo from '../../components/Common/Logo';
 import {
     ArrowLeftOnRectangleIcon,
@@ -18,6 +19,7 @@ import {
     KeyIcon,
     EyeIcon,
     EyeSlashIcon,
+    LanguageIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -145,6 +147,8 @@ const ProfileSkeleton = () => (
 
 /* ─── Component ─────────────────────────────────────────────── */
 const UserProfile = () => {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
     const { user, logout } = useAuth();
     const { theme } = useTheme();
     const { isMainDomain, agent } = useTenant();
@@ -197,10 +201,10 @@ const UserProfile = () => {
         const { success, error } = await updateProfile(profileForm);
         setIsSavingProfile(false);
         if (success) {
-            toast.success('Profile updated successfully');
+            toast.success(t('userProfile.profileUpdatedSuccess', 'Profile updated successfully'));
             setEditingField(null); // Return to list view
         } else {
-            toast.error(error || 'Failed to update profile');
+            toast.error(error || t('userProfile.profileUpdateFailed', 'Failed to update profile'));
         }
     };
 
@@ -209,24 +213,24 @@ const UserProfile = () => {
         
         const hasPassword = user?.has_password;
         if (hasPassword && !passwordForm.currentPassword) {
-            toast.error('Current password is required');
+            toast.error(t('userProfile.currentPasswordRequired', 'Current password is required'));
             return;
         }
         
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            toast.error('Passwords do not match');
+            toast.error(t('authPages.passwordsDoNotMatch', 'Passwords do not match'));
             return;
         }
         setIsSavingPassword(true);
         const { success, error } = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
         setIsSavingPassword(false);
         if (success) {
-            toast.success(hasPassword ? 'Password updated successfully' : 'Password set successfully');
+            toast.success(hasPassword ? t('userProfile.passwordUpdatedSuccess', 'Password updated successfully') : t('userProfile.passwordSetSuccess', 'Password set successfully'));
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
             if (activeSection === 'password') setActiveSection('profile');
             if (mobileView === 'password') setMobileView('menu');
         } else {
-            toast.error(error || 'Failed to change password');
+            toast.error(error || t('userProfile.passwordChangeFailed', 'Failed to change password'));
         }
     };
 
@@ -244,11 +248,11 @@ const UserProfile = () => {
 
     const handleCropSave = async () => {
         try {
-            toast.loading('Processing image...', { id: 'avatarUpload' });
+            toast.loading(t('userProfile.processingImage', 'Processing image...'), { id: 'avatarUpload' });
             const croppedImageBlob = await getCroppedImg(tempImage, croppedAreaPixels);
             
             if (!croppedImageBlob) {
-                throw new Error('Failed to crop image');
+                throw new Error(t('userProfile.failedToCropImage', 'Failed to crop image'));
             }
 
             // Create a File from the Blob so the backend identifies it correctly
@@ -265,13 +269,13 @@ const UserProfile = () => {
             if (success) {
                 setIsCropping(false);
                 setTempImage(null);
-                toast.success('Avatar updated', { id: 'avatarUpload' });
+                toast.success(t('userProfile.avatarUpdated', 'Avatar updated'), { id: 'avatarUpload' });
             } else {
-                throw new Error(error || 'Failed to update profile');
+                throw new Error(error || t('userProfile.profileUpdateFailed', 'Failed to update profile'));
             }
         } catch (err) {
             console.error('Crop save error:', err);
-            toast.error(err.message || 'Failed to update avatar', { id: 'avatarUpload' });
+            toast.error(err.message || t('userProfile.avatarUpdateFailed', 'Failed to update avatar'), { id: 'avatarUpload' });
         }
     };
 
@@ -306,12 +310,13 @@ const UserProfile = () => {
 
     // Desktop sidebar nav
     const navItems = [
-        { id: 'profile', label: 'Personal profile', icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
-        { id: 'password', label: user?.has_password ? 'Change Password' : 'Account Security', icon: <KeyIcon className="w-6 h-6" strokeWidth={2.5} /> },
-        { id: 'contact', label: 'Contact Support', icon: <InformationCircleIcon className="w-6 h-6" strokeWidth={2.5} /> },
-        { id: 'terms', label: 'Terms & Privacy', icon: <DocumentTextIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'profile', label: t('userProfile.personalProfile', 'Personal profile'), icon: <UserIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'password', label: user?.has_password ? t('userProfile.changePassword', 'Change Password') : t('userProfile.accountSecurity', 'Account Security'), icon: <KeyIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'language', label: t('userProfile.language', 'Language'), icon: <LanguageIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'contact', label: t('userProfile.contactSupport', 'Contact Support'), icon: <InformationCircleIcon className="w-6 h-6" strokeWidth={2.5} /> },
+        { id: 'terms', label: t('userProfile.termsPrivacy', 'Terms & Privacy'), icon: <DocumentTextIcon className="w-6 h-6" strokeWidth={2.5} /> },
         ...(isAgent ? [
-            { id: 'dashboard', label: 'Dashboard', icon: <Squares2X2Icon className="w-6 h-6" strokeWidth={2.5} /> },
+            { id: 'dashboard', label: t('userProfile.dashboard', 'Dashboard'), icon: <Squares2X2Icon className="w-6 h-6" strokeWidth={2.5} /> },
         ] : []),
     ];
 
@@ -339,16 +344,16 @@ const UserProfile = () => {
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Update your name</h2>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{t('userProfile.updateName', 'Update your name')}</h2>
                         </div>
 
                         <div className="space-y-6">
                             <p className="text-[15px] text-gray-500 leading-relaxed px-4">
-                                Please enter your name as it appears on your ID or passport.
+                                {t('userProfile.nameDesc', 'Please enter your name as it appears on your ID or passport.')}
                             </p>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="block text-[15px] text-gray-500 font-medium px-4">First name</label>
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.firstName', 'First name')}</label>
                                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                         <input 
                                             type="text"
@@ -359,7 +364,7 @@ const UserProfile = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="block text-[15px] text-gray-500 font-medium px-4">Last name</label>
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.lastName', 'Last name')}</label>
                                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                         <input 
                                             type="text"
@@ -383,9 +388,9 @@ const UserProfile = () => {
                             {isSavingProfile ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
+                                    {t('userProfile.saving', 'Saving...')}
                                 </>
-                            ) : 'Save'}
+                            ) : t('userProfile.save', 'Save')}
                         </button>
                     </div>
                 </div>
@@ -412,12 +417,12 @@ const UserProfile = () => {
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Phone number</h2>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{t('userProfile.phone', 'Phone number')}</h2>
                         </div>
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Contact number</label>
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.contactNumber', 'Contact number')}</label>
                                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="tel"
@@ -441,9 +446,9 @@ const UserProfile = () => {
                             {isSavingProfile ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
+                                    {t('userProfile.saving', 'Saving...')}
                                 </>
-                            ) : 'Save'}
+                            ) : t('userProfile.save', 'Save')}
                         </button>
                     </div>
                 </div>
@@ -470,19 +475,19 @@ const UserProfile = () => {
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">Line</h2>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{t('userProfile.line', 'Line')}</h2>
                         </div>
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Line ID or Phone</label>
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.lineLabel', 'Line ID or Phone')}</label>
                                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="text"
                                         value={profileForm.line}
                                         onChange={(e) => setProfileForm(prev => ({ ...prev, line: e.target.value }))}
                                         className="w-full bg-transparent border-none p-0 text-[18px] sm:text-[16px] font-medium text-gray-900 dark:text-white focus:ring-0 focus:outline-none"
-                                        placeholder="Enter your Line ID or Phone"
+                                        placeholder={t('userProfile.linePlaceholder', 'Enter your Line ID or Phone')}
                                     />
                                 </div>
                             </div>
@@ -499,9 +504,9 @@ const UserProfile = () => {
                             {isSavingProfile ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
+                                    {t('userProfile.saving', 'Saving...')}
                                 </>
-                            ) : 'Save'}
+                            ) : t('userProfile.save', 'Save')}
                         </button>
                     </div>
                 </div>
@@ -528,12 +533,12 @@ const UserProfile = () => {
                             <button onClick={() => setEditingField(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">WhatsApp</h2>
+                            <h2 className="text-[24px] font-bold text-gray-900 dark:text-white">{t('userProfile.whatsapp', 'WhatsApp')}</h2>
                         </div>
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">WhatsApp Number</label>
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.whatsappLabel', 'WhatsApp Number')}</label>
                                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                     <input 
                                         type="tel"
@@ -557,9 +562,9 @@ const UserProfile = () => {
                             {isSavingProfile ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
+                                    {t('userProfile.saving', 'Saving...')}
                                 </>
-                            ) : 'Save'}
+                            ) : t('userProfile.save', 'Save')}
                         </button>
                     </div>
                 </div>
@@ -590,7 +595,7 @@ const UserProfile = () => {
                             >
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Personal information</h2>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">{t('userProfile.personalInfo', 'Personal information')}</h2>
                         </div>
 
                         <div className="flex-1 px-8 py-6">
@@ -624,13 +629,14 @@ const UserProfile = () => {
                                 </div>
 
                                 <div className="relative">
-                                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">{t('userProfile.personalDetails', 'Personal details')}</h4>
                                     
                                     <div className="divide-y divide-gray-50 dark:divide-white/5">
                                         {/* Name Row */}
                                         <div className="flex items-center gap-5 py-5 group">
                                             <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1">
+                                                <label className="block text-[12px] text-gray-400 font-medium">{t('bookingFlow.fullName', 'Full Name')}</label>
                                                 <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
                                             </div>
                                             <button 
@@ -638,7 +644,7 @@ const UserProfile = () => {
                                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                                 className="text-[14px] font-bold hover:underline px-2"
                                             >
-                                                Edit
+                                                {t('userProfile.edit', 'Edit')}
                                             </button>
                                         </div>
 
@@ -646,14 +652,15 @@ const UserProfile = () => {
                                         <div className="flex items-center gap-5 py-5 group">
                                             <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1">
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.phone', 'Phone number')}</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || t('userProfile.notProvided', 'Not provided')}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('phone')} 
                                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                                 className="text-[14px] font-bold hover:underline px-2"
                                             >
-                                                Edit
+                                                {t('userProfile.edit', 'Edit')}
                                             </button>
                                         </div>
 
@@ -661,15 +668,15 @@ const UserProfile = () => {
                                         <div className="flex items-center gap-5 py-5 group">
                                             <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
                                             <div className="flex-1">
-                                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.line', 'Line')}</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || t('userProfile.notProvided', 'Not provided')}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('line')} 
                                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                                 className="text-[14px] font-bold hover:underline px-2"
                                             >
-                                                Edit
+                                                {t('userProfile.edit', 'Edit')}
                                             </button>
                                         </div>
 
@@ -677,15 +684,15 @@ const UserProfile = () => {
                                         <div className="flex items-center gap-5 py-5 group">
                                             <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
                                             <div className="flex-1">
-                                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
-                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.whatsapp', 'WhatsApp')}</label>
+                                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || t('userProfile.notProvided', 'Not provided')}</p>
                                             </div>
                                             <button 
                                                 onClick={() => setEditingField('whatsapp')} 
                                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                                 className="text-[14px] font-bold hover:underline px-2"
                                             >
-                                                Edit
+                                                {t('userProfile.edit', 'Edit')}
                                             </button>
                                         </div>
 
@@ -693,7 +700,7 @@ const UserProfile = () => {
                                         <div className="flex items-center gap-5 py-5 group">
                                             <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="flex-1 min-w-0">
-                                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                                <label className="block text-[12px] text-gray-400 font-medium">{t('authPages.emailLabel', 'Email address')}</label>
                                                 <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
                                             </div>
                                         </div>
@@ -738,13 +745,14 @@ const UserProfile = () => {
                 </div>
 
                 <div className="relative">
-                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">Personal details</h4>
+                    <h4 className="text-[17px] font-bold text-gray-400 mb-6 px-1">{t('userProfile.personalDetails', 'Personal details')}</h4>
                     
                     <div className="divide-y divide-gray-50 dark:divide-white/5">
                         {/* Name Row */}
                         <div className="flex items-center gap-5 py-5 group">
                             <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                             <div className="flex-1">
+                                <label className="block text-[12px] text-gray-400 font-medium">{t('bookingFlow.fullName', 'Full Name')}</label>
                                 <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
                             </div>
                             <button 
@@ -752,7 +760,7 @@ const UserProfile = () => {
                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                 className="text-[14px] font-bold hover:underline px-2"
                             >
-                                Edit
+                                {t('userProfile.edit', 'Edit')}
                             </button>
                         </div>
 
@@ -760,14 +768,15 @@ const UserProfile = () => {
                         <div className="flex items-center gap-5 py-5 group">
                             <PhoneIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                             <div className="flex-1">
-                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.phone', 'Phone number')}</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.phone || t('userProfile.notProvided', 'Not provided')}</p>
                             </div>
                             <button 
                                 onClick={() => setEditingField('phone')} 
                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                 className="text-[14px] font-bold hover:underline px-2"
                             >
-                                Edit
+                                {t('userProfile.edit', 'Edit')}
                             </button>
                         </div>
 
@@ -775,15 +784,15 @@ const UserProfile = () => {
                         <div className="flex items-center gap-5 py-5 group">
                             <SocialIcon platform="line" className="w-6 h-6 text-[#222222] dark:text-white" />
                             <div className="flex-1">
-                                <label className="block text-[12px] text-gray-400 font-medium">Line</label>
-                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || 'Not provided'}</p>
+                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.line', 'Line')}</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.line || t('userProfile.notProvided', 'Not provided')}</p>
                             </div>
                             <button 
                                 onClick={() => setEditingField('line')} 
                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                 className="text-[14px] font-bold hover:underline px-2"
                             >
-                                Edit
+                                {t('userProfile.edit', 'Edit')}
                             </button>
                         </div>
 
@@ -791,15 +800,15 @@ const UserProfile = () => {
                         <div className="flex items-center gap-5 py-5 group">
                             <SocialIcon platform="whatsapp" className="w-6 h-6 text-[#222222] dark:text-white" />
                             <div className="flex-1">
-                                <label className="block text-[12px] text-gray-400 font-medium">WhatsApp</label>
-                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || 'Not provided'}</p>
+                                <label className="block text-[12px] text-gray-400 font-medium">{t('userProfile.whatsapp', 'WhatsApp')}</label>
+                                <p className="text-[16px] font-medium text-gray-900 dark:text-white">{user?.whatsapp || t('userProfile.notProvided', 'Not provided')}</p>
                             </div>
                             <button 
                                 onClick={() => setEditingField('whatsapp')} 
                                 style={{ color: theme?.primaryColor || '#2D8A56' }}
                                 className="text-[14px] font-bold hover:underline px-2"
                             >
-                                Edit
+                                {t('userProfile.edit', 'Edit')}
                             </button>
                         </div>
 
@@ -807,7 +816,7 @@ const UserProfile = () => {
                         <div className="flex items-center gap-5 py-5 group">
                             <EnvelopeIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                             <div className="flex-1 min-w-0">
-                                <label className="block text-[12px] text-gray-400 font-medium">Email address</label>
+                                <label className="block text-[12px] text-gray-400 font-medium">{t('authPages.emailLabel', 'Email address')}</label>
                                 <p className="text-[16px] font-medium text-gray-900 dark:text-white truncate pr-4">{user?.email}</p>
                             </div>
                         </div>
@@ -820,7 +829,7 @@ const UserProfile = () => {
     /* ── Render Password Content ─────────────────────────────── */
     const renderPassword = (isMobile = false) => {
         const hasPassword = user?.has_password;
-        const title = hasPassword ? 'Change Password' : 'Account Security';
+        const title = hasPassword ? t('userProfile.changePassword', 'Change Password') : t('userProfile.accountSecurity', 'Account Security');
 
         const content = (
             <div className="flex-1 w-full max-w-[600px] flex flex-col min-h-[500px] animate-fade-in-up">
@@ -845,10 +854,10 @@ const UserProfile = () => {
                                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                                     </svg>
                                 </div>
-                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">Google Account</h3>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">{t('userProfile.googleAccount', 'Google Account')}</h3>
                             </div>
                             <p className="text-[15px] text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">
-                                You are signed in with Google. Manage your password and security settings directly from your Google Account.
+                                {t('userProfile.googleAccountDesc', 'You are signed in with Google. Manage your password and security settings directly from your Google Account.')}
                             </p>
                             <a 
                                 href="https://myaccount.google.com/security" 
@@ -856,7 +865,7 @@ const UserProfile = () => {
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center justify-center px-6 py-2 border border-slate-200 dark:border-white/10 rounded-full text-[14px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                             >
-                                Manage Google Account
+                                {t('userProfile.manageGoogleAccount', 'Manage Google Account')}
                             </a>
                         </div>
                     )}
@@ -864,15 +873,15 @@ const UserProfile = () => {
                     <div className="space-y-6">
                         {!hasPassword && (
                             <div className="mb-2">
-                                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">Set App Password</h3>
-                                <p className="text-[14px] text-gray-500">Create a password to sign in directly with your email address.</p>
+                                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">{t('userProfile.setAppPassword', 'Set App Password')}</h3>
+                                <p className="text-[14px] text-gray-500">{t('userProfile.setAppPasswordDesc', 'Create a password to sign in directly with your email address.')}</p>
                             </div>
                         )}
 
                         <div className="space-y-4">
                             {hasPassword && (
                                 <div className="space-y-2">
-                                    <label className="block text-[15px] text-gray-500 font-medium px-4">Current Password</label>
+                                    <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.currentPassword', 'Current Password')}</label>
                                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400">
                                         <input 
                                             type="password"
@@ -884,7 +893,7 @@ const UserProfile = () => {
                                 </div>
                             )}
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">New Password</label>
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.newPassword', 'New Password')}</label>
                                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400 flex items-center">
                                     <input 
                                         type={showPasswords.new ? "text" : "password"}
@@ -902,7 +911,7 @@ const UserProfile = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-[15px] text-gray-500 font-medium px-4">Confirm New Password</label>
+                                <label className="block text-[15px] text-gray-500 font-medium px-4">{t('userProfile.confirmNewPasswordLabel', 'Confirm New Password')}</label>
                                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-8 py-3.5 sm:py-3 transition-all focus-within:border-slate-400 flex items-center">
                                     <input 
                                         type={showPasswords.confirm ? "text" : "password"}
@@ -933,9 +942,9 @@ const UserProfile = () => {
                         {isSavingPassword ? (
                             <>
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Saving...
+                                {t('userProfile.saving', 'Saving...')}
                             </>
-                        ) : (hasPassword ? 'Change Password' : 'Set Password')}
+                        ) : (hasPassword ? t('userProfile.changePassword', 'Change Password') : t('userProfile.setPassword', 'Set Password'))}
                     </button>
                 </div>
             </div>
@@ -965,9 +974,9 @@ const UserProfile = () => {
             <div className="animate-fade-in-up pb-20">
                 <div className="relative mb-12">
                     <div className="relative">
-                        <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR BIO</h4>
+                        <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">{t('userProfile.aboutBio', 'ABOUT OUR BIO')}</h4>
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                            {agent?.agency_name || agent?.name || 'Authorized Agent'}
+                            {agent?.agency_name || agent?.name || t('userProfile.authorizedAgent', 'Authorized Agent')}
                         </h1>
                         <div className="mb-4">
                             <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
@@ -981,7 +990,7 @@ const UserProfile = () => {
                                 </p>
                             </div>
                         ) : (
-                            <p className="text-sm text-slate-400 italic">No bio information available.</p>
+                            <p className="text-sm text-slate-400 italic">{t('userProfile.noBio', 'No bio information available.')}</p>
                         )}
                     </div>
                 </div>
@@ -991,9 +1000,9 @@ const UserProfile = () => {
                         {agent?.vision && (
                             <div className="relative mb-12">
                                 <div className="relative">
-                                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">ABOUT OUR VISION</h4>
+                                    <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">{t('userProfile.aboutVision', 'ABOUT OUR VISION')}</h4>
                                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-                                        {agent?.agency_name || agent?.name || 'Authorized Agent'}
+                                        {agent?.agency_name || agent?.name || t('userProfile.authorizedAgent', 'Authorized Agent')}
                                     </h1>
                                     <div className="mb-4">
                                         <svg width="28" height="22" viewBox="0 0 28 22" fill="currentColor" className="text-slate-300">
@@ -1008,7 +1017,7 @@ const UserProfile = () => {
                         )}
                         {agent?.mission && (
                             <div className="relative mb-12">
-                                <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">ABOUT OUR MISSION</h4>
+                                <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">{t('userProfile.aboutMission', 'ABOUT OUR MISSION')}</h4>
                                 <p className="text-[16px] text-slate-700 dark:text-gray-300 leading-relaxed pl-2 font-medium">{agent.mission}</p>
                             </div>
                         )}
@@ -1042,7 +1051,7 @@ const UserProfile = () => {
                             >
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">About</h2>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">{t('userProfile.about', 'About')}</h2>
                         </div>
                         <div className="p-8">
                             {content}
@@ -1062,7 +1071,7 @@ const UserProfile = () => {
                 {/* Phone & Email card */}
                 {(agent?.phone || agent?.email) && (
                     <div className="relative">
-                        <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">Contact Information</h4>
+                        <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">{t('userProfile.contactInformation', 'Contact Information')}</h4>
                         <div className="space-y-6">
                             {agent?.phone && (
                                 <a href={`tel:${agent.phone}`} className="flex items-center gap-4 group">
@@ -1070,7 +1079,7 @@ const UserProfile = () => {
                                         <PhoneIcon className="w-5 h-5 text-orange-500" />
                                     </div>
                                     <div>
-                                        <p className="text-[11px] sm:text-[12px] text-slate-400 mb-0.5 font-medium">Direct Line</p>
+                                        <p className="text-[11px] sm:text-[12px] text-slate-400 mb-0.5 font-medium">{t('userProfile.directLine', 'Direct Line')}</p>
                                         <p className="text-[15px] sm:text-[16px] font-medium text-slate-900 dark:text-white">{agent.phone}</p>
                                     </div>
                                 </a>
@@ -1082,7 +1091,7 @@ const UserProfile = () => {
                 {/* Social Media Links */}
                 {socialLinks.length > 0 && (
                     <div className="relative mt-8">
-                        <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">Social Media</h4>
+                        <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">{t('userProfile.socialMedia', 'Social Media')}</h4>
                         <div className="flex flex-col">
                             {socialLinks.map((link, idx) => {
                                 const url = getSocialUrl(link.platform, link.value);
@@ -1111,7 +1120,7 @@ const UserProfile = () => {
 
                 {!agent?.phone && !agent?.email && socialLinks.length === 0 && (
                     <div className="bg-slate-50/50 dark:bg-white/5 rounded-[32px] p-12 text-center border border-slate-100/50 dark:border-white/10">
-                        <p className="text-[15px] text-slate-400 italic font-medium">No contact information available.</p>
+                        <p className="text-[15px] text-slate-400 italic font-medium">{t('userProfile.noContactInfo', 'No contact information available.')}</p>
                     </div>
                 )}
             </div>
@@ -1129,7 +1138,7 @@ const UserProfile = () => {
                             >
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Contact Support</h2>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">{t('userProfile.contactSupport', 'Contact Support')}</h2>
                         </div>
                         <div className="p-8">
                             {content}
@@ -1147,16 +1156,16 @@ const UserProfile = () => {
         const content = (
             <div className="animate-fade-in-up space-y-6 pb-20">
                 <div className="relative">
-                    <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">Terms & Privacy</h4>
+                    <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.1em] mb-6">{t('userProfile.termsPrivacy', 'Terms & Privacy')}</h4>
                     <div className="space-y-6 text-[15px] sm:text-[16px] text-slate-600 dark:text-gray-400 leading-relaxed">
                         <p>
-                            Welcome to our platform. By using our services, you agree to comply with and be bound by the following terms and conditions of use.
+                            {t('userProfile.welcomePlatform', 'Welcome to our platform. By using our services, you agree to comply with and be bound by the following terms and conditions of use.')}
                         </p>
                         <p>
-                            We are committed to protecting your privacy. Any personal information provided to us will be treated with care and only used in accordance with our privacy policy. We will not sell or distribute your personal information to third parties without your permission unless required by law.
+                            {t('userProfile.commitProtectPrivacy', 'We are committed to protecting your privacy. Any personal information provided to us will be treated with care and only used in accordance with our privacy policy. We will not sell or distribute your personal information to third parties without your permission unless required by law.')}
                         </p>
                         <p>
-                            For a complete copy of our terms of service and privacy policy, please contact our support team.
+                            {t('userProfile.completeCopyTerms', 'For a complete copy of our terms of service and privacy policy, please contact our support team.')}
                         </p>
                     </div>
                 </div>
@@ -1175,9 +1184,111 @@ const UserProfile = () => {
                             >
                                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
                             </button>
-                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">Terms & Privacy</h2>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">{t('userProfile.termsPrivacy', 'Terms & Privacy')}</h2>
                         </div>
                         <div className="p-8">
+                            {content}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return content;
+    };
+
+    /* ── Render Language Content ─────────────────────────────── */
+    const renderLanguage = (isMobile = false) => {
+        const languages = [
+            { code: 'en', label: 'English', nativeLabel: 'English', flagUrl: 'https://flagcdn.com/us.svg' },
+            { code: 'mm', label: 'Myanmar', nativeLabel: 'မြန်မာ', flagUrl: 'https://flagcdn.com/mm.svg' },
+            { code: 'zh', label: 'Chinese', nativeLabel: '中文', flagUrl: 'https://flagcdn.com/cn.svg' }
+        ];
+
+        const handleLanguageChange = (code) => {
+            i18n.changeLanguage(code);
+            localStorage.setItem('preferredLanguage', code);
+            toast.success(t('userProfile.languageUpdated', 'Language updated successfully'));
+        };
+
+        const content = (
+            <div className="animate-fade-in-up space-y-6 pb-20 w-full max-w-[600px]">
+                <div className="relative">
+                    {!isMobile && (
+                        <div className="mb-6">
+                            <p className="text-[15px] text-gray-500 dark:text-gray-400">
+                                {t('userProfile.preferredLanguageDesc', 'Choose your preferred language for the interface.')}
+                            </p>
+                        </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                        {languages.map((lang) => {
+                            const isSelected = currentLang === lang.code;
+                            return (
+                                <button
+                                    key={lang.code}
+                                    type="button"
+                                    onClick={() => handleLanguageChange(lang.code)}
+                                    className={`w-full flex items-center justify-between p-5 rounded-[24px] border transition-all duration-300 text-left
+                                        ${isSelected 
+                                            ? 'bg-slate-50 dark:bg-white/5 shadow-sm' 
+                                            : 'bg-white dark:bg-transparent hover:bg-slate-50/50 dark:hover:bg-white/5'}`}
+                                    style={isSelected ? { 
+                                        borderColor: theme?.primaryColor || '#2D8A56',
+                                        borderWidth: '1.5px'
+                                    } : {
+                                        borderColor: 'rgba(226, 232, 240, 0.8)'
+                                    }}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-[32px] h-[32px] rounded-full overflow-hidden border border-gray-200 dark:border-white/10 flex-shrink-0 shadow-sm flex items-center justify-center">
+                                            <img src={lang.flagUrl} alt={lang.label} className="w-full h-full object-cover scale-105" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-[16px] text-gray-900 dark:text-white leading-none mb-1">
+                                                {lang.nativeLabel}
+                                            </p>
+                                            <p className="text-[13px] text-gray-400 font-medium leading-none">
+                                                {lang.label}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    {isSelected && (
+                                        <div 
+                                            style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
+                                            className="w-6 h-6 rounded-full flex items-center justify-center text-white"
+                                        >
+                                            <CheckIcon className="w-4 h-4 text-white" strokeWidth={3} />
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+
+        if (isMobile) {
+            return (
+                <div className="fixed inset-0 bg-white dark:bg-[#111111] z-[300] flex flex-col animate-fade-in-up overflow-y-auto">
+                    <div className="flex-1 w-full max-w-[600px] mx-auto flex flex-col">
+                        {/* Mobile Header with Back Button */}
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md z-20 px-8 py-4 flex items-center">
+                            <button
+                                onClick={() => setMobileView('menu')}
+                                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                            </button>
+                            <h2 className="ml-4 text-[20px] font-bold text-gray-900 dark:text-white">{t('userProfile.selectLanguage', 'Select Language')}</h2>
+                        </div>
+                        <div className="p-8">
+                            <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-6 px-1">
+                                {t('userProfile.preferredLanguageDesc', 'Choose your preferred language for the interface.')}
+                            </p>
                             {content}
                         </div>
                     </div>
@@ -1228,6 +1339,7 @@ const UserProfile = () => {
                         </div>
                         {activeSection === 'profile' && renderProfile()}
                         {activeSection === 'password' && renderPassword()}
+                        {activeSection === 'language' && renderLanguage()}
                         {activeSection === 'about' && renderAbout()}
                         {activeSection === 'contact' && renderContact()}
                         {activeSection === 'terms' && renderTerms()}
@@ -1269,7 +1381,7 @@ const UserProfile = () => {
                                         <button onClick={() => setMobileView('profile')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
                                             <UserIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="text-left">
-                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Personal profile</p>
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{t('userProfile.personalProfile', 'Personal profile')}</p>
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                         </button>
@@ -1278,16 +1390,28 @@ const UserProfile = () => {
                                         <button onClick={() => setMobileView('password')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
                                             <KeyIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="text-left">
-                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{user?.has_password ? 'Change Password' : 'Account Security'}</p>
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{user?.has_password ? t('userProfile.changePassword', 'Change Password') : t('userProfile.accountSecurity', 'Account Security')}</p>
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
+                                        </button>
+
+                                        {/* Language Row */}
+                                        <button onClick={() => setMobileView('language')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
+                                            <LanguageIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
+                                            <div className="text-left">
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{t('userProfile.language', 'Language')}</p>
+                                            </div>
+                                            <span className="text-[14px] text-gray-400 dark:text-gray-500 ml-auto mr-1 font-medium">
+                                                {currentLang === 'en' ? 'English' : currentLang === 'mm' ? 'Myanmar' : 'Chinese'}
+                                            </span>
+                                            <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white group-hover:translate-x-1 transition-transform" />
                                         </button>
 
                                         {/* Contact Support Row */}
                                         <button onClick={() => setMobileView('contact')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
                                             <InformationCircleIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="text-left">
-                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Contact Support</p>
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{t('userProfile.contactSupport', 'Contact Support')}</p>
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                         </button>
@@ -1296,7 +1420,7 @@ const UserProfile = () => {
                                         <button onClick={() => setMobileView('terms')} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
                                             <DocumentTextIcon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                             <div className="text-left">
-                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">Terms & Privacy</p>
+                                                <p className="font-medium text-[16px] text-[#222222] dark:text-white">{t('userProfile.termsPrivacy', 'Terms & Privacy')}</p>
                                             </div>
                                             <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                         </button>
@@ -1311,7 +1435,7 @@ const UserProfile = () => {
                                                 >
                                                     <Squares2X2Icon className="w-6 h-6 text-[#222222] dark:text-white" strokeWidth={2} />
                                                     <div className="text-left">
-                                                        <p className="font-medium text-[16px] text-[#222222] dark:text-white">Dashboard</p>
+                                                        <p className="font-medium text-[16px] text-[#222222] dark:text-white">{t('userProfile.dashboard', 'Dashboard')}</p>
                                                     </div>
                                                     <ChevronRightIcon className="w-6 h-6 text-[#222222] dark:text-white ml-auto group-hover:translate-x-1 transition-transform" />
                                                 </button>
@@ -1321,7 +1445,7 @@ const UserProfile = () => {
                                             <button onClick={logout} className="flex items-center gap-5 py-5 w-full transition-all active:opacity-70 group">
                                                 <ArrowLeftOnRectangleIcon className="w-6 h-6 text-rose-500" strokeWidth={2} />
                                                 <div className="text-left">
-                                                    <p className="font-medium text-[16px] text-rose-600">Log out</p>
+                                                    <p className="font-medium text-[16px] text-rose-600">{t('userProfile.logOut', 'Log out')}</p>
                                                 </div>
                                                 <ChevronRightIcon className="w-6 h-6 text-rose-500 ml-auto group-hover:translate-x-1 transition-transform" />
                                             </button>
@@ -1333,6 +1457,7 @@ const UserProfile = () => {
 
                         {mobileView === 'profile' && renderProfile(true)}
                         {mobileView === 'password' && renderPassword(true)}
+                        {mobileView === 'language' && renderLanguage(true)}
                         {mobileView === 'about' && renderAbout(true)}
                         {mobileView === 'contact' && renderContact(true)}
                         {mobileView === 'terms' && renderTerms(true)}
@@ -1365,7 +1490,7 @@ const UserProfile = () => {
                         >
                             <ArrowLeftIcon className="w-6 h-6" />
                         </button>
-                        <h3 className="text-white font-bold text-[15px] flex-1 text-center">Edit Profile Image</h3>
+                        <h3 className="text-white font-bold text-[15px] flex-1 text-center">{t('userProfile.editProfileImage', 'Edit Profile Image')}</h3>
                         <div className="w-10 lg:hidden" /> {/* Spacer */}
                     </div>
 
@@ -1404,14 +1529,14 @@ const UserProfile = () => {
                                 onClick={() => setIsCropping(false)}
                                 className="w-fit py-4 px-8 rounded-full bg-white/10 text-white font-bold text-[15px] active:scale-95 transition-all whitespace-nowrap"
                             >
-                                Cancel
+                                {t('bookings.cancel', 'Cancel')}
                             </button>
                             <button 
                                 onClick={handleCropSave}
                                 style={{ backgroundColor: theme?.primaryColor || '#2D8A56' }}
                                 className="w-fit py-4 px-12 rounded-full text-white font-bold text-[15px] shadow-lg shadow-primary-500/20 active:scale-95 transition-all whitespace-nowrap"
                             >
-                                Apply Changes
+                                {t('userProfile.applyChanges', 'Apply Changes')}
                             </button>
                         </div>
                     </div>

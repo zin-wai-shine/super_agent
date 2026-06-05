@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 import { useTenant } from '../../contexts/TenantContext';
+import { useTranslation } from 'react-i18next';
 import { BsCalendar2Week, BsSearch, BsHeart, BsFillHeartFill } from 'react-icons/bs';
 import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
@@ -54,13 +55,77 @@ import {
     HiOutlineGlobeAsiaAustralia,
 } from 'react-icons/hi2';
 import { LuTextSearch } from "react-icons/lu";
-import { TbSquares, TbListDetails, TbMapSearch } from "react-icons/tb";
+import { TbSquares, TbListDetails, TbMapSearch, TbSmartHome } from "react-icons/tb";
 import Logo from '../Common/Logo';
 import { getMediaUrl } from '../../utils/media';
 import { publicApi } from '../../services/api';
 import StyledSelect from '../Form/StyledSelect';
 import CookieConsent from '../Common/CookieConsent';
 import buildingBlock from '../../assets/images/building_block.png';
+
+// Custom hook to animate element width smoothly when label text changes
+const useSmoothWidth = (label) => {
+    const ref = useRef(null);
+    const prevWidthRef = useRef(null);
+
+    useLayoutEffect(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        // Capture original inline styles to restore them
+        const originalWidth = element.style.width;
+        const originalTransition = element.style.transition;
+        const originalOverflow = element.style.overflow;
+        const originalWhiteSpace = element.style.whiteSpace;
+
+        // Measure natural new width by clearing style and transition temporarily
+        element.style.transition = 'none';
+        element.style.width = 'auto';
+        
+        // Ensure single-line text rendering during measurement
+        element.style.whiteSpace = 'nowrap';
+        
+        const newWidth = element.getBoundingClientRect().width;
+        const prevWidth = prevWidthRef.current;
+
+        if (prevWidth !== null && prevWidth > 0 && newWidth > 0 && prevWidth !== newWidth) {
+            // Apply visual safety guards during transition
+            element.style.overflow = 'hidden';
+            element.style.whiteSpace = 'nowrap';
+
+            // Set to previous width immediately
+            element.style.width = `${prevWidth}px`;
+            
+            // Force a reflow so browser registers the starting fixed width
+            // eslint-disable-next-line no-unused-expressions
+            element.offsetHeight;
+
+            // Enable transition
+            element.style.transition = 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)';
+            element.style.width = `${newWidth}px`;
+            
+            // Update ref
+            prevWidthRef.current = newWidth;
+
+            // Clean up after transition completes
+            const timer = setTimeout(() => {
+                if (ref.current) {
+                    ref.current.style.transition = originalTransition;
+                    ref.current.style.width = originalWidth;
+                    ref.current.style.overflow = originalOverflow;
+                    ref.current.style.whiteSpace = originalWhiteSpace;
+                }
+            }, 300);
+
+            return () => clearTimeout(timer);
+        } else {
+            // Store the initial/new width
+            prevWidthRef.current = newWidth;
+        }
+    }, [label]);
+
+    return ref;
+};
 
 const PublicLayout = () => {
     const { theme } = useTheme();
@@ -236,6 +301,11 @@ const PublicLayout = () => {
     const userMenuRef = useRef(null);
     const [appMenuOpen, setAppMenuOpen] = useState(false);
     const appMenuRef = useRef(null);
+    const [langMenuOpen, setLangMenuOpen] = useState(false);
+    const langMenuRef = useRef(null);
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
+    const goToHomeRef = useSmoothWidth(t('listing.goToHome', 'Go to Home'));
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -244,6 +314,9 @@ const PublicLayout = () => {
             }
             if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
                 setAppMenuOpen(false);
+            }
+            if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+                setLangMenuOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -313,6 +386,43 @@ const PublicLayout = () => {
             clearTimeout(timer);
         };
     }, []);
+    React.useEffect(() => {
+        let timeoutId = null;
+
+        const handleGlobalScroll = () => {
+            document.documentElement.classList.add('is-scrolling');
+            document.body.classList.add('is-scrolling');
+            
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            
+            timeoutId = setTimeout(() => {
+                document.documentElement.classList.remove('is-scrolling');
+                document.body.classList.remove('is-scrolling');
+            }, 800);
+        };
+
+        window.addEventListener('scroll', handleGlobalScroll, { passive: true });
+        
+        // Also listen on main-scroll-container if it has any overflow scrolling
+        const scrollContainer = document.getElementById('main-scroll-container');
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', handleGlobalScroll, { passive: true });
+        }
+
+        return () => {
+            window.removeEventListener('scroll', handleGlobalScroll);
+            if (scrollContainer) {
+                scrollContainer.removeEventListener('scroll', handleGlobalScroll);
+            }
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            document.documentElement.classList.remove('is-scrolling');
+            document.body.classList.remove('is-scrolling');
+        };
+    }, [location.pathname]);
 
     const brandName = theme.headerText || (agent ? (agent.agency_name || agent.name) : 'Super');
 
@@ -338,9 +448,85 @@ const PublicLayout = () => {
         <div
             id="main-scroll-container"
             ref={scrollContainerRef}
-            className="flex flex-col bg-white dark:bg-dashboard-dark min-h-[100dvh]"
+            className="relative flex flex-col bg-white dark:bg-dashboard-dark min-h-[100dvh]"
             style={{ fontFamily: theme.fontFamily }}
         >
+            {/* Floating Language Selector on Login/Register Pages */}
+            {isAuthPage && (
+                <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[300]" ref={langMenuRef}>
+                    <button
+                        type="button"
+                        onClick={() => setLangMenuOpen(!langMenuOpen)}
+                        className="relative flex items-center gap-2 p-1 pr-4 rounded-full border border-gray-200/80 dark:border-white/10 shadow-sm transition-all duration-300 active:scale-[0.98] h-[40px] overflow-hidden bg-white/60 dark:bg-black/25 backdrop-blur-md group"
+                    >
+                        {/* Dynamic blurred flag background */}
+                        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none transition-transform duration-500 group-hover:scale-110">
+                            <img
+                                src={
+                                    currentLang === 'en'
+                                        ? 'https://flagcdn.com/us.svg'
+                                        : currentLang === 'mm'
+                                        ? 'https://flagcdn.com/mm.svg'
+                                        : 'https://flagcdn.com/cn.svg'
+                                }
+                                alt=""
+                                className="w-full h-full object-cover filter blur-[12px] scale-125 opacity-40 dark:opacity-60"
+                            />
+                        </div>
+
+                        {/* Crisp Flag Circle */}
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-white/40 dark:border-white/15 overflow-hidden flex-shrink-0">
+                            <img
+                                src={
+                                    currentLang === 'en'
+                                        ? 'https://flagcdn.com/us.svg'
+                                        : currentLang === 'mm'
+                                        ? 'https://flagcdn.com/mm.svg'
+                                        : 'https://flagcdn.com/cn.svg'
+                                }
+                                alt={currentLang === 'en' ? 'English' : currentLang === 'mm' ? 'Myanmar' : 'Chinese'}
+                                className="w-full h-full object-cover scale-105"
+                            />
+                        </div>
+                        {/* Down Chevron */}
+                        <ChevronDownIcon className={`w-4 h-4 text-gray-800 dark:text-white transition-transform duration-300 relative z-10 mr-0.5 ${langMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Language Dropdown Box */}
+                    {langMenuOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-44 bg-white dark:bg-dashboard-card rounded-[24px] border border-gray-100 dark:border-dashboard-border shadow-[0_10px_40px_-5px_rgba(0,0,0,0.15)] py-3 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[320]">
+                            <div className="py-1 px-2 space-y-1">
+                                {[
+                                    { code: 'en', flagUrl: 'https://flagcdn.com/us.svg', label: 'English' },
+                                    { code: 'mm', flagUrl: 'https://flagcdn.com/mm.svg', label: 'Myanmar' },
+                                    { code: 'zh', flagUrl: 'https://flagcdn.com/cn.svg', label: 'Chinese' }
+                                ].map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => {
+                                            i18n.changeLanguage(lang.code);
+                                            localStorage.setItem('preferredLanguage', lang.code);
+                                            setLangMenuOpen(false);
+                                        }}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-left transition-all duration-250 ${
+                                            currentLang === lang.code
+                                                ? 'bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400'
+                                                : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                                        }`}
+                                        style={{ borderRadius: '9999px' }}
+                                    >
+                                        <div className="w-[22px] h-[22px] rounded-full overflow-hidden border border-gray-200 dark:border-white/10 flex-shrink-0 shadow-sm">
+                                            <img src={lang.flagUrl} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <span>{lang.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Navigation Drawer (Mobile + lg when burger is used) */}
             {(mobileMenuOpen && !hideLayout) && (
                 <div className="fixed inset-0 z-[250]">
@@ -699,6 +885,95 @@ const PublicLayout = () => {
                                         <div className="flex items-center space-x-2 md:space-x-4">
                                             {/* Theme Toggle */}
 
+                                            {/* Go to Home Button */}
+                                            {location.pathname !== '/' && location.pathname !== '/listings' && !isListingDetailPage && (
+                                                <button
+                                                    ref={goToHomeRef}
+                                                    onClick={() => navigate('/')}
+                                                    className="hidden lg:flex items-center justify-center gap-2 h-[40px] px-4 bg-white dark:bg-dashboard-card border border-gray-200/85 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
+                                                    title={t('listing.goToHome', 'Go to Home')}
+                                                    style={{ borderRadius: '9999px' }}
+                                                >
+                                                    <TbSmartHome className="w-5 h-5 text-gray-800 dark:text-white transition-transform" />
+                                                    <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">{t('listing.goToHome', 'Go to Home')}</span>
+                                                </button>
+                                            )}
+
+                                            {/* Language Selector */}
+                                            <div className="relative animate-in fade-in zoom-in-95 duration-200" ref={langMenuRef}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLangMenuOpen(!langMenuOpen)}
+                                                    className="relative flex items-center gap-2 p-1 pr-4 rounded-full border border-white/20 dark:border-white/10 shadow-sm transition-all duration-300 active:scale-[0.98] h-[40px] overflow-hidden bg-white/30 dark:bg-black/25 backdrop-blur-md group"
+                                                >
+                                                    {/* Dynamic blurred flag background */}
+                                                    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none transition-transform duration-500 group-hover:scale-110">
+                                                        <img
+                                                            src={
+                                                                currentLang === 'en'
+                                                                    ? 'https://flagcdn.com/us.svg'
+                                                                    : currentLang === 'mm'
+                                                                    ? 'https://flagcdn.com/mm.svg'
+                                                                    : 'https://flagcdn.com/cn.svg'
+                                                            }
+                                                            alt=""
+                                                            className="w-full h-full object-cover filter blur-[12px] scale-125 opacity-40 dark:opacity-60"
+                                                        />
+                                                    </div>
+
+                                                    {/* Crisp Flag Circle */}
+                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-white/40 dark:border-white/15 overflow-hidden flex-shrink-0">
+                                                        <img
+                                                            src={
+                                                                currentLang === 'en'
+                                                                    ? 'https://flagcdn.com/us.svg'
+                                                                    : currentLang === 'mm'
+                                                                    ? 'https://flagcdn.com/mm.svg'
+                                                                    : 'https://flagcdn.com/cn.svg'
+                                                            }
+                                                            alt={currentLang === 'en' ? 'English' : currentLang === 'mm' ? 'Myanmar' : 'Chinese'}
+                                                            className="w-full h-full object-cover scale-105"
+                                                        />
+                                                    </div>
+                                                    {/* Down Chevron */}
+                                                    <ChevronDownIcon className={`w-4 h-4 text-gray-800 dark:text-white transition-transform duration-300 relative z-10 mr-0.5 ${langMenuOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+
+                                                {/* Language Dropdown Box */}
+                                                {langMenuOpen && (
+                                                    <div className="absolute right-0 top-full mt-2 w-44 bg-white dark:bg-dashboard-card rounded-[24px] border border-gray-100 dark:border-dashboard-border shadow-[0_10px_40px_-5px_rgba(0,0,0,0.15)] py-3 focus:outline-none animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden z-[220]">
+                                                        <div className="py-1 px-2 space-y-1">
+                                                            {[
+                                                                { code: 'en', flagUrl: 'https://flagcdn.com/us.svg', label: 'English' },
+                                                                { code: 'mm', flagUrl: 'https://flagcdn.com/mm.svg', label: 'Myanmar' },
+                                                                { code: 'zh', flagUrl: 'https://flagcdn.com/cn.svg', label: 'Chinese' }
+                                                            ].map((lang) => (
+                                                                <button
+                                                                    key={lang.code}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        i18n.changeLanguage(lang.code);
+                                                                        localStorage.setItem('preferredLanguage', lang.code);
+                                                                        setLangMenuOpen(false);
+                                                                    }}
+                                                                    className={`w-full flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-left transition-all duration-250 ${
+                                                                        currentLang === lang.code
+                                                                            ? 'bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400'
+                                                                            : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                                                                    }`}
+                                                                    style={{ borderRadius: '9999px' }}
+                                                                >
+                                                                    <div className="w-[22px] h-[22px] rounded-full overflow-hidden border border-gray-200 dark:border-white/10 flex-shrink-0 shadow-sm">
+                                                                        <img src={lang.flagUrl} alt="" className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                    <span>{lang.label}</span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             {isAuthenticated ? (
                                                 <div className="flex items-center gap-1 sm:gap-2">
                                                     {/* Vertical separator — lg only */}
@@ -765,19 +1040,19 @@ const PublicLayout = () => {
                                                                 <div className="py-1 px-2">
                                                                     {user?.role !== 'sub_agent' && (
                                                                         <>
-                                                                            <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                            <Link to="/saved-listings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" style={{ borderRadius: '9999px' }}>
                                                                                 <BsHeart className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                                Favorites
+                                                                                {t('nav.favorites', 'Favorites')}
                                                                             </Link>
-                                                                            <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                            <Link to="/my-bookings" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" style={{ borderRadius: '9999px' }}>
                                                                                 <BsCalendar2Week className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                                My Viewing Requests
+                                                                                {t('nav.viewingRequests', 'My Viewing Requests')}
                                                                             </Link>
                                                                         </>
                                                                     )}
-                                                                    <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors">
+                                                                    <Link to="/profile" onClick={() => setAppMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" style={{ borderRadius: '9999px' }}>
                                                                         <PiUser className="w-6 h-6 text-gray-900 dark:text-white" />
-                                                                        Account
+                                                                        {t('nav.account', 'Account')}
                                                                     </Link>
                                                                     {(user?.role === 'agent' || user?.role === 'sub_agent' || user?.role === 'super_admin') && (
                                                                         <Link
@@ -800,7 +1075,8 @@ const PublicLayout = () => {
                                                                                 }
                                                                                 return '/dashboard';
                                                                             })()}
-                                                                            className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors"
+                                                                            className="flex items-center gap-3 px-4 py-3 text-[14px] font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                                                            style={{ borderRadius: '9999px' }}
                                                                             onClick={(e) => {
                                                                                 const href = e.currentTarget.getAttribute('href');
                                                                                 if (href.startsWith('http')) {
@@ -811,13 +1087,13 @@ const PublicLayout = () => {
                                                                             }}
                                                                         >
                                                                             <FiBarChart2 className="w-5 h-5 text-gray-900 dark:text-white" />
-                                                                            Dashboard
+                                                                            {t('nav.dashboard', 'Dashboard')}
                                                                         </Link>
                                                                     )}
                                                                     <div className="my-1 border-t border-gray-100" />
-                                                                    <button type="button" onClick={() => { logout(); setAppMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-[14px] font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                                                                    <button type="button" onClick={() => { logout(); setAppMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-[14px] font-semibold text-rose-600 hover:bg-rose-50 transition-colors" style={{ borderRadius: '9999px' }}>
                                                                         <FiLogOut className="w-5 h-5 text-rose-600" />
-                                                                        Sign out
+                                                                        {t('nav.signOut', 'Sign out')}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -831,10 +1107,10 @@ const PublicLayout = () => {
                                                         to="/login"
                                                         className="text-[14px] font-medium text-gray-900 dark:text-gray-400 hover:text-[var(--primary-color)] transition-colors"
                                                     >
-                                                        Sign in
+                                                        {t('auth.login')}
                                                     </Link>
                                                     <Link to="/register" className="bg-gray-950 text-white dark:bg-white dark:text-gray-950 px-6 py-2.5 text-[14px] font-semibold shadow-[0_10px_25px_-5px_rgba(3,7,18,0.2)] hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all rounded-full">
-                                                        Get Started
+                                                        {t('auth.register')}
                                                     </Link>
                                                 </>
                                             )}
@@ -954,7 +1230,7 @@ const PublicLayout = () => {
                                         className={`mt-0.5 text-[11px] font-semibold ${isSearchTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                             }`}
                                     >
-                                        Search
+                                         {t('nav.search', 'Search')}
                                     </span>
                                 </Link>
 
@@ -975,7 +1251,7 @@ const PublicLayout = () => {
                                                     className={`mt-0.5 text-[11px] font-semibold ${isWishlistTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                         }`}
                                                 >
-                                                    Favorites
+                                                    {t('nav.favorites', 'Favorites')}
                                                 </span>
                                             </Link>
                                         )}
@@ -1007,7 +1283,7 @@ const PublicLayout = () => {
                                                     className={`mt-0.5 text-[11px] font-semibold ${isBookingsTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                         }`}
                                                 >
-                                                    Viewings
+                                                     {t('nav.viewings', 'Viewings')}
                                                 </span>
                                             </Link>
                                         )}
@@ -1025,7 +1301,7 @@ const PublicLayout = () => {
                                                 className={`mt-0.5 text-[11px] font-semibold ${isProfileTabActive ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
                                                     }`}
                                             >
-                                                Account
+                                                {t('nav.account', 'Account')}
                                             </span>
                                         </Link>
                                     </>
@@ -1050,7 +1326,7 @@ const PublicLayout = () => {
                                         >
                                             <PiUser className={`w-7 h-7 ${isLoginTabActive ? 'text-primary-600' : 'text-gray-400'}`} />
                                             <span className={`mt-0.5 text-[11px] font-semibold ${isLoginTabActive ? 'text-primary-600' : 'text-gray-500'}`}>
-                                                Login
+                                                 {t('auth.login', 'Sign In')}
                                             </span>
                                         </Link>
                                     </>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onChange }) => {
+    const { t } = useTranslation();
     const safeInitialMin = initialMin ?? min ?? 0;
     const safeInitialMax = initialMax ?? max ?? 10000;
 
@@ -135,7 +137,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
             <div className="flex items-center justify-between gap-3 relative z-50">
                 <div className="flex flex-col flex-1">
                     <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
-                        Minimum
+                        {t('filters.minimum')}
                     </span>
                     <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-normal text-[13px]">฿</span>
@@ -156,7 +158,7 @@ const PriceRangeSlider = ({ min, max, initialMin, initialMax, step = 1000, onCha
 
                 <div className="flex flex-col flex-1">
                     <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
-                        Maximum
+                        {t('filters.maximum')}
                     </span>
                     <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-normal text-[13px]">฿</span>

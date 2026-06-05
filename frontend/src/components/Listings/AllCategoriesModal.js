@@ -14,9 +14,13 @@ import * as FiIcons from 'react-icons/fi';
 import * as LuIcons from 'react-icons/lu';
 import { FolderIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
+import { useTranslation } from 'react-i18next';
 
 const AllCategoriesModal = ({ isOpen, onClose, categories, selectedId }) => {
     const navigate = useNavigate();
+    const tDynamic = useDynamicTranslation();
+    const { t } = useTranslation();
 
     const [isExpanded, setIsExpanded] = React.useState(false);
     const scrollContainerRef = React.useRef(null);
@@ -120,13 +124,13 @@ const AllCategoriesModal = ({ isOpen, onClose, categories, selectedId }) => {
                                             <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shadow-sm">
                                                 <FolderIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                                             </div>
-                                            <h2 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">Explore Categories</h2>
+                                            <h2 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">{t('filters.exploreCategories')}</h2>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="hidden sm:block px-5 pb-3">
-                                    <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">Select Category</span>
+                                    <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">{t('filters.selectCategory')}</span>
                                 </div>
 
                                 {/* List Content */}
@@ -175,7 +179,7 @@ const AllCategoriesModal = ({ isOpen, onClose, categories, selectedId }) => {
                                                     <span className={`text-[14px] font-medium truncate transition-colors ${
                                                         isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white group-hover:text-primary-600'
                                                     }`}>
-                                                        {category.name}
+                                                        {tDynamic(category, 'name')}
                                                     </span>
                                                 </button>
                                             );

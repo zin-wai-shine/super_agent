@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5, onChange }) => {
+    const { t } = useTranslation();
     const safeInitialMin = initialMin ?? min ?? 0;
     const safeInitialMax = initialMax ?? max ?? 2000;
 
@@ -135,7 +137,7 @@ const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5
             <div className="flex items-center justify-between gap-3 relative z-50">
                 <div className="flex flex-col flex-1">
                     <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
-                        Min size
+                        {t('filters.minSize')}
                     </span>
                     <div className="relative">
                         <input
@@ -146,7 +148,7 @@ const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5
                             onKeyDown={(e) => handleKeyDown(e, 'min')}
                             className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-4 pr-12 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-normal text-gray-500 dark:text-gray-400">Sqm</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-normal text-gray-500 dark:text-gray-400">{t('filters.sqmUnit')}</span>
                     </div>
                 </div>
 
@@ -156,7 +158,7 @@ const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5
 
                 <div className="flex flex-col flex-1">
                     <span className="text-[13px] font-normal text-gray-600 dark:text-gray-400 leading-none mb-1.5 text-center">
-                        Max size
+                        {t('filters.maxSize')}
                     </span>
                     <div className="relative">
                         <input
@@ -167,7 +169,7 @@ const SizeRangeSlider = ({ min = 0, max = 2000, initialMin, initialMax, step = 5
                             onKeyDown={(e) => handleKeyDown(e, 'max')}
                             className="w-full min-h-[40px] bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 rounded-full pl-4 pr-12 py-2 text-[13px] font-normal text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 focus:border-gray-400 dark:focus:border-white/30 transition-shadow"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-normal text-gray-500 dark:text-gray-400">Sqm</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-normal text-gray-500 dark:text-gray-400">{t('filters.sqmUnit')}</span>
                     </div>
                 </div>
             </div>

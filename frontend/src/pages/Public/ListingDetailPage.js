@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useSearchParams, useLocation, useOutletContext } from 'react-router-dom';
@@ -61,6 +61,9 @@ import ListingCard from '../../components/Listings/ListingCard';
 import PropertyShare from '../../components/Listings/PropertyShare';
 import Button from '../../components/ui/Button';
 import Logo from '../../components/Common/Logo';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
@@ -128,6 +131,71 @@ import {
 import { BiSolidFridge } from "react-icons/bi";
 import { IoWaterOutline } from "react-icons/io5";
 import StyledSelect from '../../components/Form/StyledSelect';
+
+// Custom React Hook to transition element widths smoothly when the label text changes.
+// It bypasses the limitation where CSS transitions don't work between 'auto' width values.
+const useSmoothWidth = (label) => {
+    const ref = useRef(null);
+    const prevWidthRef = useRef(null);
+
+    useLayoutEffect(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        // Capture original inline styles to restore them
+        const originalWidth = element.style.width;
+        const originalTransition = element.style.transition;
+        const originalOverflow = element.style.overflow;
+        const originalWhiteSpace = element.style.whiteSpace;
+
+        // Measure natural new width by clearing style and transition temporarily
+        element.style.transition = 'none';
+        element.style.width = 'auto';
+        
+        // Ensure single-line text rendering during measurement
+        element.style.whiteSpace = 'nowrap';
+        
+        const newWidth = element.getBoundingClientRect().width;
+        const prevWidth = prevWidthRef.current;
+
+        if (prevWidth !== null && prevWidth > 0 && newWidth > 0 && prevWidth !== newWidth) {
+            // Apply visual safety guards during transition
+            element.style.overflow = 'hidden';
+            element.style.whiteSpace = 'nowrap';
+
+            // Set to previous width immediately
+            element.style.width = `${prevWidth}px`;
+            
+            // Force a reflow so browser registers the starting fixed width
+            // eslint-disable-next-line no-unused-expressions
+            element.offsetHeight;
+
+            // Enable transition
+            element.style.transition = 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)';
+            element.style.width = `${newWidth}px`;
+            
+            // Update ref
+            prevWidthRef.current = newWidth;
+
+            // Clean up after transition completes
+            const timer = setTimeout(() => {
+                if (ref.current) {
+                    ref.current.style.transition = originalTransition;
+                    ref.current.style.width = originalWidth;
+                    ref.current.style.overflow = originalOverflow;
+                    ref.current.style.whiteSpace = originalWhiteSpace;
+                }
+            }, 300);
+
+            return () => clearTimeout(timer);
+        } else {
+            // Store the initial/new width
+            prevWidthRef.current = newWidth;
+        }
+    }, [label]);
+
+    return ref;
+};
 
 const SOCIAL_PLATFORM_CONFIG = {
     'Facebook': { icon: FiFacebook, color: '#1877F2', bgColor: 'rgba(24, 119, 242, 0.1)', getLink: (v) => v.startsWith('http') ? v : `https://facebook.com/${v}` },
@@ -282,7 +350,9 @@ const TrainIconCool = (props) => (
 );
 
 export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onHeaderLeadingChange, onBookingOpenChange, onClose, onOpenGallery, setHideLayout }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+    const tDynamic = useDynamicTranslation();
     const location = useLocation();
     const { id: routeId } = useParams();
     const id = propId || routeId;
@@ -382,6 +452,40 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     const bookingPhoneRef = useRef(null);
     const bookingEmailRef = useRef(null);
     const bookingConfirmRef = useRef(null);
+
+    // Hook refs for smooth width transitions when language or state labels change
+    const goToHomeRef = useSmoothWidth(t('listing.goToHome'));
+    const contactRef = useSmoothWidth(t('listing.contact'));
+    
+    const saveLabel = isSaved ? t('listing.saved') : t('listing.save');
+    const saveRef = useSmoothWidth(saveLabel);
+
+    const shareRef = useSmoothWidth(t('listing.share'));
+
+    const bookingStatusLabel = activeBooking
+        ? (activeBooking.status === 'confirmed'
+            ? t('listing.confirmed')
+            : activeBooking.status === 'cancelled'
+            ? t('listing.cancelled')
+            : t('listing.requested'))
+        : (listing?.allow_viewing_requests === false
+            ? t('listing.directMessage')
+            : t('listing.bookViewing'));
+    const bookingStatusRef = useSmoothWidth(bookingStatusLabel);
+
+    // Mobile sticky footer refs
+    const mobileContactRef = useSmoothWidth(t('listing.contact'));
+    const mobileBookingStatusRef = useSmoothWidth(bookingStatusLabel);
+
+    // Modal header refs
+    const modalContactRef = useSmoothWidth(t('listing.contact'));
+    const modalBookingStatusRef = useSmoothWidth(bookingStatusLabel);
+    const modalSaveRef = useSmoothWidth(saveLabel);
+    const modalShareRef = useSmoothWidth(t('listing.share'));
+
+    // Map tab refs
+    const googleMapTabRef = useSmoothWidth(t('listing.googleMap', 'Google Map'));
+    const transitMapTabRef = useSmoothWidth(t('filters.transitMap', 'Transit Map'));
 
     const handleImageScroll = () => {
         if (!imageScrollRef.current) return;
@@ -531,7 +635,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
     useEffect(() => {
         if (onTitleChange) {
             if (isBookingOverlayOpen) {
-                onTitleChange("Book Viewing");
+                onTitleChange(t('listing.bookViewing'));
                 if (isModal && onHeaderLeadingChange) {
                     onHeaderLeadingChange(
                         <button
@@ -543,7 +647,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     );
                 }
             } else if (isContactOverlayOpen) {
-                onTitleChange("Let's Connect");
+                onTitleChange(t('listing.letsConnect'));
                 if (isModal && onHeaderLeadingChange) {
                     onHeaderLeadingChange(
                         <button
@@ -555,7 +659,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     );
                 }
             } else {
-                onTitleChange(bookingId ? "Viewing Request" : "Property Details");
+                onTitleChange(bookingId ? t('listing.viewingRequest') : t('listing.propertyDetails'));
                 if (isModal && onHeaderLeadingChange) {
                     onHeaderLeadingChange(
                         <button
@@ -1302,12 +1406,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-400/20 dark:text-indigo-400'
                         }`}
                 >
-                    {listing.listing_type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+                    {listing.listing_type === 'sale' ? t('listing.forSale').toUpperCase() : t('listing.forRent').toUpperCase()}
                 </div>
                 {listing.is_featured && (
                     <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md border bg-amber-400/10 border-amber-400/20 text-amber-700 flex items-center gap-1 animate-fill-med">
                         <SparklesIcon className="w-3 h-3 text-amber-500" />
-                        FEATURED
+                        {t('listing.featured').toUpperCase()}
                     </div>
                 )}
             </div>,
@@ -1326,14 +1430,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 {/* Group 1: Contact & Booking — text + icon */}
                 <div className="flex items-center gap-2">
                     <button
+                        ref={modalContactRef}
                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
                         className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
                     >
                         <PhoneIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                        <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Contact</span>
+                        <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">{t('listing.contact')}</span>
                     </button>
                     {user?.role !== 'sub_agent' && (activeBooking ? (
                         <button
+                            ref={modalBookingStatusRef}
                             onClick={() => setIsStatusOverlayOpen(true)}
                             className={`flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full transition-all duration-300 active:scale-95 whitespace-nowrap border
                                 ${activeBooking.status === 'confirmed'
@@ -1344,22 +1450,23 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 }`}
                         >
                             <LuCalendarCheck2 className="w-[18px] h-[18px] flex-shrink-0" />
-                            <span className="text-[13px] font-semibold capitalize">{activeBooking.status || 'Requested'}</span>
+                            <span className="text-[13px] font-semibold capitalize">{activeBooking.status === 'confirmed' ? t('listing.confirmed') : activeBooking.status === 'cancelled' ? t('listing.cancelled') : t('listing.requested')}</span>
                         </button>
                     ) : (
                         <button
+                            ref={modalBookingStatusRef}
                             onClick={handleBookingClick}
                             className="flex items-center justify-center gap-1.5 min-w-0 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
                         >
                             {listing?.allow_viewing_requests === false ? (
                                 <>
                                     <ChatBubbleOvalLeftEllipsisIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Direct Message</span>
+                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">{t('listing.directMessage')}</span>
                                 </>
                             ) : (
                                 <>
                                     <CalendarDaysIcon className="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0" />
-                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">Book Viewing</span>
+                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">{t('listing.bookViewing')}</span>
                                 </>
                             )}
                         </button>
@@ -1370,6 +1477,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                 <div className="flex items-center gap-2">
                     {user?.role !== 'sub_agent' && (
                         <button
+                            ref={modalSaveRef}
                             onClick={handleToggleSave}
                             disabled={savingListing}
                             className="flex items-center justify-center gap-1.5 lg:min-w-[82px] py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group disabled:opacity-50 whitespace-nowrap"
@@ -1382,17 +1490,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 )}
                             </div>
                             <span className={`text-[13px] font-semibold transition-all duration-300 ${isSaved ? 'text-rose-600' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
-                                {isSaved ? 'Saved' : 'Save'}
+                                {isSaved ? t('listing.saved') : t('listing.save')}
                             </span>
                         </button>
                     )}
-                    <PropertyShare
-                        property={listing}
-                        className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
-                        showLabel
-                        labelClassName="text-[13px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300"
-                        iconClassName="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0"
-                    />
+                    <div ref={modalShareRef} className="inline-block">
+                        <PropertyShare
+                            property={listing}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 px-4 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 active:scale-95 group whitespace-nowrap"
+                            showLabel
+                            labelClassName="text-[13px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300"
+                            iconClassName="w-[18px] h-[18px] text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-300 flex-shrink-0"
+                        />
+                    </div>
                 </div>
 
             </div>,
@@ -1402,7 +1512,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
     // Extract booking UI logic to be reusable for both desktop page and mobile modal
     const renderBookingContent = (isDesktopPage = false) => {
-        const monthYear = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const monthYear = calendarMonth.toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : i18n.language === 'mm' ? 'my-MM' : 'en-US', { month: 'long', year: 'numeric' });
 
         return (
             <div
@@ -1427,7 +1537,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             {/* Centered Title */}
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center max-w-[60%] pointer-events-none">
                                 <span className="text-[16px] lg:text-[18px] font-bold truncate pointer-events-auto text-gray-900 dark:text-white">
-                                    Book Viewing
+                                    {t('listing.bookViewing')}
                                 </span>
                             </div>
 
@@ -1471,22 +1581,22 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     <h2
                                         className="text-[26px] sm:text-[32px] font-black mb-8 tracking-tight text-gray-900 dark:text-white leading-tight relative z-10"
                                     >
-                                        Appointment Successful!
+                                        {t('bookingFlow.successTitle', 'Appointment Successful!')}
                                     </h2>
 
                                     {/* Subtitle badge */}
                                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-6 text-sm font-bold relative z-10" style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 12%, transparent)', color: 'var(--primary-color)' }}>
                                         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary-color)' }} />
-                                        Pending Admin Confirmation
+                                        {t('bookingFlow.pendingConfirmation', 'Pending Admin Confirmation')}
                                     </div>
                                 </div>
 
                                 {/* Footer section */}
                                 <div className="w-full max-w-md flex flex-col items-center mt-auto relative z-10">
-                                    <p
+                                    <div
                                         className="text-base mb-8 text-center font-medium leading-relaxed text-gray-600 dark:text-gray-400"
                                     >
-                                        You can check your viewing request and status at
+                                        {t('bookingFlow.checkStatusAt', 'You can check your viewing request and status at')}
                                         <div className="mt-2">
                                             <span
                                                 className="group inline-flex items-center gap-1.5 font-bold cursor-pointer transition-all duration-300"
@@ -1496,14 +1606,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     window.location.href = '/my-bookings';
                                                 }}
                                             >
-                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300 text-gray-900 dark:text-white">Viewing requests</span>
+                                                <span className="group-hover:text-[var(--primary-color)] transition-colors duration-300 text-gray-900 dark:text-white">
+                                                    {t('bookingFlow.viewingRequests', 'Viewing requests')}
+                                                </span>
                                                 <ArrowRightIcon
                                                     className="w-5 h-5 transition-all duration-300 transform group-hover:translate-x-1"
                                                     style={{ color: 'var(--primary-color)' }}
                                                 />
                                             </span>
                                         </div>
-                                    </p>
+                                    </div>
 
                                     <div className="flex justify-center w-full pb-4">
                                         <Button
@@ -1516,22 +1628,21 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 background: 'var(--primary-color)'
                                             }}
                                         >
-                                            Done
+                                            {t('bookingFlow.done', 'Done')}
                                         </Button>
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-6 lg:gap-12 xl:gap-16 pb-8 lg:pb-12">
-                                {/* Column 1: Purpose, Date & Time */}
                                 <div className="space-y-10">
                                     {/* Purpose - show only the option matching listing type (rent → For Rent, sale → For Buy), auto-selected */}
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 pl-2">I want to</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 pl-2">{t('bookingFlow.iWantTo', 'I want to')}</h3>
                                         {(() => {
                                             const purposeOptions = listing?.listing_type === 'sale'
-                                                ? [{ value: 'buy', label: 'For Buy' }]
-                                                : [{ value: 'rent', label: 'For Rent' }];
+                                                ? [{ value: 'buy', label: t('bookingFlow.forBuy', 'For Buy') }]
+                                                : [{ value: 'rent', label: t('bookingFlow.forRent', 'For Rent') }];
                                             return (
                                                 <div className="flex flex-wrap gap-2 pl-10">
                                                     {purposeOptions.map((opt) => (
@@ -1547,10 +1658,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             );
                                         })()}
                                     </div>
-
+ 
                                     {/* Calendar - half width on lg/xl */}
                                     <div ref={bookingDateRef} className="w-full lg:max-w-[50%]">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">Select Date</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">{t('bookingFlow.selectDatePlaceholder', 'Select Date')}</h3>
                                         {bookingErrors.preferred_date && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_date}</p>
                                         )}
@@ -1565,7 +1676,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 </button>
                                             </div>
                                             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-base font-normal text-gray-900 dark:text-gray-400 py-1">{d}</div>)}
+                                                {t('bookingFlow.weekdays', 'S,M,T,W,T,F,S').split(',').map(d => <div key={d} className="text-base font-normal text-gray-900 dark:text-gray-400 py-1">{d}</div>)}
                                             </div>
                                             <div className="grid grid-cols-7 gap-1">
                                                 {generateCalendarGrid().map((day, i) => {
@@ -1603,7 +1714,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Time Selection - button grid for all screen sizes */}
                                     <div ref={bookingTimeRef}>
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">Select Time</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 pl-2">{t('bookingFlow.time', 'Select Time')}</h3>
                                         {bookingErrors.preferred_time && (
                                             <p className="text-sm text-red-600 font-medium mb-2">{bookingErrors.preferred_time}</p>
                                         )}
@@ -1611,7 +1722,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <div>
                                                 <h4 className="text-base font-normal text-gray-900 dark:text-white mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-                                                    Morning
+                                                    {t('bookingFlow.morning', 'Morning')}
                                                     {fetchingSlots && <span className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin ml-1" />}
                                                 </h4>
                                                 <div className="flex flex-wrap gap-2 pl-10">
@@ -1635,7 +1746,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-300 hover:border-[#222222] dark:hover:border-white/40 hover:bg-white dark:hover:bg-dashboard-hover hover:shadow-md hover:-translate-y-[1px]'
                                                                     } active:scale-[0.98]`}
                                                             >
-                                                                {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
+                                                                {time}{isLocked ? ` (${t('bookingFlow.unavailable', 'Unavailable')})` : ''}{isPast ? ` (${t('bookingFlow.past', 'Past')})` : ''}
                                                             </button>
                                                         );
                                                     })}
@@ -1644,7 +1755,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <div>
                                                 <h4 className="text-base font-normal text-gray-900 dark:text-white mb-3 flex items-center gap-2 pl-5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                    Afternoon
+                                                    {t('bookingFlow.afternoon', 'Afternoon')}
                                                 </h4>
                                                 <div className="flex flex-wrap gap-2 pl-10">
                                                     {afternoonSlots.map((time) => {
@@ -1667,7 +1778,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         : 'border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-700 dark:text-gray-300 hover:border-[#222222] dark:hover:border-white/40 hover:bg-white dark:hover:bg-dashboard-hover hover:shadow-md hover:-translate-y-[1px]'
                                                                     } active:scale-[0.98]`}
                                                             >
-                                                                {time}{isLocked ? ' (Unavailable)' : ''}{isPast ? ' (Past)' : ''}
+                                                                {time}{isLocked ? ` (${t('bookingFlow.unavailable', 'Unavailable')})` : ''}{isPast ? ` (${t('bookingFlow.past', 'Past')})` : ''}
                                                             </button>
                                                         );
                                                     })}
@@ -1676,14 +1787,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         </div>
                                     </div>
                                 </div>
-
+ 
                                 {/* Column 2: Details & Message - half width on lg/xl */}
                                 <div className="space-y-10 w-full lg:max-w-[50%]">
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">Your Details</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">{t('bookingFlow.yourDetails', 'Your Details')}</h3>
                                         <div className="space-y-4 pl-5">
                                             <div ref={bookingFullNameRef}>
-                                                <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Full Name</label>
+                                                <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">{t('bookingFlow.fullName', 'Full Name')}</label>
                                                 <input
                                                     type="text"
                                                     value={bookingForm.full_name}
@@ -1695,7 +1806,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             </div>
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div ref={bookingPhoneRef}>
-                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Phone Number</label>
+                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">{t('bookingFlow.phone', 'Phone Number')}</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.phone}
@@ -1706,7 +1817,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     {bookingErrors.phone && <p className="text-sm text-red-600 font-medium mt-1.5">{bookingErrors.phone}</p>}
                                                 </div>
                                                 <div ref={bookingEmailRef}>
-                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">Email Address</label>
+                                                    <label className="block text-base font-normal text-gray-900 dark:text-white mb-1.5">{t('bookingFlow.email', 'Email Address')}</label>
                                                     <input
                                                         type="text"
                                                         value={bookingForm.email}
@@ -1720,9 +1831,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             </div>
                                         </div>
                                     </div>
-
+ 
                                     <div className="space-y-6">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">Additional Message</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white pl-2">{t('bookingFlow.messageOptional', 'Additional Message')}</h3>
                                         <div className="pl-5">
                                             <textarea
                                                 value={bookingForm.message}
@@ -1738,7 +1849,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         </div>
                                     )}
                                 </div>
-
+ 
                                 {/* Column 3: Summary & Preview */}
                                 <div className="space-y-10">
                                     <div className="space-y-8">
@@ -1746,10 +1857,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <h4
                                                 className="text-lg font-semibold text-gray-900 dark:text-white mb-8 flex items-center justify-between"
                                             >
-                                                <span>Viewing request summary</span>
+                                                <span>{t('bookingFlow.bookingSummary', 'Viewing request summary')}</span>
                                                 {timeLeft && (
                                                     <span className="inline-flex flex-row items-center gap-2 pl-4 pr-4 py-2 rounded-full bg-rose-500 text-white text-sm font-semibold">
-                                                        <span className="w-12 shrink-0 text-left">Locked:</span>
+                                                        <span className="w-12 shrink-0 text-left">{t('bookingFlow.lockActive', 'Locked:')}</span>
                                                         <span className="min-w-[2.25rem] text-left">{timeLeft}</span>
                                                     </span>
                                                 )}
@@ -1761,48 +1872,48 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     className="border-b pb-8 border-gray-100 dark:border-white/10"
                                                 >
                                                     <div className="font-bold text-xl leading-tight mb-3 truncate text-gray-900 dark:text-white">
-                                                        {listing.title}
+                                                        {tDynamic(listing, 'title')}
                                                     </div>
                                                     <div className="flex flex-col gap-2">
                                                         <div className="text-[17px] text-gray-600 dark:text-gray-400 font-medium flex items-center gap-2">
                                                             <span>{formatBedrooms(listing.bedrooms)}</span>
                                                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                                            <span>{listing.bathrooms} bath</span>
+                                                            <span>{listing.bathrooms} {t('bookingFlow.bath', 'bath')}</span>
                                                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                                            <span>{listing.sqm} sqm</span>
+                                                            <span>{listing.sqm} {t('bookingFlow.sqm', 'sqm')}</span>
                                                         </div>
                                                         <div className="text-lg text-gray-900 dark:text-white font-black">
                                                             ฿{listing.price?.toLocaleString()}
-                                                            <span className="text-gray-500 font-medium text-base ml-1">/ month</span>
+                                                            <span className="text-gray-500 font-medium text-base ml-1">{t('bookingFlow.perMonth', '/ month')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
-
+ 
                                                 <div className="grid grid-cols-2 gap-8">
                                                     <div>
                                                         <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-2">
-                                                            Preferred Date
+                                                            {t('bookingFlow.selectedDate', 'Preferred Date')}
                                                         </div>
                                                         <div className="font-semibold text-lg text-gray-900 dark:text-white">
-                                                            {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                                                            {bookingForm.preferred_date ? new Date(bookingForm.preferred_date).toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : i18n.language === 'mm' ? 'my-MM' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <div className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-2">
-                                                            Preferred Time
+                                                            {t('bookingFlow.time', 'Preferred Time')}
                                                         </div>
                                                         <div className="font-semibold text-lg text-gray-900 dark:text-white">
                                                             {bookingForm.preferred_time || '---'}
                                                         </div>
                                                     </div>
                                                 </div>
-
+ 
                                                 {bookingForm.message && (
                                                     <div
                                                         className="pt-4 border-t border-gray-100 dark:border-white/10"
                                                     >
                                                         <div className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                                                            Your Message
+                                                            {t('bookingFlow.yourMessage', 'Your Message')}
                                                         </div>
                                                         <div
                                                             className="text-lg italic leading-relaxed line-clamp-2 pl-4 border-l-2 text-gray-900 dark:text-gray-300 border-gray-200 dark:border-white/20"
@@ -1819,7 +1930,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                         )}
                     </div>
                 </div>
-
+ 
                 {/* Persistent Footer - Confirm checkbox + Send Request; only when not success. Mobile: same padding as detail sticky footer (safe area). */}
                 {!success && (
                     <div
@@ -1838,7 +1949,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         className="w-5 h-5 rounded border-2 border-gray-300 dark:border-white/20 text-primary-600 focus:ring-primary-500 focus:ring-offset-0 bg-transparent"
                                     />
                                     <span className="text-base text-gray-900 dark:text-white font-medium select-none group-hover:text-gray-700 dark:group-hover:text-gray-300">
-                                    I confirm the date and time selected above
+                                    {t('bookingFlow.confirmCheckbox', 'I confirm the date and time selected above')}
                                 </span>
                             </label>
                             {bookingErrors.confirm && (
@@ -1856,7 +1967,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {submitting ? (
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
-                                    'Send Request'
+                                    t('bookingFlow.confirmAppointment', 'Send Request')
                                 )}
                             </button>
                         </div>
@@ -1999,7 +2110,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     </div>
 
                     <h1 className={`text-[16px] font-bold text-gray-900 dark:text-white truncate px-4 text-center flex-1 transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0'}`}>
-                        {listing?.title ? (listing.title.length > 15 ? listing.title.substring(0, 15) + '.....' : listing.title) : ''}
+                        {listing?.title ? (tDynamic(listing, 'title').length > 15 ? tDynamic(listing, 'title').substring(0, 15) + '.....' : tDynamic(listing, 'title')) : ''}
                     </h1>
 
                     <div className="flex items-center gap-2">
@@ -2102,102 +2213,109 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     >
                                                         <ArrowLeftIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => navigate('/')}
-                                                        className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
-                                                        title="Go to Home"
-                                                    >
-                                                        <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
-                                                        <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">Go to Home</span>
-                                                    </button>
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    {/* Badges removed from desktop header for a cleaner look */}
-                                                </div>
-                                            </div>
-
-                                            {/* Title is now in global nav via Portal */}
-
-                                            <div className="flex items-center gap-6">
-                                                <div className="flex items-center gap-2 pr-2">
-                                                    <button
-                                                        onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
-                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
-                                                    >
-                                                        <PhoneIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
-                                                        <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Contact</span>
-                                                    </button>
-                                                    {user?.role !== 'sub_agent' && (activeBooking ? (
-                                                        <button
-                                                            onClick={() => setIsStatusOverlayOpen(true)}
-                                                            className={`h-[44px] flex items-center justify-center gap-2.5 px-5 rounded-full transition-all duration-300 active:scale-[0.98] whitespace-nowrap border hover:shadow-md hover:-translate-y-[1px]
-                                                                ${activeBooking.status === 'confirmed'
-                                                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-600'
-                                                                    : activeBooking.status === 'cancelled'
-                                                                    ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-600 hover:bg-rose-100 hover:border-rose-600'
-                                                                    : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-600 hover:bg-amber-100 hover:border-amber-600'
-                                                                }`}
-                                                        >
-                                                            <LuCalendarCheck2 className="w-5 h-5" />
-                                                            <span className="text-[13px] font-bold capitalize">{activeBooking.status || 'Requested'}</span>
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            onClick={handleBookingClick}
-                                                            className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
-                                                        >
-                                                            {listing?.allow_viewing_requests === false ? (
-                                                                <>
-                                                                    <ChatBubbleOvalLeftEllipsisIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
-                                                                    <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Direct Message</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <CalendarDaysIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
-                                                                    <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">Book Viewing</span>
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                <div className="flex items-center gap-3">
-                                                    {user?.role !== 'sub_agent' && (
-                                                        <button
-                                                            onClick={handleToggleSave}
-                                                            disabled={savingListing}
-                                                            className="h-[44px] flex items-center justify-center gap-2 px-5 min-w-[100px] rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn disabled:opacity-50 whitespace-nowrap"
-                                                        >
-                                                            <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
-                                                                {isSaved ? (
-                                                                    <BsFillHeartFill className="w-[22px] h-[22px] text-rose-500" />
-                                                                ) : (
-                                                                    <BsHeart className="w-[22px] h-[22px] text-gray-800 dark:text-white opacity-60" />
-                                                                )}
-                                                            </div>
-                                                            <span className={`text-[12.5px] font-semibold transition-all ${isSaved ? 'text-rose-600' : 'text-[#222222] dark:text-white'}`}>
-                                                                {isSaved ? 'Saved' : 'Save'}
-                                                            </span>
-                                                        </button>
-                                                    )}
-                                                    <PropertyShare
-                                                        property={listing}
-                                                        className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
-                                                        showLabel
-                                                        labelClassName="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors"
-                                                        iconClassName="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
+                                                     <button
+                                                         ref={goToHomeRef}
+                                                         onClick={() => navigate('/')}
+                                                         className="px-5 h-[44px] flex items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] z-10 group"
+                                                         title={t('listing.goToHome')}
+                                                     >
+                                                         <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                                                         <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">{t('listing.goToHome')}</span>
+                                                     </button>
+                                                 </div>
+ 
+                                                 <div className="flex items-center gap-2">
+                                                     {/* Badges removed from desktop header for a cleaner look */}
+                                                 </div>
+                                             </div>
+ 
+                                             {/* Title is now in global nav via Portal */}
+ 
+                                             <div className="flex items-center gap-6">
+                                                 <div className="flex items-center gap-2 pr-2">
+                                                     <button
+                                                         ref={contactRef}
+                                                         onClick={() => setIsContactOverlayOpen(!isContactOverlayOpen)}
+                                                         className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
+                                                     >
+                                                         <PhoneIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                         <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">{t('listing.contact')}</span>
+                                                     </button>
+                                                     {user?.role !== 'sub_agent' && (activeBooking ? (
+                                                         <button
+                                                             ref={bookingStatusRef}
+                                                             onClick={() => setIsStatusOverlayOpen(true)}
+                                                             className={`h-[44px] flex items-center justify-center gap-2.5 px-5 rounded-full transition-all duration-300 active:scale-[0.98] whitespace-nowrap border hover:shadow-md hover:-translate-y-[1px]
+                                                                 ${activeBooking.status === 'confirmed'
+                                                                     ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-600'
+                                                                     : activeBooking.status === 'cancelled'
+                                                                     ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-600 hover:bg-rose-100 hover:border-rose-600'
+                                                                     : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-600 hover:bg-amber-100 hover:border-amber-600'
+                                                                 }`}
+                                                         >
+                                                             <LuCalendarCheck2 className="w-5 h-5" />
+                                                             <span className="text-[13px] font-bold capitalize">{activeBooking.status === 'confirmed' ? t('listing.confirmed') : activeBooking.status === 'cancelled' ? t('listing.cancelled') : t('listing.requested')}</span>
+                                                         </button>
+                                                     ) : (
+                                                         <button
+                                                             ref={bookingStatusRef}
+                                                             onClick={handleBookingClick}
+                                                             className="h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
+                                                         >
+                                                             {listing?.allow_viewing_requests === false ? (
+                                                                 <>
+                                                                     <ChatBubbleOvalLeftEllipsisIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                                     <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">{t('listing.directMessage')}</span>
+                                                                 </>
+                                                             ) : (
+                                                                 <>
+                                                                     <CalendarDaysIcon className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all" />
+                                                                     <span className="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors">{t('listing.bookViewing')}</span>
+                                                                 </>
+                                                             )}
+                                                         </button>
+                                                     ))}
+                                                 </div>
+ 
+                                                 <div className="flex items-center gap-3">
+                                                     {user?.role !== 'sub_agent' && (
+                                                         <button
+                                                             ref={saveRef}
+                                                             onClick={handleToggleSave}
+                                                             disabled={savingListing}
+                                                             className="h-[44px] flex items-center justify-center gap-2 px-5 min-w-[100px] rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn disabled:opacity-50 whitespace-nowrap"
+                                                         >
+                                                             <div className={`transition-all duration-500 ease-spring ${isSaved ? 'scale-110' : 'group-hover/btn:scale-110'}`}>
+                                                                 {isSaved ? (
+                                                                     <BsFillHeartFill className="w-[22px] h-[22px] text-rose-500" />
+                                                                 ) : (
+                                                                     <BsHeart className="w-[22px] h-[22px] text-gray-800 dark:text-white opacity-60" />
+                                                                 )}
+                                                             </div>
+                                                             <span className={`text-[12.5px] font-semibold transition-all ${isSaved ? 'text-rose-600' : 'text-[#222222] dark:text-white'}`}>
+                                                                 {isSaved ? t('listing.saved') : t('listing.save')}
+                                                             </span>
+                                                         </button>
+                                                     )}
+                                                     <div ref={shareRef} className="inline-block">
+                                                         <PropertyShare
+                                                             property={listing}
+                                                             className="w-full h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
+                                                             showLabel
+                                                             labelClassName="text-[12.5px] font-semibold text-[#222222] dark:text-white transition-colors"
+                                                             iconClassName="w-[22px] h-[22px] text-gray-800 dark:text-white transition-all"
+                                                         />
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         </div>
                                     )}
 
                                     {/* Title & Info - same layout for listing and viewing-requested; viewing date/status inline when bookingId */}
                                     <div ref={bookingId ? bookingBarRef : undefined} className="px-4 md:px-0 lg:px-0 flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-1 pt-2 lg:pt-0">
                                         <div className="flex-1 min-w-0 w-full">
                                             <h1 className="text-[22px] lg:text-3xl font-semibold lg:font-medium text-gray-900 dark:text-white leading-[1.2] mb-1 tracking-tight">
-                                                {listing.title}
+                                                {tDynamic(listing, 'title')}
                                             </h1>
 
 
@@ -2212,7 +2330,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                     <div className="px-4 md:px-0 lg:px-0 text-[22px] lg:text-3xl font-bold lg:font-semibold text-gray-900 dark:text-white mb-2 flex items-baseline">
                                         {formatPrice(listing.price)}
                                         {listing.listing_type === 'rent' && (
-                                            <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">/month</span>
+                                            <span className="text-gray-900 dark:text-gray-300 text-sm lg:text-xl font-normal ml-1 border-b border-gray-400 dark:border-white/20 border-dashed pb-0.5">{t('listing.rentUnit')}</span>
                                         )}
                                     </div>
 
@@ -2228,11 +2346,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <span className="text-[14px] font-bold tracking-wide uppercase whitespace-nowrap">
                                                 {(() => {
                                                     const status = listing.availability_status || "Ready to move in";
+                                                    if (status.toLowerCase() === "ready to move in") {
+                                                        return t('listing.readyToMoveIn');
+                                                    }
                                                     if (status.toLowerCase().startsWith('unavailable until')) {
                                                         const datePart = status.substring(17).trim();
                                                         return (
                                                             <>
-                                                                <span className="font-medium opacity-90">Available</span> <span className="font-black">{datePart}</span>
+                                                                <span className="font-medium opacity-90">{t('listing.available')}</span> <span className="font-black">{datePart}</span>
                                                             </>
                                                         );
                                                     }
@@ -2391,25 +2512,25 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                                 <LiaBedSolid className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{formatBedrooms(listing.bedrooms)}</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{Number(listing.bedrooms) <= 0 ? t('listing.studio') : t('listing.beds', { count: listing.bedrooms })}</div>
                                                 </div>
                                             </div>
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none md:border-t-0 border-gray-100 dark:border-white/5">
                                                 <PiBathtub className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.bathrooms || 0} Bathrooms</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{t('listing.bathrooms', { count: listing.bathrooms || 0 })}</div>
                                                 </div>
                                             </div>
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none lg:border-t-0 border-gray-100 dark:border-white/5">
                                                 <ArrowsPointingOutIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.area || 0} m²</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{t('listing.sqm', { count: listing.area || 0 })}</div>
                                                 </div>
                                             </div>
                                             <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none lg:border-t-0 border-gray-100 dark:border-white/5">
                                                 <RiStairsLine className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                 <div>
-                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.floor ? `${listing.floor} floor` : '-'}</div>
+                                                    <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{listing.floor ? t('listing.floor', { count: listing.floor }) : '-'}</div>
                                                 </div>
                                             </div>
 
@@ -2418,7 +2539,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div className="p-4 md:p-6 flex items-center space-x-3 md:space-x-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-none border-gray-100 dark:border-white/5">
                                                     <TbHammer className="w-6 h-6 md:w-8 md:h-8 text-gray-900 dark:text-white flex-shrink-0" />
                                                     <div>
-                                                        <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">Built in {listing.year_built}</div>
+                                                        <div className="text-[15px] md:text-lg font-medium text-gray-700 dark:text-gray-300 leading-tight">{t('listing.builtIn', { year: listing.year_built })}</div>
                                                     </div>
                                                 </div>
                                             )}
@@ -2443,8 +2564,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div>
                                                     <div className="text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 truncate leading-tight">
                                                         {(listing.station_id || listing.station_name)
-                                                            ? `${formatDistance(listing.distance_to_station)} to ${listing.station_name || listing.station?.name_en || 'Station'}`
-                                                            : 'Near Transit'}
+                                                            ? t('listing.distanceToStation', {
+                                                                distance: formatDistance(listing.distance_to_station),
+                                                                station: listing.station_name || listing.station?.name_en || 'Station'
+                                                              })
+                                                            : t('filters.suggestion_transit')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -2470,46 +2594,54 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                              if (!amenities.length && !buildingFeatures.length && !facilities.length && !propertyFeatures.length && !nearbyPlaces.length) {
                                                  return (
                                                      <div className="mb-12">
-                                                         <p className="text-gray-500 dark:text-gray-400 italic">No specific features or amenities listed.</p>
+                                                         <p className="text-gray-500 dark:text-gray-400 italic">{t('features.noFeatures', 'No specific features or amenities listed.')}</p>
                                                      </div>
                                                  );
                                              }
 
-                                             const renderFeatureSection = (title, featuresArray, showAll, setShowAll) => {
-                                                 if (featuresArray.length === 0) return null;
-                                                 return (
-                                                     <div className="mb-12">
-                                                         <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">{title}</h3>
-                                                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
-                                                             {(showAll ? featuresArray : featuresArray.slice(0, 4)).map(item => (
-                                                                 <div key={item.id} className="flex items-center space-x-4 py-1 group">
-                                                                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
-                                                                         {item.icon || <SparklesIcon className="w-6 h-6 text-yellow-400" />}
-                                                                     </div>
-                                                                     <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{item.label}</span>
-                                                                 </div>
-                                                             ))}
-                                                         </div>
-                                                         {featuresArray.length > 4 && (
-                                                             <Button
-                                                                 variant="ghost"
-                                                                 onClick={() => setShowAll(!showAll)}
-                                                                 className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
-                                                             >
-                                                                 {showAll ? (
-                                                                     <>
-                                                                         See less <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
-                                                                     </>
-                                                                 ) : (
-                                                                     <>
-                                                                         See more ({featuresArray.length - 4} more) <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
-                                                                     </>
-                                                                 )}
-                                                             </Button>
-                                                         )}
-                                                     </div>
-                                                 );
-                                             };
+                                             const translationKeyMap = {
+                                                  'Unit Amenities': 'features.unitAmenities',
+                                                  'Building Features': 'features.buildingFeatures',
+                                                  'Project Facilities': 'features.projectFacilities',
+                                                  'Property Features': 'features.propertyFeatures',
+                                                  'Nearby Places': 'features.nearbyPlaces'
+                                              };
+
+                                              const renderFeatureSection = (title, featuresArray, showAll, setShowAll) => {
+                                                  if (featuresArray.length === 0) return null;
+                                                  return (
+                                                      <div className="mb-12">
+                                                          <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 border-b lg:border-0 border-gray-100 dark:border-white/10 pb-4 lg:pb-0">{t(translationKeyMap[title] || title)}</h3>
+                                                          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                                                              {(showAll ? featuresArray : featuresArray.slice(0, 4)).map(item => (
+                                                                  <div key={item.id} className="flex items-center space-x-4 py-1 group">
+                                                                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-white/10 group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100 dark:group-hover:border-white/10">
+                                                                          {item.icon || <SparklesIcon className="w-6 h-6 text-yellow-400" />}
+                                                                      </div>
+                                                                      <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors tracking-tight text-[15px]">{t('features.' + item.id, item.label)}</span>
+                                                                  </div>
+                                                              ))}
+                                                          </div>
+                                                          {featuresArray.length > 4 && (
+                                                              <Button
+                                                                  variant="ghost"
+                                                                  onClick={() => setShowAll(!showAll)}
+                                                                  className="mt-6 flex items-center text-primary-600 font-bold text-base hover:text-primary-700 transition-colors group p-0 hover:bg-transparent !outline-none !border-0 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 active:!ring-0 shadow-none"
+                                                              >
+                                                                  {showAll ? (
+                                                                      <>
+                                                                          {t('features.seeLess', 'See less')} <ChevronUpIcon className="w-4 h-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
+                                                                      </>
+                                                                  ) : (
+                                                                      <>
+                                                                          {t('features.seeMoreCount', { count: featuresArray.length - 4, defaultValue: `See more (${featuresArray.length - 4} more)` })} <ChevronDownIcon className="w-4 h-4 ml-1 group-hover:translate-y-0.5 transition-transform" />
+                                                                      </>
+                                                                  )}
+                                                              </Button>
+                                                          )}
+                                                      </div>
+                                                  );
+                                              };
 
                                              return (
                                                  <div className="w-full">
@@ -2527,8 +2659,8 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                     {/* Description */}
                                     <div>
-                                        <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">About this listing</h3>
-                                        {listing.description ? (
+                                        <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">{t('listing.about')}</h3>
+                                        {tDynamic(listing, 'description') ? (
                                             <div
                                                 className="text-gray-700 dark:text-gray-300 text-[15px] [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-3 [&>h1]:text-gray-900 dark:[&>h1]:text-white
                                                    [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h2]:text-gray-900 dark:[&>h2]:text-white
@@ -2539,10 +2671,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                    [&>li]:mb-2
                                                    [&>strong]:font-semibold [&>strong]:text-gray-900 dark:[&>strong]:text-white
                                                    [&>a]:text-primary-600 [&>a]:underline"
-                                                dangerouslySetInnerHTML={{ __html: listing.description }}
+                                                dangerouslySetInnerHTML={{ __html: tDynamic(listing, 'description') }}
                                             />
                                         ) : (
-                                            <p className="text-gray-600 dark:text-gray-400">No description provided.</p>
+                                            <p className="text-gray-600 dark:text-gray-400">{t('listing.noDescription')}</p>
                                         )}
                                     </div>
 
@@ -2552,22 +2684,24 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                             <div className="mt-12 px-2 md:px-0 lg:px-0">
                                                 <div className="mb-8 flex flex-wrap items-center gap-3">
                                                     <button
+                                                        ref={googleMapTabRef}
                                                         onClick={() => setActiveMapTab('google')}
                                                         className={`h-[44px] px-6 rounded-full text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.98] ${activeMapTab === 'google'
                                                             ? 'bg-[#222222] text-white border border-[#222222] shadow-md -translate-y-[1px]'
                                                             : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]'
                                                             }`}
                                                     >
-                                                        Google Map
+                                                        {t('listing.googleMap', 'Google Map')}
                                                     </button>
                                                     <button
+                                                        ref={transitMapTabRef}
                                                         onClick={() => setActiveMapTab('transit')}
                                                         className={`h-[44px] px-6 rounded-full text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.98] ${activeMapTab === 'transit'
                                                             ? 'bg-[#222222] text-white border border-[#222222] shadow-md -translate-y-[1px]'
                                                             : 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]'
                                                             }`}
                                                     >
-                                                        Transit Map
+                                                        {t('filters.transitMap', 'Transit Map')}
                                                     </button>
                                                 </div>
 
@@ -2604,7 +2738,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{line.name}</span>
                                                                     </div>
                                                                 ))}
-                                                            </div>
+                                                                    </div>
 
                                                             <div className="absolute bottom-6 right-6 z-40 flex items-end gap-8">
                                                                 {isNavPadExpanded && (
@@ -2614,7 +2748,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             <button
                                                                                 onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x, y: prev.pan.y + 100 }, prev.zoom) }))}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Pan Up"
+                                                                                title={t('filters.panUp')}
                                                                             >
                                                                                 <ChevronUpIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
@@ -2623,21 +2757,21 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             <button
                                                                                 onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x + 100, y: prev.pan.y }, prev.zoom) }))}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Pan Left"
+                                                                                title={t('filters.panLeft')}
                                                                             >
                                                                                 <ChevronLeftIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
                                                                             <button
                                                                                 onClick={handleTransitRecenter}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-[#222222] text-white shadow-2xl rounded-full hover:bg-black transition-all active:scale-90 group"
-                                                                                title="Recenter Station"
+                                                                                title={t('filters.recenterStation')}
                                                                             >
                                                                                 <ArrowPathIcon className="w-5 h-5 stroke-[2.5] group-active:rotate-180 transition-transform duration-500" />
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x - 100, y: prev.pan.y }, prev.zoom) }))}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Pan Right"
+                                                                                title={t('filters.panRight')}
                                                                             >
                                                                                 <ChevronRightIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
@@ -2646,7 +2780,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             <button
                                                                                 onClick={() => setMapState(prev => ({ ...prev, pan: constrainPan({ x: prev.pan.x, y: prev.pan.y - 100 }, prev.zoom) }))}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Pan Down"
+                                                                                title={t('filters.panDown')}
                                                                             >
                                                                                 <ChevronDownIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
@@ -2672,7 +2806,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                     setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
                                                                                 }}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Zoom In"
+                                                                                title={t('filters.zoomIn')}
                                                                             >
                                                                                 <PlusIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
@@ -2691,7 +2825,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                                     setMapState(prev => ({ ...prev, zoom: nextZoom, pan: constrainPan(newPan, nextZoom) }));
                                                                                 }}
                                                                                 className="w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group"
-                                                                                title="Zoom Out"
+                                                                                title={t('filters.zoomOut')}
                                                                             >
                                                                                 <MinusIcon className="w-5 h-5 stroke-[2.5]" />
                                                                             </button>
@@ -2700,7 +2834,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                     <button
                                                                         onClick={() => setIsNavPadExpanded(!isNavPadExpanded)}
                                                                         className={`w-12 h-12 flex items-center justify-center bg-white/70 dark:bg-dashboard-card/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/50 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/90 dark:hover:bg-white/20 transition-all active:scale-90 group`}
-                                                                        title={isNavPadExpanded ? "Collapse Controls" : "Expand Controls"}
+                                                                        title={isNavPadExpanded ? t('filters.collapseControls') : t('filters.expandControls')}
                                                                     >
                                                                         <ArrowsPointingOutIcon className={`w-5 h-5 stroke-[2.5] transition-transform duration-500 ${isNavPadExpanded ? 'rotate-180 scale-90' : ''}`} />
                                                                     </button>
@@ -2862,14 +2996,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                         <Modal
                                             isOpen={isContactOverlayOpen}
                                             onClose={() => setIsContactOverlayOpen(false)}
-                                            title={listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
+                                            title={listing?.allow_viewing_requests === false ? t('listing.bookingUnavailable') : t('listing.letsConnect')}
                                             size="md"
                                         >
                                             <div className="p-8">
                                                 <p className={`mb-8 font-medium ${listing?.allow_viewing_requests === false ? 'text-[#222222] dark:text-gray-300 text-[17px]' : 'text-[15px] text-gray-500'}`}>
                                                     {listing?.allow_viewing_requests === false 
-                                                        ? "Please contact the agent directly to get viewing room"
-                                                        : "Choose your preferred way to reach out to our team of experts. We're here to help you find your perfect home."
+                                                        ? t('listing.pleaseContactAgent')
+                                                        : t('listing.connectWithTeamDesc')
                                                     }
                                                 </p>
                                                 <div className="grid grid-cols-1 gap-4">
@@ -2887,12 +3021,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             {linkCopied ? (
                                                                 <>
                                                                     <SolidCheckCircleIcon className="w-5 h-5 text-emerald-500" />
-                                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
+                                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('listing.copied')}</span>
                                                                 </>
                                                             ) : (
                                                                 <>
                                                                     <DocumentDuplicateIcon className="w-[22px] h-[22px]" />
-                                                                    Copy Property Link
+                                                                    {t('listing.copyLink')}
                                                                 </>
                                                             )}
                                                         </button>
@@ -2906,20 +3040,20 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 setIsStatusOverlayOpen(false);
                                                 setTimeout(() => setIsCancelModalOpen(false), 500);
                                             }}
-                                            title={isCancelModalOpen ? "Cancel Viewing?" : "Request Details"}
+                                            title={isCancelModalOpen ? t('bookings.cancelTitle') : t('listing.requestDetails')}
                                             size="md"
                                         >
                                             <div className="p-8 space-y-8 animate-in fade-in duration-300">
                                                 {!isCancelModalOpen ? (
                                                     <>
                                                         <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
-                                                            <div className="text-lg font-bold text-[#222222] dark:text-white mb-1">{listing.title}</div>
+                                                            <div className="text-lg font-bold text-[#222222] dark:text-white mb-1">{tDynamic(listing, 'title')}</div>
                                                         </div>
 
                                                         {/* Large Date Display (matches mobile) */}
                                                         <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
                                                             <div className="flex flex-col items-center text-center">
-                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-wider">Preferred Date</div>
+                                                                <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-wider">{t('listing.preferredDate')}</div>
                                                                 <span className="text-[84px] font-black leading-none text-[#222222] dark:text-white tracking-tighter">
                                                                     {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
                                                                 </span>
@@ -2945,13 +3079,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         {/* Status & Requested On Grid */}
                                                         <div className="grid grid-cols-2 gap-4 pt-4">
                                                             <div className="text-center border-r border-gray-100 dark:border-white/10">
-                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{t('listing.status')}</div>
                                                                 <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
-                                                                    {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                                    {(() => {
+                                                                        const status = (viewedBooking || activeBooking)?.status;
+                                                                        if (status === 'confirmed') return t('listing.confirmed');
+                                                                        if (status === 'cancelled') return t('listing.cancelled');
+                                                                        if (status === 'requested') return t('listing.requested');
+                                                                        return t('listing.pending');
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                             <div className="text-center">
-                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
+                                                                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{t('listing.requestedLabel')}</div>
                                                                 <div className="font-bold text-lg text-gray-900 dark:text-white">
                                                                     {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
                                                                 </div>
@@ -2960,7 +3100,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                         {(viewedBooking || activeBooking)?.message && (
                                                             <div className="pt-6 border-t border-gray-100 dark:border-white/10">
-                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">Your Message</div>
+                                                                <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider">{t('listing.yourMessage')}</div>
                                                                 <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed italic">
                                                                     "{(viewedBooking || activeBooking).message}"
                                                                 </div>
@@ -2970,6 +3110,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         {/* Desktop Action Buttons */}
                                                         {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
                                                             <div className="flex gap-3 pt-4">
+                                                                <button
+                                                                    onClick={() => setIsCancelModalOpen(true)}
+                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-rose-50 dark:bg-rose-500/10 border border-transparent text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
+                                                                >
+                                                                    {t('listing.cancel')}
+                                                                </button>
                                                                 <button
                                                                     onClick={() => {
                                                                         const booking = viewedBooking || activeBooking;
@@ -2994,16 +3140,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                         setIsStatusOverlayOpen(false);
                                                                         setIsBookingOverlayOpen(true);
                                                                     }}
-                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap text-[#222222] dark:text-white font-bold text-[13px]"
+                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-[#222222] dark:bg-white border border-[#222222] dark:border-white text-white dark:text-dashboard-dark font-bold text-[13px] hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                                 >
                                                                     <PencilSquareIcon className="w-5 h-5" />
-                                                                    Edit
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setIsCancelModalOpen(true)}
-                                                                    className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:border-rose-600 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
-                                                                >
-                                                                    Cancel
+                                                                    {t('listing.edit')}
                                                                 </button>
                                                             </div>
                                                         )}
@@ -3011,15 +3151,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 ) : (
                                                     <div className="animate-in slide-in-from-right-4 duration-300">
                                                         <div className="text-center mb-8">
-                                                            <p className="text-gray-500 dark:text-gray-400 font-medium">Please let us know why you need to cancel this appointment.</p>
+                                                            <p className="text-gray-500 dark:text-gray-400 font-medium">{t('bookings.cancelDesc')}</p>
                                                         </div>
 
                                                         <div className="mb-8">
-                                                            <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">Reason for cancellation</label>
+                                                            <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">{t('bookings.reasonLabel')}</label>
                                                             <textarea
                                                                 value={cancelReason}
                                                                 onChange={(e) => setCancelReason(e.target.value)}
-                                                                placeholder="e.g., Change of plans, found another property..."
+                                                                placeholder={t('bookings.reasonPlaceholder')}
                                                                 className="w-full h-48 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400 shadow-inner"
                                                             />
                                                         </div>
@@ -3030,7 +3170,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={cancelling}
                                                                 className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-bold text-[13px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                             >
-                                                                Go Back
+                                                                {t('bookings.goBack')}
                                                             </button>
                                                             <button
                                                                 onClick={handleCancelAppointment}
@@ -3042,7 +3182,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             >
                                                                 {cancelling ? (
                                                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                                ) : 'Confirm Cancellation'}
+                                                                ) : t('bookings.confirmCancellation')}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -3084,10 +3224,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                 <div className="flex-1 overflow-y-auto modal-scrollable z-[60] p-6 pb-10 pt-2 overscroll-contain">
                                                     <div className="w-full text-center mb-4">
                                                         <h3 className="font-bold text-gray-900 dark:text-white text-[22px] tracking-tight mb-2">
-                                                            {listing?.allow_viewing_requests === false ? "Booking Unavailable" : "Let's Connect"}
+                                                            {listing?.allow_viewing_requests === false ? t('listing.bookingUnavailable') : t('listing.letsConnect')}
                                                         </h3>
                                                         <p className={`font-medium ${listing?.allow_viewing_requests === false ? 'text-[#222222] dark:text-gray-300 text-[15px]' : 'text-gray-500 dark:text-gray-400 text-[14px]'}`}>
-                                                            {listing?.allow_viewing_requests === false ? "Please contact the agent directly to get viewing room" : "Connect with our team"}
+                                                            {listing?.allow_viewing_requests === false ? t('listing.pleaseContactAgent') : t('listing.connectWithTeam')}
                                                         </p>
                                                     </div>
                                                     <div className="w-full max-w-md mt-6 space-y-4">
@@ -3105,12 +3245,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 {linkCopied ? (
                                                                     <>
                                                                         <SolidCheckCircleIcon className="w-5 h-5 text-emerald-500" />
-                                                                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
+                                                                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('listing.copied')}</span>
                                                                     </>
                                                                 ) : (
                                                                     <>
                                                                         <DocumentDuplicateIcon className="w-5 h-5" />
-                                                                        Copy Property Link
+                                                                        {t('listing.copyLink')}
                                                                     </>
                                                                 )}
                                                             </button>
@@ -3160,17 +3300,17 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     {!isCancelModalOpen ? (
                                                         <div className="w-full animate-fade-in">
                                                             <div className="w-full text-center mb-4">
-                                                                <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tighter">Request Details</h3>
+                                                                <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tighter">{t('listing.requestDetails')}</h3>
                                                             </div>
 
                                                             <div className="w-full space-y-8 text-left">
                                                                 <div className="pb-4 border-b border-gray-100 dark:border-white/10 text-center">
-                                                                    <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{listing.title}</div>
+                                                                    <div className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{tDynamic(listing, 'title')}</div>
                                                                 </div>
 
                                                                 <div className="flex flex-col items-center justify-center py-6 border-b border-gray-100 dark:border-white/10">
                                                                     <div className="flex flex-col items-center text-center">
-                                                                        <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4">Preferred Date</div>
+                                                                        <div className="text-[14px] font-bold text-gray-400 dark:text-gray-500 mb-4">{t('listing.preferredDate')}</div>
                                                                         <span className="text-[84px] font-black leading-none text-gray-900/80 dark:text-white tracking-tighter">
                                                                             {(viewedBooking || activeBooking)?.preferred_date ? new Date((viewedBooking || activeBooking).preferred_date).getDate() : '--'}
                                                                         </span>
@@ -3195,13 +3335,19 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                                 <div className="grid grid-cols-2 gap-4 pt-4">
                                                                     <div className="text-center border-r border-gray-100 dark:border-white/10">
-                                                                        <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                                                                        <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{t('listing.status')}</div>
                                                                         <div className={`font-bold text-lg capitalize ${(viewedBooking || activeBooking)?.status === 'confirmed' ? 'text-emerald-600' : (viewedBooking || activeBooking)?.status === 'cancelled' ? 'text-rose-600' : 'text-amber-600'}`}>
-                                                                            {(viewedBooking || activeBooking)?.status || 'Pending'}
+                                                                            {(() => {
+                                                                                const status = (viewedBooking || activeBooking)?.status;
+                                                                                if (status === 'confirmed') return t('listing.confirmed');
+                                                                                if (status === 'cancelled') return t('listing.cancelled');
+                                                                                if (status === 'requested') return t('listing.requested');
+                                                                                return t('listing.pending');
+                                                                            })()}
                                                                         </div>
                                                                     </div>
                                                                     <div className="text-center">
-                                                                        <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Requested</div>
+                                                                        <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{t('listing.requestedLabel')}</div>
                                                                         <div className="font-bold text-lg text-gray-900 dark:text-white">
                                                                             {(viewedBooking || activeBooking)?.created_at ? new Date((viewedBooking || activeBooking).created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '---'}
                                                                         </div>
@@ -3210,7 +3356,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                                                 {(viewedBooking || activeBooking)?.message && (
                                                                     <div className="pt-6 border-t border-gray-100 dark:border-white/10">
-                                                                        <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3">Your Message</div>
+                                                                        <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-3">{t('listing.yourMessage')}</div>
                                                                         <div className="text-lg font-medium text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-white/20 leading-relaxed">
                                                                             "{(viewedBooking || activeBooking).message}"
                                                                         </div>
@@ -3221,16 +3367,16 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                     ) : (
                                                         <div className="w-full animate-fade-in">
                                                             <div className="text-center mb-8">
-                                                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Cancel Viewing?</h3>
-                                                                <p className="text-gray-500 dark:text-gray-400 font-medium">Please let us know why you need to cancel this appointment.</p>
+                                                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('bookings.cancelTitle')}</h3>
+                                                                <p className="text-gray-500 dark:text-gray-400 font-medium">{t('bookings.cancelDesc')}</p>
                                                             </div>
 
                                                             <div className="mb-8">
-                                                                <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">Reason for cancellation</label>
+                                                                <label className="block text-[14px] font-bold text-gray-700 dark:text-gray-300 mb-3 ml-1">{t('bookings.reasonLabel')}</label>
                                                                 <textarea
                                                                     value={cancelReason}
                                                                     onChange={(e) => setCancelReason(e.target.value)}
-                                                                    placeholder="e.g., Change of plans, found another property..."
+                                                                    placeholder={t('bookings.reasonPlaceholder')}
                                                                     className="w-full h-48 p-4 bg-gray-50 dark:bg-white/5 border border-transparent focus:border-gray-200 dark:focus:border-white/10 rounded-[20px] text-gray-900 dark:text-white text-[15px] resize-none outline-none transition-all placeholder:text-gray-400"
                                                                 />
                                                             </div>
@@ -3244,6 +3390,15 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                         <>
                                                             {(viewedBooking?.status?.toLowerCase() !== 'cancelled' && activeBooking?.status?.toLowerCase() !== 'cancelled') && (
                                                                 <div className="w-full flex flex-row gap-3">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setIsCancelModalOpen(true);
+                                                                        }}
+                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-rose-50 dark:bg-rose-500/10 border border-transparent text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
+                                                                    >
+                                                                        {t('listing.cancel')}
+                                                                    </button>
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -3269,19 +3424,10 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                             setIsStatusOverlayOpen(false);
                                                                             setIsBookingOverlayOpen(true);
                                                                         }}
-                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap text-[#222222] dark:text-white font-bold text-[13px]"
+                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-[#222222] dark:bg-white border border-[#222222] dark:border-white text-white dark:text-dashboard-dark font-bold text-[13px] hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                                     >
                                                                         <PencilSquareIcon className="w-4 h-4" />
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setIsCancelModalOpen(true);
-                                                                        }}
-                                                                        className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-[13px] hover:border-rose-600 dark:hover:border-rose-500 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] whitespace-nowrap"
-                                                                    >
-                                                                        Cancel
+                                                                        {t('listing.edit')}
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -3293,7 +3439,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                                 disabled={cancelling}
                                                                 className="flex-1 h-[44px] flex items-center justify-center gap-2 px-5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-[#222222] dark:text-white font-bold text-[13px] hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group/btn whitespace-nowrap"
                                                             >
-                                                                Go Back
+                                                                {t('bookings.goBack')}
                                                             </button>
                                                             <button
                                                                 onClick={handleCancelAppointment}
@@ -3305,7 +3451,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                                             >
                                                                 {cancelling ? (
                                                                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                                                                ) : 'Confirm'}
+                                                                ) : t('listing.confirm')}
                                                             </button>
                                                         </div>
                                                     )}
@@ -3335,13 +3481,14 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                     <div className="flex items-baseline">
                         <span className="text-[17px] font-extrabold text-gray-900 dark:text-white leading-tight">{formatPrice(listing.price)}</span>
                         {listing.listing_type === 'rent' && (
-                            <span className="text-gray-900 dark:text-gray-300 text-[13px] font-normal ml-1">/month</span>
+                            <span className="text-gray-900 dark:text-gray-300 text-[13px] font-normal ml-1">{t('listing.rentUnit')}</span>
                         )}
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <button
+                        ref={mobileContactRef}
                         onClick={() => setIsContactOverlayOpen(true)}
                         className="h-[44px] px-5 rounded-full text-[13px] font-semibold
                             bg-[#222222] dark:bg-white
@@ -3353,11 +3500,12 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             transition-all duration-300 ease-out active:scale-[0.98]
                             flex items-center justify-center whitespace-nowrap"
                     >
-                        <span>Contact</span>
+                        <span>{t('listing.contact')}</span>
                     </button>
 
                     {user?.role !== 'sub_agent' && (activeBooking ? (
                         <button
+                            ref={mobileBookingStatusRef}
                             onClick={() => setIsStatusOverlayOpen(true)}
                             className={`h-[44px] px-5 rounded-full text-[13px] font-semibold
                                 border transition-all duration-300 ease-out active:scale-[0.98]
@@ -3372,10 +3520,11 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 }`}
                         >
                             <LuCalendarCheck2 className="w-5 h-5 text-white" />
-                            <span className="capitalize">{activeBooking.status || 'Requested'}</span>
+                            <span className="capitalize">{activeBooking.status === 'confirmed' ? t('listing.confirmed') : activeBooking.status === 'cancelled' ? t('listing.cancelled') : t('listing.requested')}</span>
                         </button>
                     ) : (
                         <button
+                            ref={mobileBookingStatusRef}
                             onClick={handleBookingClick}
                             className="h-[44px] px-5 rounded-full text-[13px] font-semibold
                                 bg-primary-600 border border-primary-600
@@ -3385,7 +3534,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 transition-all duration-300 ease-out active:scale-[0.98]
                                 whitespace-nowrap"
                         >
-                            {listing?.allow_viewing_requests === false ? 'Direct Message' : 'Book Viewing'}
+                            {listing?.allow_viewing_requests === false ? t('listing.directMessage') : t('listing.bookViewing')}
                         </button>
                     ))}
                 </div>
@@ -3397,6 +3546,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 const MODAL_SIZE_CLASS = '!p-0 !m-0 sm:!m-4 w-full h-[100dvh] sm:w-[94vw] sm:h-[94vh] !max-w-full sm:!max-w-[94vw] overflow-hidden shadow-none sm:shadow-2xl transition-all duration-500';
 
 const ListingDetailPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { id } = useParams();
     const [searchParams] = useSearchParams();
@@ -3405,7 +3555,7 @@ const ListingDetailPage = () => {
     const filterBarSlot = context?.filterBarSlot;
     const setHideLayout = context?.setHideLayout;
     const bookingId = searchParams.get('bookingId');
-    const [modalTitle, setModalTitle] = useState(bookingId ? 'Viewing Request' : 'Property Details');
+    const [modalTitle, setModalTitle] = useState(bookingId ? t('listing.viewingRequest') : t('listing.propertyDetails'));
     const [headerLeading, setHeaderLeading] = useState(
         <button
             onClick={() => navigate(-1)}
@@ -3418,15 +3568,15 @@ const ListingDetailPage = () => {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [galleryPayload, setGalleryPayload] = useState(null);
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-
+ 
     useEffect(() => {
         const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
+ 
     useEffect(() => {
-        setModalTitle(bookingId ? 'Viewing Request' : 'Property Details');
+        setModalTitle(bookingId ? t('listing.viewingRequest') : t('listing.propertyDetails'));
         setHeaderLeading(
             <button
                 onClick={() => navigate(-1)}
@@ -3435,7 +3585,7 @@ const ListingDetailPage = () => {
                 <ArrowLeftIcon className="w-6 h-6 text-gray-900 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
             </button>
         );
-    }, [bookingId, navigate]);
+    }, [bookingId, navigate, t]);
 
     const openGallery = (payload) => {
         if (payload?.images?.length) {

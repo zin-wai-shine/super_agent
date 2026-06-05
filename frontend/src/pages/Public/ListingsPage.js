@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useOutletContext, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { saveListing, unsaveListing } from '../../services/savedListingsApi';
 import { useTenant } from '../../contexts/TenantContext';
@@ -120,6 +121,10 @@ const getSelectedOption = (options, value) => {
 };
 
 const ListingsPage = () => {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
+    const [langMenuOpen, setLangMenuOpen] = useState(false);
+    const langMenuRef = useRef(null);
     const { user, isAuthenticated, savedListingIds, setSavedListingIds } = useAuth();
     const navigate = useNavigate();
     const { agent, actual_min_price, actual_max_price, isMainDomain } = useTenant();
@@ -594,6 +599,28 @@ const ListingsPage = () => {
         return () => clearTimeout(t);
     }, [isSidebarClosing]);
 
+    const [isSidebarScrolling, setIsSidebarScrolling] = useState(false);
+    const sidebarScrollTimeoutRef = useRef(null);
+
+    const handleSidebarScroll = useCallback(() => {
+        setIsSidebarScrolling(true);
+        if (sidebarScrollTimeoutRef.current) {
+            clearTimeout(sidebarScrollTimeoutRef.current);
+        }
+        sidebarScrollTimeoutRef.current = setTimeout(() => {
+            setIsSidebarScrolling(false);
+        }, 800);
+    }, []);
+
+    // Clean up timeout on unmount or close
+    useEffect(() => {
+        return () => {
+            if (sidebarScrollTimeoutRef.current) {
+                clearTimeout(sidebarScrollTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('listings_view_mode') || 'grid');
     const [priceLimits, setPriceLimits] = useState({ min: 0, max: 100000000 });
     const [priceFormat, setPriceFormat] = useState('short');
@@ -672,8 +699,10 @@ const ListingsPage = () => {
 
         if (isSidebarOpen) {
             document.body.classList.add('filter-open');
+            document.documentElement.classList.add('filter-open');
         } else {
             document.body.classList.remove('filter-open');
+            document.documentElement.classList.remove('filter-open');
             document.body.style.paddingRight = '';
         }
 
@@ -691,6 +720,7 @@ const ListingsPage = () => {
 
         return () => { 
             document.body.classList.remove('filter-open');
+            document.documentElement.classList.remove('filter-open');
             document.body.style.paddingRight = '';
         };
     }, [isGoogleMapOpen, isSidebarOpen, setMobileBottomNavVisible]);
@@ -907,6 +937,9 @@ const ListingsPage = () => {
             if (transitSearchRef.current && !transitSearchRef.current.contains(event.target)) {
                 setShowTransitResults(false);
             }
+            if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+                setLangMenuOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -917,7 +950,7 @@ const ListingsPage = () => {
         const saved = JSON.parse(localStorage.getItem('listing_filters') || '{}');
         return {
             type: searchParams.get('type') || saved.type || '',
-            listing_type: searchParams.get('listing_type') || saved.listing_type || '',
+            listing_type: searchParams.get('listing_type') || saved.listing_type || 'rent',
             min_price: searchParams.get('min_price') || saved.min_price || '',
             max_price: searchParams.get('max_price') || saved.max_price || '',
             bedrooms: searchParams.get('bedrooms') || saved.bedrooms || '',
@@ -931,12 +964,60 @@ const ListingsPage = () => {
             max_area: searchParams.get('max_area') || saved.max_area || '',
         };
     });
-    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
+    const [pendingFilters, setPendingFilters] = useState(() => ({ type: '', listing_type: 'rent', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' }));
     const prevSidebarOpenRef = useRef(false);
     const skipNextUrlSyncRef = useRef(false);
     const [exitingChipKeys, setExitingChipKeys] = useState(new Set());
 
     const [searchTerm, setSearchTerm] = useState(filters.search);
+    const [isMobileSearchFocused, setIsMobileSearchFocused] = useState(false);
+    const [isMobileSearchScrolled, setIsMobileSearchScrolled] = useState(false);
+
+    useEffect(() => {
+        if (!isMobileSearchFocused) {
+            setIsMobileSearchScrolled(false);
+        }
+    }, [isMobileSearchFocused]);
+
+    const [recentSearches, setRecentSearches] = useState(() => {
+        try {
+            const saved = localStorage.getItem('recentSearches');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const saveRecentSearch = (term) => {
+        if (!term || !term.trim()) return;
+        setRecentSearches(prev => {
+            const next = [term.trim(), ...prev.filter(t => t !== term.trim())].slice(0, 5);
+            localStorage.setItem('recentSearches', JSON.stringify(next));
+            return next;
+        });
+    };
+
+    const searchResults = useMemo(() => {
+        if (!searchTerm) return [];
+        const lowerVal = searchTerm.toLowerCase();
+        return (listings || []).filter(l => 
+            (l.title && l.title.toLowerCase().includes(lowerVal)) || 
+            (l.station_name && l.station_name.toLowerCase().includes(lowerVal)) ||
+            (l.address && l.address.toLowerCase().includes(lowerVal))
+        ).slice(0, 10);
+    }, [searchTerm, listings]);
+
+    const handleResultClick = (listing) => {
+        saveRecentSearch(searchTerm);
+        setIsMobileSearchFocused(false);
+        if (window.innerWidth >= 1024) {
+            navigate(`/listings/${listing.id}`);
+        } else {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('detail', listing.id);
+            setSearchParams(newParams);
+        }
+    };
 
     const FILTER_KEYS = ['type', 'listing_type', 'min_price', 'max_price', 'bedrooms', 'bathrooms', 'station_id', 'max_distance_to_station', 'developer_id', 'project_id', 'search', 'min_area', 'max_area'];
     const toSerializableFilters = (obj) => {
@@ -969,7 +1050,7 @@ const ListingsPage = () => {
         const params = new URLSearchParams(searchParams);
         const newFilters = {
             type: params.get('type') || '',
-            listing_type: params.get('listing_type') || '',
+            listing_type: params.get('listing_type') || 'rent',
             min_price: params.get('min_price') || '',
             max_price: params.get('max_price') || '',
             bedrooms: params.get('bedrooms') || '',
@@ -1360,8 +1441,8 @@ const ListingsPage = () => {
             return { ...prev, [key]: [...set].join(',') };
         });
     };
-    const emptyPendingFilters = { type: '', listing_type: '', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' };
-    const hasActivePendingFilters = Object.keys(emptyPendingFilters).some(k => (pendingFilters[k] || '') !== '');
+    const emptyPendingFilters = { type: '', listing_type: 'rent', min_price: '', max_price: '', bedrooms: '', bathrooms: '', station_id: '', max_distance_to_station: '', developer_id: '', project_id: '', search: '', min_area: '', max_area: '' };
+    const hasActivePendingFilters = Object.keys(emptyPendingFilters).some(k => (pendingFilters[k] || '') !== (emptyPendingFilters[k] || ''));
     const clearPendingFilters = () => {
         setPendingFilters({ ...emptyPendingFilters });
         setSearchTerm('');
@@ -1417,7 +1498,7 @@ const ListingsPage = () => {
         setFitBoundsNonce(prev => prev + 1);
         setFilters({
             type: '',
-            listing_type: '',
+            listing_type: 'rent',
             min_price: '',
             max_price: '',
             bedrooms: '',
@@ -1453,8 +1534,10 @@ const ListingsPage = () => {
     }
     if (filters.listing_type) {
         filters.listing_type.split(',').filter(Boolean).forEach(v => {
-            const opt = listingTypeOptions.find(o => o.value === v);
-            if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+            if (v !== 'rent') {
+                const opt = listingTypeOptions.find(o => o.value === v);
+                if (opt) activeFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+            }
         });
     }
     if (filters.bedrooms) {
@@ -1497,8 +1580,10 @@ const ListingsPage = () => {
     }
     if (pendingFilters.listing_type) {
         (pendingFilters.listing_type || '').split(',').filter(Boolean).forEach(v => {
-            const opt = listingTypeOptions.find(o => o.value === v);
-            if (opt) pendingFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+            if (v !== 'rent') {
+                const opt = listingTypeOptions.find(o => o.value === v);
+                if (opt) pendingFiltersList.push({ label: opt.label, key: 'listing_type', valueToRemove: v });
+            }
         });
     }
     if (pendingFilters.bedrooms) {
@@ -1535,7 +1620,7 @@ const ListingsPage = () => {
                 {/* Selected (pending) filters — chips with × to remove; only updates draft */}
                 {pendingFiltersList.length > 0 && (
                     <div className="space-y-2">
-                        <h2 className="text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-white">Selected</h2>
+                        <h2 className="text-[15px] md:text-[13px] font-semibold text-gray-900 dark:text-white">{t('filters.selected')}</h2>
                         <div className="flex flex-wrap gap-2">
                             {pendingFiltersList.map(({ label, key, valueToRemove }) => {
                                 const chipKey = valueToRemove != null ? `${key}-${valueToRemove}` : key;
@@ -1569,56 +1654,50 @@ const ListingsPage = () => {
                     </div>
                 )}
 
-                {/* Text Search — draft only; applies when "Show X properties" */}
-                <div className="relative mb-7">
-                    <input
-                        type="text"
-                        value={pendingFilters.search || ''}
-                        onChange={(e) => {
-                            const v = e.target.value;
-                            updatePendingFilters({ search: v });
-                            setSearchTerm(v);
-                        }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } }}
-                        placeholder="Keyword, location, property name..."
-                        className="w-full h-[52px] sm:h-[48px] pl-6 pr-12 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-dashboard-card text-gray-900 dark:text-white text-[15px] font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-800 dark:focus:border-white/60 transition-all"
-                    />
-                    {pendingFilters.search && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                updatePendingFilters({ search: '' });
-                                setSearchTerm('');
-                            }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                        >
-                            <XMarkIcon className="w-5 h-5 stroke-[2.5]" />
-                        </button>
-                    )}
-                </div>
+
 
                 {/* Filter Sections */}
                 <div className="space-y-7">
 
 
-                    {/* LISTING TYPE (Buy/Rent) — draft only; show only Sale and Rent (no All option) */}
+                    {/* LISTING TYPE — segmented control design (For Rent first, #222222 active color) */}
                     <FilterCard
-                        title="Listing Type"
+                        title={t('filters.listingType')}
                         icon={FilterIcons.tag}
                     >
-                        <div className="flex flex-wrap gap-2.5">
-                            {listingTypeOptions.filter(({ value }) => value !== '').map(({ value, label }) => {
-                                const selectedSet = new Set((pendingFilters.listing_type || '').split(',').filter(Boolean));
-                                const isActive = selectedSet.has(value);
-                                const IconComp = listingTypeIconMap[value];
+                        <div className="relative flex items-center p-1 h-[46px] w-full max-w-[200px] rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                            {/* Sliding background pill */}
+                            <div
+                                className={`absolute top-1 bottom-1 rounded-full bg-[#222222] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                                    pendingFilters.listing_type === 'rent'
+                                        ? 'left-1 w-[calc(50%-4px)] opacity-100 scale-100'
+                                        : pendingFilters.listing_type === 'sale'
+                                        ? 'left-1/2 w-[calc(50%-4px)] opacity-100 scale-100'
+                                        : 'opacity-0 scale-95 pointer-events-none'
+                                }`}
+                            />
+                            {[{ value: 'rent', label: t('filters.forRent') }, { value: 'sale', label: t('filters.forSale') }].map(({ value, label }) => {
+                                const isActive = (pendingFilters.listing_type || '') === value;
                                 return (
-                                    <FilterPill
+                                    <div
                                         key={value}
-                                        label={label}
-                                        isActive={isActive}
-                                        onClick={() => togglePendingMultiFilter('listing_type', value)}
-                                        icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
-                                    />
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => handleFilterChange('listing_type', value, false)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                handleFilterChange('listing_type', value, false);
+                                            }
+                                        }}
+                                        className={`relative z-10 flex-1 h-full rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors duration-300 focus:outline-none active:scale-95 flex items-center justify-center cursor-pointer select-none ${
+                                            isActive
+                                                ? 'text-white'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                        }`}
+                                    >
+                                        <span className="leading-none transform -translate-y-[1px]">{label}</span>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -1626,7 +1705,7 @@ const ListingsPage = () => {
 
                     {/* PROPERTY TYPE — draft only */}
                     <FilterCard
-                        title="Property Type"
+                        title={t('filters.propertyType')}
                         icon={FilterIcons.property}
                     >
                         <div className="flex flex-wrap gap-2.5">
@@ -1637,7 +1716,7 @@ const ListingsPage = () => {
                                 return (
                                     <FilterPill
                                         key={value || 'all'}
-                                        label={label}
+                                        label={value === '' ? t('filters.allTypes') : t('filters.' + value, { defaultValue: label })}
                                         isActive={isActive}
                                         onClick={() => togglePendingMultiFilter('type', value)}
                                         icon={IconComp ? <IconComp className="w-4 h-4" /> : null}
@@ -1653,13 +1732,13 @@ const ListingsPage = () => {
                     >
                         <div className="space-y-4">
                             <RoomStepperRow
-                                label="Bedrooms"
+                                label={t('filters.bedrooms')}
                                 options={bedroomOptions}
                                 value={pendingFilters.bedrooms}
                                 onChange={(v) => handlePendingFilterChange('bedrooms', v)}
                             />
                             <RoomStepperRow
-                                label="Bathrooms"
+                                label={t('filters.bathrooms')}
                                 options={bathroomOptions}
                                 value={pendingFilters.bathrooms}
                                 onChange={(v) => handlePendingFilterChange('bathrooms', v)}
@@ -1669,7 +1748,7 @@ const ListingsPage = () => {
 
                     {/* TRANSIT STATION - Modal Trigger */}
                     <FilterCard
-                        title="Transit Station"
+                        title={t('filters.transitStation')}
                         icon={FilterIcons.transit}
                     >
                         <div className="space-y-3">
@@ -1679,7 +1758,7 @@ const ListingsPage = () => {
                             >
                                 <div className="flex items-center gap-3">
                                     <MagnifyingGlassIcon className="w-[22px] h-[22px] text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />
-                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300">Search transit station...</span>
+                                    <span className="text-[13px] font-normal text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300">{t('filters.searchTransitStation')}</span>
                                 </div>
                                 <div className="bg-white dark:bg-dashboard-card border border-gray-800 dark:border-white/30 w-[42px] h-[42px] sm:w-9 sm:h-9 rounded-full active:scale-95 transition-all flex items-center justify-center">
                                     <MapIcon className="w-[20px] h-[20px] sm:w-5 sm:h-5 text-gray-800 dark:text-white" strokeWidth={2} />
@@ -1712,7 +1791,7 @@ const ListingsPage = () => {
 
                     {/* PRICE RANGE */}
                     <FilterCard
-                        title="Price Range"
+                        title={t('filters.priceRange')}
                         icon={FilterIcons.price}
                     >
                         <PriceRangeSlider
@@ -1732,7 +1811,7 @@ const ListingsPage = () => {
 
                     {/* SIZE RANGE */}
                     <FilterCard
-                        title="Size Range (sqm)"
+                        title={t('filters.sizeRangeSqm')}
                         icon={FilterIcons.size}
                     >
                         <SizeRangeSlider
@@ -1753,7 +1832,7 @@ const ListingsPage = () => {
 
                     {/* DEVELOPER FILTER */}
                     <FilterCard
-                        title="Developer"
+                        title={t('filters.developer')}
                         icon={FilterIcons.developer}
                     >
                         <ScrollableFilterList
@@ -1766,17 +1845,17 @@ const ListingsPage = () => {
                             }))}
                             selectedId={pendingFilters.developer_id}
                             onSelect={id => handlePendingFilterChange('developer_id', id)}
-                            placeholder="Search developer..."
-                            allLabel="All"
+                            placeholder={t('filters.searchDeveloper')}
+                            allLabel={t('filters.any')}
                             useModal={true}
-                            title="Developer"
+                            title={t('filters.developer')}
                             icon={FilterIcons.developer}
                         />
                     </FilterCard>
 
                     {/* PROJECT FILTER */}
                     <FilterCard
-                        title="Project"
+                        title={t('filters.project')}
                         icon={FilterIcons.project}
                     >
                         <ScrollableFilterList
@@ -1789,10 +1868,10 @@ const ListingsPage = () => {
                             }))}
                             selectedId={pendingFilters.project_id}
                             onSelect={id => handlePendingFilterChange('project_id', id)}
-                            placeholder="Search project..."
-                            allLabel="All"
+                            placeholder={t('filters.searchProject')}
+                            allLabel={t('filters.any')}
                             useModal={true}
-                            title="Project"
+                            title={t('filters.project')}
                             icon={FilterIcons.project}
                         />
                     </FilterCard>
@@ -1820,7 +1899,7 @@ const ListingsPage = () => {
                     >
                         {/* Sidebar header */}
                         <div className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-4 border-b border-gray-200 dark:border-white/10 md:border-gray-100 bg-white dark:bg-dashboard-card">
-                            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">Filter Settings</h3>
+                            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-white tracking-[0.05em]">{t('filters.filterSettings')}</h3>
                             <button
                                 type="button"
                                 onClick={closeFilterSidebar}
@@ -1831,7 +1910,10 @@ const ListingsPage = () => {
                             </button>
                         </div>
                         {/* Filter box content */}
-                        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 custom-scrollbar modal-scrollable overscroll-contain">
+                        <div
+                            onScroll={handleSidebarScroll}
+                            className={`flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 py-6 overscroll-contain sidebar-scroll-container ${isSidebarScrolling ? 'is-scrolling' : ''}`}
+                        >
                             {renderFilterContent()}
                         </div>
                         {/* Sidebar footer (mobile-first): slimmer height, Clear on left, Search on right; iPhone safe area */}
@@ -1849,14 +1931,14 @@ const ListingsPage = () => {
                                     onClick={clearPendingFilters}
                                     className="order-1 px-6 py-3.5 md:px-5 md:py-2.5 min-h-[48px] md:min-h-[40px] rounded-full text-[14px] md:text-[13px] font-bold text-red-600 dark:text-red-500 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
                                 >
-                                    Clear all
+                                    {t('filters.clear')}
                                 </button>
                             )}
                             <button
                                 onClick={() => applyFilters()}
                                 className="order-2 ml-auto inline-flex items-center justify-center px-8 py-3.5 md:px-5 md:py-2.5 rounded-full text-[14px] md:text-[13px] font-bold transition-all duration-300 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-dashboard-card border border-gray-900 dark:border-white hover:border-gray-800 dark:hover:border-white min-h-[48px] md:min-h-[40px]"
                             >
-                                <span>Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}</span>
+                                <span>{t((pendingTotal ?? total) === 1 ? 'filters.showProperty' : 'filters.showProperties', { count: pendingTotal ?? total })}</span>
                             </button>
                         </div>
                     </aside>
@@ -1870,31 +1952,82 @@ const ListingsPage = () => {
                 {/* Mobile search bar: real input + filter icon outside; shadow only when scrolled */}
                 <div className={`lg:hidden sticky top-0 z-[100] bg-white dark:bg-dashboard-dark py-4 px-4 transition-shadow duration-200 ${layoutScrolled ? 'shadow-[0_4px_12px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
                     <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[52px] pl-4 pr-4 py-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
-                            <BsSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                            <input
-                                type="search"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}
-                                placeholder="Search properties & filters"
-                                className="flex-1 min-w-0 py-2.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
-                                aria-label="Search properties"
-                            />
+                        <div 
+                            onClick={() => setIsMobileSearchFocused(true)}
+                            className="flex-1 min-w-0 flex items-center gap-2 min-h-[48px] pl-4 pr-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 cursor-pointer"
+                        >
+                            <BsSearch className="w-[16px] h-[16px] text-gray-500 flex-shrink-0" />
+                            <div className="flex-1 min-w-0 py-1 text-[14px] font-medium text-gray-400 dark:text-gray-500 truncate">
+                                {searchTerm || "Search properties & filters"}
+                            </div>
                         </div>
                         <button
                             type="button"
                             onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                            className={`flex-shrink-0 relative w-[52px] h-[52px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-[0.98] transition-all duration-300 ease-out hover:shadow-md ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
+                            className="flex-shrink-0 relative w-[48px] h-[48px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-[0.98] transition-all duration-300 ease-out hover:shadow-md bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10"
                             aria-label="Open filters"
                         >
-                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[26px] h-[26px]' : 'w-8 h-8'} text-gray-800 dark:text-white`} />
+                            <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[20px] h-[20px]' : 'w-6 h-6'} text-gray-800 dark:text-white`} />
                             {activeFiltersList.length > 0 && (
-                                <span className="absolute -top-[2px] -right-[2px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[12px] font-bold border border-gray-200 dark:border-white/10 leading-none">
+                                <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border border-gray-200 dark:border-white/10 leading-none">
                                     {activeFiltersList.length > 99 ? '99+' : activeFiltersList.length}
                                 </span>
                             )}
                         </button>
+
+                        {/* Language Selector (Mobile Only) */}
+                        <div className="relative flex-shrink-0" ref={langMenuRef}>
+                            <button
+                                type="button"
+                                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                                className="w-[48px] h-[48px] rounded-full flex items-center justify-center bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 active:scale-[0.98] transition-all duration-300 ease-out hover:shadow-md overflow-hidden"
+                                style={{ borderRadius: '9999px' }}
+                            >
+                                <img
+                                    src={
+                                        currentLang === 'en'
+                                            ? 'https://flagcdn.com/us.svg'
+                                            : currentLang === 'mm'
+                                            ? 'https://flagcdn.com/mm.svg'
+                                            : 'https://flagcdn.com/cn.svg'
+                                    }
+                                    alt=""
+                                    className="w-[36px] h-[36px] rounded-full object-cover scale-110"
+                                />
+                            </button>
+                            {langMenuOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-[148px] bg-white/95 dark:bg-dashboard-card/95 backdrop-blur-md rounded-[20px] border border-gray-100 dark:border-white/10 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.12)] py-2 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right overflow-hidden z-[220]">
+                                    <div className="px-1.5 space-y-1">
+                                        {[
+                                            { code: 'en', flagUrl: 'https://flagcdn.com/us.svg', label: 'English' },
+                                            { code: 'mm', flagUrl: 'https://flagcdn.com/mm.svg', label: 'Myanmar' },
+                                            { code: 'zh', flagUrl: 'https://flagcdn.com/cn.svg', label: 'Chinese' }
+                                        ].map((lang) => (
+                                            <button
+                                                key={lang.code}
+                                                type="button"
+                                                onClick={() => {
+                                                    i18n.changeLanguage(lang.code);
+                                                    localStorage.setItem('preferredLanguage', lang.code);
+                                                    setLangMenuOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-left transition-all active:scale-[0.97] duration-200 ${
+                                                    currentLang === lang.code
+                                                        ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 font-semibold shadow-sm'
+                                                        : 'text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5'
+                                                 }`}
+                                                style={{ borderRadius: '12px' }}
+                                            >
+                                                <div className="w-[20px] h-[20px] rounded-full overflow-hidden border border-gray-200/60 dark:border-white/10 flex-shrink-0 shadow-sm">
+                                                    <img src={lang.flagUrl} alt="" className="w-full h-full object-cover scale-105" />
+                                                </div>
+                                                <span className="leading-none">{lang.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 {/* Header Mobile */}
@@ -1948,7 +2081,7 @@ const ListingsPage = () => {
                                         onClick={() => applyFilters()}
                                         className="px-6 py-2.5 rounded-full text-[14px] font-bold transition-all duration-300 bg-gray-900 hover:bg-gray-800 text-white border border-gray-900 hover:border-gray-800 shadow-sm hover:shadow-md min-h-[40px]"
                                     >
-                                        Show {pendingTotal ?? total} {(pendingTotal ?? total) === 1 ? 'property' : 'properties'}
+                                        {t((pendingTotal ?? total) === 1 ? 'filters.showProperty' : 'filters.showProperties', { count: pendingTotal ?? total })}
                                     </button>
                                     <button
                                         onClick={clearPendingFilters}
@@ -1958,7 +2091,7 @@ const ListingsPage = () => {
                                             : 'bg-gray-50 dark:bg-white/5 text-gray-400 cursor-not-allowed'
                                             }`}
                                     >
-                                        Clear all
+                                        {t('filters.clear')}
                                     </button>
                                 </div>
                             </div>
@@ -1985,7 +2118,7 @@ const ListingsPage = () => {
                                         ) : (listings || []).length > 0 ? (
                                             <div className="flex items-center gap-2">
                                                 <h2 className="text-[17px] md:text-[17px] font-semibold text-[#222222] dark:text-white tracking-[0.05em]">
-                                                    {total} {total === 1 ? 'property' : 'properties'}
+                                                    {t(total === 1 ? 'filters.propertiesCountSingle' : 'filters.propertiesCount', { count: total })}
                                                 </h2>
                                             </div>
                                         ) : null}
@@ -2077,7 +2210,7 @@ const ListingsPage = () => {
                                                            
                                                            {loading && (
                                                                <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
-                                                                   Loading properties...
+                                                                   {t('filters.loading')}
                                                                </div>
                                                            )}
                                                         </div>
@@ -2092,9 +2225,9 @@ const ListingsPage = () => {
                                             <div className="w-16 h-16 bg-white dark:bg-dashboard-card shadow-sm border border-gray-100 dark:border-white/10 rounded-full flex items-center justify-center mb-5">
                                                 <SparklesIcon className="w-8 h-8 text-gray-400 dark:text-gray-600" />
                                             </div>
-                                            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">No properties found</h3>
+                                            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">{t('filters.noPropertiesFound')}</h3>
                                             <p className="text-[14px] text-gray-500 dark:text-gray-400 mt-1 max-w-[260px] text-center leading-relaxed">
-                                                Try adjusting your search or filters to discover more matching results.
+                                                {t('filters.tryAdjusting')}
                                             </p>
                                         </div>
                                     )}
@@ -2150,7 +2283,7 @@ const ListingsPage = () => {
                                                             <GlobeAltIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[13px] font-bold text-gray-900 dark:text-white">{total} Properties</p>
+                                                            <p className="text-[13px] font-bold text-gray-900 dark:text-white">{t(total === 1 ? 'filters.propertiesCountSingle' : 'filters.propertiesCount', { count: total })}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2179,25 +2312,23 @@ const ListingsPage = () => {
                         {/* Dynamic Header Bar - Appears when sheet is expanded */}
                         <div className={`fixed top-0 left-0 right-0 z-[220] bg-white dark:bg-dashboard-card lg:hidden transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] pointer-events-none ${isMobileSheetExpanded ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
                             <div className="flex-shrink-0 w-full border-b dark:border-white/10 px-4 py-3.5 flex items-center gap-2 shadow-sm pointer-events-auto">
-                                <div className="flex-1 flex items-center gap-2 min-h-[44px] px-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10">
-                                    <BsSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                    <input
-                                        type="search"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search properties & filters"
-                                        className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
-                                        aria-label="Search properties"
-                                    />
+                                <div 
+                                    onClick={() => setIsMobileSearchFocused(true)}
+                                    className="flex-1 flex items-center gap-2 min-h-[48px] px-4 py-1.5 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 cursor-pointer pointer-events-auto"
+                                >
+                                    <BsSearch className="w-[16px] h-[16px] text-gray-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 py-1.5 text-[14px] font-medium text-gray-400 dark:text-gray-500 truncate">
+                                        {searchTerm || t('filters.searchPlaceholder')}
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => { setIsSidebarOpen(true); setSidebarAnimateIn(true); }}
-                                    className={`flex-shrink-0 relative w-14 h-14 rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all ${activeFiltersList.length > 0 ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10' : ''}`}
+                                    className="flex-shrink-0 relative w-[48px] h-[48px] rounded-full flex items-center justify-center text-gray-800 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 active:scale-95 transition-all bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10"
                                     aria-label="Open filters"
                                 >
-                                    <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                                    <AdjustmentsHorizontalIcon className={`${activeFiltersList.length > 0 ? 'w-[20px] h-[20px]' : 'w-6 h-6'}`} />
                                     {activeFiltersList.length > 0 && (
-                                        <span className="absolute -top-[4px] -right-[4px] min-w-[20px] h-[20px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
+                                        <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#222222] text-white text-[10px] font-bold border-2 border-white dark:border-dashboard-card shadow-md">
                                             {activeFiltersList.length}
                                         </span>
                                     )}
@@ -2274,7 +2405,7 @@ const ListingsPage = () => {
                                             className="text-[16px] font-bold tracking-tight animate-in fade-in duration-300"
                                             style={{ color: '#222222' }}
                                         >
-                                            Found around {total} properties
+                                            {t('filters.foundCount', { count: total })}
                                         </span>
                                     )}
                                 </div>
@@ -2360,7 +2491,7 @@ const ListingsPage = () => {
                                             
                                             {loading && (
                                                 <div className="absolute mt-24 text-[13px] font-medium text-gray-400 dark:text-gray-500 animate-pulse">
-                                                    Loading properties...
+                                                    {t('filters.loading')}
                                                 </div>
                                             )}
                                         </div>
@@ -2460,7 +2591,7 @@ const ListingsPage = () => {
                                             {isCluster && (
                                                 <div className="mt-2.5 flex items-center justify-between bg-[#222222]/80 backdrop-blur-xl border border-white/5 rounded-full px-5 py-3 shadow-xl">
                                                     <span className="text-white text-sm font-normal">
-                                                        {currentIndex + 1} of {siblings.length} properties
+                                                    {t('filters.clusterIndex', { index: currentIndex + 1, total: siblings.length })}
                                                     </span>
                                                     <div className="flex items-center gap-2">
                                                         <button
@@ -2533,6 +2664,176 @@ const ListingsPage = () => {
                     </div>
                 )
             }
+            {isMobileSearchFocused && (
+                <div className="lg:hidden fixed inset-0 z-[250] bg-white dark:bg-dashboard-dark flex flex-col animate-in fade-in duration-200">
+                    {/* Header */}
+                    <div className={`flex-shrink-0 px-4 py-3.5 border-b flex items-center gap-3 bg-white dark:bg-dashboard-card transition-all duration-200 ${
+                        isMobileSearchScrolled 
+                            ? 'border-gray-100 dark:border-white/10 shadow-sm' 
+                            : 'border-transparent'
+                    }`}>
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileSearchFocused(false)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 active:bg-gray-100 dark:active:bg-white/10 transition-all"
+                        >
+                            <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-white" strokeWidth={2.5} />
+                        </button>
+                        <div className="flex-1 min-w-0 flex items-center gap-2 min-h-[48px] pl-4 pr-4 py-1.5 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                            <BsSearch className="w-[16px] h-[16px] text-gray-500 flex-shrink-0" />
+                            <input
+                                autoFocus
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        saveRecentSearch(searchTerm);
+                                        setIsMobileSearchFocused(false);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }
+                                }}
+                                placeholder="Search properties & filters"
+                                className="flex-1 min-w-0 py-1 text-[14px] font-medium text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0"
+                            />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchTerm('')}
+                                    className="p-1 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600"
+                                >
+                                    <XMarkIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Scrollable Suggestions content */}
+                    <div 
+                        onScroll={(e) => setIsMobileSearchScrolled(e.target.scrollTop > 0)}
+                        className="flex-1 overflow-y-auto p-5 space-y-6"
+                    >
+                        {searchTerm ? (
+                            <div className="space-y-4">
+                                <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.matchingProperties', 'Matching Properties')}</h3>
+                                {searchResults.length > 0 ? (
+                                    <div className="divide-y divide-gray-100 dark:divide-white/10">
+                                        {searchResults.map((listing) => {
+                                            const safeMedia = listing.media || [];
+                                            const featuredImage = getMediaUrl(safeMedia.find((m) => m.type === 'image')?.url || listing.images?.[0]);
+                                            return (
+                                                <div
+                                                    key={listing.id}
+                                                    onClick={() => handleResultClick(listing)}
+                                                    className="flex items-center gap-4 py-3 cursor-pointer group active:opacity-75 transition-all"
+                                                >
+                                                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-100/50 dark:border-white/10">
+                                                        <img
+                                                            src={featuredImage || '/placeholder.jpg'}
+                                                            alt={listing.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[14px] font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary-600 transition-colors">
+                                                            {listing.title}
+                                                        </h4>
+                                                        <p className="text-[13px] text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                                                            ฿{formatPrice(listing.price)} {listing.listing_type === 'rent' ? t('listing.rentUnit', '/ month') : ''}
+                                                        </p>
+                                                        <p className="text-[11px] text-gray-500 dark:text-gray-500 mt-0.5 flex items-center gap-1.5">
+                                                            <span>{listing.bedrooms === 0 ? t('listing.studio', 'Studio') : t('listing.beds', { count: listing.bedrooms })}</span>
+                                                            <span>·</span>
+                                                            <span>{t('listing.baths', { count: listing.bathrooms })}</span>
+                                                            <span>·</span>
+                                                            <span>{listing.area || '-'} Sqm</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">{t('filters.noProperties', 'No properties match your search')}</p>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                {/* Recent Searches */}
+                                {recentSearches.length > 0 && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.recentSearches', 'Recent Searches')}</h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setRecentSearches([]);
+                                                    localStorage.removeItem('recentSearches');
+                                                }}
+                                                className="text-[12px] text-primary-600 font-semibold"
+                                            >
+                                                {t('filters.clear', 'Clear')}
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {recentSearches.map((text, idx) => (
+                                                <button
+                                                    key={`recent-${idx}`}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSearchTerm(text);
+                                                        saveRecentSearch(text);
+                                                        setIsMobileSearchFocused(false);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    className="w-full flex items-center gap-3 py-3 border-b border-gray-50 dark:border-white/5 text-left active:opacity-75"
+                                                >
+                                                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span className="text-[14px] text-gray-700 dark:text-gray-200 font-medium">{text}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quick Suggestions */}
+                                <div className="space-y-3">
+                                    <h3 className="text-[13px] font-semibold text-gray-400 tracking-wider">{t('filters.suggestions', 'Suggestions')}</h3>
+                                    <div className="space-y-1">
+                                        {[
+                                            { label: 'Near BTS / MRT stations', tag: 'transit' },
+                                            { label: 'Condo for Rent', tag: 'Condo', filterKey: 'type', filterVal: 'condo' },
+                                            { label: 'Commercial for Sale', tag: 'Commercial', filterKey: 'type', filterVal: 'commercial' },
+                                            { label: 'Featured properties', tag: 'featured' }
+                                        ].map((sug) => (
+                                            <button
+                                                key={sug.tag}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (sug.filterKey) {
+                                                        handleFilterChange(sug.filterKey, sug.filterVal);
+                                                    } else if (sug.tag === 'transit') {
+                                                        setSearchTerm('BTS');
+                                                    }
+                                                    saveRecentSearch(sug.label);
+                                                    setIsMobileSearchFocused(false);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                                className="w-full flex items-center justify-between py-3 border-b border-gray-50 dark:border-white/5 text-left active:opacity-75"
+                                            >
+                                                <span className="text-[14px] text-gray-700 dark:text-gray-200 font-medium">{t('filters.suggestion_' + sug.tag, sug.label)}</span>
+                                                <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

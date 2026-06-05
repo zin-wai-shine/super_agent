@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { publicApi, collectionApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
 import ListingCard, { ListingImageSlider } from '../../components/Listings/ListingCard';
 import ListingSkeleton from '../../components/ui/ListingSkeleton';
 import { ArrowLeftIcon, Square2StackIcon, ShareIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -11,6 +13,8 @@ import { TbSmartHome } from "react-icons/tb";
 import { getMediaUrl } from '../../utils/media';
 
 const CollectionDetailPage = () => {
+    const { t } = useTranslation();
+    const tDynamic = useDynamicTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { id } = useParams();
@@ -167,7 +171,7 @@ const CollectionDetailPage = () => {
                             {/* Mobile Title: Left-aligned */}
                             <div className="lg:hidden truncate">
                                 <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate">
-                                    {collection?.name}
+                                    {tDynamic(collection, 'name')}
                                 </h1>
                             </div>
                         </div>
@@ -175,17 +179,17 @@ const CollectionDetailPage = () => {
                         {/* Desktop Center Title */}
                         <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-baseline gap-2 text-center pointer-events-none min-w-0 px-4">
                             <h1 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
-                                {collection?.name}
+                                {tDynamic(collection, 'name')}
                             </h1>
                             <span className="text-[12px] text-gray-400 font-medium tracking-wide whitespace-nowrap">
-                                ({listings?.length} {listings?.length === 1 ? 'property' : 'properties'})
+                                ({listings?.length === 1 ? t('filters.propertiesCountSingle', { count: listings?.length }) : t('filters.propertiesCount', { count: listings?.length })})
                             </span>
                         </div>
 
                         {/* Right Section: Mobile Property Count Pill */}
                         <div className="flex items-center gap-2">
                             <div className="lg:hidden flex items-center px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400">
-                                <span className="text-[13px] font-semibold">{listings?.length} properties</span>
+                                <span className="text-[13px] font-semibold">{listings?.length === 1 ? t('filters.propertiesCountSingle', { count: listings?.length }) : t('filters.propertiesCount', { count: listings?.length })}</span>
                             </div>
                             <div className="hidden lg:block w-[44px]" />
                         </div>
@@ -244,17 +248,17 @@ const CollectionDetailPage = () => {
                                     <button
                                         onClick={() => navigate('/')}
                                         className={`hidden lg:flex px-5 h-[44px] flex-shrink-0 items-center justify-center gap-2 rounded-full transition-all duration-300 active:scale-[0.98] group ${scrolled || headerSticky ? 'bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px]' : 'bg-white text-gray-900 shadow-md border border-transparent hover:-translate-y-[1px]'}`}
-                                        title="Go to Home"
+                                        title={t('listing.goToHome')}
                                     >
                                         <TbSmartHome className={`w-[22px] h-[22px] transition-transform ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`} />
-                                        <span className={`text-[13px] font-bold tracking-tight ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`}>Go to Home</span>
+                                        <span className={`text-[13px] font-bold tracking-tight ${scrolled || headerSticky ? 'text-gray-800 dark:text-white' : 'text-gray-900'}`}>{t('listing.goToHome')}</span>
                                     </button>
                                 </div>
                                 
                                 {/* Mobile Title: Left-aligned, bold white when not scrolled */}
                                 <div className="lg:hidden truncate">
                                     <h1 className={`text-[17px] font-bold tracking-tight truncate ${scrolled || headerSticky ? 'text-gray-900 dark:text-white' : 'text-white drop-shadow-sm'}`}>
-                                        {collection?.name}
+                                        {tDynamic(collection, 'name')}
                                     </h1>
                                 </div>
                             </div>
@@ -262,17 +266,17 @@ const CollectionDetailPage = () => {
                             {/* Desktop Center Title (Shows when scrolled) */}
                             <div className={`hidden lg:flex absolute left-1/2 -translate-x-1/2 items-baseline gap-2 text-center transition-all duration-300 ${scrolled || headerSticky ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
                                 <h1 className="text-[17px] lg:text-[18px] font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">
-                                    {collection?.name}
+                                    {tDynamic(collection, 'name')}
                                 </h1>
                                 <span className="text-[12px] text-gray-400 font-medium tracking-wide whitespace-nowrap">
-                                    ({listings?.length} {listings?.length === 1 ? 'property' : 'properties'})
+                                    ({listings?.length === 1 ? t('filters.propertiesCountSingle', { count: listings?.length }) : t('filters.propertiesCount', { count: listings?.length })})
                                 </span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 {/* Mobile Properties Pill: Right-aligned, solid white pill when not scrolled */}
                                 <div className={`lg:hidden flex items-center px-4 py-2 rounded-full transition-all duration-300 ${scrolled || headerSticky ? 'bg-gray-50/50 dark:bg-white/5 text-gray-600 dark:text-gray-400' : 'bg-white text-gray-900 font-bold shadow-md'}`}>
-                                    <span className="text-[13px] font-bold tracking-tight">{listings?.length} properties</span>
+                                    <span className="text-[13px] font-bold tracking-tight">{listings?.length === 1 ? t('filters.propertiesCountSingle', { count: listings?.length }) : t('filters.propertiesCount', { count: listings?.length })}</span>
                                 </div>
 
                                 <button 
@@ -280,7 +284,7 @@ const CollectionDetailPage = () => {
                                     className={`hidden lg:flex items-center justify-center gap-2 px-6 h-[44px] rounded-full transition-all duration-300 active:scale-[0.98] group ${scrolled || headerSticky ? 'bg-[#1A1A1A] text-white border border-transparent hover:shadow-md hover:-translate-y-[1px]' : 'bg-white text-gray-900 shadow-md border border-transparent hover:-translate-y-[1px]'}`}
                                 >
                                     <IoImagesOutline className="w-[22px] h-[22px]" />
-                                    <span className="text-[13px] font-bold tracking-tight">View Images</span>
+                                    <span className="text-[13px] font-bold tracking-tight">{t('collections.viewImages')}</span>
                                 </button>
                             </div>
                         </div>
@@ -289,10 +293,10 @@ const CollectionDetailPage = () => {
                     {/* Desktop Center Title Overlay */}
                     <div className={`hidden lg:flex absolute top-[180px] left-0 right-0 z-20 flex-col items-center pointer-events-none transition-all duration-500 ${scrolled || headerSticky ? 'opacity-0 scale-95 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
                         <h2 className="text-5xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] tracking-tight text-center">
-                            {collection?.name}
+                            {tDynamic(collection, 'name')}
                         </h2>
                         <p className="mt-4 text-[15px] font-bold text-white/90 tracking-wide drop-shadow-md">
-                            {listings.length} Exclusive Properties
+                            {listings.length} {t('collections.exclusiveProperties')}
                         </p>
                     </div>
 
@@ -400,6 +404,7 @@ const CollectionDetailSkeleton = ({ isIconType }) => {
 };
 
 const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, navigate }) => {
+    const { t } = useTranslation();
     const totalPages = Math.ceil(listings.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const visibleListings = listings.slice(startIndex, startIndex + itemsPerPage);
@@ -438,7 +443,7 @@ const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, nav
 
                                 <div className="flex flex-col items-center">
                                     <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                        Page {currentPage} of {totalPages}
+                                        {t('bookings.pageOf', { current: currentPage, total: totalPages })}
                                     </span>
                                 </div>
 
@@ -464,9 +469,9 @@ const ListingsGrid = ({ listings, currentPage, itemsPerPage, setCurrentPage, nav
                     <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                         <FiHome className="h-10 w-10 text-gray-300" />
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">This collection is empty</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('collections.thisCollectionIsEmpty')}</h2>
                     <button onClick={() => navigate('/listings')} className="mt-8 inline-flex items-center px-10 py-4 rounded-full text-white bg-gray-900 dark:bg-white dark:text-dashboard-dark font-bold transition-all shadow-xl">
-                        Browse Properties
+                        {t('collections.browseProperties')}
                     </button>
                 </div>
             )}

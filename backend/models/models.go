@@ -49,8 +49,14 @@ type Agent struct {
 	Domain         string         `gorm:"size:255" json:"domain,omitempty"`               // Computed full domain
 	Logo           string         `gorm:"size:500" json:"logo,omitempty"`
 	Description    string         `gorm:"type:text" json:"description,omitempty"`
+	DescriptionMY  string         `gorm:"type:text" json:"description_my,omitempty"`
+	DescriptionZH  string         `gorm:"type:text" json:"description_zh,omitempty"`
 	Vision         string         `gorm:"type:text" json:"vision,omitempty"`
+	VisionMY       string         `gorm:"type:text" json:"vision_my,omitempty"`
+	VisionZH       string         `gorm:"type:text" json:"vision_zh,omitempty"`
 	Mission        string         `gorm:"type:text" json:"mission,omitempty"`
+	MissionMY      string         `gorm:"type:text" json:"mission_my,omitempty"`
+	MissionZH      string         `gorm:"type:text" json:"mission_zh,omitempty"`
 	Phone          string         `gorm:"size:50" json:"phone,omitempty"`
 	Email          string         `gorm:"size:255" json:"email,omitempty"`
 	Address        string         `gorm:"type:text" json:"address,omitempty"`
@@ -88,7 +94,11 @@ type Theme struct {
 	SharePreviewImage    string    `gorm:"size:500" json:"share_preview_image,omitempty"`
 	SharePreviewImageScale int     `gorm:"default:100" json:"share_preview_image_scale"`
 	HeaderText           string    `gorm:"size:100;default:'Super Real Estate'" json:"header_text,omitempty"`
+	HeaderTextMY         string    `gorm:"size:100" json:"header_text_my,omitempty"`
+	HeaderTextZH         string    `gorm:"size:100" json:"header_text_zh,omitempty"`
 	FooterText           string    `gorm:"size:200;default:'© 2024 Super Real Estate. All rights reserved.'" json:"footer_text,omitempty"`
+	FooterTextMY         string    `gorm:"size:200" json:"footer_text_my,omitempty"`
+	FooterTextZH         string    `gorm:"size:200" json:"footer_text_zh,omitempty"`
 	ButtonRadius         string    `gorm:"size:50;default:'0.5rem'" json:"button_radius"` // e.g., 0, 0.25rem, 0.5rem, 9999px, or 4 values
 	CardRadius           string    `gorm:"size:50;default:'1rem'" json:"card_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
 	MenuRadius           string    `gorm:"size:50;default:'1rem'" json:"menu_radius"`     // e.g., 0, 0.5rem, 1rem, or 4 values
@@ -168,7 +178,11 @@ type Project struct {
 	DeveloperID uuid.UUID      `gorm:"type:uuid;not null" json:"developer_id"`
 	Developer   *Developer     `gorm:"foreignKey:DeveloperID" json:"developer,omitempty"`
 	Name        string         `gorm:"size:255;not null" json:"name"`
+	NameMY      string         `gorm:"size:255" json:"name_my,omitempty"`
+	NameZH      string         `gorm:"size:255" json:"name_zh,omitempty"`
 	Description string         `gorm:"type:text" json:"description,omitempty"`
+	DescriptionMY string       `gorm:"type:text" json:"description_my,omitempty"`
+	DescriptionZH string       `gorm:"type:text" json:"description_zh,omitempty"`
 	Status      string         `gorm:"size:50" json:"status,omitempty"`           // e.g., "New Launch", "Ready to Move"
 	ProjectType string         `gorm:"size:50" json:"project_type,omitempty"`     // e.g., "Condominium", "Housing Estate"
 	District    string         `gorm:"size:100" json:"district,omitempty"`        // e.g., "Sukhumvit", "Rama 9"
@@ -189,7 +203,11 @@ type Listing struct {
 	ProjectID          *uuid.UUID     `gorm:"type:uuid;index" json:"project_id,omitempty"`
 	Project            *Project       `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
 	Title              string         `gorm:"size:255;not null" json:"title"`
+	TitleMY            string         `gorm:"size:255" json:"title_my,omitempty"`
+	TitleZH            string         `gorm:"size:255" json:"title_zh,omitempty"`
 	Description        string         `gorm:"type:text" json:"description,omitempty"`
+	DescriptionMY      string         `gorm:"type:text" json:"description_my,omitempty"`
+	DescriptionZH      string         `gorm:"type:text" json:"description_zh,omitempty"`
 	PropertyType       string         `gorm:"size:50;index" json:"property_type"` // condo, house, land, etc.
 	ListingType        string         `gorm:"size:20;index" json:"listing_type"`  // sale, rent
 	Price              float64        `gorm:"type:decimal(15,2);index" json:"price"`
@@ -213,6 +231,8 @@ type Listing struct {
 	YearBuilt          int            `gorm:"default:0" json:"year_built"`
 	Station            *Station       `gorm:"foreignKey:StationID" json:"station,omitempty"`
 	Features           string         `gorm:"type:text" json:"features,omitempty"` // JSON array
+	FeaturesMY         string         `gorm:"type:text" json:"features_my,omitempty"` // JSON array
+	FeaturesZH         string         `gorm:"type:text" json:"features_zh,omitempty"` // JSON array
 	IsPublished          bool           `gorm:"default:false;index" json:"is_published"`
 	IsFeatured           bool           `gorm:"default:false;index" json:"is_featured"`
 	AllowViewingRequests bool           `gorm:"default:true" json:"allow_viewing_requests"`
@@ -282,7 +302,11 @@ type Notification struct {
 type Banner struct {
 	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Title       string         `gorm:"size:255;not null" json:"title"`
+	TitleMY     string         `gorm:"size:255" json:"title_my,omitempty"`
+	TitleZH     string         `gorm:"size:255" json:"title_zh,omitempty"`
 	Description string         `gorm:"type:text" json:"description,omitempty"`
+	DescriptionMY string       `gorm:"type:text" json:"description_my,omitempty"`
+	DescriptionZH string       `gorm:"type:text" json:"description_zh,omitempty"`
 	ImageURL    string         `gorm:"size:500;not null" json:"image_url"`
 	LinkURL     string         `gorm:"size:500" json:"link_url,omitempty"`
 	OwnerID     uuid.UUID      `gorm:"type:uuid;not null" json:"owner_id"` // Creator
@@ -353,6 +377,8 @@ type Collection struct {
 	Parent         *Collection       `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 	SubCollections []Collection      `gorm:"foreignKey:ParentID" json:"sub_collections,omitempty"`
 	Name           string            `gorm:"size:255;not null" json:"name"`
+	NameMY         string            `gorm:"size:255" json:"name_my,omitempty"`
+	NameZH         string            `gorm:"size:255" json:"name_zh,omitempty"`
 	Type           string            `gorm:"size:20;default:'image'" json:"type"` // "image" or "icon"
 	IsParent       bool              `gorm:"default:false" json:"is_parent"`
 	Icon           string            `gorm:"size:100" json:"icon,omitempty"`
@@ -394,4 +420,13 @@ type FacilityMedia struct {
 	URL       string    `gorm:"size:500;not null" json:"url"`
 	SortOrder int       `gorm:"default:0" json:"sort_order"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// TranslationCache stores API translations to avoid duplicate OpenAI calls
+type TranslationCache struct {
+	Hash           string    `gorm:"primaryKey;size:64" json:"hash"` // SHA256 of SourceText + LangCode
+	SourceText     string    `gorm:"type:text;not null;index" json:"source_text"`
+	LangCode       string    `gorm:"size:10;not null;index" json:"lang_code"`
+	TranslatedText string    `gorm:"type:text;not null" json:"translated_text"`
+	CreatedAt      time.Time `json:"created_at"`
 }
