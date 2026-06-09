@@ -2107,7 +2107,7 @@ const AIAssistant = () => {
               if (!activeSessionObj) return null;
               return /*#__PURE__*/ _jsxs("div", {
                 className:
-                  "fixed w-48 bg-white dark:bg-[#2d2d2d] rounded-[16px] shadow-xl border border-gray-200/80 dark:border-white/10 p-1.5 z-[9999] text-gray-700 dark:text-gray-200 animate-fade-in",
+                  "session-dropdown-container fixed w-52 bg-white dark:bg-[#2d2d2d] rounded-[16px] shadow-xl border border-gray-200/80 dark:border-white/10 p-1.5 z-[9999] text-gray-700 dark:text-gray-200 animate-fade-in",
                 style: {
                   top: "".concat(dropdownCoords.top, "px"),
                   left: "".concat(dropdownCoords.left, "px"),
@@ -2121,7 +2121,7 @@ const AIAssistant = () => {
                       setActiveDropdownId(null);
                     },
                     className:
-                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
+                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-[15px] hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
                     children: [
                       /*#__PURE__*/ _jsx(LuShare, {
                         className:
@@ -2137,7 +2137,7 @@ const AIAssistant = () => {
                       setActiveDropdownId(null);
                     },
                     className:
-                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
+                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-[15px] hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
                     children: [
                       /*#__PURE__*/ _jsx(LuPencil, {
                         className:
@@ -2153,7 +2153,7 @@ const AIAssistant = () => {
                       setActiveDropdownId(null);
                     },
                     className:
-                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
+                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-[15px] hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-150 text-gray-800 dark:text-gray-200 border-0 cursor-pointer rounded-[10px] font-normal",
                     children: [
                       /*#__PURE__*/ _jsx(LuPin, {
                         className:
@@ -2176,7 +2176,7 @@ const AIAssistant = () => {
                       setActiveDropdownId(null);
                     },
                     className:
-                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-red-50 dark:hover:bg-red-950/35 text-red-650 dark:text-red-400 transition-all duration-150 font-medium border-0 cursor-pointer rounded-[10px]",
+                      "w-full flex items-center gap-3 px-3 py-2.5 text-left text-[15px] hover:bg-red-50 dark:hover:bg-red-950/35 text-red-600 dark:text-red-400 transition-all duration-150 font-medium border-0 cursor-pointer rounded-[10px]",
                     children: [
                       /*#__PURE__*/ _jsx(FiTrash2, {
                         className:
