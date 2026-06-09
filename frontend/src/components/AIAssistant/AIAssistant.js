@@ -1495,7 +1495,7 @@ const AIAssistant = () => {
                           isPinnedPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "pinned-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
+                                "pinned-popover-container absolute left-[62px] top-0 bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
@@ -1578,7 +1578,7 @@ const AIAssistant = () => {
                           isRecentsPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "recents-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
+                                "recents-popover-container absolute left-[62px] top-0 bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
