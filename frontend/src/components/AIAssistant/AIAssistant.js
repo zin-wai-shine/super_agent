@@ -2285,12 +2285,12 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
+                    "relative bg-white border border-gray-200 text-gray-900 rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsxs("div", {
                       className:
-                        "relative flex items-center w-full mb-4 pb-2 border-b border-white/5",
+                        "relative flex items-center w-full mb-4 pb-2 border-b border-gray-100",
                       children: [
                         /*#__PURE__*/ _jsx(FiSearch, {
                           className: "w-5 h-5 text-gray-400 mr-3 flex-shrink-0",
@@ -2302,12 +2302,12 @@ const AIAssistant = () => {
                           onChange: (e) => setSearchQuery(e.target.value),
                           placeholder: "Search chats...",
                           className:
-                            "w-full bg-transparent text-white placeholder-gray-500 text-lg focus:outline-none py-1.5 pr-8",
+                            "w-full bg-transparent text-gray-900 placeholder-gray-400 text-lg focus:outline-none py-1.5 pr-8",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           onClick: () => setIsSearchModalOpen(false),
                           className:
-                            "absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer bg-transparent border-0",
+                            "absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-0",
                           children: /*#__PURE__*/ _jsx(FiX, {
                             className: "w-5 h-5",
                           }),
@@ -2320,11 +2320,11 @@ const AIAssistant = () => {
                         setIsSearchModalOpen(false);
                       },
                       className:
-                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-white/5 hover:bg-white/10 text-white border-0 transition-all font-medium text-sm mb-4 cursor-pointer",
+                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 transition-all font-medium text-sm mb-4 cursor-pointer",
                       children: [
                         /*#__PURE__*/ _jsx("div", {
                           className:
-                            "w-6 h-6 rounded-[6px] bg-white/10 flex items-center justify-center mr-3 text-white flex-shrink-0",
+                            "w-6 h-6 rounded-[6px] bg-gray-200 flex items-center justify-center mr-3 text-gray-600 flex-shrink-0",
                           children: /*#__PURE__*/ _jsx(FiPlus, {
                             className: "w-4 h-4",
                           }),
@@ -2334,7 +2334,7 @@ const AIAssistant = () => {
                     }),
                     /*#__PURE__*/ _jsx("div", {
                       className:
-                        "text-[12px] font-bold text-gray-500 tracking-wider mb-2.5 px-2 text-left uppercase select-none",
+                        "text-[12px] font-bold text-gray-400 tracking-wider mb-2.5 px-2 text-left uppercase select-none",
                       children:
                         searchQuery.trim() !== "" ? "Search results" : "Older",
                     }),
@@ -2354,7 +2354,7 @@ const AIAssistant = () => {
                                     children: [
                                       /*#__PURE__*/ _jsx("div", {
                                         className:
-                                          "mt-0.5 w-[18px] h-[18px] rounded-[4px] bg-white/10 animate-pulse flex-shrink-0",
+                                          "mt-0.5 w-[18px] h-[18px] rounded-[4px] bg-gray-200 animate-pulse flex-shrink-0",
                                       }),
                                       /*#__PURE__*/ _jsxs("div", {
                                         className: "flex-1 min-w-0 space-y-2",
@@ -2365,7 +2365,7 @@ const AIAssistant = () => {
                                             children: [
                                               /*#__PURE__*/ _jsx("div", {
                                                 className:
-                                                  "h-3.5 rounded-full bg-white/10 animate-pulse",
+                                                  "h-3.5 rounded-full bg-gray-200 animate-pulse",
                                                 style: {
                                                   width: `${55 + (i * 17) % 30}%`,
                                                   animationDelay: `${i * 80}ms`,
@@ -2373,7 +2373,7 @@ const AIAssistant = () => {
                                               }),
                                               /*#__PURE__*/ _jsx("div", {
                                                 className:
-                                                  "h-3 w-10 rounded-full bg-white/10 animate-pulse flex-shrink-0",
+                                                  "h-3 w-10 rounded-full bg-gray-200 animate-pulse flex-shrink-0",
                                                 style: {
                                                   animationDelay: `${i * 80 + 40}ms`,
                                                 },
@@ -2382,7 +2382,7 @@ const AIAssistant = () => {
                                           }),
                                           /*#__PURE__*/ _jsx("div", {
                                             className:
-                                              "h-3 rounded-full bg-white/[0.06] animate-pulse",
+                                              "h-3 rounded-full bg-gray-100 animate-pulse",
                                             style: {
                                               width: `${70 + (i * 11) % 25}%`,
                                               animationDelay: `${i * 80 + 80}ms`,
@@ -2408,7 +2408,7 @@ const AIAssistant = () => {
                                     setIsSearchModalOpen(false);
                                   },
                                   className:
-                                    "w-full flex items-start gap-4 p-3 rounded-[16px] hover:bg-white/5 transition-all text-left cursor-pointer group",
+                                    "w-full flex items-start gap-4 p-3 rounded-[16px] hover:bg-gray-100 transition-all text-left cursor-pointer group",
                                   children: [
                                     /*#__PURE__*/ _jsx("div", {
                                       className:
@@ -2426,12 +2426,12 @@ const AIAssistant = () => {
                                           children: [
                                             /*#__PURE__*/ _jsx("span", {
                                               className:
-                                                "font-semibold text-[15px] text-white truncate",
+                                                "font-semibold text-[15px] text-gray-900 truncate",
                                               children: s.title,
                                             }),
                                             /*#__PURE__*/ _jsx("span", {
                                               className:
-                                                "text-[13px] text-gray-500 font-medium ml-2 flex-shrink-0",
+                                                "text-[13px] text-gray-400 font-medium ml-2 flex-shrink-0",
                                               children: dateStr,
                                             }),
                                           ],
@@ -2439,7 +2439,7 @@ const AIAssistant = () => {
                                         snippet &&
                                           /*#__PURE__*/ _jsx("p", {
                                             className:
-                                              "text-[13px] text-gray-400 line-clamp-1 mt-0.5",
+                                              "text-[13px] text-gray-500 line-clamp-1 mt-0.5",
                                             children: snippet,
                                           }),
                                       ],
@@ -2451,7 +2451,7 @@ const AIAssistant = () => {
                             })
                           : /*#__PURE__*/ _jsx("div", {
                               className:
-                                "text-center text-gray-500 py-8 text-sm",
+                                "text-center text-gray-400 py-8 text-sm",
                               children: "No results found",
                             }),
                     }),
