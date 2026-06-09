@@ -1119,7 +1119,7 @@ const AIAssistant = () => {
   const renderInputBox = () => {
     return /*#__PURE__*/ _jsxs("div", {
       className:
-        "flex flex-col bg-white dark:bg-[#2f2f2f] rounded-[26px] border border-gray-200 dark:border-white/10 shadow-lg px-4 pt-3 pb-3 transition-all duration-200",
+        "flex flex-col bg-white dark:bg-[#2f2f2f] rounded-[26px] border border-gray-200 dark:border-white/10 shadow-sm px-4 pt-3 pb-3 transition-all duration-200",
       children: [
         /*#__PURE__*/ _jsx("textarea", {
           ref: textareaRef,
