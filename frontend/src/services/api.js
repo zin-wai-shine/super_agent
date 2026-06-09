@@ -140,6 +140,9 @@ export const publicApi = {
     getPublicBanner: (id) => api.get(`/public/banners/${id}`),
     getPlans: () => api.get('/public/plans'),
     resolveUrl: (url) => api.get('/public/resolve-url', { params: { url } }),
+    aiChat: (data) => api.post('/public/ai-chat', data),
+    saveSharedChat: (data) => api.post('/public/shared-chats', data),
+    getSharedChat: (id) => api.get(`/public/shared-chats/${id}`),
 };
 
 // Agent API

@@ -24,6 +24,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 	facebookAuthController := controllers.NewFacebookAuthController(db, cfg)
 	collectionController := controllers.NewCollectionController(db, cfg)
 	translationController := controllers.NewTranslationController(db)
+	aiAssistantController := controllers.NewAIAssistantController(db, wsManager)
 
 	// Public static files (Move before tenant middleware)
 	router.Static("/uploads", cfg.UploadPath)
@@ -69,6 +70,9 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config, wsManager 
 			public.GET("/collections", collectionController.GetCollections)
 			public.GET("/collections/:id", collectionController.GetCollection)
 			public.GET("/resolve-url", publicController.ResolveURL)
+			public.POST("/ai-chat", aiAssistantController.AIChat)
+			public.POST("/shared-chats", aiAssistantController.SaveSharedChat)
+			public.GET("/shared-chats/:id", aiAssistantController.GetSharedChat)
 
 			// Share routes (for social media crawlers)
 			share := public.Group("/share")

@@ -58,6 +58,7 @@ func main() {
 		&models.UniqueView{},
 		&models.FacilityMedia{},
 		&models.TranslationCache{},
+		&models.SharedChat{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}

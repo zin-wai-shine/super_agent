@@ -430,3 +430,12 @@ type TranslationCache struct {
 	TranslatedText string    `gorm:"type:text;not null" json:"translated_text"`
 	CreatedAt      time.Time `json:"created_at"`
 }
+
+// SharedChat represents a shared AI chat session
+type SharedChat struct {
+	ID        string    `gorm:"primaryKey;size:255" json:"id"` // Unique session ID
+	Title     string    `gorm:"size:255;not null" json:"title"`
+	Messages  string    `gorm:"type:text;not null" json:"messages"` // Serialized JSON messages array
+	CreatedAt time.Time `json:"created_at"`
+}
+

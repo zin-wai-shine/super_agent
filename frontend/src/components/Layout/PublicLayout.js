@@ -62,6 +62,7 @@ import { publicApi } from '../../services/api';
 import StyledSelect from '../Form/StyledSelect';
 import CookieConsent from '../Common/CookieConsent';
 import buildingBlock from '../../assets/images/building_block.png';
+import AIAssistant from '../AIAssistant/AIAssistant';
 
 // Custom hook to animate element width smoothly when label text changes
 const useSmoothWidth = (label) => {
@@ -1412,6 +1413,8 @@ const PublicLayout = () => {
             }
             {/* Cookie Consent Banner */}
             <CookieConsent />
+            {/* AI Real Estate Assistant */}
+            <AIAssistant />
         </div >
     );
 };

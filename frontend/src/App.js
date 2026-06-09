@@ -29,6 +29,7 @@ import MyBookings from './pages/Public/MyBookings';
 import SavedListingsPage from './pages/Public/SavedListingsPage';
 import CollectionsPage from './pages/Public/CollectionsPage';
 import CollectionDetailPage from './pages/Public/CollectionDetailPage';
+import SharedChatPage from './pages/Public/SharedChatPage';
 
 // Agent Pages
 import AgentDashboard from './pages/Agent/AgentDashboard';
@@ -243,6 +244,22 @@ const AppRoutes = () => {
                 <Route
                     path="collections/:id"
                     element={<CollectionDetailPage />}
+                />
+                <Route
+                    path="shared-chat/:id"
+                    element={<SharedChatPage />}
+                />
+                <Route
+                    path="chat"
+                    element={<ListingsPage />}
+                />
+                <Route
+                    path="chat/:id"
+                    element={<ListingsPage />}
+                />
+                <Route
+                    path="chat/:id/:name"
+                    element={<ListingsPage />}
                 />
                 <Route
                     path="login"
