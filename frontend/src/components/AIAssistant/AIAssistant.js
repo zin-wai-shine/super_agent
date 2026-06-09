@@ -1660,7 +1660,7 @@ const AIAssistant = () => {
                                               className:
                                                 "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
                                                   currentSessionId === s.id
-                                                    ? "bg-gray-100 dark:bg-white/10 text-gray-955 dark:text-white"
+                                                    ? "bg-gray-200 dark:bg-white/10 text-gray-955 dark:text-white"
                                                     : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
                                                 ),
                                               children: [
