@@ -2472,7 +2472,7 @@ const AIAssistant = () => {
                                           children: [
                                             /*#__PURE__*/ _jsx("span", {
                                               className:
-                                                "font-semibold text-[15px] text-gray-900 truncate",
+                                                "font-medium text-[15px] text-gray-900 truncate",
                                               children: s.title,
                                             }),
                                             /*#__PURE__*/ _jsx("span", {
