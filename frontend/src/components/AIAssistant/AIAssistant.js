@@ -294,6 +294,7 @@ const AIAssistant = () => {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
   const [input, setInput] = useState("");
@@ -345,10 +346,19 @@ const AIAssistant = () => {
         ? void 0
         : _searchInputRef$curre2.focus();
     }, 100);
-  }; // Reset scroll behavior to instant on session switch or overlay toggle
+  };
   useEffect(() => {
     isFirstScrollRef.current = true;
-  }, [currentSessionId, isOpen]); // Track previous non-chat path
+  }, [currentSessionId, isOpen]);
+  useEffect(() => {
+    if (isRenameModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isRenameModalOpen]); // Track previous non-chat path
   const previousPathRef = useRef("/");
   useEffect(() => {
     if (!location.pathname.startsWith("/chat")) {
@@ -898,6 +908,7 @@ const AIAssistant = () => {
     e.stopPropagation();
     setEditingSessionId(session.id);
     setEditingTitle(session.title);
+    setIsRenameModalOpen(true);
   };
   const handleSaveRename = (sessionId) => {
     if (!editingTitle.trim()) return;
@@ -919,6 +930,7 @@ const AIAssistant = () => {
     setSessions(sorted);
     saveSessionsToStorage(sorted);
     setEditingSessionId(null);
+    setIsRenameModalOpen(false);
     toast.success("Chat renamed.");
     if (sessionId === currentSessionId) {
       const titleSlug = slugify(editingTitle.trim());
@@ -928,8 +940,9 @@ const AIAssistant = () => {
     }
   };
   const handleCancelRename = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     setEditingSessionId(null);
+    setIsRenameModalOpen(false);
   };
   const handleSaveToggle = async (listingId) => {
     if (!isAuthenticated) {
@@ -1118,52 +1131,6 @@ const AIAssistant = () => {
   };
   const renderSessionItem = (s) => {
     const isDefaultNewChat = s.title === "New Chat";
-    if (editingSessionId === s.id) {
-      return /*#__PURE__*/ _jsxs(
-        "div",
-        {
-          className:
-            "w-full flex items-center gap-3 px-3.5 py-1.5 rounded-[8px] bg-gray-200/80 dark:bg-white/10 border border-primary-500/50",
-          style: { borderColor: theme.primaryColor || "#1a73e8" },
-          children: [
-            isDefaultNewChat &&
-              /*#__PURE__*/ _jsx(PiChatCircle, {
-                className:
-                  "w-[17px] h-[17px] text-gray-500 dark:text-gray-400 flex-shrink-0",
-              }),
-            /*#__PURE__*/ _jsx("input", {
-              type: "text",
-              value: editingTitle,
-              onChange: (e) => setEditingTitle(e.target.value),
-              onKeyDown: (e) => {
-                if (e.key === "Enter") handleSaveRename(s.id);
-                if (e.key === "Escape") handleCancelRename(e);
-              },
-              autoFocus: true,
-              className:
-                "bg-transparent border-none text-[13.5px] text-gray-955 dark:text-white focus:outline-none flex-1 min-w-0 py-0.5 px-0",
-            }),
-            /*#__PURE__*/ _jsx("button", {
-              onClick: () => handleSaveRename(s.id),
-              className:
-                "p-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-all",
-              title: "Save Title",
-              children: /*#__PURE__*/ _jsx(FiCheck, {
-                className: "w-3.5 h-3.5",
-              }),
-            }),
-            /*#__PURE__*/ _jsx("button", {
-              onClick: handleCancelRename,
-              className:
-                "p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-all",
-              title: "Cancel",
-              children: /*#__PURE__*/ _jsx(FiX, { className: "w-3.5 h-3.5" }),
-            }),
-          ],
-        },
-        s.id,
-      );
-    }
     return /*#__PURE__*/ _jsxs(
       "div",
       {
@@ -2188,6 +2155,78 @@ const AIAssistant = () => {
                 ],
               });
             })(),
+          isRenameModalOpen &&
+            /*#__PURE__*/ _jsxs("div", {
+              className:
+                "fixed inset-0 z-[10000] flex items-center justify-center p-4",
+              onClick: handleCancelRename,
+              children: [
+                /*#__PURE__*/ _jsx("div", {
+                  className:
+                    "fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
+                }),
+                /*#__PURE__*/ _jsxs("div", {
+                  className:
+                    "relative bg-white dark:bg-[#18181b] border border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
+                  onClick: (e) => e.stopPropagation(),
+                  children: [
+                    /*#__PURE__*/ _jsx("button", {
+                      onClick: handleCancelRename,
+                      className:
+                        "absolute top-6 right-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer border-0 bg-transparent",
+                      children: /*#__PURE__*/ _jsx(FiX, {
+                        className: "w-5 h-5",
+                      }),
+                    }),
+                    /*#__PURE__*/ _jsx("h3", {
+                      className:
+                        "text-xl font-bold mb-1.5 text-gray-900 dark:text-white",
+                      children: "Edit title",
+                    }),
+                    /*#__PURE__*/ _jsx("p", {
+                      className:
+                        "text-[14px] text-gray-500 dark:text-gray-400 mb-5",
+                      children: "Please enter a new title",
+                    }),
+                    /*#__PURE__*/ _jsx("input", {
+                      type: "text",
+                      value: editingTitle,
+                      onChange: (e) => setEditingTitle(e.target.value),
+                      onKeyDown: (e) => {
+                        if (e.key === "Enter")
+                          handleSaveRename(editingSessionId);
+                        if (e.key === "Escape") handleCancelRename(e);
+                      },
+                      autoFocus: true,
+                      className:
+                        "w-full bg-gray-100 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-[12px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 mb-6 transition-all",
+                      style: {
+                        "--tw-ring-color": theme.primaryColor || "#1a73e8",
+                      },
+                    }),
+                    /*#__PURE__*/ _jsxs("div", {
+                      className: "flex justify-end gap-3",
+                      children: [
+                        /*#__PURE__*/ _jsx("button", {
+                          type: "button",
+                          onClick: handleCancelRename,
+                          className:
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-all cursor-pointer bg-transparent",
+                          children: "Cancel",
+                        }),
+                        /*#__PURE__*/ _jsx("button", {
+                          type: "button",
+                          onClick: () => handleSaveRename(editingSessionId),
+                          className:
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-white dark:text-gray-900 bg-gray-955 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
+                          children: "Confirm",
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
         ],
       }),
     ],
