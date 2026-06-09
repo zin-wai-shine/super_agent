@@ -1671,7 +1671,7 @@ const AIAssistant = () => {
                                                       className:
                                                         "w-[15px] h-[15px] flex-shrink-0 " +
                                                         (currentSessionId === s.id
-                                                          ? "text-blue-500 dark:text-blue-400"
+                                                          ? "hidden"
                                                           : "text-gray-400"),
                                                     }),
                                                     /*#__PURE__*/ _jsx("span", {
@@ -1690,7 +1690,7 @@ const AIAssistant = () => {
                                                       },
                                                       className:
                                                          "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
-                                                           activeDropdownId === s.id
+                                                           currentSessionId === s.id || activeDropdownId === s.id
                                                              ? "flex"
                                                              : "hidden group-hover:flex",
                                                          ),
