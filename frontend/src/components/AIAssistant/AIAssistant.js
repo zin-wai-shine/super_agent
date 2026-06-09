@@ -2366,7 +2366,7 @@ const AIAssistant = () => {
                         setIsSearchModalOpen(false);
                       },
                       className:
-                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 transition-all font-medium text-sm mb-4 cursor-pointer",
+                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 transition-all font-medium text-base mb-4 cursor-pointer",
                       children: [
                         /*#__PURE__*/ _jsx("div", {
                           className:
