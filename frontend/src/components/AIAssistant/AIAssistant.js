@@ -1521,26 +1521,80 @@ const AIAssistant = () => {
                                                 setIsPinnedPopoverOpen(false);
                                               },
                                               className:
-                                                "w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left\n                                              ".concat(
+                                                "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
                                                   currentSessionId === s.id
                                                     ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
                                                     : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
                                                 ),
                                               children: [
-                                                /*#__PURE__*/ _jsx(
-                                                  PiChatCircle,
-                                                  {
-                                                    className:
-                                                      "w-[17px] h-[17px] flex-shrink-0 " +
-                                                      (currentSessionId === s.id
-                                                        ? "text-blue-500 dark:text-blue-400"
-                                                        : "text-gray-400"),
-                                                  },
-                                                ),
-                                                /*#__PURE__*/ _jsx("span", {
-                                                  className:
-                                                    "text-[13.5px] truncate flex-1",
-                                                  children: s.title,
+                                                /*#__PURE__*/ _jsxs("div", {
+                                                  className: "truncate flex-1 min-w-0 flex items-center gap-2",
+                                                  children: [
+                                                    /*#__PURE__*/ _jsx(PiChatCircle, {
+                                                      className:
+                                                        "w-[15px] h-[15px] flex-shrink-0 " +
+                                                        (currentSessionId === s.id
+                                                          ? "text-blue-500 dark:text-blue-400"
+                                                          : "text-gray-400"),
+                                                    }),
+                                                    /*#__PURE__*/ _jsx("span", {
+                                                      className: "text-[13.5px] truncate flex-1",
+                                                      children: s.title,
+                                                    }),
+                                                  ],
+                                                }),
+                                                /*#__PURE__*/ _jsxs("div", {
+                                                  className: "flex items-center gap-0.5 flex-shrink-0",
+                                                  children: [
+                                                    /*#__PURE__*/ _jsx("button", {
+                                                      onClick: (e) => {
+                                                        e.stopPropagation();
+                                                        handleTogglePinSession(s.id);
+                                                      },
+                                                      className:
+                                                        "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
+                                                          s.pinned
+                                                            ? "flex text-gray-955 dark:text-white"
+                                                            : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
+                                                                currentSessionId === s.id || activeDropdownId === s.id
+                                                                  ? "flex"
+                                                                  : "hidden group-hover:flex",
+                                                              ),
+                                                        ),
+                                                      title: s.pinned ? "Unpin chat" : "Pin chat",
+                                                      children: /*#__PURE__*/ _jsx(LuPin, {
+                                                        className: "w-[15px] h-[15px] rotate-45",
+                                                      }),
+                                                    }),
+                                                    /*#__PURE__*/ _jsx("div", {
+                                                      className: "relative session-dropdown-container flex-shrink-0",
+                                                      children: /*#__PURE__*/ _jsx("button", {
+                                                        onClick: (e) => {
+                                                          e.stopPropagation();
+                                                          if (activeDropdownId === s.id) {
+                                                            setActiveDropdownId(null);
+                                                          } else {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            setDropdownCoords({
+                                                              top: rect.bottom + 6,
+                                                              left: rect.left - 12,
+                                                            });
+                                                            setActiveDropdownId(s.id);
+                                                          }
+                                                        },
+                                                        className:
+                                                          "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
+                                                            currentSessionId === s.id || activeDropdownId === s.id
+                                                              ? "flex"
+                                                              : "hidden group-hover:flex",
+                                                          ),
+                                                        title: "Chat options",
+                                                        children: /*#__PURE__*/ _jsx(FiMoreHorizontal, {
+                                                          className: "w-[15px] h-[15px]",
+                                                        }),
+                                                      }),
+                                                    }),
+                                                  ],
                                                 }),
                                               ],
                                             },
@@ -1596,7 +1650,7 @@ const AIAssistant = () => {
                                           children: "No chats",
                                         })
                                       : sessions.map((s) =>
-                                          /*#__PURE__*/ _jsx(
+                                          /*#__PURE__*/ _jsxs(
                                             "div",
                                             {
                                               onClick: () => {
@@ -1604,19 +1658,82 @@ const AIAssistant = () => {
                                                 setIsRecentsPopoverOpen(false);
                                               },
                                               className:
-                                                "w-full px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left\n                                              ".concat(
+                                                "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
                                                   currentSessionId === s.id
                                                     ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
                                                     : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
                                                 ),
-                                              children: /*#__PURE__*/ _jsx(
-                                                "div",
-                                                {
-                                                  className:
-                                                    "text-[13.5px] truncate",
-                                                  children: s.title,
-                                                },
-                                              ),
+                                              children: [
+                                                /*#__PURE__*/ _jsxs("div", {
+                                                  className: "truncate flex-1 min-w-0 flex items-center gap-2",
+                                                  children: [
+                                                    /*#__PURE__*/ _jsx(PiChatCircle, {
+                                                      className:
+                                                        "w-[15px] h-[15px] flex-shrink-0 " +
+                                                        (currentSessionId === s.id
+                                                          ? "text-blue-500 dark:text-blue-400"
+                                                          : "text-gray-400"),
+                                                    }),
+                                                    /*#__PURE__*/ _jsx("span", {
+                                                      className: "text-[13.5px] truncate flex-1",
+                                                      children: s.title,
+                                                    }),
+                                                  ],
+                                                }),
+                                                /*#__PURE__*/ _jsxs("div", {
+                                                  className: "flex items-center gap-0.5 flex-shrink-0",
+                                                  children: [
+                                                    /*#__PURE__*/ _jsx("button", {
+                                                      onClick: (e) => {
+                                                        e.stopPropagation();
+                                                        handleTogglePinSession(s.id);
+                                                      },
+                                                      className:
+                                                        "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
+                                                          s.pinned
+                                                            ? "flex text-gray-955 dark:text-white"
+                                                            : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
+                                                                currentSessionId === s.id || activeDropdownId === s.id
+                                                                  ? "flex"
+                                                                  : "hidden group-hover:flex",
+                                                              ),
+                                                        ),
+                                                      title: s.pinned ? "Unpin chat" : "Pin chat",
+                                                      children: /*#__PURE__*/ _jsx(LuPin, {
+                                                        className: "w-[15px] h-[15px] rotate-45",
+                                                      }),
+                                                    }),
+                                                    /*#__PURE__*/ _jsx("div", {
+                                                      className: "relative session-dropdown-container flex-shrink-0",
+                                                      children: /*#__PURE__*/ _jsx("button", {
+                                                        onClick: (e) => {
+                                                          e.stopPropagation();
+                                                          if (activeDropdownId === s.id) {
+                                                            setActiveDropdownId(null);
+                                                          } else {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            setDropdownCoords({
+                                                              top: rect.bottom + 6,
+                                                              left: rect.left - 12,
+                                                            });
+                                                            setActiveDropdownId(s.id);
+                                                          }
+                                                        },
+                                                        className:
+                                                          "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
+                                                            currentSessionId === s.id || activeDropdownId === s.id
+                                                              ? "flex"
+                                                              : "hidden group-hover:flex",
+                                                          ),
+                                                        title: "Chat options",
+                                                        children: /*#__PURE__*/ _jsx(FiMoreHorizontal, {
+                                                          className: "w-[15px] h-[15px]",
+                                                        }),
+                                                      }),
+                                                    }),
+                                                  ],
+                                                }),
+                                              ],
                                             },
                                             s.id,
                                           ),
