@@ -359,6 +359,28 @@ const AIAssistant = () => {
     localStorage.setItem("bolt_haven_sidebar_collapsed", "false");
     setIsSearchModalOpen(true);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 1. Toggle Sidebar: Cmd+Shift+S (Mac) or Ctrl+Shift+S
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        toggleSidebar();
+      }
+      // 2. New Chat: Cmd+Shift+O (Mac) or Ctrl+Shift+O
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        handleNewChat();
+      }
+      // 3. Search: Cmd+K (Mac) or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSidebar, handleNewChat]);
   const getSessionIcon = (title) => {
     const t = title.toLowerCase();
     if (
@@ -1328,7 +1350,7 @@ const AIAssistant = () => {
         children: [
           /*#__PURE__*/ _jsxs("div", {
             className:
-              "hidden md:flex flex-col h-full bg-gray-50 text-gray-800 dark:bg-dashboard-card dark:text-gray-100 border-r border-gray-200/80 dark:border-white/5 flex-shrink-0 transition-all duration-300 ease-in-out relative ".concat(
+              "hidden md:flex flex-col h-full bg-gray-50 text-gray-800 dark:bg-dashboard-card dark:text-gray-100 border-r border-gray-200/80 dark:border-white/5 flex-shrink-0 transition-all duration-300 ease-in-out relative z-30 ".concat(
                 isSidebarCollapsed ? "overflow-visible" : "overflow-hidden",
               ),
             style: { width: isSidebarCollapsed ? "60px" : "288px" },
@@ -1351,16 +1373,23 @@ const AIAssistant = () => {
                           /*#__PURE__*/ _jsx("button", {
                             onClick: toggleSidebar,
                             className:
-                              "w-11 h-11 text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
-                            title: "Open sidebar",
+                              "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
                             children: /*#__PURE__*/ _jsx(SidebarIcon, {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsx("div", {
+                          /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
-                            children: "Open sidebar",
+                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                            children: [
+                              /*#__PURE__*/ _jsx("span", {
+                                children: "Open sidebar",
+                              }),
+                              /*#__PURE__*/ _jsx("span", {
+                                className: "text-gray-400 dark:text-gray-500 font-mono text-[10px] bg-white/10 px-1.5 py-0.5 rounded border border-white/5",
+                                children: "⇧⌘S",
+                              }),
+                            ],
                           }),
                         ],
                       }),
@@ -1370,16 +1399,23 @@ const AIAssistant = () => {
                           /*#__PURE__*/ _jsx("button", {
                             onClick: handleNewChat,
                             className:
-                              "w-11 h-11 text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
-                            title: "New chat",
+                              "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
                             children: /*#__PURE__*/ _jsx(BiMessageSquareAdd, {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsx("div", {
+                          /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
-                            children: "New chat",
+                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                            children: [
+                              /*#__PURE__*/ _jsx("span", {
+                                children: "New chat",
+                              }),
+                              /*#__PURE__*/ _jsx("span", {
+                                className: "text-gray-400 dark:text-gray-500 font-mono text-[10px] bg-white/10 px-1.5 py-0.5 rounded border border-white/5",
+                                children: "⇧⌘O",
+                              }),
+                            ],
                           }),
                         ],
                       }),
@@ -1389,16 +1425,23 @@ const AIAssistant = () => {
                           /*#__PURE__*/ _jsx("button", {
                             onClick: handleSearchClickCollapsed,
                             className:
-                              "w-11 h-11 text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
-                            title: "Search",
+                              "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
                             children: /*#__PURE__*/ _jsx(SearchMagnifierIcon, {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsx("div", {
+                          /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
-                            children: "Search",
+                              "absolute left-14 top-1/2 -translate-y-1/2 bg-black text-white text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                            children: [
+                              /*#__PURE__*/ _jsx("span", {
+                                children: "Search",
+                              }),
+                              /*#__PURE__*/ _jsx("span", {
+                                className: "text-gray-400 dark:text-gray-500 font-mono text-[10px] bg-white/10 px-1.5 py-0.5 rounded border border-white/5",
+                                children: "⌘K",
+                              }),
+                            ],
                           }),
                         ],
                       }),
