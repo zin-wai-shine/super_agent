@@ -2398,7 +2398,6 @@ const AIAssistant = () => {
                             })
                           : filteredSessions.length > 0
                           ? filteredSessions.map((s) => {
-                              const IconComp = getSessionIcon(s.title);
                               const dateStr = formatSessionDate(s.updatedAt);
                               const snippet = getSessionSnippet(s);
                               return /*#__PURE__*/ _jsxs(
@@ -2413,8 +2412,8 @@ const AIAssistant = () => {
                                   children: [
                                     /*#__PURE__*/ _jsx("div", {
                                       className:
-                                        "mt-0.5 text-white flex-shrink-0",
-                                      children: /*#__PURE__*/ _jsx(IconComp, {
+                                        "mt-0.5 text-gray-400 flex-shrink-0",
+                                      children: /*#__PURE__*/ _jsx(PiChatCircle, {
                                         className: "w-[18px] h-[18px]",
                                       }),
                                     }),
