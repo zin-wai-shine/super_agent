@@ -2173,7 +2173,7 @@ const AIAssistant = () => {
                     /*#__PURE__*/ _jsx("button", {
                       onClick: handleCancelRename,
                       className:
-                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 rounded-full bg-[#2c2c2e] hover:bg-[#3a3a3c] border border-[#3a3a3c] transition-colors cursor-pointer",
+                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 rounded-[10px] bg-[#2c2c2e] hover:bg-[#3a3a3c] border border-[#3a3a3c] transition-colors cursor-pointer",
                       children: /*#__PURE__*/ _jsx(FiX, {
                         className: "w-4 h-4",
                       }),
