@@ -2175,7 +2175,7 @@ const AIAssistant = () => {
                       className:
                         "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-[10px] bg-transparent hover:bg-gray-100 transition-colors cursor-pointer border-0",
                       children: /*#__PURE__*/ _jsx(FiX, {
-                        className: "w-4 h-4",
+                        className: "w-5 h-5",
                       }),
                     }),
                     /*#__PURE__*/ _jsx("h3", {
@@ -2200,7 +2200,7 @@ const AIAssistant = () => {
                           },
                           autoFocus: true,
                           className:
-                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition-all",
+                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-0 transition-all",
                         }),
                         editingTitle &&
                           /*#__PURE__*/ _jsx("button", {
