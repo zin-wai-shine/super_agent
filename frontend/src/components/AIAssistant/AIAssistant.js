@@ -38,7 +38,7 @@ import {
   FiCheck,
   FiMoreHorizontal,
   FiUsers,
-  FiLightbulb,
+  FiZap,
   FiUser,
   FiGlobe,
 } from "react-icons/fi";
@@ -386,7 +386,7 @@ const AIAssistant = () => {
       t.includes("tech") ||
       t.includes("community")
     ) {
-      return FiLightbulb;
+      return FiZap;
     }
     if (
       t.includes("ai") ||
