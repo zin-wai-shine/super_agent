@@ -2285,8 +2285,7 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] transform transition-all duration-300 z-10",
-                  style: { height: "auto" },
+                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsxs("div", {
@@ -2341,7 +2340,7 @@ const AIAssistant = () => {
                     }),
                     /*#__PURE__*/ _jsx("div", {
                       className:
-                        "overflow-y-auto max-h-[40vh] pr-1 space-y-1 modal-scrollable",
+                        "flex-1 overflow-y-auto min-h-0 pr-1 space-y-1 modal-scrollable",
                       children:
                         isSearchLoading
                           ? /*#__PURE__*/ _jsx("div", {
