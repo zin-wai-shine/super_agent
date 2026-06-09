@@ -1481,7 +1481,7 @@ const AIAssistant = () => {
                               "pinned-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 cursor-pointer flex items-center justify-center\n                              ".concat(
                                 isPinnedPopoverOpen
                                   ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
-                                  : "bg-transparent text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                                  : "bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
                               ),
                             children: /*#__PURE__*/ _jsx(PinBadgeIcon, {
                               className: "w-5 h-5",
@@ -1564,7 +1564,7 @@ const AIAssistant = () => {
                               "recents-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 cursor-pointer flex items-center justify-center\n                              ".concat(
                                 isRecentsPopoverOpen
                                   ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
-                                  : "bg-transparent text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                                  : "bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
                               ),
                             children: /*#__PURE__*/ _jsx(ChatBubbleIcon, {
                               className: "w-5 h-5",
