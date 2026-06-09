@@ -1380,7 +1380,7 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
                             children: [
                               /*#__PURE__*/ _jsx("span", {
                                 children: "Open sidebar",
@@ -1406,7 +1406,7 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
                             children: [
                               /*#__PURE__*/ _jsx("span", {
                                 children: "New chat",
@@ -1432,7 +1432,7 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
+                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
                             children: [
                               /*#__PURE__*/ _jsx("span", {
                                 children: "Search",
@@ -1464,7 +1464,7 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                             children: "Pinned Chats",
                           }),
                         ],
@@ -1488,7 +1488,7 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                             children: "Chats",
                           }),
                         ],
@@ -1508,7 +1508,7 @@ const AIAssistant = () => {
                       }),
                       /*#__PURE__*/ _jsx("div", {
                         className:
-                          "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                          "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                         children: user
                           ? ""
                               .concat(user.first_name || "", " ")
