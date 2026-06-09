@@ -1468,7 +1468,8 @@ const AIAssistant = () => {
                             ],
                           }),
                         ],
-                                      /*#__PURE__*/ _jsxs("div", {
+                      }),
+                      /*#__PURE__*/ _jsxs("div", {
                         className: "relative group",
                         children: [
                           /*#__PURE__*/ _jsx("button", {
