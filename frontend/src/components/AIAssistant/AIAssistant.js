@@ -314,6 +314,16 @@ const AIAssistant = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [isPinnedPopoverOpen, setIsPinnedPopoverOpen] = useState(false);
+  const [isRecentsPopoverOpen, setIsRecentsPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isSidebarCollapsed) {
+      setIsPinnedPopoverOpen(false);
+      setIsRecentsPopoverOpen(false);
+    }
+  }, [isSidebarCollapsed]);
+
   const modalSearchInputRef = useRef(null);
 
   useEffect(() => {
@@ -748,10 +758,24 @@ const AIAssistant = () => {
       ) {
         setActiveDropdownId(null);
       }
+      if (
+        isPinnedPopoverOpen &&
+        !e.target.closest(".pinned-popover-container") &&
+        !e.target.closest(".pinned-toggle-btn")
+      ) {
+        setIsPinnedPopoverOpen(false);
+      }
+      if (
+        isRecentsPopoverOpen &&
+        !e.target.closest(".recents-popover-container") &&
+        !e.target.closest(".recents-toggle-btn")
+      ) {
+        setIsRecentsPopoverOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [activeDropdownId]); // Close dropdown on scroll
+  }, [activeDropdownId, isPinnedPopoverOpen, isRecentsPopoverOpen]); // Close dropdown on scroll
   useEffect(() => {
     const handleScroll = () => {
       if (activeDropdownId) {
@@ -1444,20 +1468,20 @@ const AIAssistant = () => {
                             ],
                           }),
                         ],
-                      }),
-                      /*#__PURE__*/ _jsxs("div", {
+                                      /*#__PURE__*/ _jsxs("div", {
                         className: "relative group",
                         children: [
                           /*#__PURE__*/ _jsx("button", {
                             onClick: () => {
-                              setIsSidebarCollapsed(false);
-                              localStorage.setItem(
-                                "bolt_haven_sidebar_collapsed",
-                                "false",
-                              );
+                              setIsPinnedPopoverOpen(!isPinnedPopoverOpen);
+                              setIsRecentsPopoverOpen(false);
                             },
                             className:
-                              "w-11 h-11 text-gray-400 dark:text-gray-500 rounded-[12px] hover:text-gray-950 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
+                              "pinned-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center\n                              ".concat(
+                                isPinnedPopoverOpen
+                                  ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
+                                  : "text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                              ),
                             children: /*#__PURE__*/ _jsx(PinBadgeIcon, {
                               className: "w-5 h-5",
                             }),
@@ -1467,6 +1491,64 @@ const AIAssistant = () => {
                               "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                             children: "Pinned Chats",
                           }),
+                          isPinnedPopoverOpen &&
+                            /*#__PURE__*/ _jsxs("div", {
+                              className:
+                                "pinned-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50 rounded-[20px] shadow-2xl p-4 w-[280px] z-[200]",
+                              children: [
+                                /*#__PURE__*/ _jsx("div", {
+                                  className:
+                                    "text-[15px] font-semibold text-gray-900 dark:text-white mb-3 px-1 text-left",
+                                  children: "Pinned",
+                                }),
+                                /*#__PURE__*/ _jsx("div", {
+                                  className:
+                                    "space-y-1 max-h-[300px] overflow-y-auto pr-1 modal-scrollable",
+                                  children:
+                                    pinnedSessions.length === 0
+                                      ? /*#__PURE__*/ _jsx("div", {
+                                          className:
+                                            "text-[13px] text-gray-400 dark:text-gray-500 px-1 py-1 text-left",
+                                          children: "No pinned chats",
+                                        })
+                                      : pinnedSessions.map((s) =>
+                                          /*#__PURE__*/ _jsxs(
+                                            "div",
+                                            {
+                                              onClick: () => {
+                                                handleSelectSession(s.id);
+                                                setIsPinnedPopoverOpen(false);
+                                              },
+                                              className:
+                                                "w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left\n                                              ".concat(
+                                                  currentSessionId === s.id
+                                                    ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
+                                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
+                                                ),
+                                              children: [
+                                                /*#__PURE__*/ _jsx(
+                                                  PiChatCircle,
+                                                  {
+                                                    className:
+                                                      "w-[17px] h-[17px] flex-shrink-0 " +
+                                                      (currentSessionId === s.id
+                                                        ? "text-blue-500 dark:text-blue-400"
+                                                        : "text-gray-400"),
+                                                  },
+                                                ),
+                                                /*#__PURE__*/ _jsx("span", {
+                                                  className:
+                                                    "text-[13.5px] truncate flex-1",
+                                                  children: s.title,
+                                                }),
+                                              ],
+                                            },
+                                            s.id,
+                                          ),
+                                        ),
+                                }),
+                              ],
+                            }),
                         ],
                       }),
                       /*#__PURE__*/ _jsxs("div", {
@@ -1474,14 +1556,15 @@ const AIAssistant = () => {
                         children: [
                           /*#__PURE__*/ _jsx("button", {
                             onClick: () => {
-                              setIsSidebarCollapsed(false);
-                              localStorage.setItem(
-                                "bolt_haven_sidebar_collapsed",
-                                "false",
-                              );
+                              setIsRecentsPopoverOpen(!isRecentsPopoverOpen);
+                              setIsPinnedPopoverOpen(false);
                             },
                             className:
-                              "w-11 h-11 text-gray-400 dark:text-gray-500 rounded-[12px] hover:text-gray-950 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
+                              "recents-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center\n                              ".concat(
+                                isRecentsPopoverOpen
+                                  ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
+                                  : "text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                              ),
                             children: /*#__PURE__*/ _jsx(ChatBubbleIcon, {
                               className: "w-5 h-5",
                             }),
@@ -1491,6 +1574,54 @@ const AIAssistant = () => {
                               "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                             children: "Chats",
                           }),
+                          isRecentsPopoverOpen &&
+                            /*#__PURE__*/ _jsxs("div", {
+                              className:
+                                "recents-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50 rounded-[20px] shadow-2xl p-4 w-[280px] z-[200]",
+                              children: [
+                                /*#__PURE__*/ _jsx("div", {
+                                  className:
+                                    "text-[15px] font-semibold text-gray-900 dark:text-white mb-3 px-1 text-left",
+                                  children: "Recents",
+                                }),
+                                /*#__PURE__*/ _jsx("div", {
+                                  className:
+                                    "space-y-1 max-h-[300px] overflow-y-auto pr-1 modal-scrollable",
+                                  children:
+                                    sessions.length === 0
+                                      ? /*#__PURE__*/ _jsx("div", {
+                                          className:
+                                            "text-[13px] text-gray-400 dark:text-gray-500 px-1 py-1 text-left",
+                                          children: "No chats",
+                                        })
+                                      : sessions.map((s) =>
+                                          /*#__PURE__*/ _jsx(
+                                            "div",
+                                            {
+                                              onClick: () => {
+                                                handleSelectSession(s.id);
+                                                setIsRecentsPopoverOpen(false);
+                                              },
+                                              className:
+                                                "w-full px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left\n                                              ".concat(
+                                                  currentSessionId === s.id
+                                                    ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
+                                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
+                                                ),
+                                              children: /*#__PURE__*/ _jsx(
+                                                "div",
+                                                {
+                                                  className:
+                                                    "text-[13.5px] truncate",
+                                                  children: s.title,
+                                                },
+                                              ),
+                                            },
+                                            s.id,
+                                          ),
+                                        ),
+                                }),
+                              ],
                         ],
                       }),
                     ],
