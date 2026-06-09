@@ -310,10 +310,9 @@ const AIAssistant = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem("bolt_haven_sidebar_collapsed") === "true";
   });
-  const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const modalSearchInputRef = useRef(null);
 
   useEffect(() => {
@@ -327,8 +326,22 @@ const AIAssistant = () => {
       }, 100);
     } else {
       setSearchQuery("");
+      setIsSearchLoading(false);
     }
   }, [isSearchModalOpen]);
+
+  useEffect(() => {
+    if (!isSearchModalOpen) return;
+    if (searchQuery.trim() === "") {
+      setIsSearchLoading(false);
+      return;
+    }
+    setIsSearchLoading(true);
+    const timer = setTimeout(() => {
+      setIsSearchLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, isSearchModalOpen]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
@@ -338,35 +351,12 @@ const AIAssistant = () => {
     });
   };
   const toggleSearch = () => {
-    setIsSearchActive((prev) => {
-      const nextVal = !prev;
-      if (!nextVal) {
-        setSearchQuery("");
-      } else {
-        setIsSidebarCollapsed(false);
-        localStorage.setItem("bolt_haven_sidebar_collapsed", "false");
-        setTimeout(() => {
-          var _searchInputRef$curre;
-          (_searchInputRef$curre = searchInputRef.current) === null ||
-          _searchInputRef$curre === void 0
-            ? void 0
-            : _searchInputRef$curre.focus();
-        }, 100);
-      }
-      return nextVal;
-    });
+    setIsSearchModalOpen(true);
   };
   const handleSearchClickCollapsed = () => {
     setIsSidebarCollapsed(false);
     localStorage.setItem("bolt_haven_sidebar_collapsed", "false");
-    setIsSearchActive(true);
-    setTimeout(() => {
-      var _searchInputRef$curre2;
-      (_searchInputRef$curre2 = searchInputRef.current) === null ||
-      _searchInputRef$curre2 === void 0
-        ? void 0
-        : _searchInputRef$curre2.focus();
-    }, 100);
+    setIsSearchModalOpen(true);
   };
   const getSessionIcon = (title) => {
     const t = title.toLowerCase();
@@ -1510,13 +1500,9 @@ const AIAssistant = () => {
                               className: "flex items-center gap-1",
                               children: [
                                 /*#__PURE__*/ _jsx("button", {
-                                  onClick: toggleSearch,
+                                  onClick: () => setIsSearchModalOpen(true),
                                   className:
-                                    "w-11 h-11 rounded-[12px] border-0 bg-transparent cursor-pointer transition-all duration-200 flex items-center justify-center\n                                                ".concat(
-                                      isSearchActive
-                                        ? "text-primary-600 dark:text-primary-400 bg-gray-200/70 dark:bg-white/10"
-                                        : "text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
-                                    ),
+                                    "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 border-0 bg-transparent cursor-pointer transition-all duration-200 flex items-center justify-center",
                                   title: "Search chats",
                                   children: /*#__PURE__*/ _jsx(
                                     SearchMagnifierIcon,
@@ -1536,40 +1522,6 @@ const AIAssistant = () => {
                             }),
                           ],
                         }),
-                        isSearchActive &&
-                          /*#__PURE__*/ _jsx("div", {
-                            className: "px-3 pt-3 pb-1 flex-shrink-0",
-                            children: /*#__PURE__*/ _jsxs("div", {
-                              className: "relative flex items-center w-full",
-                              children: [
-                                /*#__PURE__*/ _jsx("input", {
-                                  ref: searchInputRef,
-                                  type: "text",
-                                  value: searchQuery,
-                                  onChange: (e) =>
-                                    setSearchQuery(e.target.value),
-                                  onClick: () => setIsSearchModalOpen(true),
-                                  onFocus: () => setIsSearchModalOpen(true),
-                                  placeholder: "Search chats...",
-                                  className:
-                                    "w-full bg-gray-200/40 dark:bg-white/5 text-[13.5px] text-gray-955 dark:text-white pl-8 pr-8 py-2 rounded-lg border border-transparent focus:outline-none focus:border-gray-300 dark:focus:border-white/10 cursor-pointer",
-                                }),
-                                /*#__PURE__*/ _jsx(SearchMagnifierIcon, {
-                                  className:
-                                    "w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-2.5 pointer-events-none",
-                                }),
-                                searchQuery &&
-                                  /*#__PURE__*/ _jsx("button", {
-                                    onClick: () => setSearchQuery(""),
-                                    className:
-                                      "absolute right-2.5 text-gray-400 hover:text-gray-650 dark:hover:text-white bg-transparent border-0 cursor-pointer p-0.5 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/10",
-                                    children: /*#__PURE__*/ _jsx(FiX, {
-                                      className: "w-3.5 h-3.5",
-                                    }),
-                                  }),
-                              ],
-                            }),
-                          }),
                         /*#__PURE__*/ _jsx("div", {
                           className: "px-3 pt-3.5 pb-2 flex-shrink-0",
                           children: /*#__PURE__*/ _jsxs("button", {
@@ -2333,7 +2285,8 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] max-h-[75vh] flex flex-col transform transition-all duration-300 z-10",
+                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] transform transition-all duration-300 z-10",
+                  style: { height: "auto" },
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsxs("div", {
@@ -2388,9 +2341,63 @@ const AIAssistant = () => {
                     }),
                     /*#__PURE__*/ _jsx("div", {
                       className:
-                        "flex-1 overflow-y-auto min-h-0 pr-1 space-y-1 modal-scrollable",
+                        "overflow-y-auto max-h-[40vh] pr-1 space-y-1 modal-scrollable",
                       children:
-                        filteredSessions.length > 0
+                        isSearchLoading
+                          ? /*#__PURE__*/ _jsx("div", {
+                              className: "space-y-2 py-1",
+                              children: [0, 1, 2, 3].map((i) =>
+                                /*#__PURE__*/ _jsxs(
+                                  "div",
+                                  {
+                                    className:
+                                      "w-full flex items-start gap-4 p-3 rounded-[16px]",
+                                    children: [
+                                      /*#__PURE__*/ _jsx("div", {
+                                        className:
+                                          "mt-0.5 w-[18px] h-[18px] rounded-[4px] bg-white/10 animate-pulse flex-shrink-0",
+                                      }),
+                                      /*#__PURE__*/ _jsxs("div", {
+                                        className: "flex-1 min-w-0 space-y-2",
+                                        children: [
+                                          /*#__PURE__*/ _jsxs("div", {
+                                            className:
+                                              "flex items-center justify-between gap-3",
+                                            children: [
+                                              /*#__PURE__*/ _jsx("div", {
+                                                className:
+                                                  "h-3.5 rounded-full bg-white/10 animate-pulse",
+                                                style: {
+                                                  width: `${55 + (i * 17) % 30}%`,
+                                                  animationDelay: `${i * 80}ms`,
+                                                },
+                                              }),
+                                              /*#__PURE__*/ _jsx("div", {
+                                                className:
+                                                  "h-3 w-10 rounded-full bg-white/10 animate-pulse flex-shrink-0",
+                                                style: {
+                                                  animationDelay: `${i * 80 + 40}ms`,
+                                                },
+                                              }),
+                                            ],
+                                          }),
+                                          /*#__PURE__*/ _jsx("div", {
+                                            className:
+                                              "h-3 rounded-full bg-white/[0.06] animate-pulse",
+                                            style: {
+                                              width: `${70 + (i * 11) % 25}%`,
+                                              animationDelay: `${i * 80 + 80}ms`,
+                                            },
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  },
+                                  i,
+                                ),
+                              ),
+                            })
+                          : filteredSessions.length > 0
                           ? filteredSessions.map((s) => {
                               const IconComp = getSessionIcon(s.title);
                               const dateStr = formatSessionDate(s.updatedAt);
