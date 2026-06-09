@@ -2200,14 +2200,17 @@ const AIAssistant = () => {
                           },
                           autoFocus: true,
                           className:
-                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-0 transition-all",
+                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-0 transition-all peer",
                         }),
                         editingTitle &&
                           /*#__PURE__*/ _jsx("button", {
                             type: "button",
-                            onClick: () => setEditingTitle(""),
+                            onMouseDown: (e) => {
+                              e.preventDefault();
+                              setEditingTitle("");
+                            },
                             className:
-                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors border-0 p-0 cursor-pointer",
+                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 opacity-0 pointer-events-none peer-hover:opacity-100 peer-focus:opacity-100 hover:opacity-100 peer-hover:pointer-events-auto peer-focus:pointer-events-auto hover:pointer-events-auto transition-opacity duration-150 border-0 p-0 cursor-pointer",
                             children: /*#__PURE__*/ _jsx(FiX, {
                               className: "w-3 h-3",
                             }),
