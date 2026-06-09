@@ -2173,9 +2173,9 @@ const AIAssistant = () => {
                     /*#__PURE__*/ _jsx("button", {
                       onClick: handleCancelRename,
                       className:
-                        "absolute top-6 right-6 text-gray-400 hover:text-gray-200 p-1 rounded-full hover:bg-white/5 transition-colors cursor-pointer border-0 bg-transparent",
+                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 rounded-full bg-[#2c2c2e] hover:bg-[#3a3a3c] border border-[#3a3a3c] transition-colors cursor-pointer",
                       children: /*#__PURE__*/ _jsx(FiX, {
-                        className: "w-5 h-5",
+                        className: "w-4 h-4",
                       }),
                     }),
                     /*#__PURE__*/ _jsx("h3", {
@@ -2228,7 +2228,10 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: () => handleSaveRename(editingSessionId),
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-[#1e1e1e] bg-white hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-white hover:brightness-105 active:scale-95 transition-all cursor-pointer border-0",
+                          style: {
+                            backgroundColor: theme.primaryColor || "#1a73e8",
+                          },
                           children: "Confirm",
                         }),
                       ],
