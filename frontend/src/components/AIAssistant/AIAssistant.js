@@ -2167,23 +2167,23 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-[#1c1c1e] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
+                    "relative bg-white border border-gray-200/80 text-gray-900 rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsx("button", {
                       onClick: handleCancelRename,
                       className:
-                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 rounded-[10px] bg-[#2c2c2e] hover:bg-[#3a3a3c] border border-[#3a3a3c] transition-colors cursor-pointer",
+                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-[10px] bg-transparent hover:bg-gray-100 transition-colors cursor-pointer border-0",
                       children: /*#__PURE__*/ _jsx(FiX, {
                         className: "w-4 h-4",
                       }),
                     }),
                     /*#__PURE__*/ _jsx("h3", {
-                      className: "text-[20px] font-bold mb-1.5 text-white",
+                      className: "text-[20px] font-bold mb-1.5 text-gray-900",
                       children: "Edit title",
                     }),
                     /*#__PURE__*/ _jsx("p", {
-                      className: "text-[14px] text-gray-400 mb-5",
+                      className: "text-[14px] text-gray-500 mb-5",
                       children: "Please enter a new title",
                     }),
                     /*#__PURE__*/ _jsxs("div", {
@@ -2200,14 +2200,14 @@ const AIAssistant = () => {
                           },
                           autoFocus: true,
                           className:
-                            "w-full bg-[#1c1c1e] border border-[#2c2c2e] rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-white focus:outline-none focus:border-white/20 focus:ring-2 focus:ring-white/5 transition-all",
+                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition-all",
                         }),
                         editingTitle &&
                           /*#__PURE__*/ _jsx("button", {
                             type: "button",
                             onClick: () => setEditingTitle(""),
                             className:
-                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#8e8e93] hover:text-white transition-colors border-0 p-0 cursor-pointer",
+                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors border-0 p-0 cursor-pointer",
                             children: /*#__PURE__*/ _jsx(FiX, {
                               className: "w-3 h-3",
                             }),
@@ -2221,14 +2221,17 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: handleCancelRename,
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-white border border-[#2c2c2e] bg-[#1c1c1e] hover:bg-[#252528] active:scale-95 transition-all cursor-pointer",
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all cursor-pointer",
                           children: "Cancel",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           type: "button",
                           onClick: () => handleSaveRename(editingSessionId),
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-[#1c1c1e] bg-white hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all cursor-pointer border-0",
+                          style: {
+                            backgroundColor: theme.primaryColor || "#1a73e8",
+                          },
                           children: "Confirm",
                         }),
                       ],
