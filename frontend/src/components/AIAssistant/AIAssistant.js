@@ -359,28 +359,6 @@ const AIAssistant = () => {
     localStorage.setItem("bolt_haven_sidebar_collapsed", "false");
     setIsSearchModalOpen(true);
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // 1. Toggle Sidebar: Cmd+Shift+S (Mac) or Ctrl+Shift+S
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        toggleSidebar();
-      }
-      // 2. New Chat: Cmd+Shift+O (Mac) or Ctrl+Shift+O
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        handleNewChat();
-      }
-      // 3. Search: Cmd+K (Mac) or Ctrl+K
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setIsSearchModalOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebar, handleNewChat]);
   const getSessionIcon = (title) => {
     const t = title.toLowerCase();
     if (
@@ -905,6 +883,28 @@ const AIAssistant = () => {
         : _textareaRef$current3.focus();
     }, 50);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 1. Toggle Sidebar: Cmd+Shift+S (Mac) or Ctrl+Shift+S
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        toggleSidebar();
+      }
+      // 2. New Chat: Cmd+Shift+O (Mac) or Ctrl+Shift+O
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        handleNewChat();
+      }
+      // 3. Search: Cmd+K (Mac) or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSidebar, handleNewChat]);
   const handleSelectSession = (sessionId) => {
     setEditingSessionId(null);
     setCurrentSessionId(sessionId);
