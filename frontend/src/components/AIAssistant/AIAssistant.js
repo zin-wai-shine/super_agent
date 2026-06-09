@@ -37,6 +37,10 @@ import {
   FiEdit2,
   FiCheck,
   FiMoreHorizontal,
+  FiUsers,
+  FiLightbulb,
+  FiUser,
+  FiGlobe,
 } from "react-icons/fi";
 import {
   BsChatSquareDots,
@@ -309,6 +313,23 @@ const AIAssistant = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const modalSearchInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isSearchModalOpen) {
+      setTimeout(() => {
+        var _modalSearchInputRef$;
+        (_modalSearchInputRef$ = modalSearchInputRef.current) === null ||
+        _modalSearchInputRef$ === void 0
+          ? void 0
+          : _modalSearchInputRef$.focus();
+      }, 100);
+    } else {
+      setSearchQuery("");
+    }
+  }, [isSearchModalOpen]);
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
       const nextVal = !prev;
@@ -346,6 +367,61 @@ const AIAssistant = () => {
         ? void 0
         : _searchInputRef$curre2.focus();
     }, 100);
+  };
+  const getSessionIcon = (title) => {
+    const t = title.toLowerCase();
+    if (
+      t.includes("succeed") ||
+      t.includes("people") ||
+      t.includes("team") ||
+      t.includes("user") ||
+      t.includes("group") ||
+      t.includes("client")
+    ) {
+      return FiUsers;
+    }
+    if (
+      t.includes("idea") ||
+      t.includes("generate") ||
+      t.includes("tech") ||
+      t.includes("community")
+    ) {
+      return FiLightbulb;
+    }
+    if (
+      t.includes("ai") ||
+      t.includes("replace") ||
+      t.includes("build") ||
+      t.includes("what to")
+    ) {
+      return FiUser;
+    }
+    if (
+      t.includes("globe") ||
+      t.includes("world") ||
+      t.includes("web") ||
+      t.includes("can you")
+    ) {
+      return FiGlobe;
+    }
+    return FiMessageSquare;
+  };
+  const formatSessionDate = (updatedAt) => {
+    if (!updatedAt) return "";
+    const date = new Date(updatedAt);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  };
+  const getSessionSnippet = (s) => {
+    if (!s.messages || s.messages.length === 0) return "";
+    const nonWelcome = s.messages.filter(
+      (m) => m.content !== defaultWelcomeMessage.content,
+    );
+    const targetMsg =
+      nonWelcome.length > 0
+        ? nonWelcome[nonWelcome.length - 1]
+        : s.messages[s.messages.length - 1];
+    if (!targetMsg || !targetMsg.content) return "";
+    return targetMsg.content;
   };
   useEffect(() => {
     isFirstScrollRef.current = true;
@@ -1472,9 +1548,11 @@ const AIAssistant = () => {
                                   value: searchQuery,
                                   onChange: (e) =>
                                     setSearchQuery(e.target.value),
+                                  onClick: () => setIsSearchModalOpen(true),
+                                  onFocus: () => setIsSearchModalOpen(true),
                                   placeholder: "Search chats...",
                                   className:
-                                    "w-full bg-gray-200/40 dark:bg-white/5 text-[13.5px] text-gray-955 dark:text-white pl-8 pr-8 py-2 rounded-lg border border-transparent focus:outline-none focus:border-gray-300 dark:focus:border-white/10",
+                                    "w-full bg-gray-200/40 dark:bg-white/5 text-[13.5px] text-gray-955 dark:text-white pl-8 pr-8 py-2 rounded-lg border border-transparent focus:outline-none focus:border-gray-300 dark:focus:border-white/10 cursor-pointer",
                                 }),
                                 /*#__PURE__*/ _jsx(SearchMagnifierIcon, {
                                   className:
@@ -2238,6 +2316,139 @@ const AIAssistant = () => {
                           children: "Confirm",
                         }),
                       ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          isSearchModalOpen &&
+            /*#__PURE__*/ _jsxs("div", {
+              className:
+                "fixed inset-0 z-[10000] flex items-start justify-center p-4 pt-[10vh]",
+              onClick: () => setIsSearchModalOpen(false),
+              children: [
+                /*#__PURE__*/ _jsx("div", {
+                  className:
+                    "fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
+                }),
+                /*#__PURE__*/ _jsxs("div", {
+                  className:
+                    "relative bg-[#222224] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[650px] max-h-[75vh] flex flex-col transform transition-all duration-300 z-10",
+                  onClick: (e) => e.stopPropagation(),
+                  children: [
+                    /*#__PURE__*/ _jsxs("div", {
+                      className:
+                        "relative flex items-center w-full mb-4 pb-2 border-b border-white/5",
+                      children: [
+                        /*#__PURE__*/ _jsx(FiSearch, {
+                          className: "w-5 h-5 text-gray-400 mr-3 flex-shrink-0",
+                        }),
+                        /*#__PURE__*/ _jsx("input", {
+                          ref: modalSearchInputRef,
+                          type: "text",
+                          value: searchQuery,
+                          onChange: (e) => setSearchQuery(e.target.value),
+                          placeholder: "Search chats...",
+                          className:
+                            "w-full bg-transparent text-white placeholder-gray-500 text-lg focus:outline-none py-1.5 pr-8",
+                        }),
+                        /*#__PURE__*/ _jsx("button", {
+                          onClick: () => setIsSearchModalOpen(false),
+                          className:
+                            "absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer bg-transparent border-0",
+                          children: /*#__PURE__*/ _jsx(FiX, {
+                            className: "w-5 h-5",
+                          }),
+                        }),
+                      ],
+                    }),
+                    /*#__PURE__*/ _jsxs("button", {
+                      onClick: () => {
+                        handleNewChat();
+                        setIsSearchModalOpen(false);
+                      },
+                      className:
+                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-white/5 hover:bg-white/10 text-white border-0 transition-all font-medium text-sm mb-4 cursor-pointer",
+                      children: [
+                        /*#__PURE__*/ _jsx("div", {
+                          className:
+                            "w-6 h-6 rounded-[6px] bg-white/10 flex items-center justify-center mr-3 text-white flex-shrink-0",
+                          children: /*#__PURE__*/ _jsx(FiPlus, {
+                            className: "w-4 h-4",
+                          }),
+                        }),
+                        /*#__PURE__*/ _jsx("span", { children: "New chat" }),
+                      ],
+                    }),
+                    /*#__PURE__*/ _jsx("div", {
+                      className:
+                        "text-[12px] font-bold text-gray-500 tracking-wider mb-2.5 px-2 text-left uppercase select-none",
+                      children:
+                        searchQuery.trim() !== "" ? "Search results" : "Older",
+                    }),
+                    /*#__PURE__*/ _jsx("div", {
+                      className:
+                        "flex-1 overflow-y-auto min-h-0 pr-1 space-y-1 modal-scrollable",
+                      children:
+                        filteredSessions.length > 0
+                          ? filteredSessions.map((s) => {
+                              const IconComp = getSessionIcon(s.title);
+                              const dateStr = formatSessionDate(s.updatedAt);
+                              const snippet = getSessionSnippet(s);
+                              return /*#__PURE__*/ _jsxs(
+                                "div",
+                                {
+                                  onClick: () => {
+                                    handleSelectSession(s.id);
+                                    setIsSearchModalOpen(false);
+                                  },
+                                  className:
+                                    "w-full flex items-start gap-4 p-3 rounded-[16px] hover:bg-white/5 transition-all text-left cursor-pointer group",
+                                  children: [
+                                    /*#__PURE__*/ _jsx("div", {
+                                      className:
+                                        "mt-0.5 text-white flex-shrink-0",
+                                      children: /*#__PURE__*/ _jsx(IconComp, {
+                                        className: "w-[18px] h-[18px]",
+                                      }),
+                                    }),
+                                    /*#__PURE__*/ _jsxs("div", {
+                                      className: "flex-1 min-w-0",
+                                      children: [
+                                        /*#__PURE__*/ _jsxs("div", {
+                                          className:
+                                            "flex items-center justify-between",
+                                          children: [
+                                            /*#__PURE__*/ _jsx("span", {
+                                              className:
+                                                "font-semibold text-[15px] text-white truncate",
+                                              children: s.title,
+                                            }),
+                                            /*#__PURE__*/ _jsx("span", {
+                                              className:
+                                                "text-[13px] text-gray-500 font-medium ml-2 flex-shrink-0",
+                                              children: dateStr,
+                                            }),
+                                          ],
+                                        }),
+                                        snippet &&
+                                          /*#__PURE__*/ _jsx("p", {
+                                            className:
+                                              "text-[13px] text-gray-400 line-clamp-1 mt-0.5",
+                                            children: snippet,
+                                          }),
+                                      ],
+                                    }),
+                                  ],
+                                },
+                                s.id,
+                              );
+                            })
+                          : /*#__PURE__*/ _jsx("div", {
+                              className:
+                                "text-center text-gray-500 py-8 text-sm",
+                              children: "No results found",
+                            }),
                     }),
                   ],
                 }),
