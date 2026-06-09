@@ -2302,12 +2302,12 @@ const AIAssistant = () => {
                           onChange: (e) => setSearchQuery(e.target.value),
                           placeholder: "Search chats...",
                           className:
-                            "w-full bg-transparent text-gray-900 placeholder-gray-400 text-lg focus:outline-none py-1.5 pr-8",
+                            "w-full bg-transparent text-gray-900 placeholder-gray-400 text-lg focus:outline-none py-1.5 pr-10",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           onClick: () => setIsSearchModalOpen(false),
                           className:
-                            "absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-0",
+                            "absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-[10px] bg-transparent hover:bg-gray-100 transition-colors cursor-pointer border-0",
                           children: /*#__PURE__*/ _jsx(FiX, {
                             className: "w-5 h-5",
                           }),
