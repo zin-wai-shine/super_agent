@@ -1643,13 +1643,13 @@ const AIAssistant = () => {
                                   className:
                                     "space-y-1 max-h-[300px] overflow-y-auto pr-1 modal-scrollable",
                                   children:
-                                    sessions.length === 0
+                                    sessions.filter(s => !s.pinned).length === 0
                                       ? /*#__PURE__*/ _jsx("div", {
                                           className:
                                             "text-[13px] text-gray-400 dark:text-gray-500 px-1 py-1 text-left",
                                           children: "No chats",
                                         })
-                                      : sessions.map((s) =>
+                                      : sessions.filter(s => !s.pinned).map((s) =>
                                           /*#__PURE__*/ _jsxs(
                                             "div",
                                             {
@@ -1660,7 +1660,7 @@ const AIAssistant = () => {
                                               className:
                                                 "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
                                                   currentSessionId === s.id
-                                                    ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
+                                                    ? "bg-gray-100 dark:bg-white/10 text-gray-955 dark:text-white"
                                                     : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
                                                 ),
                                               children: [
@@ -1689,15 +1689,11 @@ const AIAssistant = () => {
                                                         handleTogglePinSession(s.id);
                                                       },
                                                       className:
-                                                        "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
-                                                          s.pinned
-                                                            ? "flex text-gray-955 dark:text-white"
-                                                            : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
-                                                                currentSessionId === s.id || activeDropdownId === s.id
-                                                                  ? "flex"
-                                                                  : "hidden group-hover:flex",
-                                                              ),
-                                                        ),
+                                                         "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
+                                                           activeDropdownId === s.id
+                                                             ? "flex"
+                                                             : "hidden group-hover:flex",
+                                                         ),
                                                       title: s.pinned ? "Unpin chat" : "Pin chat",
                                                       children: /*#__PURE__*/ _jsx(LuPin, {
                                                         className: "w-[15px] h-[15px] rotate-45",
@@ -1721,7 +1717,7 @@ const AIAssistant = () => {
                                                         },
                                                         className:
                                                           "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
-                                                            currentSessionId === s.id || activeDropdownId === s.id
+                                                            activeDropdownId === s.id
                                                               ? "flex"
                                                               : "hidden group-hover:flex",
                                                           ),
