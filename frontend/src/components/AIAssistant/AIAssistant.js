@@ -2228,10 +2228,7 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: () => handleSaveRename(editingSessionId),
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-white hover:brightness-105 active:scale-95 transition-all cursor-pointer border-0",
-                          style: {
-                            backgroundColor: theme.primaryColor || "#1a73e8",
-                          },
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-[#1c1c1e] bg-white hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
                           children: "Confirm",
                         }),
                       ],
