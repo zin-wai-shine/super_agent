@@ -1478,10 +1478,10 @@ const AIAssistant = () => {
                               setIsRecentsPopoverOpen(false);
                             },
                             className:
-                              "pinned-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center\n                              ".concat(
+                              "pinned-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 cursor-pointer flex items-center justify-center\n                              ".concat(
                                 isPinnedPopoverOpen
                                   ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
-                                  : "text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                                  : "bg-transparent text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
                               ),
                             children: /*#__PURE__*/ _jsx(PinBadgeIcon, {
                               className: "w-5 h-5",
@@ -1495,7 +1495,7 @@ const AIAssistant = () => {
                           isPinnedPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "pinned-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50 rounded-[20px] shadow-2xl p-4 w-[280px] z-[200]",
+                                "pinned-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
@@ -1561,10 +1561,10 @@ const AIAssistant = () => {
                               setIsPinnedPopoverOpen(false);
                             },
                             className:
-                              "recents-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center\n                              ".concat(
+                              "recents-toggle-btn w-11 h-11 rounded-[12px] transition-all duration-200 border-0 cursor-pointer flex items-center justify-center\n                              ".concat(
                                 isRecentsPopoverOpen
                                   ? "bg-gray-200 text-gray-955 dark:bg-white/10 dark:text-white"
-                                  : "text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
+                                  : "bg-transparent text-gray-400 dark:text-gray-500 hover:text-gray-955 dark:hover:text-white hover:bg-gray-200/80 dark:hover:bg-white/10",
                               ),
                             children: /*#__PURE__*/ _jsx(ChatBubbleIcon, {
                               className: "w-5 h-5",
@@ -1578,7 +1578,7 @@ const AIAssistant = () => {
                           isRecentsPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "recents-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50 rounded-[20px] shadow-2xl p-4 w-[280px] z-[200]",
+                                "recents-popover-container absolute left-[62px] top-[-12px] bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
