@@ -50,6 +50,7 @@ import {
 } from "react-icons/bs";
 import { LuShare, LuPencil, LuPin } from "react-icons/lu";
 import { PiChatCircle } from "react-icons/pi";
+import { TbPlaylistAdd } from "react-icons/tb";
 import {
   jsxs as _jsxs,
   jsx as _jsx,
@@ -1369,7 +1370,7 @@ const AIAssistant = () => {
                             className:
                               "w-11 h-11 text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 transition-all duration-200 border-0 bg-transparent cursor-pointer flex items-center justify-center",
                             title: "New chat",
-                            children: /*#__PURE__*/ _jsx(NewChatComposeIcon, {
+                            children: /*#__PURE__*/ _jsx(TbPlaylistAdd, {
                               className: "w-5 h-5",
                             }),
                           }),
@@ -1529,7 +1530,7 @@ const AIAssistant = () => {
                             className:
                               "w-full flex items-center justify-start gap-3 py-2.5 px-3.5 rounded-[8px] bg-gray-200/50 dark:bg-white/5 hover:bg-gray-200/80 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border-0 active:scale-[0.98] transition-all text-[13.5px] font-normal cursor-pointer",
                             children: [
-                              /*#__PURE__*/ _jsx(NewChatComposeIcon, {
+                              /*#__PURE__*/ _jsx(TbPlaylistAdd, {
                                 className:
                                   "w-[17px] h-[17px] text-gray-500 dark:text-gray-400 flex-shrink-0",
                               }),
