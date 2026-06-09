@@ -2167,42 +2167,52 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-white dark:bg-[#18181b] border border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
+                    "relative bg-[#1c1c1e] border border-[#2c2c2e] text-white rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsx("button", {
                       onClick: handleCancelRename,
                       className:
-                        "absolute top-6 right-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer border-0 bg-transparent",
+                        "absolute top-6 right-6 text-gray-400 hover:text-gray-200 p-1 rounded-full hover:bg-white/5 transition-colors cursor-pointer border-0 bg-transparent",
                       children: /*#__PURE__*/ _jsx(FiX, {
                         className: "w-5 h-5",
                       }),
                     }),
                     /*#__PURE__*/ _jsx("h3", {
-                      className:
-                        "text-xl font-bold mb-1.5 text-gray-900 dark:text-white",
+                      className: "text-[20px] font-bold mb-1.5 text-white",
                       children: "Edit title",
                     }),
                     /*#__PURE__*/ _jsx("p", {
-                      className:
-                        "text-[14px] text-gray-500 dark:text-gray-400 mb-5",
+                      className: "text-[14px] text-gray-400 mb-5",
                       children: "Please enter a new title",
                     }),
-                    /*#__PURE__*/ _jsx("input", {
-                      type: "text",
-                      value: editingTitle,
-                      onChange: (e) => setEditingTitle(e.target.value),
-                      onKeyDown: (e) => {
-                        if (e.key === "Enter")
-                          handleSaveRename(editingSessionId);
-                        if (e.key === "Escape") handleCancelRename(e);
-                      },
-                      autoFocus: true,
-                      className:
-                        "w-full bg-transparent border border-[#222222]/20 dark:border-white/15 rounded-[12px] px-4 py-2 text-[15px] text-gray-900 dark:text-white focus:outline-none focus:border-[#222222] focus:ring-2 focus:ring-[#222222]/15 dark:focus:ring-white/10 mb-6 transition-all",
-                      style: {
-                        borderColor: "rgba(34, 34, 34, 0.2)",
-                      },
+                    /*#__PURE__*/ _jsxs("div", {
+                      className: "relative mb-6",
+                      children: [
+                        /*#__PURE__*/ _jsx("input", {
+                          type: "text",
+                          value: editingTitle,
+                          onChange: (e) => setEditingTitle(e.target.value),
+                          onKeyDown: (e) => {
+                            if (e.key === "Enter")
+                              handleSaveRename(editingSessionId);
+                            if (e.key === "Escape") handleCancelRename(e);
+                          },
+                          autoFocus: true,
+                          className:
+                            "w-full bg-[#1c1c1e] border border-[#2c2c2e] rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-white focus:outline-none focus:border-white/20 focus:ring-2 focus:ring-white/5 transition-all",
+                        }),
+                        editingTitle &&
+                          /*#__PURE__*/ _jsx("button", {
+                            type: "button",
+                            onClick: () => setEditingTitle(""),
+                            className:
+                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#8e8e93] hover:text-white transition-colors border-0 p-0 cursor-pointer",
+                            children: /*#__PURE__*/ _jsx(FiX, {
+                              className: "w-3 h-3",
+                            }),
+                          }),
+                      ],
                     }),
                     /*#__PURE__*/ _jsxs("div", {
                       className: "flex justify-end gap-3",
@@ -2211,17 +2221,14 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: handleCancelRename,
                           className:
-                            "px-5 py-2 rounded-[12px] text-[14px] font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-all cursor-pointer bg-transparent",
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-white border border-[#2c2c2e] bg-[#1c1c1e] hover:bg-[#252528] active:scale-95 transition-all cursor-pointer",
                           children: "Cancel",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           type: "button",
                           onClick: () => handleSaveRename(editingSessionId),
                           className:
-                            "px-5 py-2 rounded-[12px] text-[14px] font-semibold text-white hover:brightness-105 active:scale-95 transition-all cursor-pointer border-0",
-                          style: {
-                            backgroundColor: theme.primaryColor || "#1a73e8",
-                          },
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-semibold text-[#1e1e1e] bg-white hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
                           children: "Confirm",
                         }),
                       ],
