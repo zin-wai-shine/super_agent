@@ -2285,7 +2285,7 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-white border border-gray-200 text-gray-900 rounded-[24px] shadow-2xl pt-5 pb-8 px-8 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
+                    "relative bg-white border border-gray-200 text-gray-900 rounded-[24px] shadow-2xl pt-5 pb-8 px-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsxs("div", {
