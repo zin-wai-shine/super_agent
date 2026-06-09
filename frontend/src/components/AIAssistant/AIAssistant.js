@@ -2199,9 +2199,9 @@ const AIAssistant = () => {
                       },
                       autoFocus: true,
                       className:
-                        "w-full bg-gray-100 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-[12px] px-4 py-3.5 text-[15px] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 mb-6 transition-all",
+                        "w-full bg-transparent border border-[#222222]/20 dark:border-white/15 rounded-[12px] px-4 py-2 text-[15px] text-gray-900 dark:text-white focus:outline-none focus:border-[#222222] focus:ring-2 focus:ring-[#222222]/15 dark:focus:ring-white/10 mb-6 transition-all",
                       style: {
-                        "--tw-ring-color": theme.primaryColor || "#1a73e8",
+                        borderColor: "rgba(34, 34, 34, 0.2)",
                       },
                     }),
                     /*#__PURE__*/ _jsxs("div", {
@@ -2211,14 +2211,17 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: handleCancelRename,
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-all cursor-pointer bg-transparent",
+                            "px-5 py-2 rounded-[12px] text-[14px] font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-all cursor-pointer bg-transparent",
                           children: "Cancel",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           type: "button",
                           onClick: () => handleSaveRename(editingSessionId),
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-white dark:text-gray-900 bg-gray-955 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border-0",
+                            "px-5 py-2 rounded-[12px] text-[14px] font-semibold text-white hover:brightness-105 active:scale-95 transition-all cursor-pointer border-0",
+                          style: {
+                            backgroundColor: theme.primaryColor || "#1a73e8",
+                          },
                           children: "Confirm",
                         }),
                       ],
