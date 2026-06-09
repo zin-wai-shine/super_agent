@@ -1739,7 +1739,7 @@ const AIAssistant = () => {
                                 {
                                   onClick: () => handleSend(p),
                                   className:
-                                    "px-4 py-2 bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-full text-xs font-semibold transition-all duration-200 border border-gray-200/50 dark:border-white/5 cursor-pointer active:scale-95",
+                                    "px-4 py-2 bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-full text-sm font-normal transition-all duration-200 border border-gray-200/50 dark:border-white/5 cursor-pointer active:scale-95",
                                   children: p,
                                 },
                                 i,
