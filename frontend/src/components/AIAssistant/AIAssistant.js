@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useTenant } from "../../contexts/TenantContext";
+import { usePublicDarkTheme } from "../../contexts/PublicDarkThemeContext";
 import { publicApi } from "../../services/api";
 import {
   saveListing,
@@ -13,6 +14,7 @@ import {
 } from "../../services/savedListingsApi";
 import { getMediaUrl } from "../../utils/media";
 import ListingCard from "../Listings/ListingCard";
+import ListingDetailModal from "../Listings/ListingDetailModal";
 import Logo from "../Common/Logo";
 import { toast } from "react-hot-toast";
 import {
@@ -108,7 +110,7 @@ export const ListingsCarousel = (_ref) => {
                 onClick: () => scroll("left"),
                 disabled: !showLeft,
                 className:
-                  "w-[34px] h-[34px] rounded-full flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
+                  "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
                     showLeft
                       ? "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20"
                       : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
@@ -121,7 +123,7 @@ export const ListingsCarousel = (_ref) => {
                 onClick: () => scroll("right"),
                 disabled: !showRight,
                 className:
-                  "w-[34px] h-[34px] rounded-full flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
+                  "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
                     showRight
                       ? "bg-gray-800 dark:bg-white text-white dark:text-gray-900 cursor-pointer hover:bg-gray-955 dark:hover:bg-gray-100"
                       : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
@@ -148,6 +150,7 @@ export const ListingsCarousel = (_ref) => {
                 viewMode: "grid",
                 showSave: true,
                 initialSaved: savedStatus[l.id],
+                to: "?detail=".concat(l.id),
                 onSaveToggle: (isSaved) => {
                   setSavedStatus((prev) =>
                     _objectSpread(
@@ -243,39 +246,274 @@ const ChatBubbleIcon = (_ref6) => {
   let { className } = _ref6;
   return /*#__PURE__*/ _jsx(PiChatCircle, { className: className });
 };
+
+const ChevronsUpDownIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m7 15 5 5 5-5" />
+    <path d="m7 9 5-5 5 5" />
+  </svg>
+);
+
+const FiSlidersIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="4" y1="21" x2="4" y2="14" />
+    <line x1="4" y1="10" x2="4" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12" y2="3" />
+    <line x1="20" y1="21" x2="20" y2="16" />
+    <line x1="20" y1="12" x2="20" y2="3" />
+    <line x1="2" y1="14" x2="6" y2="14" />
+    <line x1="10" y1="8" x2="14" y2="8" />
+    <line x1="18" y1="16" x2="22" y2="16" />
+  </svg>
+);
+
+const HomeIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
+const ArrowUpRightIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="7" y1="17" x2="17" y2="7" />
+    <polyline points="7 7 17 7 17 17" />
+  </svg>
+);
+
+const HelpCircleIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const DocsIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+);
+
+const SignOutIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+const FiMailIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m22 2-7 20-4-9-9-4Z" />
+    <path d="M22 2 11 13" />
+  </svg>
+);
+
+const FiDatabaseIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <ellipse cx="12" cy="5" rx="9" ry="3" />
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+  </svg>
+);
+
+const FiMonitorIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="20" height="14" x="2" y="3" rx="2" />
+    <line x1="8" y1="21" x2="16" y2="21" />
+    <line x1="12" y1="17" x2="12" y2="21" />
+  </svg>
+);
+
+const FiCpuIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="16" height="16" x="4" y="4" rx="2" />
+    <rect width="6" height="6" x="9" y="9" rx="1" />
+    <path d="M9 1v3" />
+    <path d="M15 1v3" />
+    <path d="M9 20v3" />
+    <path d="M15 20v3" />
+    <path d="M20 9h3" />
+    <path d="M20 15h3" />
+    <path d="M1 9h3" />
+    <path d="M1 15h3" />
+  </svg>
+);
+
+const FiLinkIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
 const AIAssistant = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const { theme } = useTheme();
   const { agent } = useTenant();
+  const { isDarkMode, themeMode: settingsThemeMode, setThemeMode: setSettingsThemeMode } = usePublicDarkTheme();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Profile menu & Settings states
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [activeSettingsTab, setActiveSettingsTab] = useState("General");
+  const { t, i18n } = useTranslation();
+  const getSettingsLanguageName = (code) => {
+    if (code === "zh") return "Chinese";
+    if (code === "mm") return "Burmese";
+    return "English";
+  };
+  const [settingsLanguage, setSettingsLanguage] = useState(() => getSettingsLanguageName(i18n.language));
+
+  useEffect(() => {
+    setSettingsLanguage(getSettingsLanguageName(i18n.language));
+  }, [i18n.language]);
+
   const navigate = useNavigate();
   const location = useLocation();
-  const { i18n } = useTranslation();
+
   const detectAndChangeLanguage = (text) => {
-    if (!text) return;
-    if (/[\u1000-\u109F]/.test(text)) {
-      if (i18n.language !== "mm") {
-        i18n.changeLanguage("mm");
-      }
-    } else if (/[\u4E00-\u9FFF]/.test(text)) {
-      if (i18n.language !== "zh") {
-        i18n.changeLanguage("zh");
-      }
-    } else if (/[a-zA-Z]/.test(text)) {
-      if (i18n.language !== "en") {
-        i18n.changeLanguage("en");
-      }
-    }
+    // Disabled auto-detection to respect user's explicit settings language selection
+    return;
   };
   const detectAndChangeSessionLanguage = (session) => {
-    if (!session || !session.messages) return;
-    const userMessages = session.messages.filter((m) => m.role === "user");
-    if (userMessages.length > 0) {
-      const lastUserMsg = userMessages[userMessages.length - 1];
-      if (lastUserMsg && lastUserMsg.content) {
-        detectAndChangeLanguage(lastUserMsg.content);
-      }
-    }
+    // Disabled auto-detection to respect user's explicit settings language selection
+    return;
   };
   const slugify = (text) => {
     if (!text) return "chat";
@@ -365,8 +603,6 @@ const AIAssistant = () => {
     setIsSearchModalOpen(true);
   };
   const handleSearchClickCollapsed = () => {
-    setIsSidebarCollapsed(false);
-    localStorage.setItem("bolt_haven_sidebar_collapsed", "false");
     setIsSearchModalOpen(true);
   };
   const getSessionIcon = (title) => {
@@ -772,10 +1008,17 @@ const AIAssistant = () => {
       ) {
         setIsRecentsPopoverOpen(false);
       }
+      if (
+        isProfilePopoverOpen &&
+        !e.target.closest(".profile-popover-container") &&
+        !e.target.closest(".profile-toggle-btn")
+      ) {
+        setIsProfilePopoverOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [activeDropdownId, isPinnedPopoverOpen, isRecentsPopoverOpen]); // Close dropdown on scroll
+  }, [activeDropdownId, isPinnedPopoverOpen, isRecentsPopoverOpen, isProfilePopoverOpen]); // Close dropdown on scroll
   useEffect(() => {
     const handleScroll = () => {
       if (activeDropdownId) {
@@ -821,7 +1064,11 @@ const AIAssistant = () => {
       const response = await publicApi.aiChat({
         message: queryText,
         history: historyPayload,
-        preferences: preferences,
+        preferences: _objectSpread(
+          _objectSpread({}, preferences),
+          {},
+          { language: i18n.language },
+        ),
       });
       const data = response.data; // Check bookmarks
       const allRetrieved = [
@@ -1148,25 +1395,25 @@ const AIAssistant = () => {
     });
   };
   const suggestedPrompts = [
-    "Condos near BTS Bangna budget 8.5k to 12k",
-    "1 bedroom room near BTS On Nut with washing machine",
-    "Show me pet-friendly condos near BTS Asok",
-    "I need a condo close to Mega Bangna",
+    t("aiAssistant.suggestedPrompt1"),
+    t("aiAssistant.suggestedPrompt2"),
+    t("aiAssistant.suggestedPrompt3"),
+    t("aiAssistant.suggestedPrompt4"),
   ];
   const getGreeting = () => {
     const hrs = new Date().getHours();
     const name =
       (user === null || user === void 0 ? void 0 : user.first_name) || "";
     const nameStr = name ? ", ".concat(name) : "";
-    if (hrs < 12) return "Good morning".concat(nameStr);
-    if (hrs < 18) return "Good afternoon".concat(nameStr);
-    return "Good evening".concat(nameStr);
+    if (hrs < 12) return t("aiAssistant.promptGreetingMorning").concat(nameStr);
+    if (hrs < 18) return t("aiAssistant.promptGreetingAfternoon").concat(nameStr);
+    return t("aiAssistant.promptGreetingEvening").concat(nameStr);
   };
   const isInitialState = messages.filter((m) => m.role === "user").length === 0;
   const renderInputBox = () => {
     return /*#__PURE__*/ _jsxs("div", {
       className:
-        "flex flex-col bg-white dark:bg-[#2f2f2f] rounded-[26px] border border-gray-200 dark:border-white/10 shadow-sm px-4 pt-3 pb-3 transition-all duration-200",
+        "flex flex-col bg-white dark:bg-dashboard-input rounded-[26px] border border-gray-200 dark:border-white/10 shadow-sm px-4 pt-3 pb-3 transition-all duration-200",
       children: [
         /*#__PURE__*/ _jsx("textarea", {
           ref: textareaRef,
@@ -1178,7 +1425,7 @@ const AIAssistant = () => {
               handleSend();
             }
           },
-          placeholder: "Message AI Assistant...",
+          placeholder: t("aiAssistant.inputPlaceholder"),
           style: { height: "auto", minHeight: "44px", maxHeight: "180px" },
           className:
             "w-full bg-transparent text-[15px] text-gray-950 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none resize-none custom-scrollbar-thin leading-normal px-2",
@@ -1249,7 +1496,7 @@ const AIAssistant = () => {
       {
         onClick: () => handleSelectSession(s.id),
         className:
-          "w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-[8px] transition-all duration-300 text-[13.5px] text-left font-normal group cursor-pointer relative\n                    ".concat(
+          "w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-[8px] transition-all duration-300 text-[13.5px] text-left font-normal group/row cursor-pointer relative\n                    ".concat(
             currentSessionId === s.id
               ? "bg-gray-200 dark:bg-white/10 text-gray-955 dark:text-white"
               : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-white/5 hover:text-gray-955 dark:hover:text-white",
@@ -1265,7 +1512,7 @@ const AIAssistant = () => {
                 }),
               /*#__PURE__*/ _jsx("span", {
                 className: "truncate",
-                children: s.title,
+                children: isDefaultNewChat ? t("aiAssistant.newChat") : s.title,
               }),
             ],
           }),
@@ -1284,7 +1531,7 @@ const AIAssistant = () => {
                       : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
                           currentSessionId === s.id || activeDropdownId === s.id
                             ? "flex"
-                            : "hidden group-hover:flex",
+                            : "hidden group-hover/row:flex",
                         ),
                   ),
                 title: s.pinned ? "Unpin chat" : "Pin chat",
@@ -1312,7 +1559,7 @@ const AIAssistant = () => {
                     "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer\n                                ".concat(
                       currentSessionId === s.id || activeDropdownId === s.id
                         ? "flex"
-                        : "hidden group-hover:flex",
+                        : "hidden group-hover/row:flex",
                     ),
                   title: "Chat options",
                   children: /*#__PURE__*/ _jsx(FiMoreHorizontal, {
@@ -1327,6 +1574,381 @@ const AIAssistant = () => {
       s.id,
     );
   };
+
+  const renderProfilePopover = () => {
+    if (!isProfilePopoverOpen) return null;
+
+    const popupClasses = isSidebarCollapsed
+      ? "fixed left-[68px] bottom-4 bg-white dark:bg-dashboard-dark text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[300] profile-popover-container animate-fade-in"
+      : "fixed left-[296px] bottom-4 bg-white dark:bg-dashboard-dark text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[264px] z-[300] profile-popover-container animate-fade-in";
+
+    return (
+      <div className={popupClasses} onClick={(e) => e.stopPropagation()}>
+        {/* Profile Header */}
+        <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-gray-100 dark:border-white/5">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-orange-700/80 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 select-none">
+              {user?.first_name ? user.first_name[0].toUpperCase() : "G"}
+            </div>
+            <div className="flex flex-col truncate">
+              <span className="text-[15px] font-bold text-gray-900 dark:text-white truncate">
+                {user ? `${user.first_name} ${user.last_name || ""}`.trim() : t("aiAssistant.guestUser")}
+              </span>
+              <span className="text-[13px] text-gray-500 dark:text-gray-400 truncate">
+                {user ? t("aiAssistant.personal") : t("aiAssistant.freeAccess")}
+              </span>
+            </div>
+          </div>
+          <ChevronsUpDownIcon className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+        </div>
+
+        {/* Menu Items */}
+        <div className="space-y-0.5">
+          {/* Account */}
+          <button
+            onClick={() => {
+              setActiveSettingsTab("Account");
+              setIsSettingsModalOpen(true);
+              setIsProfilePopoverOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[12px] text-[15px] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 text-left border-0 bg-transparent cursor-pointer transition-colors"
+          >
+            <FiUser className="w-4 h-4 text-gray-550 dark:text-gray-400" />
+            <span>{t("aiAssistant.account")}</span>
+          </button>
+
+          {/* Settings */}
+          <button
+            onClick={() => {
+              setActiveSettingsTab("General");
+              setIsSettingsModalOpen(true);
+              setIsProfilePopoverOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[12px] text-[15px] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 text-left border-0 bg-transparent cursor-pointer transition-colors"
+          >
+            <FiSlidersIcon className="w-4 h-4 text-gray-550 dark:text-gray-400" />
+            <span>{t("aiAssistant.settings")}</span>
+          </button>
+
+          <div className="my-1 border-t border-gray-100 dark:border-white/5" />
+
+          {/* Homepage */}
+          <a
+            href="/"
+            className="w-full flex items-center justify-between px-2.5 py-2 rounded-[12px] text-[15px] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 text-left border-0 bg-transparent cursor-pointer transition-colors no-underline"
+          >
+            <div className="flex items-center gap-2.5">
+              <HomeIcon className="w-4 h-4 text-gray-505 dark:text-gray-400" />
+              <span>{t("aiAssistant.homepage")}</span>
+            </div>
+            <ArrowUpRightIcon className="w-3.5 h-3.5 text-gray-400" />
+          </a>
+
+          <div className="my-1 border-t border-gray-100 dark:border-white/5" />
+
+          {/* Sign out */}
+          <button
+            onClick={() => {
+              if (logout) logout();
+              setIsProfilePopoverOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[12px] text-[15px] text-red-500 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-left border-0 bg-transparent cursor-pointer transition-colors"
+          >
+            <SignOutIcon className="w-4 h-4 text-red-505 dark:text-rose-400" />
+            <span>{t("aiAssistant.signOut")}</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSettingsTabContent = () => {
+    switch (activeSettingsTab) {
+      case "General":
+        return (
+          <div className="space-y-8 text-left">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t("aiAssistant.general")}</h2>
+            </div>
+
+            {/* Appearance Section */}
+            <div className="space-y-6">
+              <div className="text-[12px] font-bold tracking-wider text-gray-400 dark:text-gray-500">
+                {t("aiAssistant.appearance")}
+              </div>
+
+              {/* Language Selector */}
+              <div className="space-y-2">
+                <label className="text-[15px] font-medium text-gray-750 dark:text-gray-300">
+                  {t("aiAssistant.languageLabel")}
+                </label>
+                <div className="relative w-full max-w-[200px]">
+                  <select
+                    value={settingsLanguage}
+                    onChange={(e) => {
+                      setSettingsLanguage(e.target.value);
+                      if (e.target.value === "English") i18n.changeLanguage("en");
+                      if (e.target.value === "Chinese") i18n.changeLanguage("zh");
+                      if (e.target.value === "Burmese") i18n.changeLanguage("mm");
+                    }}
+                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-[12px] px-3 py-2 text-[15px] outline-none text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  >
+                    <option value="English">English</option>
+                    <option value="Chinese">中文 (Chinese)</option>
+                    <option value="Burmese">မြန်မာဘာသာ (Burmese)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Theme Choices */}
+              <div className="space-y-3">
+                <label className="text-[15px] font-medium text-gray-750 dark:text-gray-300">
+                  {t("aiAssistant.themeLabel")}
+                </label>
+                <div className="flex gap-2 p-1 bg-gray-100/85 dark:bg-dashboard-input border border-gray-200/80 dark:border-white/10 rounded-[16px] w-fit">
+                  {/* Light Theme Button */}
+                  <button
+                    onClick={() => setSettingsThemeMode("light")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-[15px] font-normal transition-colors border-0 cursor-pointer ${
+                      settingsThemeMode === "light"
+                        ? "bg-white dark:bg-dashboard-card text-gray-955 dark:text-white shadow-sm"
+                        : "bg-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2" />
+                      <path d="M12 20v2" />
+                      <path d="m4.93 4.93 1.41 1.41" />
+                      <path d="m17.66 17.66 1.41 1.41" />
+                      <path d="M2 12h2" />
+                      <path d="M20 12h2" />
+                      <path d="m6.34 17.66-1.41 1.41" />
+                      <path d="m19.07 4.93-1.41 1.41" />
+                    </svg>
+                    <span>{t("aiAssistant.lightTheme")}</span>
+                  </button>
+
+                  {/* Dark Theme Button */}
+                  <button
+                    onClick={() => setSettingsThemeMode("dark")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-[15px] font-normal transition-colors border-0 cursor-pointer ${
+                      settingsThemeMode === "dark"
+                        ? "bg-white dark:bg-dashboard-card text-gray-955 dark:text-white shadow-sm"
+                        : "bg-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                    <span>{t("aiAssistant.darkTheme")}</span>
+                  </button>
+
+                  {/* Auto Theme Button */}
+                  <button
+                    onClick={() => setSettingsThemeMode("auto")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-[12px] text-[15px] font-normal transition-colors border-0 cursor-pointer ${
+                      settingsThemeMode === "auto"
+                        ? "bg-white dark:bg-dashboard-card text-gray-955 dark:text-white shadow-sm"
+                        : "bg-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                      <path d="M2 12h20" />
+                    </svg>
+                    <span>{t("aiAssistant.autoTheme")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+        );
+
+      case "Account":
+        return (
+          <div className="space-y-6 text-left">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t("aiAssistant.accountSettings")}</h2>
+            <div className="bg-gray-50 dark:bg-white/5 rounded-[16px] p-6 border border-gray-100 dark:border-white/5 max-w-[560px] space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-orange-700/80 text-white flex items-center justify-center font-bold text-2xl">
+                  {user?.first_name ? user.first_name[0].toUpperCase() : "G"}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    {user ? `${user.first_name} ${user.last_name || ""}`.trim() : t("aiAssistant.guestUser")}
+                  </span>
+                  <span className="text-[13px] text-gray-500 dark:text-gray-400">
+                    {user ? t("aiAssistant.personalAccount") : t("aiAssistant.freeAccess")}
+                  </span>
+                </div>
+              </div>
+              <div className="border-t border-gray-200 dark:border-white/5 pt-4 space-y-4">
+                <div>
+                  <span className="text-[12px] font-bold tracking-wider text-gray-400 dark:text-gray-505">{t("aiAssistant.emailLabel")}</span>
+                  <p className="text-[15px] text-gray-800 dark:text-gray-200 font-medium mt-1">
+                    {user?.email || "guest@example.com"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[12px] font-bold tracking-wider text-gray-400 dark:text-gray-505">{t("aiAssistant.roleLabel")}</span>
+                  <p className="text-[15px] text-gray-800 dark:text-gray-200 font-medium mt-1">
+                    {user ? t("aiAssistant.personalAccountHolder") : t("aiAssistant.guestAccess")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            </div>
+        );
+
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full py-12 space-y-4 text-center">
+            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-950/30 text-blue-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{activeSettingsTab} Tab</h3>
+            <p className="text-sm text-gray-505 dark:text-gray-400 max-w-sm">
+              This settings panel is coming soon or represents an integration screen!
+            </p>
+          </div>
+        );
+    }
+  };
+
+  const renderSettingsModal = () => {
+    if (!isSettingsModalOpen) return null;
+
+    const tabs = {
+      Account: {
+        icon: <FiUser className="w-[15px] h-[15px]" />,
+        group: "Account"
+      },
+      General: {
+        icon: <FiSlidersIcon className="w-[15px] h-[15px]" />,
+        group: "Account"
+      }
+    };
+
+    return (
+      <div 
+        className="fixed inset-0 z-[400] flex items-center justify-center bg-black/60 backdrop-blur-[4px] animate-fade-in"
+        onClick={() => setIsSettingsModalOpen(false)}
+      >
+        <div 
+          className="w-full max-w-[900px] h-[600px] bg-white dark:bg-dashboard-card text-gray-800 dark:text-gray-100 rounded-[24px] shadow-[0_24px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex border border-gray-200/80 dark:border-white/10 animate-scale-up"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Sidebar */}
+          <div className="w-[230px] bg-gray-50/50 dark:bg-black/15 border-r border-gray-200/60 dark:border-white/5 flex flex-col justify-between p-4 flex-shrink-0 select-none">
+            <div className="space-y-4">
+              {/* Profile Card Header in Modal */}
+              <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
+                <div className="w-8 h-8 rounded-full bg-orange-700/80 text-white flex items-center justify-center font-bold text-sm select-none">
+                  {user?.first_name ? user.first_name[0].toUpperCase() : "G"}
+                </div>
+                <div className="flex flex-col truncate">
+                  <span className="text-[15px] font-bold text-gray-900 dark:text-white truncate">
+                    {user ? `${user.first_name} ${user.last_name || ""}`.trim() : t("aiAssistant.guestUser")}
+                  </span>
+                  <span className="text-[13px] text-gray-500 dark:text-gray-400 truncate">
+                    {user ? t("aiAssistant.personal") : t("aiAssistant.freeAccess")}
+                  </span>
+                </div>
+                <ChevronsUpDownIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-555 ml-auto" />
+              </div>
+
+              {/* Group Account */}
+              <div>
+                <span className="text-[12px] font-bold text-gray-400 dark:text-gray-505 px-2 tracking-wider block mb-1.5 text-left">
+                  {t("aiAssistant.account")}
+                </span>
+                <div className="space-y-0.5">
+                  {Object.entries(tabs)
+                    .filter(([_, tab]) => tab.group === "Account")
+                    .map(([name, tab]) => (
+                      <button
+                        key={name}
+                        onClick={() => setActiveSettingsTab(name)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[12px] text-[15px] font-medium transition-colors border-0 cursor-pointer text-left ${
+                          activeSettingsTab === name
+                            ? "bg-gray-200/60 dark:bg-white/10 text-gray-955 dark:text-white"
+                            : "bg-transparent text-gray-650 dark:text-gray-300 hover:bg-gray-200/30 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {tab.icon}
+                        <span>{name === "Account" ? t("aiAssistant.account") : t("aiAssistant.general")}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+
+            </div>
+
+            {/* Sidebar Footer */}
+            <button
+              onClick={() => setActiveSettingsTab("Get help")}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-[12px] text-[15px] font-medium bg-transparent text-gray-650 dark:text-gray-300 hover:bg-gray-200/30 dark:hover:bg-white/5 border-0 cursor-pointer transition-colors"
+            >
+              <span>{t("aiAssistant.getHelp")}</span>
+              <ArrowUpRightIcon className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-dashboard-card relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsSettingsModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-[12px] hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-gray-650 dark:hover:text-white border-0 bg-transparent cursor-pointer transition-colors z-50 flex items-center justify-center"
+            >
+              <FiX className="w-5 h-5" />
+            </button>
+
+            {/* Dynamic Content */}
+            <div className="flex-1 overflow-y-auto p-8 pr-12">
+              {renderSettingsTabContent()}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return /*#__PURE__*/ _jsxs(_Fragment, {
     children: [
       !isOpen &&
@@ -1365,7 +1987,7 @@ const AIAssistant = () => {
         }),
       /*#__PURE__*/ _jsxs("div", {
         className:
-          "fixed inset-0 z-[260] transition-all duration-300 flex bg-white dark:bg-dashboard-dark\n                    ".concat(
+          "fixed inset-0 z-[260] transition-all duration-300 flex bg-gray-50 dark:bg-dashboard-card\n                    ".concat(
             isOpen
               ? "translate-y-0 opacity-100"
               : "translate-y-8 opacity-0 pointer-events-none",
@@ -1374,7 +1996,7 @@ const AIAssistant = () => {
         children: [
           /*#__PURE__*/ _jsxs("div", {
             className:
-              "hidden md:flex flex-col h-full bg-gray-50 text-gray-800 dark:bg-dashboard-card dark:text-gray-100 border-r border-gray-200/80 dark:border-white/5 flex-shrink-0 transition-all duration-300 ease-in-out relative z-30 ".concat(
+              "hidden md:flex flex-col h-full bg-white text-gray-800 dark:bg-dashboard-dark dark:text-gray-100 border-r border-gray-200/80 dark:border-white/5 flex-shrink-0 transition-all duration-300 ease-in-out relative z-30 ".concat(
                 isSidebarCollapsed ? "overflow-visible" : "overflow-hidden",
               ),
             style: { width: isSidebarCollapsed ? "60px" : "288px" },
@@ -1402,18 +2024,10 @@ const AIAssistant = () => {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsxs("div", {
+                          /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
-                            children: [
-                              /*#__PURE__*/ _jsx("span", {
-                                children: "Open sidebar",
-                              }),
-                              /*#__PURE__*/ _jsx("span", {
-                                className: "text-gray-500 dark:text-gray-400 font-mono text-[10px] bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded border border-gray-200/50 dark:border-white/5",
-                                children: "⇧⌘S",
-                              }),
-                            ],
+                              "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                            children: t("aiAssistant.openSidebar"),
                           }),
                         ],
                       }),
@@ -1428,18 +2042,10 @@ const AIAssistant = () => {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsxs("div", {
+                          /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
-                            children: [
-                              /*#__PURE__*/ _jsx("span", {
-                                children: "New chat",
-                              }),
-                              /*#__PURE__*/ _jsx("span", {
-                                className: "text-gray-500 dark:text-gray-400 font-mono text-[10px] bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded border border-gray-200/50 dark:border-white/5",
-                                children: "⇧⌘O",
-                              }),
-                            ],
+                              "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                            children: "New chat",
                           }),
                         ],
                       }),
@@ -1454,18 +2060,10 @@ const AIAssistant = () => {
                               className: "w-5 h-5",
                             }),
                           }),
-                          /*#__PURE__*/ _jsxs("div", {
+                          /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100] flex items-center gap-2.5",
-                            children: [
-                              /*#__PURE__*/ _jsx("span", {
-                                children: "Search",
-                              }),
-                              /*#__PURE__*/ _jsx("span", {
-                                className: "text-gray-500 dark:text-gray-400 font-mono text-[10px] bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded border border-gray-200/50 dark:border-white/5",
-                                children: "⌘K",
-                              }),
-                            ],
+                              "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                            children: t("aiAssistant.searchTooltip"),
                           }),
                         ],
                       }),
@@ -1489,18 +2087,18 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
-                            children: "Pinned Chats",
+                              "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                            children: t("aiAssistant.pinned"),
                           }),
                           isPinnedPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "pinned-popover-container absolute left-[62px] top-0 bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
+                                "pinned-popover-container absolute left-[60px] top-0 bg-white dark:bg-dashboard-dark text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200] animate-fade-in",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
                                     "text-[15px] font-semibold text-gray-900 dark:text-white mb-3 px-1 text-left",
-                                  children: "Pinned",
+                                  children: t("aiAssistant.pinned"),
                                 }),
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
@@ -1510,9 +2108,9 @@ const AIAssistant = () => {
                                       ? /*#__PURE__*/ _jsx("div", {
                                           className:
                                             "text-[13px] text-gray-400 dark:text-gray-500 px-1 py-1 text-left",
-                                          children: "No pinned chats",
+                                          children: t("aiAssistant.noPinned"),
                                         })
-                                      : pinnedSessions.map((s) =>
+                                       : pinnedSessions.map((s) =>
                                           /*#__PURE__*/ _jsxs(
                                             "div",
                                             {
@@ -1521,22 +2119,19 @@ const AIAssistant = () => {
                                                 setIsPinnedPopoverOpen(false);
                                               },
                                               className:
-                                                "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
+                                                "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-[8px] transition-all duration-200 cursor-pointer text-left group/row text-[13.5px] font-normal\n                                              ".concat(
                                                   currentSessionId === s.id
-                                                    ? "bg-gray-250 dark:bg-white/15 text-gray-955 dark:text-white font-medium"
-                                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
+                                                    ? "bg-gray-200 dark:bg-white/10 text-gray-955 dark:text-white"
+                                                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-white/5 hover:text-gray-955 dark:hover:text-white",
                                                 ),
                                               children: [
                                                 /*#__PURE__*/ _jsxs("div", {
-                                                  className: "truncate flex-1 min-w-0 flex items-center gap-2",
+                                                  className: "truncate flex-1 min-w-0 flex items-center gap-3",
                                                   children: [
-                                                    /*#__PURE__*/ _jsx(PiChatCircle, {
-                                                      className:
-                                                        "w-[15px] h-[15px] flex-shrink-0 " +
-                                                        (currentSessionId === s.id
-                                                          ? "text-blue-500 dark:text-blue-400"
-                                                          : "text-gray-400"),
-                                                    }),
+                                                    s.title === "New Chat" &&
+                                                      /*#__PURE__*/ _jsx(PiChatCircle, {
+                                                        className: "w-[15px] h-[15px] flex-shrink-0 text-gray-500 dark:text-gray-400",
+                                                      }),
                                                     /*#__PURE__*/ _jsx("span", {
                                                       className: "text-[13.5px] truncate flex-1",
                                                       children: s.title,
@@ -1544,7 +2139,7 @@ const AIAssistant = () => {
                                                   ],
                                                 }),
                                                 /*#__PURE__*/ _jsxs("div", {
-                                                  className: "flex items-center gap-0.5 flex-shrink-0",
+                                                  className: "flex items-center gap-1 flex-shrink-0",
                                                   children: [
                                                     /*#__PURE__*/ _jsx("button", {
                                                       onClick: (e) => {
@@ -1552,16 +2147,16 @@ const AIAssistant = () => {
                                                         handleTogglePinSession(s.id);
                                                       },
                                                       className:
-                                                        "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
-                                                          s.pinned
-                                                            ? "flex text-gray-955 dark:text-white"
-                                                            : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
-                                                                currentSessionId === s.id || activeDropdownId === s.id
-                                                                  ? "flex"
-                                                                  : "hidden group-hover:flex",
-                                                              ),
-                                                        ),
-                                                      title: s.pinned ? "Unpin chat" : "Pin chat",
+                                                         "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
+                                                           s.pinned
+                                                             ? "flex text-gray-955 dark:text-white"
+                                                             : "text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
+                                                                 currentSessionId === s.id || activeDropdownId === s.id
+                                                                   ? "flex"
+                                                                   : "hidden group-hover/row:flex",
+                                                               ),
+                                                         ),
+                                                      title: s.pinned ? t("aiAssistant.unpinChat") : t("aiAssistant.pinChat"),
                                                       children: /*#__PURE__*/ _jsx(LuPin, {
                                                         className: "w-[15px] h-[15px] rotate-45",
                                                       }),
@@ -1586,7 +2181,7 @@ const AIAssistant = () => {
                                                           "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
                                                             currentSessionId === s.id || activeDropdownId === s.id
                                                               ? "flex"
-                                                              : "hidden group-hover:flex",
+                                                              : "hidden group-hover/row:flex",
                                                           ),
                                                         title: "Chat options",
                                                         children: /*#__PURE__*/ _jsx(FiMoreHorizontal, {
@@ -1626,18 +2221,18 @@ const AIAssistant = () => {
                           }),
                           /*#__PURE__*/ _jsx("div", {
                             className:
-                              "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
-                            children: "Chats",
+                              "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                            children: t("aiAssistant.chats"),
                           }),
                           isRecentsPopoverOpen &&
                             /*#__PURE__*/ _jsxs("div", {
                               className:
-                                "recents-popover-container absolute left-[62px] top-0 bg-white dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200]",
+                                "recents-popover-container absolute left-[60px] top-0 bg-white dark:bg-dashboard-dark text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-white/10 rounded-[24px] shadow-sm p-4 w-[280px] z-[200] animate-fade-in",
                               children: [
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
                                     "text-[15px] font-semibold text-gray-900 dark:text-white mb-3 px-1 text-left",
-                                  children: "Recents",
+                                  children: t("aiAssistant.chats"),
                                 }),
                                 /*#__PURE__*/ _jsx("div", {
                                   className:
@@ -1647,9 +2242,9 @@ const AIAssistant = () => {
                                       ? /*#__PURE__*/ _jsx("div", {
                                           className:
                                             "text-[13px] text-gray-400 dark:text-gray-500 px-1 py-1 text-left",
-                                          children: "No chats",
+                                          children: t("aiAssistant.noChats"),
                                         })
-                                      : sessions.filter(s => !s.pinned).map((s) =>
+                                       : sessions.filter(s => !s.pinned).map((s) =>
                                           /*#__PURE__*/ _jsxs(
                                             "div",
                                             {
@@ -1658,22 +2253,19 @@ const AIAssistant = () => {
                                                 setIsRecentsPopoverOpen(false);
                                               },
                                               className:
-                                                "w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[10px] hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer text-left group\n                                              ".concat(
+                                                "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-[8px] transition-all duration-200 cursor-pointer text-left group/row text-[13.5px] font-normal\n                                              ".concat(
                                                   currentSessionId === s.id
                                                     ? "bg-gray-200 dark:bg-white/10 text-gray-955 dark:text-white"
-                                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-955 dark:hover:text-white",
+                                                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-white/5 hover:text-gray-955 dark:hover:text-white",
                                                 ),
                                               children: [
                                                 /*#__PURE__*/ _jsxs("div", {
-                                                  className: "truncate flex-1 min-w-0 flex items-center gap-2",
+                                                  className: "truncate flex-1 min-w-0 flex items-center gap-3",
                                                   children: [
-                                                    /*#__PURE__*/ _jsx(PiChatCircle, {
-                                                      className:
-                                                        "w-[15px] h-[15px] flex-shrink-0 " +
-                                                        (currentSessionId === s.id
-                                                          ? "hidden"
-                                                          : "text-gray-400"),
-                                                    }),
+                                                    s.title === "New Chat" &&
+                                                      /*#__PURE__*/ _jsx(PiChatCircle, {
+                                                        className: "w-[15px] h-[15px] flex-shrink-0 text-gray-500 dark:text-gray-400",
+                                                      }),
                                                     /*#__PURE__*/ _jsx("span", {
                                                       className: "text-[13.5px] truncate flex-1",
                                                       children: s.title,
@@ -1681,7 +2273,7 @@ const AIAssistant = () => {
                                                   ],
                                                 }),
                                                 /*#__PURE__*/ _jsxs("div", {
-                                                  className: "flex items-center gap-0.5 flex-shrink-0",
+                                                  className: "flex items-center gap-1 flex-shrink-0",
                                                   children: [
                                                     /*#__PURE__*/ _jsx("button", {
                                                       onClick: (e) => {
@@ -1692,9 +2284,9 @@ const AIAssistant = () => {
                                                          "p-0.5 transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white ".concat(
                                                            currentSessionId === s.id || activeDropdownId === s.id
                                                              ? "flex"
-                                                             : "hidden group-hover:flex",
+                                                             : "hidden group-hover/row:flex",
                                                          ),
-                                                      title: s.pinned ? "Unpin chat" : "Pin chat",
+                                                      title: s.pinned ? t("aiAssistant.unpinChat") : t("aiAssistant.pinChat"),
                                                       children: /*#__PURE__*/ _jsx(LuPin, {
                                                         className: "w-[15px] h-[15px] rotate-45",
                                                       }),
@@ -1717,9 +2309,9 @@ const AIAssistant = () => {
                                                         },
                                                         className:
                                                           "p-0.5 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-colors duration-150 active:scale-90 flex-shrink-0 border-0 bg-transparent cursor-pointer ".concat(
-                                                            activeDropdownId === s.id
+                                                            currentSessionId === s.id || activeDropdownId === s.id
                                                               ? "flex"
-                                                              : "hidden group-hover:flex",
+                                                              : "hidden group-hover/row:flex",
                                                           ),
                                                         title: "Chat options",
                                                         children: /*#__PURE__*/ _jsx(FiMoreHorizontal, {
@@ -1742,9 +2334,13 @@ const AIAssistant = () => {
                     ],
                   }),
                   /*#__PURE__*/ _jsxs("div", {
-                    className: "relative group",
+                    className: "relative group profile-toggle-btn",
                     children: [
                       /*#__PURE__*/ _jsx("div", {
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          setIsProfilePopoverOpen((prev) => !prev);
+                        },
                         className:
                           "w-9 h-9 rounded-full bg-orange-700/80 text-white flex items-center justify-center font-bold text-sm cursor-pointer select-none",
                         children:
@@ -1754,7 +2350,7 @@ const AIAssistant = () => {
                       }),
                       /*#__PURE__*/ _jsx("div", {
                         className:
-                          "absolute left-[62px] top-1/2 -translate-y-1/2 bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
+                          "absolute left-[50px] top-1/2 -translate-y-1/2 bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-200 text-[13px] font-medium px-3.5 py-1.5 rounded-[8px] shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[100]",
                         children: user
                           ? ""
                               .concat(user.first_name || "", " ")
@@ -1795,7 +2391,7 @@ const AIAssistant = () => {
                                   onClick: () => setIsSearchModalOpen(true),
                                   className:
                                     "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 border-0 bg-transparent cursor-pointer transition-all duration-200 flex items-center justify-center",
-                                  title: "Search chats",
+                                  title: t("aiAssistant.searchChats"),
                                   children: /*#__PURE__*/ _jsx(
                                     SearchMagnifierIcon,
                                     { className: "w-5 h-5" },
@@ -1805,7 +2401,7 @@ const AIAssistant = () => {
                                   onClick: toggleSidebar,
                                   className:
                                     "w-11 h-11 text-gray-500 hover:text-gray-955 dark:text-gray-400 dark:hover:text-white rounded-[12px] hover:bg-gray-200/80 dark:hover:bg-white/10 border-0 bg-transparent cursor-pointer transition-all duration-200 flex items-center justify-center",
-                                  title: "Close sidebar",
+                                  title: t("aiAssistant.closeSidebar"),
                                   children: /*#__PURE__*/ _jsx(SidebarIcon, {
                                     className: "w-5 h-5",
                                   }),
@@ -1826,7 +2422,7 @@ const AIAssistant = () => {
                                   "w-[17px] h-[17px] text-gray-500 dark:text-gray-400 flex-shrink-0",
                               }),
                               /*#__PURE__*/ _jsx("span", {
-                                children: "New Chat",
+                                children: t("aiAssistant.newChat"),
                               }),
                             ],
                           }),
@@ -1841,7 +2437,7 @@ const AIAssistant = () => {
                               /*#__PURE__*/ _jsx("div", {
                                 className:
                                   "text-center text-xs text-gray-400 dark:text-gray-500 py-6 select-none animate-fade-in",
-                                children: "No matches found",
+                                children: t("aiAssistant.noMatches"),
                               }),
                             pinnedSessions.length > 0 &&
                               /*#__PURE__*/ _jsxs(_Fragment, {
@@ -1849,7 +2445,7 @@ const AIAssistant = () => {
                                   /*#__PURE__*/ _jsx("span", {
                                     className:
                                       "text-[14px] font-bold text-gray-955 dark:text-white px-3.5 block mb-2 mt-4 select-none",
-                                    children: "Pinned",
+                                    children: t("aiAssistant.pinned"),
                                   }),
                                   /*#__PURE__*/ _jsx("div", {
                                     className: "space-y-1",
@@ -1868,7 +2464,7 @@ const AIAssistant = () => {
                                           ? "mt-6"
                                           : "mt-4",
                                       ),
-                                    children: "Chats",
+                                    children: t("aiAssistant.chats"),
                                   }),
                                   /*#__PURE__*/ _jsx("div", {
                                     className: "space-y-1",
@@ -1886,8 +2482,12 @@ const AIAssistant = () => {
                         "p-3 border-t border-gray-200/60 dark:border-white/5 bg-gray-100/10 dark:bg-black/5 flex-shrink-0 flex items-center justify-between",
                       children: [
                         /*#__PURE__*/ _jsxs("div", {
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            setIsProfilePopoverOpen((prev) => !prev);
+                          },
                           className:
-                            "flex items-center gap-2.5 overflow-hidden",
+                            "profile-toggle-btn flex items-center gap-2.5 overflow-hidden cursor-pointer select-none hover:bg-gray-200/50 dark:hover:bg-white/5 p-1.5 rounded-[12px] transition-colors flex-1 min-w-0 pr-6 relative",
                           children: [
                             /*#__PURE__*/ _jsx("div", {
                               className:
@@ -1910,16 +2510,19 @@ const AIAssistant = () => {
                                         .concat(user.first_name, " ")
                                         .concat(user.last_name || "")
                                         .trim()
-                                    : "Guest User",
+                                    : t("aiAssistant.guestUser"),
                                 }),
                                 /*#__PURE__*/ _jsx("span", {
                                   className:
-                                    "text-[11px] text-gray-500 dark:text-gray-400 truncate",
+                                    "text-[11px] text-gray-555 dark:text-gray-400 truncate",
                                   children: user
-                                    ? "Personal account"
-                                    : "Free access",
+                                    ? t("aiAssistant.personalAccount")
+                                    : t("aiAssistant.freeAccess"),
                                 }),
                               ],
+                            }),
+                            /*#__PURE__*/ _jsx(ChevronsUpDownIcon, {
+                              className: "w-4 h-4 text-gray-450 dark:text-gray-500 absolute right-1.5 top-1/2 -translate-y-1/2"
                             }),
                           ],
                         }),
@@ -1934,13 +2537,6 @@ const AIAssistant = () => {
                                   "px-2.5 py-1 text-[11px] font-bold rounded-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-150 text-white dark:text-gray-900 border-0 cursor-pointer active:scale-95 transition-all",
                                 children: "Login",
                               }),
-                            user &&
-                              /*#__PURE__*/ _jsx("button", {
-                                onClick: () => navigate("/profile"),
-                                className:
-                                  "px-2.5 py-1 text-[11px] font-bold text-gray-600 dark:text-gray-300 rounded-full border border-gray-300 dark:border-white/15 hover:bg-gray-200/50 dark:hover:bg-white/5 cursor-pointer active:scale-95 transition-all",
-                                children: "Upgrade",
-                              }),
                           ],
                         }),
                       ],
@@ -1952,7 +2548,7 @@ const AIAssistant = () => {
           }),
           /*#__PURE__*/ _jsxs("div", {
             className:
-              "flex-1 flex flex-col h-full bg-white dark:bg-dashboard-dark relative overflow-hidden",
+              "flex-1 flex flex-col h-full bg-gray-50 dark:bg-dashboard-card relative overflow-hidden",
             children: [
               /*#__PURE__*/ _jsxs("div", {
                 className:
@@ -1968,7 +2564,7 @@ const AIAssistant = () => {
                         onClick: resetChat,
                         title: "Reset Conversation",
                         className:
-                          "p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-all active:rotate-180 duration-500 bg-white/80 dark:bg-[#1e1e1e]/80 shadow-sm backdrop-blur-md cursor-pointer flex items-center justify-center h-9 w-9 border-0",
+                          "p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-all active:rotate-180 duration-500 bg-white/80 dark:bg-dashboard-card/80 shadow-sm backdrop-blur-md cursor-pointer flex items-center justify-center h-9 w-9 border-0",
                         children: /*#__PURE__*/ _jsx(FiRefreshCw, {
                           className: "w-4 h-4",
                         }),
@@ -2012,7 +2608,7 @@ const AIAssistant = () => {
                               className:
                                 "text-gray-500 dark:text-gray-400 text-[14.5px] font-semibold max-w-md mx-auto",
                               children:
-                                "How can I help you with your property search today? \uD83C\uDFE1",
+                                t("aiAssistant.promptHelper"),
                             }),
                           ],
                         }),
@@ -2048,7 +2644,7 @@ const AIAssistant = () => {
                       children: [
                         /*#__PURE__*/ _jsx("div", {
                           className:
-                            "absolute inset-0 overflow-y-auto pt-16 pb-48 custom-scrollbar-thin bg-white dark:bg-dashboard-dark",
+                            "absolute inset-0 overflow-y-auto pt-16 pb-48 custom-scrollbar-thin bg-gray-50 dark:bg-dashboard-card",
                           children: /*#__PURE__*/ _jsxs("div", {
                             className:
                               "max-w-4xl mx-auto px-4 md:px-6 space-y-8",
@@ -2114,7 +2710,9 @@ const AIAssistant = () => {
                                                 className:
                                                   "text-gray-800 dark:text-gray-200 leading-relaxed max-w-none",
                                                 children: formatMessageText(
-                                                  m.content,
+                                                  idx === 0 && m.role === "assistant"
+                                                    ? t("aiAssistant.welcomeMessage")
+                                                    : m.content,
                                                 ),
                                               }),
                                             ],
@@ -2376,7 +2974,7 @@ const AIAssistant = () => {
                         }),
                         /*#__PURE__*/ _jsx("div", {
                           className:
-                            "absolute bottom-0 left-0 right-0 px-4 md:px-6 pb-6 pt-2 bg-gradient-to-t from-white via-white to-transparent dark:from-dashboard-dark dark:via-dashboard-dark to-transparent z-20 pointer-events-none",
+                            "absolute bottom-0 left-0 right-0 px-4 md:px-6 pb-6 pt-2 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-dashboard-card dark:via-dashboard-card to-transparent z-20 pointer-events-none",
                           children: /*#__PURE__*/ _jsx("div", {
                             className:
                               "max-w-4xl mx-auto w-full pointer-events-auto",
@@ -2396,7 +2994,7 @@ const AIAssistant = () => {
               if (!activeSessionObj) return null;
               return /*#__PURE__*/ _jsxs("div", {
                 className:
-                  "session-dropdown-container fixed w-52 bg-white dark:bg-[#2d2d2d] rounded-[16px] shadow-xl border border-gray-200/80 dark:border-white/10 p-1.5 z-[9999] text-gray-700 dark:text-gray-200 animate-fade-in",
+                  "session-dropdown-container fixed w-52 bg-white dark:bg-dashboard-dark rounded-[16px] shadow-xl border border-gray-200/80 dark:border-white/10 p-1.5 z-[9999] text-gray-700 dark:text-gray-200 animate-fade-in",
                 style: {
                   top: "".concat(dropdownCoords.top, "px"),
                   left: "".concat(dropdownCoords.left, "px"),
@@ -2416,7 +3014,7 @@ const AIAssistant = () => {
                         className:
                           "w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0",
                       }),
-                      /*#__PURE__*/ _jsx("span", { children: "Share" }),
+                      /*#__PURE__*/ _jsx("span", { children: t("aiAssistant.share") }),
                     ],
                   }),
                   /*#__PURE__*/ _jsxs("button", {
@@ -2432,7 +3030,7 @@ const AIAssistant = () => {
                         className:
                           "w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0",
                       }),
-                      /*#__PURE__*/ _jsx("span", { children: "Rename" }),
+                      /*#__PURE__*/ _jsx("span", { children: t("aiAssistant.rename") }),
                     ],
                   }),
                   /*#__PURE__*/ _jsxs("button", {
@@ -2450,8 +3048,8 @@ const AIAssistant = () => {
                       }),
                       /*#__PURE__*/ _jsx("span", {
                         children: activeSessionObj.pinned
-                          ? "Unpin chat"
-                          : "Pin chat",
+                          ? t("aiAssistant.unpinChat")
+                          : t("aiAssistant.pinChat"),
                       }),
                     ],
                   }),
@@ -2471,7 +3069,7 @@ const AIAssistant = () => {
                         className:
                           "w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0",
                       }),
-                      /*#__PURE__*/ _jsx("span", { children: "Delete" }),
+                      /*#__PURE__*/ _jsx("span", { children: t("aiAssistant.deleteChat") }),
                     ],
                   }),
                 ],
@@ -2489,23 +3087,23 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-white border border-gray-200/80 text-gray-900 rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
+                    "relative bg-white dark:bg-dashboard-card border border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-gray-100 rounded-[24px] shadow-2xl p-6 w-full max-w-[400px] transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsx("button", {
                       onClick: handleCancelRename,
                       className:
-                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-[10px] bg-transparent hover:bg-gray-100 transition-colors cursor-pointer border-0",
+                        "absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-[10px] bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer border-0",
                       children: /*#__PURE__*/ _jsx(FiX, {
                         className: "w-5 h-5",
                       }),
                     }),
                     /*#__PURE__*/ _jsx("h3", {
-                      className: "text-[20px] font-bold mb-1.5 text-gray-900",
+                      className: "text-[20px] font-bold mb-1.5 text-gray-900 dark:text-white",
                       children: "Edit title",
                     }),
                     /*#__PURE__*/ _jsx("p", {
-                      className: "text-[14px] text-gray-500 mb-5",
+                      className: "text-[14px] text-gray-500 dark:text-gray-400 mb-5",
                       children: "Please enter a new title",
                     }),
                     /*#__PURE__*/ _jsxs("div", {
@@ -2522,7 +3120,7 @@ const AIAssistant = () => {
                           },
                           autoFocus: true,
                           className:
-                            "w-full bg-white border border-gray-300 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 focus:outline-none focus:border-gray-400 focus:ring-0 transition-all peer",
+                            "w-full bg-white dark:bg-dashboard-input border border-gray-300 dark:border-white/10 rounded-[12px] pl-4 pr-10 py-2.5 text-[15px] text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 focus:ring-0 transition-all peer",
                         }),
                         editingTitle &&
                           /*#__PURE__*/ _jsx("button", {
@@ -2532,7 +3130,7 @@ const AIAssistant = () => {
                               setEditingTitle("");
                             },
                             className:
-                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 opacity-0 pointer-events-none peer-hover:opacity-100 peer-focus:opacity-100 hover:opacity-100 peer-hover:pointer-events-auto peer-focus:pointer-events-auto hover:pointer-events-auto transition-opacity duration-150 border-0 p-0 cursor-pointer",
+                              "absolute right-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-400 hover:text-gray-600 dark:hover:text-white opacity-0 pointer-events-none peer-hover:opacity-100 peer-focus:opacity-100 hover:opacity-100 peer-hover:pointer-events-auto peer-focus:pointer-events-auto hover:pointer-events-auto transition-opacity duration-150 border-0 p-0 cursor-pointer",
                             children: /*#__PURE__*/ _jsx(FiX, {
                               className: "w-3 h-3",
                             }),
@@ -2546,7 +3144,7 @@ const AIAssistant = () => {
                           type: "button",
                           onClick: handleCancelRename,
                           className:
-                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all cursor-pointer",
+                            "px-5 py-2.5 rounded-[12px] text-[14px] font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-all cursor-pointer",
                           children: "Cancel",
                         }),
                         /*#__PURE__*/ _jsx("button", {
@@ -2565,7 +3163,7 @@ const AIAssistant = () => {
                 }),
               ],
             }),
-          isSearchModalOpen &&
+                   isSearchModalOpen &&
             /*#__PURE__*/ _jsxs("div", {
               className:
                 "fixed inset-0 z-[10000] flex items-start justify-center p-4 pt-[10vh]",
@@ -2577,12 +3175,12 @@ const AIAssistant = () => {
                 }),
                 /*#__PURE__*/ _jsxs("div", {
                   className:
-                    "relative bg-white border border-gray-200 text-gray-900 rounded-[24px] shadow-2xl pt-5 pb-8 px-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
+                    "relative bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100 rounded-[24px] shadow-2xl pt-5 pb-8 px-6 w-full max-w-[650px] h-[480px] flex flex-col transform transition-all duration-300 z-10",
                   onClick: (e) => e.stopPropagation(),
                   children: [
                     /*#__PURE__*/ _jsxs("div", {
                       className:
-                        "relative flex items-center w-full mb-4 pb-2 border-b border-gray-100",
+                        "relative flex items-center w-full mb-4 pb-2 border-b border-gray-100 dark:border-white/10",
                       children: [
                         /*#__PURE__*/ _jsx(FiSearch, {
                           className: "w-5 h-5 text-gray-400 mr-3 flex-shrink-0",
@@ -2594,12 +3192,12 @@ const AIAssistant = () => {
                           onChange: (e) => setSearchQuery(e.target.value),
                           placeholder: "Search chats...",
                           className:
-                            "w-full bg-transparent text-gray-900 placeholder-gray-400 text-lg focus:outline-none py-1.5 pr-10",
+                            "w-full bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 text-lg focus:outline-none py-1.5 pr-10",
                         }),
                         /*#__PURE__*/ _jsx("button", {
                           onClick: () => setIsSearchModalOpen(false),
                           className:
-                            "absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-[10px] bg-transparent hover:bg-gray-100 transition-colors cursor-pointer border-0",
+                            "absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-[10px] bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer border-0",
                           children: /*#__PURE__*/ _jsx(FiX, {
                             className: "w-5 h-5",
                           }),
@@ -2612,11 +3210,11 @@ const AIAssistant = () => {
                         setIsSearchModalOpen(false);
                       },
                       className:
-                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 transition-all font-medium text-base mb-4 cursor-pointer",
+                        "w-full flex items-center justify-start py-2.5 px-3 rounded-[12px] bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border-0 transition-all font-medium text-base mb-4 cursor-pointer",
                       children: [
                         /*#__PURE__*/ _jsx("div", {
                           className:
-                            "w-6 h-6 rounded-[6px] bg-gray-200 flex items-center justify-center mr-3 text-gray-600 flex-shrink-0",
+                            "w-6 h-6 rounded-[6px] bg-gray-200 dark:bg-white/10 flex items-center justify-center mr-3 text-gray-600 dark:text-gray-400 flex-shrink-0",
                           children: /*#__PURE__*/ _jsx(FiPlus, {
                             className: "w-4 h-4",
                           }),
@@ -2646,7 +3244,7 @@ const AIAssistant = () => {
                                     children: [
                                       /*#__PURE__*/ _jsx("div", {
                                         className:
-                                          "mt-0.5 w-[18px] h-[18px] rounded-[4px] bg-gray-200 animate-pulse flex-shrink-0",
+                                          "mt-0.5 w-[18px] h-[18px] rounded-[4px] bg-gray-200 dark:bg-white/10 animate-pulse flex-shrink-0",
                                       }),
                                       /*#__PURE__*/ _jsxs("div", {
                                         className: "flex-1 min-w-0 space-y-2",
@@ -2657,7 +3255,7 @@ const AIAssistant = () => {
                                             children: [
                                               /*#__PURE__*/ _jsx("div", {
                                                 className:
-                                                  "h-3.5 rounded-full bg-gray-200 animate-pulse",
+                                                  "h-3.5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse",
                                                 style: {
                                                   width: `${55 + (i * 17) % 30}%`,
                                                   animationDelay: `${i * 80}ms`,
@@ -2665,7 +3263,7 @@ const AIAssistant = () => {
                                               }),
                                               /*#__PURE__*/ _jsx("div", {
                                                 className:
-                                                  "h-3 w-10 rounded-full bg-gray-200 animate-pulse flex-shrink-0",
+                                                  "h-3 w-10 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse flex-shrink-0",
                                                 style: {
                                                   animationDelay: `${i * 80 + 40}ms`,
                                                 },
@@ -2674,7 +3272,7 @@ const AIAssistant = () => {
                                           }),
                                           /*#__PURE__*/ _jsx("div", {
                                             className:
-                                              "h-3 rounded-full bg-gray-100 animate-pulse",
+                                              "h-3 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse",
                                             style: {
                                               width: `${70 + (i * 11) % 25}%`,
                                               animationDelay: `${i * 80 + 80}ms`,
@@ -2700,7 +3298,7 @@ const AIAssistant = () => {
                                     setIsSearchModalOpen(false);
                                   },
                                   className:
-                                    "w-full flex items-start gap-4 p-3 rounded-[16px] hover:bg-gray-100 transition-all text-left cursor-pointer group",
+                                    "w-full flex items-start gap-4 p-3 rounded-[16px] hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-left cursor-pointer group",
                                   children: [
                                     /*#__PURE__*/ _jsx("div", {
                                       className:
@@ -2718,7 +3316,7 @@ const AIAssistant = () => {
                                           children: [
                                             /*#__PURE__*/ _jsx("span", {
                                               className:
-                                                "font-medium text-[15px] text-gray-900 truncate",
+                                                "font-medium text-[15px] text-gray-900 dark:text-gray-100 truncate",
                                               children: s.title,
                                             }),
                                             /*#__PURE__*/ _jsx("span", {
@@ -2731,7 +3329,7 @@ const AIAssistant = () => {
                                         snippet &&
                                           /*#__PURE__*/ _jsx("p", {
                                             className:
-                                              "text-[13px] text-gray-500 line-clamp-1 mt-0.5",
+                                              "text-[13px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5",
                                             children: snippet,
                                           }),
                                       ],
@@ -2750,6 +3348,13 @@ const AIAssistant = () => {
                   ],
                 }),
               ],
+            }),
+            renderProfilePopover(),
+            renderSettingsModal(),
+            /*#__PURE__*/ _jsx(ListingDetailModal, {
+              overlayZIndex: 10100,
+              isCentered: true,
+              hideRelated: true,
             }),
         ],
       }),

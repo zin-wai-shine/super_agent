@@ -1044,3 +1044,20 @@ body.is-scrolling #main-scroll-container {
   width: 14px !important;
   height: 14px !important;
 }
+
+/* Smooth transitions on theme switch */
+.theme-transitioning,
+.theme-transitioning body,
+.theme-transitioning div,
+.theme-transitioning header,
+.theme-transitioning footer,
+.theme-transitioning aside,
+.theme-transitioning main,
+.theme-transitioning button,
+.theme-transitioning input,
+.theme-transitioning textarea,
+.theme-transitioning select,
+.theme-transitioning svg {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease, stroke 0.25s ease, box-shadow 0.25s ease !important;
+  transition-delay: 0s !important;
+}

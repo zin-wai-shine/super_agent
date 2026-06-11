@@ -349,7 +349,7 @@ const TrainIconCool = (props) => (
     </svg>
 );
 
-export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onHeaderLeadingChange, onBookingOpenChange, onClose, onOpenGallery, setHideLayout }) => {
+export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, onHeaderLeadingChange, onBookingOpenChange, onClose, onOpenGallery, setHideLayout, hideRelated = false }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const tDynamic = useDynamicTranslation();
@@ -2193,7 +2193,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
             {/* Desktop Back button removed - now inline below */}
 
             <div className="w-full py-0">
-                <div className="max-w-[1440px] mx-auto px-0 md:px-8 lg:px-20">
+                <div className={`max-w-[1440px] mx-auto px-0 md:px-8 ${isModal ? 'lg:px-10' : 'lg:px-20'}`}>
                     <div className="w-full space-y-0 lg:space-y-6">
                         {isBookingOverlayOpen && !isModal && isDesktopView ? (
                             <div className="animate-in fade-in zoom-in-95 duration-500">
@@ -2201,7 +2201,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                             </div>
                         ) : (
                             <>
-                                <div className={`bg-white dark:bg-dashboard-dark px-0 pt-6 lg:pt-0 pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
+                                <div className={`bg-white dark:bg-dashboard-dark px-0 pt-6 ${isModal ? 'lg:pt-6' : 'lg:pt-0'} pb-32 lg:pb-8 relative z-10 rounded-t-[20px] lg:rounded-none ${!isBookingOverlayOpen ? '-mt-20 lg:mt-0' : ''}`}>
                                     {/* Desktop Inline Nav & Actions — only on full page desktop */}
                                     {!isModal && (
                                         <div className={`hidden lg:flex items-center justify-between px-4 md:px-0 lg:px-20 py-6 sticky top-0 z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md -mx-4 md:-mx-8 lg:-mx-20 transition-all duration-300 ${isScrolled ? 'border-b border-gray-100 dark:border-white/5' : 'border-b border-transparent'}`}>
@@ -2367,9 +2367,9 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 {/* Desktop Layout Wrapper: Full-Width Image Gallery */}
                                 <div className="hidden lg:block mt-6">
                                     {/* Full Width: Image Gallery with Highlights Overlay */}
-                                    <div className="rounded-[24px] overflow-hidden shadow-sm bg-[#ffffff] dark:bg-[#ffffff]">
+                                    <div className="rounded-[24px] overflow-hidden shadow-sm bg-transparent">
                                         {/* Desktop Bento Grid */}
-                                        <div className="grid grid-cols-4 gap-2 h-[420px] cursor-pointer relative group/grid bg-[#ffffff]">
+                                        <div className={`grid grid-cols-4 gap-2 ${isModal ? 'h-[350px]' : 'h-[420px]'} cursor-pointer relative group/grid bg-transparent`}>
                                             {/* Vignette Overlay for the entire grid */}
                                             <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.15)]" />
 
@@ -2445,8 +2445,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
 
                                             {/* Fifth Image / Show All Button (Bottom Right) */}
                                             <div
-                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer rounded-[24px]"
-                                                style={{ backgroundColor: '#ffffff' }}
+                                                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer rounded-[24px] bg-gray-50 dark:bg-dashboard-card"
                                                 onClick={() => openGallery(0)}
                                             >
                                                 {/* Stacked Images Representation */}
@@ -2950,7 +2949,7 @@ export const ListingDetailView = ({ id: propId, isModal = false, onTitleChange, 
                                 )}
 
                                 {/* Related Listings Section — carousel: 1 card (swipe) on mobile, 2 on md, 3 on lg+ */}
-                                {!bookingId && relatedListings.length > 0 && (
+                                {!bookingId && relatedListings.length > 0 && !hideRelated && (
                                     <div className="hidden md:block w-full py-12 border-b border-gray-100 dark:border-white/10">
                                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 px-4 md:px-0 lg:px-0">You might also like</h2>
                                         {isMapView ? (

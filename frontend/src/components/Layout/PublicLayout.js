@@ -135,11 +135,21 @@ const PublicLayout = () => {
     // Independent Dark Mode logic
     useEffect(() => {
         const root = window.document.documentElement;
+        
+        // Temporarily enable global transition rules during theme toggle
+        root.classList.add('theme-transitioning');
+        
         if (isDarkMode) {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
+        
+        const timer = setTimeout(() => {
+            root.classList.remove('theme-transitioning');
+        }, 400);
+        
+        return () => clearTimeout(timer);
     }, [isDarkMode]);
 
     const { isMainDomain, agent, loading: tenantLoading } = useTenant();
@@ -883,7 +893,7 @@ const PublicLayout = () => {
                                         </div>
 
                                         {/* Auth Buttons */}
-                                        <div className="flex items-center space-x-2 md:space-x-4">
+                                        <div className="flex items-center space-x-2 md:space-x-4 relative z-50">
                                             {/* Theme Toggle */}
 
                                             {/* Go to Home Button */}

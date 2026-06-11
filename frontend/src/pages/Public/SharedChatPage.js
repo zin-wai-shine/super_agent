@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { publicApi } from '../../services/api';
 import Logo from '../../components/Common/Logo';
 import { ListingsCarousel } from '../../components/AIAssistant/AIAssistant';
+import ListingDetailModal from '../../components/Listings/ListingDetailModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
     FiMessageSquare,
@@ -15,6 +17,7 @@ const SharedChatPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { theme } = useTheme();
+    const { t } = useTranslation();
     const [session, setSession] = useState(null);
     const [messages, setMessages] = useState([]);
     const [savedStatus, setSavedStatus] = useState({});
@@ -154,7 +157,7 @@ const SharedChatPage = () => {
                 </div>
 
                 {/* Conversation Viewport */}
-                <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 border border-gray-200/85 dark:border-white/5 shadow-sm space-y-8">
+                <div className="bg-white dark:bg-dashboard-card rounded-3xl p-6 md:p-8 border border-gray-200/85 dark:border-white/5 shadow-sm space-y-8">
                     {messages.map((m, idx) => (
                         <div key={idx} className="space-y-6">
                             <div className="flex gap-4 items-start">
@@ -180,7 +183,11 @@ const SharedChatPage = () => {
                                         {m.role === 'user' ? 'User' : 'Assistant'}
                                     </span>
                                     <div className="text-gray-800 dark:text-gray-200 leading-relaxed">
-                                        {formatMessageText(m.content)}
+                                        {formatMessageText(
+                                            idx === 0 && m.role === 'assistant'
+                                                ? t("aiAssistant.welcomeMessage")
+                                                : m.content
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -275,6 +282,7 @@ const SharedChatPage = () => {
                     </button>
                 </div>
             </div>
+            <ListingDetailModal overlayZIndex={10100} isCentered hideRelated />
         </div>
     );
 };

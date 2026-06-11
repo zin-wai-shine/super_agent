@@ -9,6 +9,7 @@ import Modal from '../ui/Modal';
 import { getMediaUrl } from '../../utils/media';
 import { PHOTO_ROOM_TYPES } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { usePublicDarkTheme } from '../../contexts/PublicDarkThemeContext';
 
 // Group images by room_type; treat empty as "Additional Photos". Order by PHOTO_ROOM_TYPES.
 function groupImagesByRoomType(images) {
@@ -128,7 +129,17 @@ function getSectionTitleForImage(img) {
     return rt || 'Additional Photos';
 }
 
-export default function AllPhotosModalContent({ images, initialIndex, onClose, isDesktop = false }) {
+export default function AllPhotosModalContent({ 
+    images, 
+    initialIndex, 
+    onClose, 
+    isDesktop = false, 
+    isCentered = false,
+    inline = false,
+    onTitleChange,
+    focusedImageIndex: controlledFocusedImageIndex,
+    onFocusedImageIndexChange
+}) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const scrollRef = useRef(null);
@@ -137,7 +148,12 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
     const [isLoading, setIsLoading] = useState(true);
     const { theme } = useTheme();
     const { isMainDomain } = useTenant();
-    const [focusedImageIndex, setFocusedImageIndex] = useState(null);
+    const { isDarkMode } = usePublicDarkTheme();
+    
+    const [internalFocusedImageIndex, setInternalFocusedImageIndex] = useState(null);
+    const isControlled = controlledFocusedImageIndex !== undefined;
+    const focusedImageIndex = isControlled ? controlledFocusedImageIndex : internalFocusedImageIndex;
+    const setFocusedImageIndex = isControlled ? onFocusedImageIndexChange : setInternalFocusedImageIndex;
     const { sections, flatImages } = useMemo(() => groupImagesByRoomType(images), [images]);
     const touchStartX = useRef(0);
     const lastTapTimeRef = useRef(0);
@@ -254,11 +270,21 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         }
     };
 
-    if (!flatImages.length) return null;
-
     const isFocusedView = focusedImageIndex !== null;
     const focusedImage = flatImages[focusedImageIndex ?? 0];
     const focusedSectionTitle = focusedImage ? getSectionTitleForImage(focusedImage) : '';
+
+    const activeTitle = isFocusedView 
+        ? t(getRoomTypeTranslationKey(focusedSectionTitle))
+        : (activeSectionTitle ? t(getRoomTypeTranslationKey(activeSectionTitle)) : t('gallery.photoTour'));
+
+    useEffect(() => {
+        if (inline && onTitleChange) {
+            onTitleChange(activeTitle);
+        }
+    }, [activeTitle, inline, onTitleChange]);
+
+    if (!flatImages.length) return null;
 
     const renderFocusedView = () => {
         const currentIdx = focusedImageIndex ?? 0;
@@ -281,7 +307,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
         };
 
         const focusedViewContent = (
-            <div className="h-full min-h-0 flex flex-col overflow-hidden relative" style={{ background: '#000' }}>
+            <div className="h-full min-h-0 flex flex-col overflow-hidden relative rounded-[24px]" style={{ background: isDarkMode ? '#000' : '#fff' }}>
                 {/* Blurred background from current image */}
                 <div
                     className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
@@ -292,32 +318,34 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                         src={getMediaUrl(flatImages[currentIdx]?.url)}
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-                        style={{ filter: 'blur(28px) brightness(0.35) saturate(1.2)', transform: 'scale(1.1)' }}
+                        style={{ filter: isDarkMode ? 'blur(28px) brightness(0.35) saturate(1.2)' : 'blur(28px) brightness(1.2) saturate(0.6)', transform: 'scale(1.1)' }}
                         draggable={false}
                     />
-                    <div className="absolute inset-0 bg-black/50" />
+                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-white/92 backdrop-blur-md'}`} />
                 </div>
 
                 {/* Header — standard size */}
-                <header className="absolute top-0 left-0 right-0 z-50 h-[76px] lg:h-[80px] bg-gradient-to-b from-black/40 to-transparent">
-                    <div className="max-w-[2520px] mx-auto w-full h-full flex items-center justify-between px-4 md:px-6 lg:px-20">
-                        <button
-                            type="button"
-                            onClick={() => setFocusedImageIndex(null)}
-                            className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all group"
-                        >
-                            <ArrowLeftIcon className="w-5 h-5 text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
+                {!inline && (
+                    <header className="absolute top-0 left-0 right-0 z-50 h-[76px] lg:h-[80px] bg-gradient-to-b from-black/40 to-transparent">
+                        <div className="max-w-[2520px] mx-auto w-full h-full flex items-center justify-between px-4 md:px-6 lg:px-20">
+                            <button
+                                type="button"
+                                onClick={() => setFocusedImageIndex(null)}
+                                className={`w-[44px] h-[44px] flex items-center justify-center ${isCentered ? 'rounded-[12px]' : 'rounded-full'} bg-white/10 hover:bg-white/20 active:scale-95 transition-all group`}
+                            >
+                                <ArrowLeftIcon className="w-5 h-5 text-white stroke-[2] group-hover:-translate-x-0.5 transition-transform" />
+                            </button>
 
-                        <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
-                            {t(getRoomTypeTranslationKey(focusedSectionTitle))}
-                        </span>
+                            <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-bold text-white truncate max-w-[50vw] pointer-events-none text-center">
+                                {t(getRoomTypeTranslationKey(focusedSectionTitle))}
+                            </span>
 
-                        <div className="w-[44px]" />
-                    </div>
-                </header>
+                            <div className="w-[44px]" />
+                        </div>
+                    </header>
+                )}
 
-                <div className="relative flex-1 min-h-0 flex items-center justify-center p-0 z-10">
+                <div className={`relative flex-1 min-h-0 flex items-center justify-center z-10 ${inline ? 'py-[76px]' : 'p-0'}`}>
                     <div 
                         className="w-full h-full mx-auto relative overflow-hidden flex items-center justify-center"
                         onTouchStart={handleTouchStart}
@@ -328,7 +356,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                             return (
                                 <div
                                     key={i}
-                                    className={`absolute inset-0 flex items-center justify-center p-4 select-none transition-all duration-500 ease-out ${
+                                    className={`absolute inset-0 flex items-center justify-center py-4 px-16 md:px-24 lg:px-28 select-none transition-all duration-500 ease-out ${
                                         isActive 
                                             ? 'opacity-100 scale-100 z-10 pointer-events-auto' 
                                             : 'opacity-0 scale-[0.97] z-0 pointer-events-none'
@@ -350,7 +378,11 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); goPrevImage(); }}
-                                        className="hidden md:flex absolute left-4 md:left-8 lg:left-20 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                        className={`hidden md:flex absolute left-4 md:left-6 lg:left-8 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] ${isCentered ? 'rounded-[12px]' : 'rounded-full'} ${
+                                            isDarkMode 
+                                                ? 'bg-white/10 hover:bg-white/20 text-white' 
+                                                : 'bg-black/5 hover:bg-black/10 text-gray-800'
+                                        } items-center justify-center active:scale-95 transition-all group`}
                                     >
                                         <ChevronLeftIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
@@ -359,7 +391,11 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); goNextImage(); }}
-                                        className="hidden md:flex absolute right-4 md:right-8 lg:left-auto lg:right-20 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center active:scale-95 transition-all group"
+                                        className={`hidden md:flex absolute right-4 md:right-6 lg:right-8 top-1/2 -translate-y-1/2 z-20 w-[44px] h-[44px] ${isCentered ? 'rounded-[12px]' : 'rounded-full'} ${
+                                            isDarkMode 
+                                                ? 'bg-white/10 hover:bg-white/20 text-white' 
+                                                : 'bg-black/5 hover:bg-black/10 text-gray-800'
+                                        } items-center justify-center active:scale-95 transition-all group`}
                                     >
                                         <ChevronRightIcon className="w-5 h-5 transition-transform" strokeWidth={2} />
                                     </button>
@@ -370,7 +406,7 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 </div>
 
                 {total > 1 && (
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-md pointer-events-auto">
+                    <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full ${isDarkMode ? 'bg-black/20' : 'bg-black/5'} backdrop-blur-md pointer-events-auto`}>
                         {(() => {
                             const maxDots = 5;
                             let startIndex = 0;
@@ -386,8 +422,8 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                                         onClick={(e) => { e.stopPropagation(); scrollToImage(actualIndex); }}
                                         className={`rounded-full transition-all duration-300 ease-out ${
                                             isActive 
-                                                ? 'w-5 h-1.5 bg-white shadow-sm' 
-                                                : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
+                                                ? `w-5 h-1.5 ${isDarkMode ? 'bg-white' : 'bg-gray-900'} shadow-sm` 
+                                                : `w-1.5 h-1.5 ${isDarkMode ? 'bg-white/40 hover:bg-white/60' : 'bg-black/20 hover:bg-black/40'}`
                                         }`}
                                         aria-label={`Go to photo ${actualIndex + 1}`}
                                     />
@@ -419,35 +455,37 @@ export default function AllPhotosModalContent({ images, initialIndex, onClose, i
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             ` }} />
-            <header className={`sticky top-0 flex-none z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md transition-all duration-300 border-b ${scrolled ? 'border-gray-100 dark:border-white/5' : 'border-transparent'}`}>
-                <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 h-[64px] lg:h-[80px]">
-                    <div className="flex items-center gap-2">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
-                            className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
-                        >
-                            <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white transition-transform" strokeWidth={2} />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                onClose && onClose();
-                                navigate('/');
-                            }}
-                            className="hidden lg:flex px-5 h-[44px] items-center justify-center gap-2 rounded-full bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group"
-                            title={t('listing.goToHome')}
-                        >
-                            <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
-                            <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">{t('listing.goToHome')}</span>
-                        </button>
+            {!inline && (
+                <header className={`sticky top-0 flex-none z-[100] bg-white/95 dark:bg-dashboard-dark/95 backdrop-blur-md transition-all duration-300 border-b ${scrolled ? 'border-gray-100 dark:border-white/5' : 'border-transparent'}`}>
+                    <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between px-4 md:px-8 lg:px-20 h-[64px] lg:h-[80px]">
+                        <div className="flex items-center gap-2">
+                            <button 
+                                type="button" 
+                                onClick={onClose} 
+                                className={`w-[44px] h-[44px] flex items-center justify-center ${isCentered ? 'rounded-[12px]' : 'rounded-full'} bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group`}
+                            >
+                                <ArrowLeftIcon className="w-5 h-5 text-gray-800 dark:text-white transition-transform" strokeWidth={2} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose && onClose();
+                                    navigate('/');
+                                }}
+                                className={`hidden lg:flex px-5 h-[44px] items-center justify-center gap-2 ${isCentered ? 'rounded-[12px]' : 'rounded-full'} bg-white dark:bg-dashboard-card border border-gray-200 dark:border-white/10 hover:border-[#222222] dark:hover:border-white/40 hover:shadow-md hover:-translate-y-[1px] transition-all duration-300 active:scale-[0.98] group`}
+                                title={t('listing.goToHome')}
+                            >
+                                <TbSmartHome className="w-[22px] h-[22px] text-gray-800 dark:text-white transition-transform" />
+                                <span className="text-[13px] font-bold tracking-tight text-gray-800 dark:text-white">{t('listing.goToHome')}</span>
+                            </button>
+                        </div>
+                        <span className="absolute left-1/2 -translate-x-1/2 text-[16px] lg:text-[18px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none text-center">
+                            {activeSectionTitle ? t(getRoomTypeTranslationKey(activeSectionTitle)) : t('gallery.photoTour')}
+                        </span>
+                        <div className="w-[44px]" />
                     </div>
-                    <span className="absolute left-1/2 -translate-x-1/2 text-[16px] lg:text-[18px] font-bold text-gray-900 dark:text-white truncate max-w-[50vw] pointer-events-none text-center">
-                        {activeSectionTitle ? t(getRoomTypeTranslationKey(activeSectionTitle)) : t('gallery.photoTour')}
-                    </span>
-                    <div className="w-[44px]" />
-                </div>
-            </header>
+                </header>
+            )}
  
             <div ref={scrollRef} className={`flex-1 min-h-0 ${isDesktop ? '' : 'overflow-y-scroll overflow-x-hidden overscroll-y-contain'}`} style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="mx-auto w-full max-w-[1440px] md:pb-8 md:pt-0">

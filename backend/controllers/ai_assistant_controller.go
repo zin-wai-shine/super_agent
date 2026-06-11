@@ -369,6 +369,18 @@ func (ai *AIAssistantController) AIChat(c *gin.Context) {
 	}
 
 	// 5. PASS 2: Formulation of Premium Advice / Explanation / Comparisons
+	langName := "English"
+	if req.Preferences != nil {
+		if lang, ok := req.Preferences["language"]; ok {
+			switch strings.ToLower(lang) {
+			case "zh", "cn", "chinese":
+				langName = "Chinese"
+			case "mm", "myanmar", "burmese":
+				langName = "Burmese"
+			}
+		}
+	}
+
 	aiResponse, err := ai.generateAdvice(
 		req.Message,
 		req.History,
@@ -378,6 +390,7 @@ func (ai *AIAssistantController) AIChat(c *gin.Context) {
 		criteria,
 		leadStatus,
 		missingFields,
+		langName,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to compile AI response: " + err.Error()})
@@ -636,6 +649,7 @@ func (ai *AIAssistantController) generateAdvice(
 	criteria *ExtractedCriteria,
 	leadStatus string,
 	missingFields []string,
+	langName string,
 ) (string, error) {
 	// Construct data descriptors for listings
 	listingsSummary := "No properties match."
@@ -692,7 +706,7 @@ CRITICAL RULES:
    - If lead status is "missing_fields", politely ask the user for the missing fields (` + strings.Join(missingFields, ", ") + `) in a friendly way. Let them know why you need this information to secure the appointment.
    - If they like a property and want to book but haven't given listing_id, ask which property they are interested in.
 7. Provide concise, premium responses. Do not wrap the entire response in markdown backticks.
-8. Language consistency: You MUST reply in the exact same language as the user's latest query (e.g. if the user query is in Burmese, you must reply in Burmese; if in Thai, you must reply in Thai; if in English, reply in English). Maintain a highly professional and natural tone in that language.`
+8. Language consistency: You MUST reply in ` + langName + `. Even if the user query contains English keywords, technical terms, or station names, your entire advice, comments, explanations, and replies MUST be written in ` + langName + `. Maintain a highly professional and natural tone in ` + langName + `.`
 
 	messages := []AIAssistantMessage{
 		{Role: "system", Content: systemPrompt},

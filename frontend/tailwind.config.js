@@ -70,9 +70,11 @@ module.exports = {
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
+        'fade-out': 'fadeOut 0.2s ease-in forwards',
         'slide-up': 'slideUp 0.3s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
+        'scale-out': 'scaleOut 0.2s ease-in forwards',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'slide-in-right': 'slideInRight 0.5s ease-out forwards',
         'profile-enter': 'profileEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards',
@@ -81,6 +83,10 @@ module.exports = {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
         },
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
@@ -93,6 +99,10 @@ module.exports = {
         scaleIn: {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        scaleOut: {
+          '0%': { opacity: '1', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(0.95)' },
         },
         slideInRight: {
           '0%': { opacity: '0', transform: 'translateX(-10px)' },

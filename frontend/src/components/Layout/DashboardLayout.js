@@ -48,11 +48,21 @@ const DashboardLayout = () => {
     // Independent Dark Mode logic
     React.useEffect(() => {
         const root = window.document.documentElement;
+        
+        // Temporarily enable global transition rules during theme toggle
+        root.classList.add('theme-transitioning');
+        
         if (isDarkMode) {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
+        
+        const timer = setTimeout(() => {
+            root.classList.remove('theme-transitioning');
+        }, 400);
+        
+        return () => clearTimeout(timer);
     }, [isDarkMode]);
 
     const handleLogout = async () => {

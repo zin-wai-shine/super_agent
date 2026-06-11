@@ -11,26 +11,70 @@ export const usePublicDarkTheme = () => {
 };
 
 export const PublicDarkThemeProvider = ({ children }) => {
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        const savedTheme = localStorage.getItem('public_theme');
-        if (savedTheme) {
-            return savedTheme === 'dark';
-        }
-        // Default to light mode for public site
-        return false;
+    const [themeMode, setThemeModeState] = useState(() => {
+        return localStorage.getItem('settings_theme_mode') || 'auto';
     });
 
-    const toggleTheme = () => {
-        setIsDarkMode((prev) => !prev);
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const savedMode = localStorage.getItem('settings_theme_mode') || 'auto';
+        if (savedMode === 'dark') return true;
+        if (savedMode === 'light') return false;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    const setThemeMode = (mode) => {
+        setThemeModeState(mode);
+        localStorage.setItem('settings_theme_mode', mode);
+        
+        if (mode === 'dark') {
+            setIsDarkMode(true);
+        } else if (mode === 'light') {
+            setIsDarkMode(false);
+        } else {
+            // auto
+            setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        }
     };
 
+    // Listen to system preference changes when mode is 'auto'
+    useEffect(() => {
+        if (themeMode !== 'auto') return;
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e) => {
+            setIsDarkMode(e.matches);
+        };
+
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', handleChange);
+        } else {
+            mediaQuery.addListener(handleChange);
+        }
+
+        return () => {
+            if (mediaQuery.removeEventListener) {
+                mediaQuery.removeEventListener('change', handleChange);
+            } else {
+                mediaQuery.removeListener(handleChange);
+            }
+        };
+    }, [themeMode]);
+
+    // Sync isDarkMode to public_theme for any other legacy dependencies
     useEffect(() => {
         localStorage.setItem('public_theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
+    // Backward compatibility helper
+    const toggleTheme = () => {
+        setThemeMode(isDarkMode ? 'light' : 'dark');
+    };
+
     return (
-        <PublicDarkThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+        <PublicDarkThemeContext.Provider value={{ isDarkMode, themeMode, setThemeMode, toggleTheme }}>
             {children}
         </PublicDarkThemeContext.Provider>
     );
 };
+
+
