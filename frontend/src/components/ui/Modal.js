@@ -100,7 +100,7 @@ const Modal = ({
             const timer = setTimeout(() => {
                 setShouldRender(false);
                 setIsAnimatingOut(false);
-            }, 200);
+            }, 350);
             return () => clearTimeout(timer);
         }
     }, [isOpen, shouldRender]);
@@ -125,7 +125,7 @@ const Modal = ({
         >
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${isAnimatingOut ? 'animate-fade-out' : 'animate-fade-in'} ${(lockScroll || closeOnBackdropClick) ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${isAnimatingOut ? 'animate-fade-out' : ''} ${(lockScroll || closeOnBackdropClick) ? 'pointer-events-auto' : 'pointer-events-none'}`}
                 onClick={(e) => {
                     if (closeOnBackdropClick) {
                         e.stopPropagation();
@@ -136,7 +136,7 @@ const Modal = ({
 
             {/* Modal Dialog */}
             <div
-                className={`relative transform ${isAnimatingOut ? 'animate-scale-out' : 'animate-scale-in'} w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 h-full sm:h-auto sm:m-4' : 'p-4 sm:p-0'} ${fullBleedDesktop ? 'sm:!m-0 sm:!rounded-none sm:!shadow-none sm:!max-w-none sm:w-full sm:h-full' : ''}`}
+                className={`relative transform ${isAnimatingOut ? 'animate-airbnb-out' : 'animate-airbnb-in'} w-full flex items-center justify-center z-10 pointer-events-auto ${sizes[size]} ${className} ${fullScreenMobile ? 'p-0 m-0 h-full sm:h-auto sm:m-4' : 'p-4 sm:p-0'} ${fullBleedDesktop ? 'sm:!m-0 sm:!rounded-none sm:!shadow-none sm:!max-w-none sm:w-full sm:h-full' : ''}`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
             >
                 <div

@@ -133,7 +133,7 @@ const SharedChatPage = () => {
             className="min-h-screen bg-gray-50 dark:bg-dashboard-dark py-12 px-4 md:px-6"
             style={{ fontFamily: "'Helvetica', 'Arial', sans-serif" }}
         >
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header Banner */}
                 <div className="bg-white dark:bg-dashboard-card rounded-3xl p-6 border border-gray-200/80 dark:border-white/5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="space-y-1">

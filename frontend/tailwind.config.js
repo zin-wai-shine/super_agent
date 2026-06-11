@@ -75,6 +75,8 @@ module.exports = {
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         'scale-out': 'scaleOut 0.2s ease-in forwards',
+        'airbnb-in': 'airbnbIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'airbnb-out': 'airbnbOut 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'slide-in-right': 'slideInRight 0.5s ease-out forwards',
         'profile-enter': 'profileEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards',
@@ -103,6 +105,14 @@ module.exports = {
         scaleOut: {
           '0%': { opacity: '1', transform: 'scale(1)' },
           '100%': { opacity: '0', transform: 'scale(0.95)' },
+        },
+        airbnbIn: {
+          '0%': { opacity: '0', transform: 'translateY(80px) scale(0.96)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        airbnbOut: {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateY(80px) scale(0.96)' },
         },
         slideInRight: {
           '0%': { opacity: '0', transform: 'translateX(-10px)' },

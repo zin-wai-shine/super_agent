@@ -15,6 +15,7 @@ import {
 import { getMediaUrl } from "../../utils/media";
 import ListingCard from "../Listings/ListingCard";
 import ListingDetailModal from "../Listings/ListingDetailModal";
+import Modal from "../ui/Modal";
 import Logo from "../Common/Logo";
 import { toast } from "react-hot-toast";
 import {
@@ -50,6 +51,7 @@ import {
   BsHeart,
   BsPinAngle,
 } from "react-icons/bs";
+import { HiOutlineSquares2X2 } from "react-icons/hi2";
 import { LuShare, LuPencil, LuPin } from "react-icons/lu";
 import { PiChatCircle } from "react-icons/pi";
 import { BiMessageSquareAdd } from "react-icons/bi";
@@ -63,6 +65,8 @@ export const ListingsCarousel = (_ref) => {
   const scrollRef = useRef(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const isSharedPage = window.location.pathname.includes("/shared-chat/");
   const handleScroll = () => {
     const el = scrollRef.current;
     if (el) {
@@ -73,7 +77,7 @@ export const ListingsCarousel = (_ref) => {
   const scroll = (direction) => {
     const el = scrollRef.current;
     if (el) {
-      const scrollAmount = 300; // width of card (280) + gap (16)
+      const scrollAmount = 296; // width of card (280) + gap (16)
       el.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
@@ -93,7 +97,7 @@ export const ListingsCarousel = (_ref) => {
     }
   }, [listings]);
   return /*#__PURE__*/ _jsxs("div", {
-    className: "pl-12 space-y-3 relative group pr-2",
+    className: "pl-12 space-y-3 relative pr-2",
     children: [
       /*#__PURE__*/ _jsxs("div", {
         className: "flex items-center justify-between pr-4",
@@ -104,67 +108,158 @@ export const ListingsCarousel = (_ref) => {
             children: [icon, " ", title],
           }),
           /*#__PURE__*/ _jsxs("div", {
-            className: "flex items-center gap-1.5",
+            className: "flex items-center gap-3",
             children: [
-              /*#__PURE__*/ _jsx("button", {
-                onClick: () => scroll("left"),
-                disabled: !showLeft,
+              /*#__PURE__*/ _jsxs("button", {
+                onClick: () => setIsModalOpen(true),
                 className:
-                  "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
-                    showLeft
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20"
-                      : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
-                  ),
-                children: /*#__PURE__*/ _jsx(FiChevronLeft, {
-                  className: "w-[18px] h-[18px]",
-                }),
+                  "h-[34px] px-3.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-200 text-[13px] font-normal rounded-[12px] flex items-center gap-1.5 active:scale-95 transition-all duration-200 border-0 cursor-pointer",
+                children: [
+                  /*#__PURE__*/ _jsx(HiOutlineSquares2X2, { className: "w-[18px] h-[18px] text-gray-600 dark:text-gray-200" }),
+                  "See all (",
+                  listings.length,
+                  ")",
+                ],
               }),
-              /*#__PURE__*/ _jsx("button", {
-                onClick: () => scroll("right"),
-                disabled: !showRight,
-                className:
-                  "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
-                    showRight
-                      ? "bg-gray-800 dark:bg-white text-white dark:text-gray-900 cursor-pointer hover:bg-gray-955 dark:hover:bg-gray-100"
-                      : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
-                  ),
-                children: /*#__PURE__*/ _jsx(FiChevronRight, {
-                  className: "w-[18px] h-[18px]",
-                }),
+              /*#__PURE__*/ _jsxs("div", {
+                className: "flex items-center gap-1.5",
+                children: [
+                  /*#__PURE__*/ _jsx("button", {
+                    onClick: () => scroll("left"),
+                    disabled: !showLeft,
+                    className:
+                      "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
+                        showLeft
+                          ? "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-200 cursor-pointer hover:bg-gray-200 dark:hover:bg-white/20"
+                          : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
+                      ),
+                    children: /*#__PURE__*/ _jsx(FiChevronLeft, {
+                      className: "w-[18px] h-[18px]",
+                    }),
+                  }),
+                  /*#__PURE__*/ _jsx("button", {
+                    onClick: () => scroll("right"),
+                    disabled: !showRight,
+                    className:
+                      "w-[34px] h-[34px] rounded-[12px] flex items-center justify-center active:scale-90 transition-all duration-200 border-0\n                            ".concat(
+                        showRight
+                          ? "bg-gray-800 dark:bg-white text-white dark:text-gray-900 cursor-pointer hover:bg-gray-955 dark:hover:bg-gray-100"
+                          : "bg-gray-100/50 dark:bg-white/5 text-gray-300 dark:text-gray-700 cursor-not-allowed opacity-50",
+                      ),
+                    children: /*#__PURE__*/ _jsx(FiChevronRight, {
+                      className: "w-[18px] h-[18px]",
+                    }),
+                  }),
+                ],
               }),
             ],
           }),
         ],
       }),
-      /*#__PURE__*/ _jsx("div", {
-        ref: scrollRef,
-        className:
-          "flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x scroll-smooth",
-        children: listings.map((l) =>
-          /*#__PURE__*/ _jsx(
-            "div",
-            {
-              className: "w-[280px] flex-shrink-0 snap-start bg-transparent",
-              children: /*#__PURE__*/ _jsx(ListingCard, {
-                listing: l,
-                viewMode: "grid",
-                showSave: true,
-                initialSaved: savedStatus[l.id],
-                to: "?detail=".concat(l.id),
-                onSaveToggle: (isSaved) => {
-                  setSavedStatus((prev) =>
-                    _objectSpread(
-                      _objectSpread({}, prev),
-                      {},
-                      { [l.id]: isSaved },
-                    ),
-                  );
+      /*#__PURE__*/ _jsxs("div", {
+        className: "relative w-full overflow-hidden",
+        children: [
+          showLeft &&
+            /*#__PURE__*/ _jsx("div", {
+              className: "absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none transition-all duration-300 bg-gradient-to-r ".concat(
+                isSharedPage
+                  ? "from-white dark:from-dashboard-card"
+                  : "from-gray-50 dark:from-dashboard-card",
+                " to-transparent"
+              ),
+            }),
+          showRight &&
+            /*#__PURE__*/ _jsx("div", {
+              className: "absolute right-0 top-0 bottom-0 w-12 z-10 pointer-events-none transition-all duration-300 bg-gradient-to-l ".concat(
+                isSharedPage
+                  ? "from-white dark:from-dashboard-card"
+                  : "from-gray-50 dark:from-dashboard-card",
+                " to-transparent"
+              ),
+            }),
+          /*#__PURE__*/ _jsx("div", {
+            ref: scrollRef,
+            className:
+              "flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x scroll-smooth",
+            children: listings.map((l) =>
+              /*#__PURE__*/ _jsx(
+                "div",
+                {
+                  className: "w-[280px] flex-shrink-0 snap-start bg-transparent",
+                  children: /*#__PURE__*/ _jsx(ListingCard, {
+                    listing: l,
+                    viewMode: "grid",
+                    showSave: true,
+                    initialSaved: savedStatus[l.id],
+                    to: "?detail=".concat(l.id),
+                    onSaveToggle: (isSaved) => {
+                      setSavedStatus((prev) =>
+                        _objectSpread(
+                          _objectSpread({}, prev),
+                          {},
+                          { [l.id]: isSaved },
+                        ),
+                      );
+                    },
+                  }),
                 },
+                l.id,
+              ),
+            ),
+          }),
+        ],
+      }),
+      /*#__PURE__*/ _jsxs(Modal, {
+        isOpen: isModalOpen,
+        onClose: () => setIsModalOpen(false),
+        hideHeader: true,
+        size: "full",
+        className: "!max-w-[1300px] !h-[90vh] rounded-[24px] overflow-hidden",
+        overlayZIndex: 10000,
+        children: [
+          /*#__PURE__*/ _jsxs("div", {
+            className: "flex items-center justify-between px-8 py-4 bg-white dark:bg-dashboard-card select-none",
+            children: [
+              /*#__PURE__*/ _jsx("h3", {
+                className: "text-[16px] font-bold text-gray-900 dark:text-white",
+                children: title,
               }),
-            },
-            l.id,
-          ),
-        ),
+              /*#__PURE__*/ _jsx("button", {
+                onClick: () => setIsModalOpen(false),
+                className: "w-10 h-10 rounded-[12px] hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-gray-650 dark:hover:text-white border-0 bg-transparent cursor-pointer transition-colors flex items-center justify-center",
+                children: /*#__PURE__*/ _jsx(FiX, { className: "w-5 h-5" }),
+              }),
+            ],
+          }),
+          /*#__PURE__*/ _jsx("div", {
+            className: "modal-scrollable grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-8 pb-8 pt-2 flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-transparent",
+            children: listings.map((l) =>
+              /*#__PURE__*/ _jsx(
+                "div",
+                {
+                  className: "w-full bg-transparent hover:scale-[1.02] transition-transform duration-300",
+                  children: /*#__PURE__*/ _jsx(ListingCard, {
+                    listing: l,
+                    viewMode: "grid",
+                    showSave: true,
+                    initialSaved: savedStatus[l.id],
+                    to: "?detail=".concat(l.id),
+                    onSaveToggle: (isSaved) => {
+                      setSavedStatus((prev) =>
+                        _objectSpread(
+                          _objectSpread({}, prev),
+                          {},
+                          { [l.id]: isSaved },
+                        ),
+                      );
+                    },
+                  }),
+                },
+                l.id,
+              ),
+            ),
+          }),
+        ],
       }),
     ],
   });
@@ -895,6 +990,20 @@ const AIAssistant = () => {
           : _textareaRef$current.focus();
       }, 150);
     }
+  }, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+      };
+    }
   }, [isOpen]); // Derive active session values
   const activeSession = sessions.find((s) => s.id === currentSessionId) || null;
   const messages = activeSession ? activeSession.messages : [];
@@ -1445,25 +1554,6 @@ const AIAssistant = () => {
             /*#__PURE__*/ _jsxs("div", {
               className: "flex items-center gap-3",
               children: [
-                /*#__PURE__*/ _jsxs("div", {
-                  className:
-                    "flex items-center gap-1 text-[13px] text-gray-500 dark:text-gray-400 font-semibold px-2.5 py-1 rounded-full hover:bg-gray-200/50 dark:hover:bg-white/10 cursor-pointer transition-all",
-                  children: [
-                    /*#__PURE__*/ _jsx("span", { children: "Auto" }),
-                    /*#__PURE__*/ _jsx("svg", {
-                      className: "w-3.5 h-3.5 mt-0.5",
-                      fill: "none",
-                      stroke: "currentColor",
-                      viewBox: "0 0 24 24",
-                      children: /*#__PURE__*/ _jsx("path", {
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        strokeWidth: "2",
-                        d: "M19 9l-7 7-7-7",
-                      }),
-                    }),
-                  ],
-                }),
                 /*#__PURE__*/ _jsx("button", {
                   onClick: () => handleSend(),
                   disabled: !input.trim() || loading,
@@ -1961,11 +2051,12 @@ const AIAssistant = () => {
                   ? void 0
                   : active.title) || "New Chat",
               );
-              navigate(
+              window.open(
                 "/chat/".concat(currentSessionId, "/").concat(titleSlug),
+                "_blank",
               );
             } else {
-              navigate("/chat");
+              window.open("/chat", "_blank");
             }
           },
           className:
@@ -2479,7 +2570,7 @@ const AIAssistant = () => {
                     }),
                     /*#__PURE__*/ _jsxs("div", {
                       className:
-                        "p-3 border-t border-gray-200/60 dark:border-white/5 bg-gray-100/10 dark:bg-black/5 flex-shrink-0 flex items-center justify-between",
+                        "p-3 bg-gray-100/10 dark:bg-black/5 flex-shrink-0 flex items-center justify-between",
                       children: [
                         /*#__PURE__*/ _jsxs("div", {
                           onClick: (e) => {
@@ -2560,28 +2651,16 @@ const AIAssistant = () => {
                   /*#__PURE__*/ _jsxs("div", {
                     className: "flex items-center gap-2 pointer-events-auto",
                     children: [
-                      /*#__PURE__*/ _jsx("button", {
-                        onClick: resetChat,
-                        title: "Reset Conversation",
-                        className:
-                          "p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-all active:rotate-180 duration-500 bg-white/80 dark:bg-dashboard-card/80 shadow-sm backdrop-blur-md cursor-pointer flex items-center justify-center h-9 w-9 border-0",
-                        children: /*#__PURE__*/ _jsx(FiRefreshCw, {
-                          className: "w-4 h-4",
-                        }),
-                      }),
                       /*#__PURE__*/ _jsxs("button", {
                         onClick: () => navigate(previousPathRef.current),
                         className:
-                          "flex items-center gap-2 px-5 py-2 text-white font-bold text-sm rounded-full shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] hover:brightness-105 border-0 cursor-pointer h-9",
-                        style: {
-                          backgroundColor: theme.primaryColor || "#1a73e8",
-                        },
+                          "flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-200 font-normal text-[13px] rounded-[12px] shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] border-0 cursor-pointer h-9",
                         children: [
-                          /*#__PURE__*/ _jsx(FiArrowLeft, {
-                            className: "w-4 h-4 text-white",
+                          /*#__PURE__*/ _jsx(HiOutlineSquares2X2, {
+                            className: "w-[18px] h-[18px] text-gray-600 dark:text-gray-200",
                           }),
                           /*#__PURE__*/ _jsx("span", {
-                            children: "Back to Site",
+                            children: "Go to list",
                           }),
                         ],
                       }),
@@ -2594,7 +2673,7 @@ const AIAssistant = () => {
                     "div",
                     {
                       className:
-                        "flex-1 flex flex-col items-center justify-center max-w-4xl w-full mx-auto px-4 md:px-6 space-y-8 animate-fade-in-up z-10",
+                        "flex-1 flex flex-col items-center justify-center max-w-5xl w-full mx-auto px-4 md:px-6 space-y-8 animate-fade-in-up z-10",
                       children: [
                         /*#__PURE__*/ _jsxs("div", {
                           className: "text-center space-y-3",
@@ -2647,7 +2726,7 @@ const AIAssistant = () => {
                             "absolute inset-0 overflow-y-auto pt-16 pb-48 custom-scrollbar-thin bg-gray-50 dark:bg-dashboard-card",
                           children: /*#__PURE__*/ _jsxs("div", {
                             className:
-                              "max-w-4xl mx-auto px-4 md:px-6 space-y-8",
+                              "max-w-5xl mx-auto px-4 md:px-6 space-y-8",
                             children: [
                               messages.map((m, idx) => {
                                 var _user$first_name;
@@ -2977,7 +3056,7 @@ const AIAssistant = () => {
                             "absolute bottom-0 left-0 right-0 px-4 md:px-6 pb-6 pt-2 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-dashboard-card dark:via-dashboard-card to-transparent z-20 pointer-events-none",
                           children: /*#__PURE__*/ _jsx("div", {
                             className:
-                              "max-w-4xl mx-auto w-full pointer-events-auto",
+                              "max-w-5xl mx-auto w-full pointer-events-auto",
                             children: renderInputBox(),
                           }),
                         }),

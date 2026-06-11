@@ -307,22 +307,24 @@ export default function AllPhotosModalContent({
         };
 
         const focusedViewContent = (
-            <div className="h-full min-h-0 flex flex-col overflow-hidden relative rounded-[24px]" style={{ background: isDarkMode ? '#000' : '#fff' }}>
+            <div className="h-full min-h-0 flex flex-col overflow-hidden relative rounded-[24px]" style={{ background: isCentered ? (isDarkMode ? 'transparent' : '#fff') : (isDarkMode ? '#000' : '#fff') }}>
                 {/* Blurred background from current image */}
-                <div
-                    className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
-                    aria-hidden="true"
-                >
-                    <img
-                        key={currentIdx}
-                        src={getMediaUrl(flatImages[currentIdx]?.url)}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-                        style={{ filter: isDarkMode ? 'blur(28px) brightness(0.35) saturate(1.2)' : 'blur(28px) brightness(1.2) saturate(0.6)', transform: 'scale(1.1)' }}
-                        draggable={false}
-                    />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-white/92 backdrop-blur-md'}`} />
-                </div>
+                {!isCentered && (
+                    <div
+                        className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+                        aria-hidden="true"
+                    >
+                        <img
+                            key={currentIdx}
+                            src={getMediaUrl(flatImages[currentIdx]?.url)}
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                            style={{ filter: isDarkMode ? 'blur(28px) brightness(0.35) saturate(1.2)' : 'blur(28px) brightness(1.2) saturate(0.6)', transform: 'scale(1.1)' }}
+                            draggable={false}
+                        />
+                        <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-white/92 backdrop-blur-md'}`} />
+                    </div>
+                )}
 
                 {/* Header — standard size */}
                 {!inline && (
@@ -347,7 +349,7 @@ export default function AllPhotosModalContent({
 
                 <div className={`relative flex-1 min-h-0 flex items-center justify-center z-10 ${inline ? 'py-[76px]' : 'p-0'}`}>
                     <div 
-                        className="w-full h-full mx-auto relative overflow-hidden flex items-center justify-center"
+                        className="w-full h-full mx-auto relative flex items-center justify-center"
                         onTouchStart={handleTouchStart}
                         onTouchEnd={handleTouchEnd}
                     >
@@ -406,7 +408,7 @@ export default function AllPhotosModalContent({
                 </div>
 
                 {total > 1 && (
-                    <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full ${isDarkMode ? 'bg-black/20' : 'bg-black/5'} backdrop-blur-md pointer-events-auto`}>
+                    <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 px-3 py-1.5 rounded-full ${isCentered ? 'bg-transparent' : ((isDarkMode && !isCentered) ? 'bg-black/20' : 'bg-black/5')} ${isCentered ? '' : 'backdrop-blur-md'} pointer-events-auto`}>
                         {(() => {
                             const maxDots = 5;
                             let startIndex = 0;
